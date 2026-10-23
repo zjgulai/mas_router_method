@@ -1,0 +1,39 @@
+# --- deps ---
+node_modules/
+.pnpm-store/
+
+# --- build output ---
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+.turbo/
+
+# --- env & secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- runtime artifacts ---
+logs/
+*.log
+coverage/
+.nyc_output/
+
+# --- agent runtime state ---
+# Claude Agent SDK session transcripts can contain customer data; never commit.
+.claude-sessions/
+.agent-runs/
+
+# --- editor / OS ---
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# --- local scratch (uncommitted experiments) ---
+.scratch/local/

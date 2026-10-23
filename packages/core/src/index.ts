@@ -1,0 +1,99 @@
+import { createSdkMcpServer } from '@anthropic-ai/claude-agent-sdk';
+import type {
+  BrandStore,
+  RecipeStore,
+  ReferenceStore,
+  ToolDeps,
+  VisionAnalyzer,
+} from './tools/brand.js';
+import { brandToolNames, createBrandTools } from './tools/brand.js';
+import { runAgent, type AgentRunRequest, type AgentRunResult } from './run-agent.js';
+import { loadConfig, type RuntimeConfig } from './config.js';
+
+export * from './config.js';
+export * from './run-agent.js';
+export * from './tools/result.js';
+export * from './tools/brand.js';
+
+/**
+ * Composes the pieces into the one thing the apps actually call.
+ *
+ * The workbench and the Feishu gateway both need "given a brand and a request,
+ * run the agent and give me the result" - so that lives here once, and each
+ * surface only decides *how* the request arrives and *where* the result goes.
+ */
+export interface RuntimeDeps {
+  brands: BrandStore;
+  references: ReferenceStore;
+  recipes: RecipeStore;
+  vision: VisionAnalyzer;
+  /** Injected so tests can pin a clock or fake a model. */
+  config?: RuntimeConfig;
+  /** Absolute path the SDK runs in. Should be the repo root in dev. */
+  cwd: string;
+}
+
+const SYSTEM_PROMPT = `You are a TikTok brand-content strategist working inside a native-agent product.
+
+Your job: turn a viral reference video into a production-ready recipe that a brand's own team can shoot.
+
+How you work:
+- Call get_brand_profile before anything else. Its guardrails bind you; do not restate them in output, just obey them.
+- Analyse the reference before writing. A recipe without an analysis behind it is a guess, and guesses are what this product exists to replace.
+- Reuse the *pattern*, never the words or the footage. If the reference's content belongs to someone else, say so in exclusions rather than copying it.
+- Claims: if a line in the script makes a factual claim, either it traces to something the brand can prove, or it must be softened. Set claimsSubstantiated honestly - a reviewer checks it.
+- Write for the ear. The script is read aloud over music; sentences that read well and speak badly are wrong here.
+- Duration: aim for ${'15-45'} seconds total. State the total when you present the recipe.
+
+You are not a general assistant. If the user asks for something outside this workflow, say what you can do instead of improvising.`;
+
+export function createRuntime(deps: RuntimeDeps) {
+  const config = deps.config ?? loadConfig();
+
+  function toolsFor(scope: ToolDeps['scope']) {
+    return createBrandTools({
+      brands: deps.brands,
+      references: deps.references,
+      recipes: deps.recipes,
+      vision: deps.vision,
+      scope,
+    });
+  }
+
+  return {
+    config,
+
+    /** Run one request end to end, with tools wired and budget enforced. */
+    async run(
+      req: AgentRunRequest,
+      opts: { signal?: AbortSignal; appendSystemPrompt?: string } = {},
+    ): Promise<AgentRunResult> {
+      const server = createSdkMcpServer({
+        name: 'brand',
+        version: '0.1.0',
+        tools: toolsFor({ brandId: req.brandId, actorId: req.actor?.id ?? 'system' }),
+      });
+
+      const systemPrompt =
+        opts.appendSystemPrompt === undefined
+          ? SYSTEM_PROMPT
+          : `${SYSTEM_PROMPT}\n\n${opts.appendSystemPrompt}`;
+
+      return runAgent(
+        req,
+        {
+          model: config.model,
+          maxCostUsd: config.maxCostUsd,
+          maxTurns: config.maxTurns,
+          systemPrompt,
+          mcpServers: { brand: server },
+          allowedTools: brandToolNames('brand'),
+          cwd: deps.cwd,
+        },
+        opts.signal === undefined ? {} : { signal: opts.signal },
+      );
+    },
+  };
+}
+
+export type Runtime = ReturnType<typeof createRuntime>;
