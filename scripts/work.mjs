@@ -355,14 +355,28 @@ async function cmdCheck() {
   // 每一次的形式都一样：某处抄了一份本该只有一份的东西。
   const designStates = schema.entities.design.states;
   for (const bucket of designStates) {
+    // `drafting` 是唯一一个「还没答完」的状态，所以它的块可以是空的。
+    //
+    // 不豁免它，方法就自相矛盾了：anb-design 明说「每答完一问就落一行，不是写完再落」，
+    // 而这条检查会在四块齐之前一律判失败——照方法说的做，通不过方法自己的检查。
+    // 实测中撞到：写完第一块（流程形状）跑 check，报出「拒绝清单 was never asked」，
+    // 而那一块是还没问到，不是从没问过。
+    //
+    // 其余状态（confirmed、superseded，以及将来新增的）都表示「已经答过」，
+    // 一律要求四块齐全。
+    const answering = bucket === 'drafting';
     for (const r of found.design?.[bucket] ?? []) {
       const text = await readFile(r.path, 'utf8');
       const secs = sections(text);
 
       for (const block of DESIGN_BLOCKS) {
         const sec = secs.find((x) => x.head.includes(block.key));
+        // 草稿阶段允许「还没问到」——但只允许这一种缺失。
+        // 已经写出来的块一律受规则约束，否则草稿就成了规则管不着的角落：
+        // 第一版豁免写成了整条 `continue`，于是「拒绝清单写成价值观」在草稿阶段
+        // 也能蒙过去——被现有测试当场抓出，说明豁免的粒度写粗了。
         if (sec === undefined) {
-          out.push(`${r.id}: no 「${block.key}」 block — ${block.what} was never asked`);
+          if (!answering) out.push(`${r.id}: no 「${block.key}」 block — ${block.what} was never asked`);
           continue;
         }
         if (sec.body === '') {

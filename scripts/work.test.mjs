@@ -431,3 +431,46 @@ test('design rules follow the schema: a record in a newly added state is still c
     await writeAndConfirm(schemaPath, original);
   }
 });
+
+test('design: a drafting record may be missing blocks, but not have an empty one', async () => {
+  // 方法的做法是「每答完一问就落一行」，所以草稿阶段必然缺块——这必须通过。
+  // 但「已经写出来的块」仍然受约束，否则草稿就成了规则管不着的角落。
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { unlink, mkdir, rmdir } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const dir = join(WORK, 'designs/drafting');
+  const partial = join(dir, 'D-995-partial.md');
+  const emptyOne = join(dir, 'D-994-empty-block.md');
+
+  const run = async () => {
+    let code = 0, stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      stdout = r.stdout;
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    return { code, stdout };
+  };
+
+  await mkdir(dir, { recursive: true });
+  try {
+    // 只写了一块 —— 应当通过
+    await writeAndConfirm(partial, ['---', 'id: D-995', 'title: half written', '---',
+      '## 一、流程形状', '', '固定两步。', ''].join('\n'));
+    const a = await run();
+    assert.equal(a.code, 0, `a half-written drafting record must pass:\n${a.stdout}`);
+
+    // 写出了一个空块 —— 应当失败
+    await writeAndConfirm(emptyOne, ['---', 'id: D-994', 'title: empty block', '---',
+      '## 一、流程形状', '', '固定两步。', '', '## 二、拒绝清单', '', ''].join('\n'));
+    const b = await run();
+    assert.equal(b.code, 1, 'a block that was started and left empty is not the same as one not yet asked');
+    assert.match(b.stdout, /D-994.*拒绝清单.*empty/);
+  } finally {
+    await unlink(partial).catch(() => {});
+    await unlink(emptyOne).catch(() => {});
+    await rmdir(dir).catch(() => {});
+  }
+});
