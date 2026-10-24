@@ -48,6 +48,8 @@
 | `docs/product/` | 产品论点、路线图 | 阶段 1 | 少改；改要写清为什么 |
 | `docs/agents/` | 给 agent 读的流程约定（票据格式、提交规范） | 任何阶段 | 少改 |
 | `docs/skills/` | skill 目录与来源说明 | 阶段 6 | 随 skill 增减 |
+| `docs/plans/` | 实施计划：某一版的施工图 | 阶段 2 | 写完不改；被取代时新开一份 |
+| `docs/product/method-audit-*.md` | 方法自身的审计快照 | 迭代 | 写完不改；下次审计新开一份 |
 | `docs/from-zero.md` | 从零搭仓库的顺序 | 一次性 | 不改 |
 
 **ADR 为什么不在 `work/`**：它没有状态机。接受之后就是一份历史记录，说"这个 ADR 现在是 done"没有意义。
