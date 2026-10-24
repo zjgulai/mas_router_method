@@ -104,12 +104,12 @@
 <main class="shell">
   <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 迭代</div>
   <h1><span class="num">07</span>迭代</h1>
-<p class="lede">只留下真的用过的，改掉真的错的。下一个产品从模板起步，但不要背上一堆用不上的东西。</p>
+<p class="lede">只留下真的用过的，改掉真的错的。先由运营给到的三个数字决定<b>改什么</b>，把结论落成 <code>R-</code> 或 <code>T-</code>；再决定<b>留下什么</b>做下个产品的起点。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-reusable</code> 覆盖，并且推翻了它自己的一条规则（"用过三次才抽"太严）。<br><br><b>为什么这一步重要：</b>迭代不是加功能，是去掉不该留的。判断标准是"上个产品用过吗"，不是"这个可能有用"。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
 <table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你要加一个新功能</td><td><a href="#b-add">b-add</a></td><td>先问：它解决的是观测到的哪个问题？答不出来就是猜。</td></tr><tr><td>你想抽一个通用模板</td><td><a href="#b-template">b-template</a></td><td>判据不是"用了几次"，是"它的形状会不会随产品变"。</td></tr><tr><td>一个东西你想保留，但说不清为什么</td><td><a href="#b-keep">b-keep</a></td><td>删掉。想不清理由的东西会成为下个项目的负担。</td></tr><tr><td>有了真实使用数据，知道该改什么</td><td><a href="#b-next">b-next</a></td><td>回到需求，开始下一轮。</td></tr></tbody></table>
-<div class="card" id="b-add"><h3>要加新功能</h3><p>先问：它解决的是你在观测里看到的哪个问题？<br><br>答不出来，那就是猜。猜的功能不会被用，而且会挤占维护别人在用的功能的精力。</p></div>
+<div class="card" id="b-add"><h3>要加新功能</h3><p>先问：它解决的是你在观测里看到的哪个问题？<br><br>答不出来，那就是猜。猜的功能不会被用，而且会挤占维护别人在用的功能的精力。<br><br><b>答出来了，就把它落成记录</b>：需求本身变了就写 <code>work/requirements/</code> 里的 <code>R-</code>，是新认领的工作就写 <code>work/tickets/</code> 里的 <code>T-</code>。这一步不是仪式——不落记录，结论就只活在这轮对话里，下一轮又从记忆开始，于是每隔几个月把同一件事重新学一遍。</p></div>
 <div class="card" id="b-template"><h3>想抽通用模板</h3><p>判据不是"用了几次"。<br><br><b>真正的判据是：这东西的形状会不会随产品变。</b>测试运行器的形状不变，抽出来两次就够；仓库骨架的形状每次都变，抽出来就是负担。<br><br>第二个判据：它要不要在每个产品里都重新验证一次"它可靠"。如果要，那抽取省的不是行数，是验证次数。</p></div>
 <div class="card" id="b-keep"><h3>想保留但说不清理由</h3><p>删掉。<br><br>没有理由的保留物会成为下个项目的负担，因为每个未来的决定都要塞进它的形状里。而且你会在三个月后忘记它为什么在那儿，于是没人敢删。</p></div>
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>

@@ -128,3 +128,19 @@ test('the stages that consume a design record actually say to read it', async ()
     'the build stage must read the judgement points and action permissions before writing code',
   );
 });
+
+test('the iterate stage closes the loop from observation back into a register', async () => {
+  // 站点的迭代页一直画着「有了真实使用数据 → 回到需求」这条分支，而技能只讲模板抽取、
+  // 观测数字提及 0 次——同一阶段两处说法不一致，而技能才是 agent 真正执行的东西。
+  // 「自进化闭环」如果不落在寄存器里，就只是这一页上的一句话。
+  const reusable = await read('.claude/skills/anb-reusable/SKILL.md');
+
+  assert.match(reusable, /## What to change/, 'the iterate stage must act on what the observation said, not only on what to keep');
+  assert.match(reusable, /ran|cost|failed/i, 'the loop starts from the operate stage\'s three numbers');
+  assert.match(reusable, /work\/requirements\//, 'a changed need goes back as a requirement, or the loop is not closed');
+  assert.match(reusable, /work\/tickets\//, 'committed work goes back as a ticket, or the conclusion stays in the conversation');
+
+  // 站点与技能必须说同一件事，否则站点描述的是一个不存在的流程。
+  const site = await read('docs/site/iterate.html');
+  assert.match(site, /work\/requirements\//, 'the iterate page must name the same destination as the skill');
+});
