@@ -42,3 +42,6 @@ coverage/
 
 # --- eval runs (transient); baselines are committed ---
 packages/evals/runs/
+
+# --- 临时交接产物 ---
+*.bundle

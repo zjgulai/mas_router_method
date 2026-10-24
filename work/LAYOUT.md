@@ -88,7 +88,20 @@
 
 ```bash
 node scripts/work.mjs check     # 校验 work/ 下的记录
-node scripts/layout.mjs check   # 校验目录归属：文件放错地方会报错
+node scripts/layout.mjs         # 校验目录归属：文件放错地方会报错
 ```
 
-`work check` 管记录内容，`layout check` 管文件位置。两个都要过。
+`work check` 管记录内容，`layout` 管文件位置。两个都要过。
+
+## 提交时的坑（INC-001）
+
+**在这个挂载目录里，`git status` 会说谎。** 它会报上百个 `M`，而 `git diff` 为空、
+内容与 HEAD 逐字节一致。`git add` 还会报 `short read while indexing`。
+
+所以：
+
+- **提交在 `/tmp` 做**：`cp -a` 复制 `.git` 和工作区到 `/tmp`，在那里 add / commit / push
+- **校验用 `git ls-tree` + `md5sum`**，不要用 `git status`
+- **不要用 `tar` 在两处之间复制**：它给短文件补 NUL，把 markdown 变成二进制
+
+细节和证据见 `work/incidents/closed/INC-001-*.md`。
