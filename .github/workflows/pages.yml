@@ -1,0 +1,51 @@
+# Publish site/ to GitHub Pages.
+#
+# Why Actions rather than "deploy from a branch": branch deployment can only
+# serve the repository root or /docs. The site lives in site/, and moving it into
+# docs/ would put generated pages next to the specifications an agent reads — the
+# exact duplication this repo is trying to avoid.
+#
+# The workflow publishes the directory as-is. There is no build step: the pages
+# are generated locally and committed, so what is deployed is what was reviewed.
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push replaces an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fail if the site is not where Pages expects it
+        run: |
+          test -f site/index.html || { echo "site/index.html missing"; exit 1; }
+          test -f site/.nojekyll || { echo "site/.nojekyll missing"; exit 1; }
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
