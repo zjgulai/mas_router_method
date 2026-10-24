@@ -12,7 +12,7 @@
  */
 import { readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = resolve(HERE, '..');
@@ -117,11 +117,30 @@ export async function loadSchema() {
     };
   }
 
+  // The stage order, shaped once. Every consumer reads this and none of them
+  // writes a position down — `index` is derived from the array position here and
+  // nowhere else, which is what stops the numbering going stale again.
+  const stageOrder = Array.isArray(raw.stage_order) ? raw.stage_order : [];
+  const stageLabels = raw.stage_labels ?? {};
+  const stageSkills = raw.stage_skills ?? {};
+  const stageOneline = raw.stage_oneline ?? {};
+
   cached = {
     version: raw.version ?? 0,
     entities: shaped,
     appendOnly: Array.isArray(raw.append_only) ? raw.append_only : [],
     stageEntities: raw.stage_entities ?? {},
+    stageOrder,
+    stageLabels,
+    stageSkills,
+    stageOneline,
+    stages: stageOrder.map((id, i) => ({
+      id,
+      label: stageLabels[id] ?? '',
+      skill: stageSkills[id] ?? '',
+      oneline: stageOneline[id] ?? '',
+      index: i + 1,
+    })),
     raw,
   };
   return cached;
@@ -135,4 +154,26 @@ export function stateDir(schema, kind, state) {
 /** Where a flat (non-state-machine) record lives. */
 export function flatDir(schema, kind) {
   return join(WORK, schema.entities[kind].dir);
+}
+
+/*
+ * CLI, for the one consumer that is not JavaScript: the site generators are
+ * Python, and asking them to parse YAML would give this repo a second parser for
+ * a file whose first parser already had a silent bug (it dropped hyphenated state
+ * names, which made a ticket unable to reach `done`).
+ *
+ *   node scripts/schema.mjs stages --json
+ */
+const isMain = process.argv[1] !== undefined
+  && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMain) {
+  const [cmd, ...flags] = process.argv.slice(2);
+  if (cmd === 'stages' && flags.includes('--json')) {
+    const { stages } = await loadSchema();
+    process.stdout.write(JSON.stringify(stages));
+  } else {
+    console.error('usage: node scripts/schema.mjs stages --json');
+    process.exitCode = 1;
+  }
 }

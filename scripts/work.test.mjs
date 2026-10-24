@@ -326,3 +326,32 @@ test('check: an artifact with no delete_when fails — the rule that had gone de
     await unlink(probe).catch(() => {});
   }
 });
+
+test('live schema: the stage order is one list and every view of it agrees', async () => {
+  const s = await loadSchema();
+  const sorted = (a) => a.slice().sort();
+  const order = s.stageOrder;
+
+  assert.ok(order.length >= 7, `expected the seven stages, got ${order.length}`);
+  // Four structures keyed by stage. If one gains a stage and another does not,
+  // that stage silently has no label, no skill, or no register.
+  assert.deepEqual(sorted(Object.keys(s.stageLabels)), sorted(order), 'stage_labels disagrees with stage_order');
+  assert.deepEqual(sorted(Object.keys(s.stageSkills)), sorted(order), 'stage_skills disagrees with stage_order');
+  assert.deepEqual(sorted(Object.keys(s.stageOneline)), sorted(order), 'stage_oneline disagrees with stage_order');
+  assert.deepEqual(sorted(Object.keys(s.stageEntities)), sorted(order), 'stage_entities disagrees with stage_order');
+
+  // Index is derived from position and nowhere else. That is the whole point:
+  // a written-down number is what went stale.
+  assert.deepEqual(s.stages.map((x) => x.index), order.map((_, i) => i + 1));
+});
+
+test('live schema: every stage names a skill that exists on disk', async () => {
+  const s = await loadSchema();
+  const { readdir } = await import('node:fs/promises');
+  const dirs = await readdir(join(WORK, '..', '.claude/skills'));
+  for (const st of s.stages) {
+    assert.ok(dirs.includes(st.skill), `stage "${st.id}" names ${st.skill}, which is not a skill directory`);
+    assert.notEqual(st.label, '', `stage "${st.id}" has no label`);
+    assert.notEqual(st.oneline, '', `stage "${st.id}" has no one-line description`);
+  }
+});

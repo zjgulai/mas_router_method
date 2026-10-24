@@ -84,6 +84,40 @@ append_only:
   - evidence
   - receipts
 
+# 阶段顺序的唯一来源。站点、skill 校验、stage_entities 都从这里读。
+#
+# 编号不写在这里。编号是「位置」，由构建时按下标算出来；写下来就会过时——
+# 这个仓库正是因为把阶段编号抄在四处，插入设计阶段后其中三处没跟上，
+# 于是 `anb` 里出现了「Stage 3 是唯一的门，不要做 stage 4」这种反向指令。
+stage_order: [need, design, build, verify, ship, operate, iterate]
+
+stage_labels:
+  need: 需求
+  design: 设计
+  build: 开发
+  verify: 验收
+  ship: 交付
+  operate: 运营
+  iterate: 迭代
+
+stage_oneline:
+  need: 把一句话想法变成可验收的意图
+  design: 定契约、边界、数据与决策记录
+  build: 一条真实输入走通，且不是假的
+  verify: 什么算好，而且检查必须能失败
+  ship: 别人能打开、能用，不需要你在旁边
+  operate: 看得出它有没有被用、有没有变好
+  iterate: 只留下真的用过的，改掉真的错的
+
+stage_skills:
+  need: anb-idea
+  design: anb-design
+  build: anb-runnable
+  verify: anb-judgeable
+  ship: anb-shipable
+  operate: anb-observable
+  iterate: anb-reusable
+
 # 阶段到实体的映射。网站的每个阶段页会引用这一段。
 stage_entities:
   need: [requirement]
