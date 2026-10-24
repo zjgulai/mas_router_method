@@ -84,25 +84,25 @@
 </head>
 <body>
 <header class="top"><div class="shell">
-  <a class="home" href="/mas_router_method/">ANB</a>
+  <a class="home" href="/mas_router_method/site/">ANB</a>
   <nav>
-      <a href="/mas_router_method/">总览</a>
-      <a href="/mas_router_method/01-need.html">需求</a>
-      <a href="/mas_router_method/02-design.html">设计</a>
-      <a href="/mas_router_method/03-build.html">开发</a>
-      <a href="/mas_router_method/04-verify.html" class="on">验收</a>
-      <a href="/mas_router_method/05-ship.html">交付</a>
-      <a href="/mas_router_method/06-operate.html">运营</a>
-      <a href="/mas_router_method/07-iterate.html">迭代</a>
-      <a href="/mas_router_method/manage.html">管理</a>
-      <a href="/mas_router_method/branches.html">分支</a>
-      <a href="/mas_router_method/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/prompts.html">提示词</a>
-      <a href="/mas_router_method/docs.html">原始文档</a>
+      <a href="/mas_router_method/site/">总览</a>
+      <a href="/mas_router_method/site/01-need.html">需求</a>
+      <a href="/mas_router_method/site/02-design.html">设计</a>
+      <a href="/mas_router_method/site/03-build.html">开发</a>
+      <a href="/mas_router_method/site/04-verify.html" class="on">验收</a>
+      <a href="/mas_router_method/site/05-ship.html">交付</a>
+      <a href="/mas_router_method/site/06-operate.html">运营</a>
+      <a href="/mas_router_method/site/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="/mas_router_method/site/branches.html">分支</a>
+      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/site/prompts.html">提示词</a>
+      <a href="/mas_router_method/site/docs.html">原始文档</a>
   </nav>
 </div></header>
 <main class="shell">
-  <div class="crumb"><a href="/mas_router_method/">总览</a> / 验收</div>
+  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 验收</div>
   <h1><span class="num">04</span>验收</h1>
 <p class="lede">定下「什么算好」，并且让这个标准能自动跑。而且——必须亲眼看到它失败过一次。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　ANB 阶段 3 覆盖这一步，而且它是整条链路里唯一的硬门。这里不过，不许往下走。<br><br><b>为什么这一步重要：</b>没有这一步，后面每一次改动都是无法测量的。产品会安静地变差，而所有人都以为在变好。</div>
@@ -118,17 +118,17 @@
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
 <table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>你亲眼看到过一条检查变红，并能说出是哪条抓到的</td><td>不是"应该有"，是"我看到了"</td></tr><tr><td>被跳过的检查数为零，或者整体结论是"不完整"</td><td>"跳过"绝不能算通过</td></tr><tr><td>成功 + 各种失败原因 = 总数</td><td>拆开加一遍，两分钟</td></tr></tbody></table>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/skills.html#anb-judgeable"><code>anb-judgeable</code></a> — 定什么算好，且检查必须能失败。唯一硬门。</li><li><a href="/mas_router_method/skills.html#anb-check-break"><code>anb-check-break</code></a> — 故意弄坏，看检查会不会红。</li><li><a href="/mas_router_method/skills.html#anb-check-offline"><code>anb-check-offline</code></a> — 断网/密钥错，必须是"无法判断"而非"通过"。</li><li><a href="/mas_router_method/skills.html#anb-check-readback"><code>anb-check-readback</code></a> — 逐条念结果，含跳过了几条。</li><li><a href="/mas_router_method/skills.html#anb-check-reconcile"><code>anb-check-reconcile</code></a> — 把总数拆开加一遍。</li><li><a href="/mas_router_method/skills.html#anb-check-output"><code>anb-check-output</code></a> — 看三个真实输出，判断结果对不对。</li><li><a href="/mas_router_method/skills.html#verification-before-completion"><code>verification-before-completion</code></a> — 证据先于声明：跑命令、读输出、再下结论。</li><li><a href="/mas_router_method/skills.html#llm-evaluation"><code>llm-evaluation</code></a> — LLM 评测集设计、judge 偏差控制、回归门。</li><li><a href="/mas_router_method/skills.html#test-suite-health"><code>test-suite-health</code></a> — 测试越写越多越慢越脆时体检。</li><li><a href="/mas_router_method/skills.html#code-review"><code>code-review</code></a> — Standards 与 Spec 两条轴分开报告。</li><li><a href="/mas_router_method/skills.html#security-review"><code>security-review</code></a> — 高置信度漏洞，含 prompt injection 与租户泄漏。</li><li><a href="/mas_router_method/skills.html#diagnosing-bugs"><code>diagnosing-bugs</code></a> — 先建会变红的回路，再谈假设。</li></ul>
+<ul><li><a href="/mas_router_method/site/skills.html#anb-judgeable"><code>anb-judgeable</code></a> — 定什么算好，且检查必须能失败。唯一硬门。</li><li><a href="/mas_router_method/site/skills.html#anb-check-break"><code>anb-check-break</code></a> — 故意弄坏，看检查会不会红。</li><li><a href="/mas_router_method/site/skills.html#anb-check-offline"><code>anb-check-offline</code></a> — 断网/密钥错，必须是"无法判断"而非"通过"。</li><li><a href="/mas_router_method/site/skills.html#anb-check-readback"><code>anb-check-readback</code></a> — 逐条念结果，含跳过了几条。</li><li><a href="/mas_router_method/site/skills.html#anb-check-reconcile"><code>anb-check-reconcile</code></a> — 把总数拆开加一遍。</li><li><a href="/mas_router_method/site/skills.html#anb-check-output"><code>anb-check-output</code></a> — 看三个真实输出，判断结果对不对。</li><li><a href="/mas_router_method/site/skills.html#verification-before-completion"><code>verification-before-completion</code></a> — 证据先于声明：跑命令、读输出、再下结论。</li><li><a href="/mas_router_method/site/skills.html#llm-evaluation"><code>llm-evaluation</code></a> — LLM 评测集设计、judge 偏差控制、回归门。</li><li><a href="/mas_router_method/site/skills.html#test-suite-health"><code>test-suite-health</code></a> — 测试越写越多越慢越脆时体检。</li><li><a href="/mas_router_method/site/skills.html#code-review"><code>code-review</code></a> — Standards 与 Spec 两条轴分开报告。</li><li><a href="/mas_router_method/site/skills.html#security-review"><code>security-review</code></a> — 高置信度漏洞，含 prompt injection 与租户泄漏。</li><li><a href="/mas_router_method/site/skills.html#diagnosing-bugs"><code>diagnosing-bugs</code></a> — 先建会变红的回路，再谈假设。</li></ul>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/docs.html#failure-atlas.html">失败图鉴：全部六类假信号都在这道门上现形</a></li><li><a href="/mas_router_method/docs.html#atlas-test-report.html">实测报告：七个问句漏了哪一类</a></li><li><a href="/mas_router_method/docs.html#anb2-report.html">实测报告：三次「通过但理由错」</a></li></ul>
+<ul><li><a href="/mas_router_method/site/docs.html#failure-atlas.html">失败图鉴：全部六类假信号都在这道门上现形</a></li><li><a href="/mas_router_method/site/docs.html#atlas-test-report.html">实测报告：七个问句漏了哪一类</a></li><li><a href="/mas_router_method/site/docs.html#anb2-report.html">实测报告：三次「通过但理由错」</a></li></ul>
   <div class="nextprev">
-<a href="/mas_router_method/03-build.html"><span class="lbl">上一步</span>开发</a>
-<a href="/mas_router_method/05-ship.html" style="text-align:right"><span class="lbl">下一步</span>交付</a>
+<a href="/mas_router_method/site/03-build.html"><span class="lbl">上一步</span>开发</a>
+<a href="/mas_router_method/site/05-ship.html" style="text-align:right"><span class="lbl">下一步</span>交付</a>
 </div>
 </main>
 <div class="shell"><footer>
   Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/docs.html">原始文档</a>。
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
 </footer></div>
 </body>
 </html>

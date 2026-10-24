@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>运营 · Agent Native Builder</title>
+<title>交付 · Agent Native Builder</title>
 <style>
   :root{
     color-scheme:light;
@@ -84,50 +84,50 @@
 </head>
 <body>
 <header class="top"><div class="shell">
-  <a class="home" href="/mas_router_method/">ANB</a>
+  <a class="home" href="/mas_router_method/site/">ANB</a>
   <nav>
-      <a href="/mas_router_method/">总览</a>
-      <a href="/mas_router_method/01-need.html">需求</a>
-      <a href="/mas_router_method/02-design.html">设计</a>
-      <a href="/mas_router_method/03-build.html">开发</a>
-      <a href="/mas_router_method/04-verify.html">验收</a>
-      <a href="/mas_router_method/05-ship.html">交付</a>
-      <a href="/mas_router_method/06-operate.html" class="on">运营</a>
-      <a href="/mas_router_method/07-iterate.html">迭代</a>
-      <a href="/mas_router_method/manage.html">管理</a>
-      <a href="/mas_router_method/branches.html">分支</a>
-      <a href="/mas_router_method/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/prompts.html">提示词</a>
-      <a href="/mas_router_method/docs.html">原始文档</a>
+      <a href="/mas_router_method/site/">总览</a>
+      <a href="/mas_router_method/site/01-need.html">需求</a>
+      <a href="/mas_router_method/site/02-design.html">设计</a>
+      <a href="/mas_router_method/site/03-build.html">开发</a>
+      <a href="/mas_router_method/site/04-verify.html">验收</a>
+      <a href="/mas_router_method/site/05-ship.html" class="on">交付</a>
+      <a href="/mas_router_method/site/06-operate.html">运营</a>
+      <a href="/mas_router_method/site/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="/mas_router_method/site/branches.html">分支</a>
+      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/site/prompts.html">提示词</a>
+      <a href="/mas_router_method/site/docs.html">原始文档</a>
   </nav>
 </div></header>
 <main class="shell">
-  <div class="crumb"><a href="/mas_router_method/">总览</a> / 运营</div>
-  <h1><span class="num">06</span>运营</h1>
-<p class="lede">看得出它有没有被用、有没有变好、钱花在哪、出事时能不能查。</p>
-<div class="note warn"><span class="tag t-branch">半个覆盖</span>　ANB 阶段 5 只覆盖了技术侧的观测（跑几次、花多少、为什么失败）。产品侧——有没有人用、用了之后有没有变好——这套方法答不了。<br><br><b>为什么这一步重要：</b>没有这一步，你无法回答"这个产品到底成不成立"。而技术上的"全部正常"和产品上的"没人用"可以同时成立。</div>
+  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 交付</div>
+  <h1><span class="num">05</span>交付</h1>
+<p class="lede">别人拿到一个地址就能用，不需要你在旁边。</p>
+<div class="note"><span class="tag t-must">方法论已覆盖</span>　ANB 阶段 4 覆盖这一步，但它有一个我做不到的验收动作：换一台设备、让另一个人试。<br><br><b>为什么这一步重要：</b>这是你第一次从使用者的位置看它。前面每一步你都在里面，所有东西都是配好的。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
-<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你不知道它跑了多少次、失败多少次</td><td><a href="#b-blind">b-blind</a></td><td>先补三个数字，再谈别的。没有观测就加功能，等于在黑暗里挪。</td></tr><tr><td>有记录，但总数和分项对不上</td><td><a href="#b-reconcile">b-reconcile</a></td><td>记录有洞。每一条其它结论都建立在这上面。</td></tr><tr><td>数字正常，但不知道有没有人真的在用</td><td><a href="#b-nouser">b-nouser</a></td><td>这是产品侧观测，需要埋点而不是日志。</td></tr><tr><td>能回答"谁在用、用了多少次、哪里失败"</td><td><a href="#b-next">b-next</a></td><td>进入迭代。</td></tr></tbody></table>
-<div class="card" id="b-blind"><h3>不知道它跑了多少次</h3><p>你缺三个数字：跑了多少次、失败多少次、为什么失败。<br><br><b>先有这三个，再谈别的。</b>没有观测就加功能，等于在黑暗里往前挪——你会一直走到撞墙才知道方向错了。</p></div>
-<div class="card" id="b-reconcile"><h3>总数和分项对不上</h3><p>这说明记录有洞：有请求开了头没结尾，或者被算了两次。<br><br><b>一个更隐蔽的版本</b>：你去看仪表盘的那次请求，自己也被计入了仪表盘。于是每看一次，数字就涨一次，而且只涨不跌。<br><br><b>动作</b>：把总数拆开加一遍。然后什么都不做，刷新五次，看数字会不会自己动。</p></div>
-<div class="card" id="b-nouser"><h3>不知道有没有人真的在用</h3><p>技术观测答不了这个。日志能告诉你"程序跑了"，不能告诉你"有人需要它"。<br><br><b>这是这套方法的边界</b>：它能让你不骗自己，不能让你不骗市场。要做产品侧观测，得埋点——谁在用、用了几次、在哪一步放弃。</p></div>
+<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="#b-local">b-local</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="#b-wall">b-wall</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="#b-nobody">b-nobody</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="#b-next">b-next</a></td><td>进入运营。</td></tr></tbody></table>
+<div class="card" id="b-local"><h3>只有你能打开</h3><p>本机地址、localhost、只在你的机器上有效。<br><br><b>这不是交付。</b>有四件事在你这里是配好的，在别人那里全是缺的：密钥、数据、权限、地址。它们不会在开发时报错，因为开发时它们本来就没被用到。</p></div>
+<div class="card" id="b-wall"><h3>别人一进来就撞墙</h3><p>最常见的四种：API 配额耗尽、权限不足、依赖没装、域名/证书问题。<br><br><b>怎么提前发现</b>：算一遍配额。如果一次使用消耗 N 次配额，而你只有 M 次，那第 M/N 个用户就会撞墙。这个算术在写完代码时就能做。</p></div>
+<div class="card" id="b-nobody"><h3>没人告诉你哪不好</h3><p>你需要一个人，在旁边看着他用，不说话。<br><br><b>看三件事</b>：他第一次点哪里、第一次停顿超过三秒在哪、他问了你什么。<b>每一个问题都是一个缺陷</b>，不是文档缺口。</p></div>
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
-<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>做三次，历史里有三条</td><td>做 N 次数 N 条</td></tr><tr><td>故意弄坏一次，能在记录里找到它和原因</td><td>找不到就是记录有洞</td></tr><tr><td>知道花了多少</td><td>这个产品花的是 API 配额，不是 token——两个都要能看清</td></tr></tbody></table>
+<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>用手机打开这个地址</td><td>打得开才算交付</td></tr><tr><td>另一个人在没有解释的情况下用了一次</td><td>他问的每一个问题都是一个缺陷，不是文档缺口</td></tr><tr><td>所有密钥来自环境，不在任何文件里</td><td>全仓搜一次</td></tr></tbody></table>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/skills.html#anb-observable"><code>anb-observable</code></a> — 三个数字：跑几次、花多少、为什么失败。</li><li><a href="/mas_router_method/skills.html#observability-and-instrumentation"><code>observability-and-instrumentation</code></a> — 从 on-call 问题倒推日志、指标、追踪、告警。</li><li><a href="/mas_router_method/skills.html#instrument-product-analytics"><code>instrument-product-analytics</code></a> — 事件表、漏斗、留存、身份策略。</li><li><a href="/mas_router_method/skills.html#artifact-registry"><code>artifact-registry</code></a> — 每个有持续成本的东西登记 owner 与过期。</li><li><a href="/mas_router_method/skills.html#tech-debt"><code>tech-debt</code></a> — 打分排序的债务登记表。</li><li><a href="/mas_router_method/skills.html#deprecation-and-migration"><code>deprecation-and-migration</code></a> — 弃用策略与 expand/contract 迁移。</li><li><a href="/mas_router_method/skills.html#repo-gc"><code>repo-gc</code></a> — E1–E4 分级的删除计划。</li><li><a href="/mas_router_method/skills.html#ponytail-audit"><code>ponytail-audit</code></a> — 全仓审计：什么可以删。</li></ul>
+<ul><li><a href="/mas_router_method/site/skills.html#anb-shipable"><code>anb-shipable</code></a> — 别人能打开、能用，不需要你在旁边。</li><li><a href="/mas_router_method/site/skills.html#anb-check-otherdevice"><code>anb-check-otherdevice</code></a> — 换一台设备打开，让另一个人试。</li><li><a href="/mas_router_method/site/skills.html#pr"><code>pr</code></a> — PR 正文：最小视图、前后证据、合并风险。</li><li><a href="/mas_router_method/site/skills.html#deploy-checklist"><code>deploy-checklist</code></a> — 发布前清单与回滚触发条件。</li><li><a href="/mas_router_method/site/skills.html#deployment-patterns"><code>deployment-patterns</code></a> — 滚动/蓝绿/金丝雀、容器化、CI/CD。</li><li><a href="/mas_router_method/site/skills.html#milestone-report"><code>milestone-report</code></a> — 一页 HTML 里程碑报告，结论先行。</li></ul>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/docs.html#anb2-full.html">第二次实测：观测手段污染了观测结果</a></li></ul>
+<ul><li><a href="/mas_router_method/site/docs.html#decision-tree.html">决策树：怎么判断自己卡在交付还是别的地方</a></li></ul>
   <div class="nextprev">
-<a href="/mas_router_method/05-ship.html"><span class="lbl">上一步</span>交付</a>
-<a href="/mas_router_method/07-iterate.html" style="text-align:right"><span class="lbl">下一步</span>迭代</a>
+<a href="/mas_router_method/site/04-verify.html"><span class="lbl">上一步</span>验收</a>
+<a href="/mas_router_method/site/06-operate.html" style="text-align:right"><span class="lbl">下一步</span>运营</a>
 </div>
 </main>
 <div class="shell"><footer>
   Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/docs.html">原始文档</a>。
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
 </footer></div>
 </body>
 </html>

@@ -51,16 +51,22 @@
 
 **ADR 为什么不在 `work/`**：它没有状态机。接受之后就是一份历史记录，说"这个 ADR 现在是 done"没有意义。
 
-### `site/` — 成品
+### `docs/site/` — 成品（受 Pages 限制）
 
-| 目录 | 放什么 | 说明 |
+| 路径 | 放什么 | 说明 |
 |---|---|---|
-| `site/` | 静态站点，Pages 从这里发布 | 由 `site-build/` 的脚本生成，不手改 |
-| `site/*.html` | 20 个站点页 | 生成物 |
-| `site/.nojekyll` | 阻止 Jekyll 处理 | 必需 |
+| `docs/index.html` | 入口，跳转到 `site/` | Pages 访问 `/` 时找它 |
+| `docs/site/*.html` | 21 个站点页 | 生成物，不手改 |
+| `docs/site/.nojekyll` | 阻止 Jekyll 处理 | 必需 |
 
-**站点为什么独立于 `docs/`**：它们性质不同。`docs/` 是给 agent 和未来的自己读的规格，`site/` 是给访客看的成品。
-混在一起会导致改文档时意外影响站点。
+**为什么站点在 `docs/` 里面，而不是平级的 `site/`**：GitHub Pages 只能从仓库根或 `/docs` 发布，
+不能指定子目录。放在 `docs/site/` 是唯一能同时满足「Pages 能发布」和「站点与规格分开」的布局。
+
+这是一个**外部约束造成的例外**，不是设计偏好。`docs/adr/`、`docs/evals/`、`docs/product/`
+是给 agent 读的规格；`docs/site/` 是给访客看的成品。它们在同一个父目录下，但各占一个子目录，不混。
+
+**如果将来有一天能改 Pages 的发布目录**（比如换用 Actions 部署），把 `docs/site/` 移回平级的
+`site/` 是更好的结构。这件事记在这里，免得下一个人以为当前布局是首选。
 
 ### 代码与工具
 

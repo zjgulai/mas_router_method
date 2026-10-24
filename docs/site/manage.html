@@ -84,25 +84,25 @@
 </head>
 <body>
 <header class="top"><div class="shell">
-  <a class="home" href="/mas_router_method/">ANB</a>
+  <a class="home" href="/mas_router_method/site/">ANB</a>
   <nav>
-      <a href="/mas_router_method/">总览</a>
-      <a href="/mas_router_method/01-need.html">需求</a>
-      <a href="/mas_router_method/02-design.html">设计</a>
-      <a href="/mas_router_method/03-build.html">开发</a>
-      <a href="/mas_router_method/04-verify.html">验收</a>
-      <a href="/mas_router_method/05-ship.html">交付</a>
-      <a href="/mas_router_method/06-operate.html">运营</a>
-      <a href="/mas_router_method/07-iterate.html">迭代</a>
-      <a href="/mas_router_method/manage.html" class="on">管理</a>
-      <a href="/mas_router_method/branches.html">分支</a>
-      <a href="/mas_router_method/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/prompts.html">提示词</a>
-      <a href="/mas_router_method/docs.html">原始文档</a>
+      <a href="/mas_router_method/site/">总览</a>
+      <a href="/mas_router_method/site/01-need.html">需求</a>
+      <a href="/mas_router_method/site/02-design.html">设计</a>
+      <a href="/mas_router_method/site/03-build.html">开发</a>
+      <a href="/mas_router_method/site/04-verify.html">验收</a>
+      <a href="/mas_router_method/site/05-ship.html">交付</a>
+      <a href="/mas_router_method/site/06-operate.html">运营</a>
+      <a href="/mas_router_method/site/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/site/manage.html" class="on">管理</a>
+      <a href="/mas_router_method/site/branches.html">分支</a>
+      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/site/prompts.html">提示词</a>
+      <a href="/mas_router_method/site/docs.html">原始文档</a>
   </nav>
 </div></header>
 <main class="shell">
-  <div class="crumb"><a href="/mas_router_method/">总览</a> / 管理</div>
+  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 管理</div>
   <h1>管理 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">横跨七阶段</span></h1>
 <p class="lede">管理不是第八个阶段，是<b>七阶段的地基</b>。票据在需求时开，状态在开发时流转，证据在验收时落地，事故可能发生在任何一刻。把它抽成"第八步"，前七步就都在没有记录的情况下跑完了。</p>
 <div class="note warn"><b>为什么必须有这个。</b>
@@ -141,11 +141,11 @@ node scripts/layout.mjs        # 文件是否在 LAYOUT.md 说的位置</pre>
       二、schema 解析器的正则只匹配 <code>[A-Za-z0-9_]</code>，带连字符的 <code>in-progress</code> 和 <code>awaiting-verification</code> 被丢掉——票永远到不了 done。<br>
       三、<code>check</code> 统计时漏掉了 append-only 寄存器——五张票加三份证据，它报"5 条记录"。<br><br>
       <b>三次都没有抛错，三次都给出了自信的错误输出。</b>每一个都有测试锁住，而测试是通过"临时把 bug 注回去、看它会不会红"来验证的。</div>
-  <div class="nextprev"><a href="/mas_router_method/07-iterate.html"><span class="lbl">上一页</span>迭代</a><a href="/mas_router_method/skills.html" style="text-align:right"><span class="lbl">下一页</span>Skill 全表</a></div>
+  <div class="nextprev"><a href="/mas_router_method/site/07-iterate.html"><span class="lbl">上一页</span>迭代</a><a href="/mas_router_method/site/skills.html" style="text-align:right"><span class="lbl">下一页</span>Skill 全表</a></div>
 </main>
 <div class="shell"><footer>
   Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/docs.html">原始文档</a>。
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
 </footer></div>
 </body>
 </html>

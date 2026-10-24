@@ -84,25 +84,25 @@
 </head>
 <body>
 <header class="top"><div class="shell">
-  <a class="home" href="/mas_router_method/">ANB</a>
+  <a class="home" href="/mas_router_method/site/">ANB</a>
   <nav>
-      <a href="/mas_router_method/">总览</a>
-      <a href="/mas_router_method/01-need.html">需求</a>
-      <a href="/mas_router_method/02-design.html" class="on">设计</a>
-      <a href="/mas_router_method/03-build.html">开发</a>
-      <a href="/mas_router_method/04-verify.html">验收</a>
-      <a href="/mas_router_method/05-ship.html">交付</a>
-      <a href="/mas_router_method/06-operate.html">运营</a>
-      <a href="/mas_router_method/07-iterate.html">迭代</a>
-      <a href="/mas_router_method/manage.html">管理</a>
-      <a href="/mas_router_method/branches.html">分支</a>
-      <a href="/mas_router_method/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/prompts.html">提示词</a>
-      <a href="/mas_router_method/docs.html">原始文档</a>
+      <a href="/mas_router_method/site/">总览</a>
+      <a href="/mas_router_method/site/01-need.html">需求</a>
+      <a href="/mas_router_method/site/02-design.html" class="on">设计</a>
+      <a href="/mas_router_method/site/03-build.html">开发</a>
+      <a href="/mas_router_method/site/04-verify.html">验收</a>
+      <a href="/mas_router_method/site/05-ship.html">交付</a>
+      <a href="/mas_router_method/site/06-operate.html">运营</a>
+      <a href="/mas_router_method/site/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="/mas_router_method/site/branches.html">分支</a>
+      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/site/prompts.html">提示词</a>
+      <a href="/mas_router_method/site/docs.html">原始文档</a>
   </nav>
 </div></header>
 <main class="shell">
-  <div class="crumb"><a href="/mas_router_method/">总览</a> / 设计</div>
+  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 设计</div>
   <h1><span class="num">02</span>设计</h1>
 <p class="lede">定下那些「以后很难改」的东西：接口契约、数据形状、模块边界、权限模型，以及为什么这样选。</p>
 <div class="note warn"><span class="tag t-gap">方法论未覆盖</span>　这一步在 ANB 里是空的：ANB 从「想法」直接跳到「能跑」。这是它的一个真实缺口。<br><br><b>为什么这一步重要：</b>设计阶段的错误不会立刻显现，它会以"后面每改一次都很痛"的形式慢慢出现。ADR 存在的意义就是让三个月后的你能看懂当时的取舍。</div>
@@ -117,17 +117,17 @@
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
 <table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>一个没参与讨论的工程师能只读这些文件就开始实现</td><td>读 ADR + schema + 接口定义，不需要问人</td></tr><tr><td>每个难回退的选择都有一条记录</td><td>包括"我们决定不做 X"这种反向决策</td></tr><tr><td>术语表里每个词只有一个意思</td><td>同一个词在两个地方定义 = 迟早对不上</td></tr></tbody></table>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/skills.html#architecture-decision-records"><code>architecture-decision-records</code></a> — 难回退的选择写成 ADR，含放弃的选项和代价。</li><li><a href="/mas_router_method/skills.html#domain-modeling"><code>domain-modeling</code></a> — 术语定死，写进 GLOSSARY。</li><li><a href="/mas_router_method/skills.html#codebase-design"><code>codebase-design</code></a> — 模块边界、接口深浅、seam 位置。</li><li><a href="/mas_router_method/skills.html#spec-driven-development"><code>spec-driven-development</code></a> — 把共识固化成可验收的规格。</li><li><a href="/mas_router_method/skills.html#to-spec"><code>to-spec</code></a> — 对话已透时直接固化，不再采访。</li><li><a href="/mas_router_method/skills.html#writing-plans"><code>writing-plans</code></a> — 把 spec 变成别人能执行的步骤。</li><li><a href="/mas_router_method/skills.html#to-tickets"><code>to-tickets</code></a> — 拆成 tracer-bullet 纵向切片，标阻塞关系。</li><li><a href="/mas_router_method/skills.html#api-and-interface-design"><code>api-and-interface-design</code></a> — 契约先行、错误语义、分页、幂等。</li><li><a href="/mas_router_method/skills.html#database-schema-designer"><code>database-schema-designer</code></a> — 表结构、约束、索引、可回滚迁移。</li><li><a href="/mas_router_method/skills.html#auth-implementation-patterns"><code>auth-implementation-patterns</code></a> — session/JWT/OAuth 选型、租户隔离。</li></ul>
+<ul><li><a href="/mas_router_method/site/skills.html#architecture-decision-records"><code>architecture-decision-records</code></a> — 难回退的选择写成 ADR，含放弃的选项和代价。</li><li><a href="/mas_router_method/site/skills.html#domain-modeling"><code>domain-modeling</code></a> — 术语定死，写进 GLOSSARY。</li><li><a href="/mas_router_method/site/skills.html#codebase-design"><code>codebase-design</code></a> — 模块边界、接口深浅、seam 位置。</li><li><a href="/mas_router_method/site/skills.html#spec-driven-development"><code>spec-driven-development</code></a> — 把共识固化成可验收的规格。</li><li><a href="/mas_router_method/site/skills.html#to-spec"><code>to-spec</code></a> — 对话已透时直接固化，不再采访。</li><li><a href="/mas_router_method/site/skills.html#writing-plans"><code>writing-plans</code></a> — 把 spec 变成别人能执行的步骤。</li><li><a href="/mas_router_method/site/skills.html#to-tickets"><code>to-tickets</code></a> — 拆成 tracer-bullet 纵向切片，标阻塞关系。</li><li><a href="/mas_router_method/site/skills.html#api-and-interface-design"><code>api-and-interface-design</code></a> — 契约先行、错误语义、分页、幂等。</li><li><a href="/mas_router_method/site/skills.html#database-schema-designer"><code>database-schema-designer</code></a> — 表结构、约束、索引、可回滚迁移。</li><li><a href="/mas_router_method/site/skills.html#auth-implementation-patterns"><code>auth-implementation-patterns</code></a> — session/JWT/OAuth 选型、租户隔离。</li></ul>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/docs.html#terms.html">术语表：每个词配「坏了会怎样」</a></li><li><a href="/mas_router_method/docs.html#capability-map.html">能力图谱 A 域：领域建模与契约</a></li></ul>
+<ul><li><a href="/mas_router_method/site/docs.html#terms.html">术语表：每个词配「坏了会怎样」</a></li><li><a href="/mas_router_method/site/docs.html#capability-map.html">能力图谱 A 域：领域建模与契约</a></li></ul>
   <div class="nextprev">
-<a href="/mas_router_method/01-need.html"><span class="lbl">上一步</span>需求</a>
-<a href="/mas_router_method/03-build.html" style="text-align:right"><span class="lbl">下一步</span>开发</a>
+<a href="/mas_router_method/site/01-need.html"><span class="lbl">上一步</span>需求</a>
+<a href="/mas_router_method/site/03-build.html" style="text-align:right"><span class="lbl">下一步</span>开发</a>
 </div>
 </main>
 <div class="shell"><footer>
   Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/docs.html">原始文档</a>。
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
 </footer></div>
 </body>
 </html>
