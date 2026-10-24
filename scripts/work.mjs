@@ -341,9 +341,18 @@ async function cmdCheck() {
   // 问题上：**产出到底长什么样**。四块里没有一块回答它。而这不是设计阶段独有的疏漏——
   // 需求阶段的产出模板缺的是同一个槽位（「它给你什么」）。所以在两个阶段里，
   // 「产出物」这个概念都没有位置。
+  // 六块，两块是实测加上的。
+  //
+  // 「产出形态」：前四块交给一个 agent 去实现最窄的路，它的猜测集中在「产出到底长什么样」，
+  // 而四块里没有一块回答它。
+  //
+  // 「应答规则」：原来的「拒绝清单」一块装了两样东西。实测十一行里只有一行是真正的拒绝，
+  // 其余十行是「这种情况该怎么答」——而按名字实现，会把「3 个月不能用、且不要给建议」
+  // 那一行做成升级。禁令是清单，应答规则是表格，形状不同。
   const DESIGN_BLOCKS = [
     { key: '流程形状', what: 'the shape of the flow' },
     { key: '拒绝清单', what: 'what it must refuse' },
+    { key: '应答规则', what: 'how each case is answered' },
     { key: '动作权限', what: 'what it may do without asking' },
     { key: '交接契约', what: 'what the model sees when it acts' },
     { key: '产出形态', what: 'what the person receives, in each outcome' },

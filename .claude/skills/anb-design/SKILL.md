@@ -105,11 +105,50 @@ The exit condition for this question: **each row can become a check.** If a row
 cannot be written as "given this input, that output must not appear", it is not a
 refusal yet.
 
+**Most of what they want to write here is not a refusal, and it belongs in the next
+question.** A refusal is a prohibition: something the product does not do. A row that says
+*how it answers* is a rule, not a refusal. Say so and move the row.
+
+In the first real run, ten of the eleven rows were answer instructions filed under a heading
+that said "what it must refuse". Implemented to the name, the row saying "a three-month-old
+cannot use this, and do not advise" would have become an escalation — when it explicitly
+says not to escalate. This question should end up short. If it has ten rows, look again.
+
 This is also the one place where the design and verify stages overlap on purpose.
 Design writes the list; verify turns it into checks. That is not duplication — it is the
 list being born with somewhere to go.
 
-## Question 3 — what it may do without asking
+## Question 3 — how is each case answered
+
+A different artifact from the last one, and the difference is the shape: question two is a
+list of prohibitions, this is a **table**, one row per case the product will actually meet.
+
+| 具体输入 | 该怎么答 | 升级档次 | 依据 |
+| --- | --- | --- | --- |
+| the buyer's words | what it does, in as many steps as it needs | 不升级 / 软升级 / 硬升级 | which policy clause |
+
+**升级档次 has three values, and one rule:** `不升级` produces the answer; `软升级` produces it
+and marks it for a person; `硬升级` does not produce it at all. Name them once, at the top of
+the record, and do not let a second word for the same state creep in — the first real run used
+five words for these three values, in a document that contained a section about not confusing
+two of them.
+
+**Separate the mechanism from the result.** Escalation is what happens to *this case*; the
+record's overall state is what the whole thing ends up as, and it is the heaviest case that
+decides it. A hard escalation on one case does **not** suppress the others — treating it that
+way is how a message asking for a refund *and* reporting a rash ends up with no reply to the
+refund, which is the part the person most needed.
+
+**The test for this table: can you write a real buyer message for every row?** A row you
+cannot instantiate is a value with columns drawn around it.
+
+**And one constraint no other question has: every row's 该怎么答 must be something the action
+permissions allow.** Check the table against question four, row by row. Three rounds of the
+first real run kept finding the same defect — a row demanding an action the permission table
+did not contain, with nothing to catch it, because the questions are answered separately and
+only the exit test ever compares them.
+
+## Question 4 — what it may do without asking
 
 Sort by **whether it can be undone**, never by how important it feels. Importance
 is a judgement they will get wrong; reversibility is a fact they can look up.
@@ -128,7 +167,7 @@ is not a limit.
 Then the sentence that goes in the prompt, in their words: *"Anything in the third
 tier stops and asks. Anything in the middle tier does it and tells me after."*
 
-## Question 4 — what the model sees when it acts
+## Question 5 — what the model sees when it acts
 
 For each thing the model can do, three lines:
 
@@ -148,7 +187,7 @@ that fails with an unreadable error teaches the model nothing; a tool that says
 Frame it for them: this text is not documentation, it is the model's only view of
 the world. Whatever is not written there does not exist for it.
 
-## Question 5 — what the person receives, in each outcome
+## Question 6 — what the person receives, in each outcome
 
 **This one was missing, and the design exit test found it.** Four blocks were handed to
 an agent with instructions to implement the narrowest path; its guesses clustered on one
@@ -174,14 +213,15 @@ decided, because everything downstream reads it.
 
 ## What this stage produces
 
-One file, five blocks, whether or not a block is used:
+One file, six blocks, whether or not a block is used:
 
 ```
 ## 一、流程形状      固定步骤 / 需要临场判断的步骤 / 判断点共几处
-## 二、拒绝清单      a concrete input → what it must do instead
-## 三、动作权限      每条动作标一档：可撤销 / 有额度 / 必须问人
-## 四、交接契约      每个工具三行：做什么 / 什么时候别用 / 失败返回什么
-## 五、产出形态      这条流程有几种结局，每种结局下人拿到手的是什么
+## 二、拒绝清单      only prohibitions. Short — if it has ten rows, look again
+## 三、应答规则      一张决策表：每个具体输入 → 该怎么答 / 升级档次 / 依据
+## 四、动作权限      每条动作标一档：可撤销 / 有额度 / 必须问人
+## 五、交接契约      每个工具三行：做什么 / 什么时候别用 / 失败返回什么
+## 六、产出形态      这条流程有几种结局，每种结局下人拿到手的是什么
 ```
 
 Plus two lines that cost nothing and save a rewrite:
@@ -262,12 +302,24 @@ immediately. Only the four-blocks-present requirement waits for `confirmed`.
 
 ## Exit test
 
-They hand the four blocks to an agent, with no other context, and ask it to
-implement the narrowest path. Then count the questions it had to ask.
+They hand the blocks to an agent — **one that can see nothing else**. If that cannot be
+arranged, the run is **partially verified**: write down what could not be excluded, and count
+the result as evidence about the material rather than about the design. The router already
+uses this rule when an exit test needs someone the person does not have; this is the same
+situation. In the first real run the agent had tools, read the repository, and reported that
+it had — which made the round's numbers mean something different from the next round's.
 
-Zero questions: the design is done. Each question is a hole — fill it, hand it
-back, count again. Two rounds is normal; more than three means a block is missing
-rather than underspecified.
+Then ask it for **two** things, and the second is the one that matters:
+
+1. **How many things did you have to guess?**
+2. **Which blocks contradict each other?** Name the pairs.
+
+**Both must be empty.** A design with zero guesses and one cross-block contradiction is not
+nearly done — it is a design whose parts do not fit, and everything downstream inherits the
+seam. Three rounds of the first real run gave 12/6, 8/9 and 7/7; every hard contradiction was
+cross-block, and a count alone would have shown the third round as progress.
+
+Two rounds is normal; more than three means the blocks are wrong, not underspecified.
 
 Then the second half, and it is the one that makes this stage worth anything:
 **every row in the refusal list can be written as a check that would go red.** A
@@ -277,5 +329,5 @@ at the verify stage.
 That promise has a receiving end now. The verify stage runs
 `node scripts/design.mjs refusals` and turns each row into a check; the build stage
 runs `node scripts/design.mjs constraints` before writing any code. Move the record
-to `confirmed` once all four blocks are answered — that is what makes it readable
-to them. A record left in `drafting` is invisible to both.
+to `confirmed` once every block is answered — that is what makes it readable to them.
+A record left in `drafting` is invisible to both.

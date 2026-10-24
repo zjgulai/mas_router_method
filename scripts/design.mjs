@@ -152,8 +152,22 @@ if (!isMain) {
     const text = await readFile(record.path, 'utf8');
 
     if (cmd === 'refusals') {
+      // 两块都读。实测之前它们是一块，而十一行里只有三行是禁令、八行是「该怎么答」。
+      // 验证阶段要把两者都变成检查，所以两者都要交出去。
+      const rules = section(text, '应答规则');
+      if (rules !== undefined) {
+        console.log(`${BOLD}${record.id}${RESET} ${DIM}应答规则 / how each case is answered${RESET}\n`);
+        const skipRules = skipReason(rules.body);
+        if (skipRules !== null) console.log(`${YELLOW}跳过：${skipRules}${RESET}`);
+        else {
+          const rows = rules.body.split('\n').map((l) => l.trim())
+            .filter((l) => l.startsWith('|')).slice(2); // 表头 + 分隔行
+          for (const row of rows) console.log(row);
+        }
+        console.log();
+      }
       const sec = section(text, '拒绝清单');
-      console.log(`${BOLD}${record.id}${RESET} ${DIM}拒绝清单 / what it must refuse${RESET}\n`);
+      console.log(`${BOLD}${record.id}${RESET} ${DIM}拒绝清单 / what it must refuse（只有禁令）${RESET}\n`);
       if (sec === undefined) {
         console.log(`${YELLOW}no 「拒绝清单」 section — this record does not say what it refuses${RESET}`);
       } else {
