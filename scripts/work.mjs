@@ -337,11 +337,16 @@ async function cmdCheck() {
   //    at the end of *any* line under `m`, so every block was truncated to the
   //    blank line after its heading and four correct records reported as empty.
   //    A checker that cries wolf gets switched off, so this splits instead.
+  // 第五块是实测加上的。把前四块交给一个 agent 去实现最窄的路，它的猜测集中在同一个
+  // 问题上：**产出到底长什么样**。四块里没有一块回答它。而这不是设计阶段独有的疏漏——
+  // 需求阶段的产出模板缺的是同一个槽位（「它给你什么」）。所以在两个阶段里，
+  // 「产出物」这个概念都没有位置。
   const DESIGN_BLOCKS = [
     { key: '流程形状', what: 'the shape of the flow' },
     { key: '拒绝清单', what: 'what it must refuse' },
     { key: '动作权限', what: 'what it may do without asking' },
     { key: '交接契约', what: 'what the model sees when it acts' },
+    { key: '产出形态', what: 'what the person receives, in each outcome' },
   ];
 
   // 解析器在 scripts/markdown.mjs —— design.mjs 也要用它，而且它第一版的 bug

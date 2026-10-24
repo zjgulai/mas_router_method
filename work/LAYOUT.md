@@ -49,6 +49,7 @@
 | `docs/agents/` | 给 agent 读的流程约定（票据格式、提交规范） | 任何阶段 | 少改 |
 | `docs/skills/` | skill 目录与来源说明 | 运营 | 随 skill 增减 |
 | `docs/plans/` | 实施计划：某一版的施工图 | 设计 | 写完不改；被取代时新开一份 |
+| `docs/policy/` | **产品的输入文档**：品牌政策、规则清单等 | 设计 | 少改；改要写清为什么 |
 | `docs/product/method-audit-*.md` | 方法自身的审计快照 | 迭代 | 写完不改；下次审计新开一份 |
 | `docs/from-zero.md` | 从零搭仓库的顺序 | 一次性 | 不改 |
 

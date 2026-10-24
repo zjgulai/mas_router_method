@@ -148,15 +148,40 @@ that fails with an unreadable error teaches the model nothing; a tool that says
 Frame it for them: this text is not documentation, it is the model's only view of
 the world. Whatever is not written there does not exist for it.
 
+## Question 5 — what the person receives, in each outcome
+
+**This one was missing, and the design exit test found it.** Four blocks were handed to
+an agent with instructions to implement the narrowest path; its guesses clustered on one
+question — what does the output actually look like. Not what the product does; what the
+person is holding when it stops.
+
+Write one line per way the flow can end. For most products that is three or four:
+
+- **It goes through** — what they get, and what makes it usable as-is.
+- **Something in it crossed a line** — what they get, and how the crossed part is marked.
+- **A piece has no basis** — what happens to that piece, and whether the rest survives.
+- **It refuses, or hands off** — what they get *instead*, and what a person needs in order
+  to take over. "It refuses" without an artifact is where products quietly become useless:
+  the work disappears and nobody can tell what happened.
+
+The test is blunt: point at any outcome and ask **"and what do I get?"** If the answer is
+"it just doesn't do it", that outcome produces nothing a person can act on.
+
+If this feels like it belongs to the build stage, note what actually happened: the first
+real run produced twelve separate guesses here, and half of them were about the shape of
+the output rather than the shape of the logic. The design stage is where that gets
+decided, because everything downstream reads it.
+
 ## What this stage produces
 
-One file, four blocks, whether or not a block is used:
+One file, five blocks, whether or not a block is used:
 
 ```
 ## 一、流程形状      固定步骤 / 需要临场判断的步骤 / 判断点共几处
 ## 二、拒绝清单      a concrete input → what it must do instead
 ## 三、动作权限      每条动作标一档：可撤销 / 有额度 / 必须问人
 ## 四、交接契约      每个工具三行：做什么 / 什么时候别用 / 失败返回什么
+## 五、产出形态      这条流程有几种结局，每种结局下人拿到手的是什么
 ```
 
 Plus two lines that cost nothing and save a rewrite:
