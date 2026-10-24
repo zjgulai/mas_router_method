@@ -28,14 +28,14 @@ def manage_page():
 
     b.append('<h2>八个寄存器</h2>')
     rows = [
-        ('<code>work/requirements/</code>', '需求：一句话承诺', 'drafting → confirmed → dropped', 'R-', '阶段 1'),
-        ('<code>work/designs/</code>', '设计记录：四问的答案', 'drafting → confirmed → superseded', 'D-', '阶段 2'),
-        ('<code>work/tickets/</code>', '执行票：跨会话的工作单元', 'open → in-progress → awaiting-verification → done', 'T-', '阶段 2–5'),
+        ('<code>work/requirements/</code>', '需求：一句话承诺', 'drafting → confirmed → dropped', 'R-', '需求'),
+        ('<code>work/designs/</code>', '设计记录：四问的答案', 'drafting → confirmed → superseded', 'D-', '设计'),
+        ('<code>work/tickets/</code>', '执行票：跨会话的工作单元', 'open → in-progress → awaiting-verification → done', 'T-', '开发–交付'),
         ('<code>work/incidents/</code>', '事故：计划外发生的事', 'open → contained → closed', 'INC-', '任何阶段'),
-        ('<code>work/artifacts/</code>', '有持续成本的东西', 'active → expired', 'ART-', '阶段 6'),
-        ('<code>work/evidence/</code>', '证据：命令 + 原始输出', '<b>无状态，只增不改</b>', 'E-', '阶段 4'),
-        ('<code>work/receipts/</code>', '回执：谁收到了什么', '<b>无状态，只增不改</b>', 'REC-', '阶段 5'),
-        ('<code>docs/adr/</code>', '决策记录', '<b>无状态机，永久保留</b>', 'ADR', '阶段 2'),
+        ('<code>work/artifacts/</code>', '有持续成本的东西', 'active → expired', 'ART-', '运营'),
+        ('<code>work/evidence/</code>', '证据：命令 + 原始输出', '<b>无状态，只增不改</b>', 'E-', '验收'),
+        ('<code>work/receipts/</code>', '回执：谁收到了什么', '<b>无状态，只增不改</b>', 'REC-', '交付'),
+        ('<code>docs/adr/</code>', '决策记录', '<b>无状态机，永久保留</b>', 'ADR', '设计'),
     ]
     b.append('<table><thead><tr><th style="width:24%">目录</th><th style="width:26%">放什么</th><th style="width:26%">流转</th><th style="width:8%">ID</th><th>谁写</th></tr></thead><tbody>'
              + ''.join(f'<tr><td>{a}</td><td>{c}</td><td>{d}</td><td>{e}</td><td>{f}</td></tr>' for a, c, d, e, f in rows)
@@ -48,7 +48,7 @@ def manage_page():
     b.append('''<div class="card"><h3>它校验什么，为什么是这四条</h3>
       <p><code>work check</code> 对每条设计记录查四件事——正好对应四问：</p>
       <table><thead><tr><th style="width:26%">块</th><th>不合格的写法</th><th>为什么这算不合格</th></tr></thead><tbody>
-      <tr><td>流程形状</td><td>空着</td><td>没写，说明没问过；固定步骤和判断点没分开，第三步就没法判断该不该用 agent</td></tr>
+      <tr><td>流程形状</td><td>空着</td><td>没写，说明没问过；固定步骤和判断点没分开，验收阶段就没法判断该不该用 agent</td></tr>
       <tr><td>拒绝清单</td><td>「要诚实」「不要有害」</td><td>写不出具体输入，验收时没法变成检查，会被安静删掉</td></tr>
       <tr><td>动作权限</td><td>整块空白</td><td>跳过可以，但要写「跳过：只读」；沉默和"想过但决定不问"在三个月后读起来一样</td></tr>
       <tr><td>交接契约</td><td>只写"它做什么"</td><td>等于授权模型在任何场景下用</td></tr>
@@ -91,7 +91,9 @@ def manage_page():
       三、<code>check</code> 统计时漏掉了 append-only 寄存器——五张票加三份证据，它报"5 条记录"。<br><br>
       <b>三次都没有抛错，三次都给出了自信的错误输出。</b>每一个都有测试锁住，而测试是通过"临时把 bug 注回去、看它会不会红"来验证的。</div>''')
 
-    pp = '<div class="nextprev"><a href="/mas_router_method/site/07-iterate.html"><span class="lbl">上一页</span>迭代</a><a href="/mas_router_method/site/skills.html" style="text-align:right"><span class="lbl">下一页</span>Skill 全表</a></div>'
+        # 指向最后一个阶段，但用它的 slug，不写死文件名——文件名会随阶段改名而变。
+    pp = (f'<div class="nextprev"><a href="/mas_router_method/site/{STAGES[-1][0]}.html">'
+          '<span class="lbl">上一个阶段</span>迭代</a></div>')
     return page('manage', '管理', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / 管理', pp)
 
 if __name__ == '__main__':

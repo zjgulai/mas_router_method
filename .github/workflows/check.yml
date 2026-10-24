@@ -52,8 +52,20 @@ jobs:
       - name: The site rebuilds from its generators
         run: node scripts/site/build.mjs && git diff --exit-code docs/site/
 
+      # Stage pages lost their numeric prefixes, and a stale `07-iterate.html`
+      # survived that rename and shipped. Three kinds of internal link fail
+      # independently; this checks all three rather than whoever remembers to.
+      - name: The site's internal links resolve
+        run: node scripts/site/links.mjs
+
       # Quoted so Node expands the glob itself. An explicit file list would make a
       # new test file easy to add and easy to never run — a silently skipped test
       # is the exact failure this repo keeps finding.
+      #
+      # Serial on purpose. Several of these tests corrupt a real file — a generated
+      # page, a claimed document — because that is the only way to prove the checker
+      # notices. They mutate one shared tree, so running them concurrently makes
+      # them fail for reasons unrelated to what they test. It already happened once:
+      # the site rebuild silently restored a page the facts test had just corrupted.
       - name: The tooling's own tests
-        run: node --test "scripts/**/*.test.mjs"
+        run: node --test --test-concurrency=1 "scripts/**/*.test.mjs"

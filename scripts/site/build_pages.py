@@ -9,10 +9,10 @@ N_ROWS = len(MAP)
 # ---------- 每个阶段的详细内容 ----------
 # 结构：goal / gap / branches[(条件, 去哪, 说明)] / verify[(动作, 通过标准)] / order(代价排序理由)
 DETAIL = {
-'01-need': {
+'need': {
  'goal': '把「我想做个 X」变成一句话：谁在什么情况下用、用完他能做什么以前做不到的事。',
  'gap': 'covered',
- 'gapnote': 'ANB 阶段 1 就是这一步，覆盖完整。',
+ 'gapnote': '这一步由 <code>anb-idea</code> 覆盖，完整。',
  'why': '这一步决定后面所有事。写错方向，后面每一步都在加固一个错误假设，而且越往后返工越贵。',
  'branches': [
    ('你说的是功能清单（"要有登录、能导出"）', '#b-func', '功能是解决方案，不是问题。跳过它会让你在验收时无从判断好坏。'),
@@ -28,7 +28,7 @@ DETAIL = {
  'skills': ['interview-me', 'anb-idea', 'grilling', 'grill-me', 'grill-with-docs', 'wayfinder', 'agent-delivery-router'],
  'docs': [('decision-tree.html', '决策树：三个问题定位到阶段'), ('failure-atlas.html', '失败图鉴：第五类「找不到≠不存在」在这里最常见')],
 },
-'02-design': {
+'design': {
  'goal': '把"以后改起来很痛"的四件事先定下来：流程里哪些步骤固定、哪些要临场判断；它必须拒绝什么；它能不打招呼就做什么；模型动手时看到什么。',
  'gap': 'covered',
  'gapnote': '这里曾经是空的：ANB 从"想法"直接跳到"能跑"。现在补上了四问方法论（<code>anb-design</code>），而且答案会落成 <code>work/designs/D-xxx</code>，可以被 <code>work check</code> 校验。',
@@ -50,10 +50,10 @@ DETAIL = {
  'skills': ['anb-design', 'architecture-decision-records', 'domain-modeling', 'codebase-design', 'spec-driven-development', 'to-spec', 'writing-plans', 'to-tickets', 'api-and-interface-design', 'database-schema-designer', 'auth-implementation-patterns'],
  'docs': [('terms.html', '术语表：每个词配「坏了会怎样」'), ('capability-map.html', '能力图谱 A 域：领域建模与契约')],
 },
-'03-build': {
+'build': {
  'goal': '一条真实输入从头走到尾，出一个真实结果。不做功能，只做一条最窄的路。',
  'gap': 'covered',
- 'gapnote': 'ANB 阶段 2 覆盖这一步，核心纪律是"不许有任何假数据"。',
+ 'gapnote': '这一步由 <code>anb-runnable</code> 覆盖，核心纪律是"不许有任何假数据"。',
  'why': '这是最容易假装成功的阶段：界面有、按钮有反应、看起来通了，但背后是样例数据。',
  'branches': [
    ('跑通了，但结果来自样例/固定数据', '#b-fake', '这是第一类假信号的温床。换一个你自己随手找的真实输入再试。'),
@@ -69,10 +69,10 @@ DETAIL = {
  'skills': ['anb-runnable', 'implement', 'implement-spec', 'tdd', 'ponytail', 'karpathy-guidelines', 'reuse-first', 'prototype', 'using-git-worktrees'],
  'docs': [('failure-atlas.html', '失败图鉴：第二类「测的不是你的产品」全部在这一步发生')],
 },
-'04-verify': {
+'verify': {
  'goal': '定下「什么算好」，并且让这个标准能自动跑。而且——必须亲眼看到它失败过一次。',
  'gap': 'covered',
- 'gapnote': 'ANB 阶段 3 覆盖这一步，而且它是整条链路里唯一的硬门。这里不过，不许往下走。',
+ 'gapnote': '这一步由 <code>anb-judgeable</code> 覆盖，它是整条链路里唯一的硬门。这里不过，不许往下走。',
  'why': '没有这一步，后面每一次改动都是无法测量的。产品会安静地变差，而所有人都以为在变好。',
  'branches': [
    ('还没有任何检查', '#b-none', '先写五到十条判断标准，再改产品。顺序反了，检查只会描述现状。'),
@@ -89,10 +89,10 @@ DETAIL = {
  'skills': ['anb-judgeable', 'anb-check-break', 'anb-check-offline', 'anb-check-readback', 'anb-check-reconcile', 'anb-check-output', 'verification-before-completion', 'llm-evaluation', 'test-suite-health', 'code-review', 'security-review', 'diagnosing-bugs'],
  'docs': [('failure-atlas.html', '失败图鉴：七种误判里有六种在这道门上现形'), ('atlas-test-report.html', '实测报告：七个问句漏了哪一类'), ('anb2-report.html', '实测报告：三次「通过但理由错」')],
 },
-'05-ship': {
+'ship': {
  'goal': '别人拿到一个地址就能用，不需要你在旁边。',
  'gap': 'covered',
- 'gapnote': 'ANB 阶段 4 覆盖这一步，但它有一个我做不到的验收动作：换一台设备、让另一个人试。',
+ 'gapnote': '这一步由 <code>anb-shipable</code> 覆盖，但它有一个我做不到的验收动作：换一台设备、让另一个人试。',
  'why': '这是你第一次从使用者的位置看它。前面每一步你都在里面，所有东西都是配好的。',
  'branches': [
    ('只有你能打开（本地地址）', '#b-local', '不是交付。密钥、数据、权限、域名四件事在你这里全配好了。'),
@@ -108,10 +108,10 @@ DETAIL = {
  'skills': ['anb-shipable', 'anb-check-otherdevice', 'pr', 'deploy-checklist', 'deployment-patterns', 'milestone-report'],
  'docs': [('decision-tree.html', '决策树：怎么判断自己卡在交付还是别的地方')],
 },
-'06-operate': {
+'operate': {
  'goal': '看得出它有没有被用、有没有变好、钱花在哪、出事时能不能查。',
  'gap': 'half',
- 'gapnote': 'ANB 阶段 5 只覆盖了技术侧的观测（跑几次、花多少、为什么失败）。产品侧——有没有人用、用了之后有没有变好——这套方法答不了。',
+ 'gapnote': '这一步只有 <code>anb-observable</code> 覆盖技术侧的观测（跑几次、花多少、为什么失败）。产品侧——有没有人用、用了之后有没有变好——这套方法答不了。',
  'why': '没有这一步，你无法回答"这个产品到底成不成立"。而技术上的"全部正常"和产品上的"没人用"可以同时成立。',
  'branches': [
    ('你不知道它跑了多少次、失败多少次', '#b-blind', '先补三个数字，再谈别的。没有观测就加功能，等于在黑暗里挪。'),
@@ -127,10 +127,10 @@ DETAIL = {
  'skills': ['anb-observable', 'observability-and-instrumentation', 'instrument-product-analytics', 'artifact-registry', 'tech-debt', 'deprecation-and-migration', 'repo-gc', 'ponytail-audit'],
  'docs': [('anb2-full.html', '第二次实测：观测手段污染了观测结果')],
 },
-'07-iterate': {
+'iterate': {
  'goal': '只留下真的用过的，改掉真的错的。下一个产品从模板起步，但不要背上一堆用不上的东西。',
  'gap': 'covered',
- 'gapnote': 'ANB 阶段 5+6 覆盖这一步，并且推翻了它自己的一条规则（"用过三次才抽"太严）。',
+ 'gapnote': '这一步由 <code>anb-reusable</code> 覆盖，并且推翻了它自己的一条规则（"用过三次才抽"太严）。',
  'why': '迭代不是加功能，是去掉不该留的。判断标准是"上个产品用过吗"，不是"这个可能有用"。',
  'branches': [
    ('你要加一个新功能', '#b-add', '先问：它解决的是观测到的哪个问题？答不出来就是猜。'),
@@ -157,8 +157,8 @@ BRANCH_BODY = {
  'b-tie': ('两个方案都合理时', '这是最容易犯错的位置：随手选一个，然后在实现时才发现不合适，于是用补丁掩盖，最后没人记得为什么是这样。<br><br><b>怎么改</b>：写 ADR，把两个方案各自"什么时候会赢"写清楚。如果实在分不出来，选更容易撤销的那个。'),
  'b-existing': ('改已有系统之前', '先理解现在的形状。不是读代码，是问：这个东西现在怎么工作、谁在用、哪部分改动会伤到人。<br><br>不做这一步的典型后果：改了一处，另一处坏了，而你不知道它们连着。'),
  'b-skip': ('可以跳过，但要写下来', '一次性脚本、只给自己用的工具、只读不写的工具，不需要完整设计。<br><br>判据不是"东西小"，是两个事实：<b>有没有不可撤销的动作</b>、<b>除你之外会不会有人用</b>。两个都没有，可以跳过；有一个，第二问就不能跳。<br><br>但必须写下"我跳过了设计，因为 X"。因为三个月后你会把它当正式项目维护，那时候没人知道当初为什么没有这份记录——而沉默和"想过但决定不问"在记录里长得一模一样。'),
- 'b-agent': ('该不该用 agent，一个测试', '这个问题现在归第一步问（<code>anb-idea</code>），因为它是"你在做什么"的决定，不是"怎么实现"。<br><br><b>测试只有一个：你能不能把决策树画出来？</b>能写出步骤顺序和分支条件，它就是固定流程，应该做成管线——顺序确定、一次模型调用嵌在脚本里，更便宜、更快、更好查。只有当下一步取决于上一步返回什么、你列不出分支时，才需要 agent。<br><br>设计阶段会把这个数重新数一遍：判断点零到一处，就该退回管线。两个阶段问同一个问题不是重复——一个是决定，一个是复核，而复核经常推翻决定。'),
- 'b-refuse': ('拒绝清单写成了价值观', '「要诚实」「不要有害」「保持品牌调性」——都对，但一条都测不了。<br><br><b>改法</b>：每条按「一个具体输入 → 它必须改做什么」重写。写不出具体输入，就先问一句：这个产品最容易被误用成什么样？<br><br>为什么这一步值钱：拒绝清单是设计阶段唯一能直接变成验收检查的东西。写成价值观的那些，会在第三步写检查时被安静地删掉——因为没人知道怎么测，于是不测。'),
+ 'b-agent': ('该不该用 agent，一个测试', '这个问题现在归需求阶段问（<code>anb-idea</code>），因为它是"你在做什么"的决定，不是"怎么实现"。<br><br><b>测试只有一个：你能不能把决策树画出来？</b>能写出步骤顺序和分支条件，它就是固定流程，应该做成管线——顺序确定、一次模型调用嵌在脚本里，更便宜、更快、更好查。只有当下一步取决于上一步返回什么、你列不出分支时，才需要 agent。<br><br>设计阶段会把这个数重新数一遍：判断点零到一处，就该退回管线。两个阶段问同一个问题不是重复——一个是决定，一个是复核，而复核经常推翻决定。'),
+ 'b-refuse': ('拒绝清单写成了价值观', '「要诚实」「不要有害」「保持品牌调性」——都对，但一条都测不了。<br><br><b>改法</b>：每条按「一个具体输入 → 它必须改做什么」重写。写不出具体输入，就先问一句：这个产品最容易被误用成什么样？<br><br>为什么这一步值钱：拒绝清单是设计阶段唯一能直接变成验收检查的东西。写成价值观的那些，会在验收阶段写检查时被安静地删掉——因为没人知道怎么测，于是不测。'),
  'b-perm': ('按重要性排权限，排错了', '「付款重要，所以付款要确认；读文件不重要，所以放行。」结果是：一条读文件的动作把全部客户记录导了出去，而 2 美元的扣款被拦住了。<br><br><b>按能不能撤销排，只有这一个标准</b>：<br>· 可撤销 → 放行<br>· 会被看见或花钱 → 放行，但记账并设额度<br>· 不可撤销 → 先问人<br><br>中间那档最容易被跳过，而真正的损失都在那：不是答错一次，是在有人看之前错了五十次。额度要写数字，「合理使用」不是额度。'),
  'b-contract': ('交接契约只写了"它做什么"', '只写"这个工具用来读品牌画像"，等于授权它在任何场景下用。<br><br><b>每个工具三行</b>：做什么 / <b>什么时候别用</b> / 失败时返回什么。<br><br>第二行是重点。agent 产品最常见的失败不是工具坏了，是一个正确的工具被用在了不该用的地方——而日志里每一行都正常，没有报错，没有异常，只是结果微妙地错了。<br><br>第三行决定一次失败是一个回合还是整轮运行：说清"这个 id 不存在，不要用同一个 id 重试"的工具，能把循环自己结束掉。'),
  'b-done': ('四问答完，用数问题来验收', '把四块交给一个 agent，不给任何别的上下文，让它实现最窄的那条路。<b>然后数它不得不自己猜的有几处。</b><br><br>零处：设计完成。每一处：都是一个洞，补上，再交一次，再数。<br><br>两轮是正常的。超过三轮说明不是写得不细，是缺了一整块。<br><br>这个验收的好处是它不靠感觉——「设计得清不清楚」是个意见，「它问了三个问题」是个数。'),
@@ -250,7 +250,7 @@ def index_page():
     b.append('<h2>七个阶段</h2>')
     b.append('<p class="h2sub">按执行顺序。每一页都告诉你：这一步做什么、什么情况走哪条路、谁来验、用到哪些 skill、原文在哪。</p>')
     cards = []
-    for (slug, name, one), i in zip(STAGES, range(1, 8)):
+    for (slug, name, one), i in zip(STAGES, range(1, len(STAGES) + 1)):
         d = DETAIL[slug]
         gap = {'covered': '', 'half': '<span class="tag t-branch">半个覆盖</span>', 'gap': '<span class="tag t-gap">未覆盖</span>'}[d['gap']]
         cards.append(f'<a class="card" href="/mas_router_method/site/{slug}.html" style="display:block;text-decoration:none;color:inherit">'

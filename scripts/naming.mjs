@@ -28,7 +28,9 @@ const RED = '\x1b[31m', GREEN = '\x1b[32m', DIM = '\x1b[2m', RESET = '\x1b[0m';
  */
 const PATTERNS = [
   { shape: 'Stage N', re: /\b[Ss]tage\s+\d+/ },
-  { shape: 'ANB 阶段 N', re: /ANB\s*阶段\s*\d+/ },
+  // 「阶段 N」而不只是「ANB 阶段 N」：管理页的寄存器表一度用「阶段 1」「阶段 2–5」
+  // 标「谁写这一栏」，那同样是位置引用，插入阶段后一样会错。
+  { shape: '阶段 N', re: /阶段\s*\d+/ },
 ];
 
 /** Every hardcoded stage number in one string, one hit per line. */
@@ -57,6 +59,12 @@ export function findStageNumbers(text) {
  * history that the site itself says must not be altered ("未改一字"), and they
  * discuss six-stage numbering because that is what the method was when they were
  * written. Flagging them would be asking history to update itself.
+ *
+ * Deliberately NOT `第N步`. That phrase is genuinely ambiguous — "他卡住的第一步"
+ * is a step inside a procedure, while "归第一步问" meant the need stage. A rule
+ * that flagged both would be wrong about half the time, and a noisy checker gets
+ * switched off. The four real instances were fixed by hand when the site was
+ * rebuilt; the two that mean a procedure step were left alone.
  */
 export async function scan() {
   const files = [];

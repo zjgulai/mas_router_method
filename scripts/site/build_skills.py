@@ -1,12 +1,17 @@
 import sys, os
 from build_shell import page, STAGES
-from paths import out_dir, SKILLS
 from map import MAP
+from paths import out_dir, SKILLS
 
 # 表里的行数，从归属表数出来——不在文档里写死数字，那是会过时的声明。
 N_ROWS = len(MAP)
-from map import MAP
 
+# map.py 用中文阶段名给每个 skill 标归属。它不再自己列举阶段列表（那是第二份会过时的
+# 声明），改为在这里校验：标了一个不存在的阶段就报错，而不是安静地不显示。
+_STAGE_LABELS = {label for _, label, _ in STAGES}
+_bad = sorted({v[0] for v in MAP.values()} - _STAGE_LABELS)
+if _bad:
+    raise SystemExit(f'map.py assigns skills to stages that do not exist: {_bad}')
 # 三层来源
 repo_dirs = {d for d in os.listdir(SKILLS) if os.path.isdir(os.path.join(SKILLS, d))}
 anb = {d for d in repo_dirs if d.startswith('anb')}

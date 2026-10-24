@@ -45,3 +45,7 @@ packages/evals/runs/
 
 # --- 临时交接产物 ---
 *.bundle
+
+# --- Python 编译缓存（站点生成器是 Python）---
+__pycache__/
+*.pyc

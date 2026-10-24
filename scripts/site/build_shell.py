@@ -1,14 +1,24 @@
-"""共享外壳：样式、导航、页脚。每个页面都从这里生成，避免重复。"""
+"""共享外壳：样式、导航、页脚。每个页面都从这里生成，避免重复。
 
-STAGES = [
-    ('01-need',      '需求', '把一句话想法变成可验收的意图'),
-    ('02-design',    '设计', '定契约、边界、数据与决策记录'),
-    ('03-build',     '开发', '一条真实输入走通，且不是假的'),
-    ('04-verify',    '验收', '什么算好，而且检查必须能失败'),
-    ('05-ship',      '交付', '别人能打开、能用，不需要你在旁边'),
-    ('06-operate',   '运营', '看得出它有没有被用、有没有变好'),
-    ('07-iterate',   '迭代', '只留下真的用过的，改掉真的错的'),
-]
+阶段列表**不在这里写死**。它从 work/schema.yml 读，经 schema.mjs 的 CLI。
+写死在这里就会过时，而且已经过时过一次：插入设计阶段时站点被重编号，
+skill 没跟上，于是出现了「不要做验收」这种反向指令——而验收是唯一的门。
+
+站点显示用的编号由这里的下标算出（见 build_pages.py），从不手写。
+"""
+import json, os, subprocess
+from paths import REPO
+
+
+def _load_stages():
+    out = subprocess.run(
+        ['node', os.path.join(REPO, 'scripts', 'schema.mjs'), 'stages', '--json'],
+        capture_output=True, text=True, check=True)
+    return [(x['id'], x['label'], x['oneline']) for x in json.loads(out.stdout)]
+
+
+# (slug, 中文名, 一句话)。slug 就是阶段 id，不含编号——编号是位置，不是名字。
+STAGES = _load_stages()
 
 CSS = """
   :root{

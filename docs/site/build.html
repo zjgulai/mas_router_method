@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>交付 · Agent Native Builder</title>
+<title>开发 · Agent Native Builder</title>
 <style>
   :root{
     color-scheme:light;
@@ -87,13 +87,13 @@
   <a class="home" href="/mas_router_method/site/">ANB</a>
   <nav>
       <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/01-need.html">需求</a>
-      <a href="/mas_router_method/site/02-design.html">设计</a>
-      <a href="/mas_router_method/site/03-build.html">开发</a>
-      <a href="/mas_router_method/site/04-verify.html">验收</a>
-      <a href="/mas_router_method/site/05-ship.html" class="on">交付</a>
-      <a href="/mas_router_method/site/06-operate.html">运营</a>
-      <a href="/mas_router_method/site/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/site/need.html">需求</a>
+      <a href="/mas_router_method/site/design.html">设计</a>
+      <a href="/mas_router_method/site/build.html" class="on">开发</a>
+      <a href="/mas_router_method/site/verify.html">验收</a>
+      <a href="/mas_router_method/site/ship.html">交付</a>
+      <a href="/mas_router_method/site/operate.html">运营</a>
+      <a href="/mas_router_method/site/iterate.html">迭代</a>
       <a href="/mas_router_method/site/manage.html">管理</a>
       <a href="/mas_router_method/site/branches.html">分支</a>
       <a href="/mas_router_method/site/skills.html">Skill 全表</a>
@@ -102,27 +102,27 @@
   </nav>
 </div></header>
 <main class="shell">
-  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 交付</div>
-  <h1><span class="num">05</span>交付</h1>
-<p class="lede">别人拿到一个地址就能用，不需要你在旁边。</p>
-<div class="note"><span class="tag t-must">方法论已覆盖</span>　ANB 阶段 4 覆盖这一步，但它有一个我做不到的验收动作：换一台设备、让另一个人试。<br><br><b>为什么这一步重要：</b>这是你第一次从使用者的位置看它。前面每一步你都在里面，所有东西都是配好的。</div>
+  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 开发</div>
+  <h1><span class="num">03</span>开发</h1>
+<p class="lede">一条真实输入从头走到尾，出一个真实结果。不做功能，只做一条最窄的路。</p>
+<div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-runnable</code> 覆盖，核心纪律是"不许有任何假数据"。<br><br><b>为什么这一步重要：</b>这是最容易假装成功的阶段：界面有、按钮有反应、看起来通了，但背后是样例数据。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
-<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="#b-local">b-local</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="#b-wall">b-wall</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="#b-nobody">b-nobody</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="#b-next">b-next</a></td><td>进入运营。</td></tr></tbody></table>
-<div class="card" id="b-local"><h3>只有你能打开</h3><p>本机地址、localhost、只在你的机器上有效。<br><br><b>这不是交付。</b>有四件事在你这里是配好的，在别人那里全是缺的：密钥、数据、权限、地址。它们不会在开发时报错，因为开发时它们本来就没被用到。</p></div>
-<div class="card" id="b-wall"><h3>别人一进来就撞墙</h3><p>最常见的四种：API 配额耗尽、权限不足、依赖没装、域名/证书问题。<br><br><b>怎么提前发现</b>：算一遍配额。如果一次使用消耗 N 次配额，而你只有 M 次，那第 M/N 个用户就会撞墙。这个算术在写完代码时就能做。</p></div>
-<div class="card" id="b-nobody"><h3>没人告诉你哪不好</h3><p>你需要一个人，在旁边看着他用，不说话。<br><br><b>看三件事</b>：他第一次点哪里、第一次停顿超过三秒在哪、他问了你什么。<b>每一个问题都是一个缺陷</b>，不是文档缺口。</p></div>
+<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>跑通了，但结果来自样例/固定数据</td><td><a href="#b-fake">b-fake</a></td><td>这是第一类假信号的温床。换一个你自己随手找的真实输入再试。</td></tr><tr><td>跑通了，但只对一种输入有效</td><td><a href="#b-narrow">b-narrow</a></td><td>那不是跑通，是特判。换第二个说不上来的输入。</td></tr><tr><td>跑不通，报错看不懂</td><td><a href="#b-error">b-error</a></td><td>错误必须是句子，不是堆栈。这是产品问题，不是调试问题。</td></tr><tr><td>真实输入跑通两次，结果都能给人看</td><td><a href="#b-next">b-next</a></td><td>进入验收。</td></tr></tbody></table>
+<div class="card" id="b-fake"><h3>结果来自样例数据</h3><p>这是最危险的一种"跑通"：界面完整、按钮有反应、输出看起来合理，但背后是写死的。<br><br><b>怎么发现</b>：给它一个你自己随手找的真实输入（真的链接、真的文件、真的需求），看它给出什么。再用一个你说不上来的输入试第二次——第一次可能是被特判过的。</p></div>
+<div class="card" id="b-narrow"><h3>只对一种输入有效</h3><p>那不叫跑通，叫特判。<br><br><b>怎么发现</b>：换一个你没预想过的输入。如果它崩了或者给出荒谬结果，说明这条路径只为一个案例存在。<br><br>这不是要你做通用产品，是要你知道自己现在的东西能覆盖多大的范围。</p></div>
+<div class="card" id="b-error"><h3>错误看不懂</h3><p>用户看到一段英文堆栈，等于什么都没看到。<br><br><b>正确标准</b>：错误信息要说清三件事——哪一步失败了、为什么、用户能做什么。"出错了"不是错误信息。</p></div>
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
-<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>用手机打开这个地址</td><td>打得开才算交付</td></tr><tr><td>另一个人在没有解释的情况下用了一次</td><td>他问的每一个问题都是一个缺陷，不是文档缺口</td></tr><tr><td>所有密钥来自环境，不在任何文件里</td><td>全仓搜一次</td></tr></tbody></table>
+<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>你自己用随手找的输入跑了一次</td><td>不是它准备好的样例</td></tr><tr><td>换一个你没预想过的输入，也跑通了</td><td>两个都能跑，才算跑通</td></tr><tr><td>失败时报的是一句人话，且退出码非零</td><td>不是静默通过，也不是堆栈</td></tr></tbody></table>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/site/skills.html#anb-shipable"><code>anb-shipable</code></a> — 别人能打开、能用，不需要你在旁边。</li><li><a href="/mas_router_method/site/skills.html#anb-check-otherdevice"><code>anb-check-otherdevice</code></a> — 换一台设备打开，让另一个人试。</li><li><a href="/mas_router_method/site/skills.html#pr"><code>pr</code></a> — PR 正文：最小视图、前后证据、合并风险。</li><li><a href="/mas_router_method/site/skills.html#deploy-checklist"><code>deploy-checklist</code></a> — 发布前清单与回滚触发条件。</li><li><a href="/mas_router_method/site/skills.html#deployment-patterns"><code>deployment-patterns</code></a> — 滚动/蓝绿/金丝雀、容器化、CI/CD。</li><li><a href="/mas_router_method/site/skills.html#milestone-report"><code>milestone-report</code></a> — 一页 HTML 里程碑报告，结论先行。</li></ul>
+<ul><li><a href="/mas_router_method/site/skills.html#anb-runnable"><code>anb-runnable</code></a> — 一条真实输入走通，不含假数据。</li><li><a href="/mas_router_method/site/skills.html#implement"><code>implement</code></a> — 读票 → tdd → typecheck → code-review → commit。</li><li><a href="/mas_router_method/site/skills.html#implement-spec"><code>implement-spec</code></a> — 一个 spec 下多张票按 frontier 落地。</li><li><a href="/mas_router_method/site/skills.html#tdd"><code>tdd</code></a> — 红绿重构。</li><li><a href="/mas_router_method/site/skills.html#ponytail"><code>ponytail</code></a> — 最小完整改动，不加没人要的抽象。</li><li><a href="/mas_router_method/site/skills.html#karpathy-guidelines"><code>karpathy-guidelines</code></a> — 先声明假设，只改必须改的。</li><li><a href="/mas_router_method/site/skills.html#reuse-first"><code>reuse-first</code></a> — 写工具前先搜仓库、标准库、GitHub。</li><li><a href="/mas_router_method/site/skills.html#prototype"><code>prototype</code></a> — 一次性原型回答一个设计问题。</li><li><a href="/mas_router_method/site/skills.html#using-git-worktrees"><code>using-git-worktrees</code></a> — 独立工作区，基线先绿。</li></ul>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/site/docs.html#decision-tree.html">决策树：怎么判断自己卡在交付还是别的地方</a></li></ul>
+<ul><li><a href="/mas_router_method/site/docs.html#failure-atlas.html">失败图鉴：第二类「测的不是你的产品」全部在这一步发生</a></li></ul>
   <div class="nextprev">
-<a href="/mas_router_method/site/04-verify.html"><span class="lbl">上一步</span>验收</a>
-<a href="/mas_router_method/site/06-operate.html" style="text-align:right"><span class="lbl">下一步</span>运营</a>
+<a href="/mas_router_method/site/design.html"><span class="lbl">上一步</span>设计</a>
+<a href="/mas_router_method/site/verify.html" style="text-align:right"><span class="lbl">下一步</span>验收</a>
 </div>
 </main>
 <div class="shell"><footer>

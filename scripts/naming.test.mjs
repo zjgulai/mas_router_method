@@ -29,7 +29,9 @@ test('findStageNumbers catches every shape the drift has actually taken', () => 
     'ANB 阶段 2 覆盖这一步',
   ].join('\n');
   assert.deepEqual(findStageNumbers(text).map((h) => h.line), [1, 2, 3]);
-  assert.deepEqual(findStageNumbers(text).map((h) => h.snippet), ['Stage 3', 'stage 4', 'ANB 阶段 2']);
+  // 模式现在直接抓「阶段 N」，不再要求前缀是 ANB——管理页的寄存器表一度用
+  // 「阶段 1」「阶段 2–5」标「谁写这一栏」，那同样是位置引用。
+  assert.deepEqual(findStageNumbers(text).map((h) => h.snippet), ['Stage 3', 'stage 4', '阶段 2']);
 });
 
 test('findStageNumbers leaves the word "stage" alone when it is not a number', () => {

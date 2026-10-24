@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>运营 · Agent Native Builder</title>
+<title>需求 · Agent Native Builder</title>
 <style>
   :root{
     color-scheme:light;
@@ -87,13 +87,13 @@
   <a class="home" href="/mas_router_method/site/">ANB</a>
   <nav>
       <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/01-need.html">需求</a>
-      <a href="/mas_router_method/site/02-design.html">设计</a>
-      <a href="/mas_router_method/site/03-build.html">开发</a>
-      <a href="/mas_router_method/site/04-verify.html">验收</a>
-      <a href="/mas_router_method/site/05-ship.html">交付</a>
-      <a href="/mas_router_method/site/06-operate.html" class="on">运营</a>
-      <a href="/mas_router_method/site/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/site/need.html" class="on">需求</a>
+      <a href="/mas_router_method/site/design.html">设计</a>
+      <a href="/mas_router_method/site/build.html">开发</a>
+      <a href="/mas_router_method/site/verify.html">验收</a>
+      <a href="/mas_router_method/site/ship.html">交付</a>
+      <a href="/mas_router_method/site/operate.html">运营</a>
+      <a href="/mas_router_method/site/iterate.html">迭代</a>
       <a href="/mas_router_method/site/manage.html">管理</a>
       <a href="/mas_router_method/site/branches.html">分支</a>
       <a href="/mas_router_method/site/skills.html">Skill 全表</a>
@@ -102,27 +102,27 @@
   </nav>
 </div></header>
 <main class="shell">
-  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 运营</div>
-  <h1><span class="num">06</span>运营</h1>
-<p class="lede">看得出它有没有被用、有没有变好、钱花在哪、出事时能不能查。</p>
-<div class="note warn"><span class="tag t-branch">半个覆盖</span>　ANB 阶段 5 只覆盖了技术侧的观测（跑几次、花多少、为什么失败）。产品侧——有没有人用、用了之后有没有变好——这套方法答不了。<br><br><b>为什么这一步重要：</b>没有这一步，你无法回答"这个产品到底成不成立"。而技术上的"全部正常"和产品上的"没人用"可以同时成立。</div>
+  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 需求</div>
+  <h1><span class="num">01</span>需求</h1>
+<p class="lede">把「我想做个 X」变成一句话：谁在什么情况下用、用完他能做什么以前做不到的事。</p>
+<div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-idea</code> 覆盖，完整。<br><br><b>为什么这一步重要：</b>这一步决定后面所有事。写错方向，后面每一步都在加固一个错误假设，而且越往后返工越贵。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
-<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你不知道它跑了多少次、失败多少次</td><td><a href="#b-blind">b-blind</a></td><td>先补三个数字，再谈别的。没有观测就加功能，等于在黑暗里挪。</td></tr><tr><td>有记录，但总数和分项对不上</td><td><a href="#b-reconcile">b-reconcile</a></td><td>记录有洞。每一条其它结论都建立在这上面。</td></tr><tr><td>数字正常，但不知道有没有人真的在用</td><td><a href="#b-nouser">b-nouser</a></td><td>这是产品侧观测，需要埋点而不是日志。</td></tr><tr><td>能回答"谁在用、用了多少次、哪里失败"</td><td><a href="#b-next">b-next</a></td><td>进入迭代。</td></tr></tbody></table>
-<div class="card" id="b-blind"><h3>不知道它跑了多少次</h3><p>你缺三个数字：跑了多少次、失败多少次、为什么失败。<br><br><b>先有这三个，再谈别的。</b>没有观测就加功能，等于在黑暗里往前挪——你会一直走到撞墙才知道方向错了。</p></div>
-<div class="card" id="b-reconcile"><h3>总数和分项对不上</h3><p>这说明记录有洞：有请求开了头没结尾，或者被算了两次。<br><br><b>一个更隐蔽的版本</b>：你去看仪表盘的那次请求，自己也被计入了仪表盘。于是每看一次，数字就涨一次，而且只涨不跌。<br><br><b>动作</b>：把总数拆开加一遍。然后什么都不做，刷新五次，看数字会不会自己动。</p></div>
-<div class="card" id="b-nouser"><h3>不知道有没有人真的在用</h3><p>技术观测答不了这个。日志能告诉你"程序跑了"，不能告诉你"有人需要它"。<br><br><b>这是这套方法的边界</b>：它能让你不骗自己，不能让你不骗市场。要做产品侧观测，得埋点——谁在用、用了几次、在哪一步放弃。</p></div>
+<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你说的是功能清单（"要有登录、能导出"）</td><td><a href="#b-func">b-func</a></td><td>功能是解决方案，不是问题。跳过它会让你在验收时无从判断好坏。</td></tr><tr><td>你说的是品类（"用 AI 做内容"）</td><td><a href="#b-cat">b-cat</a></td><td>品类不是用途。问：谁、在哪一天、用它做什么。</td></tr><tr><td>你已经有一句话，但说不清"什么情况说明不该做"</td><td><a href="#b-falsify">b-falsify</a></td><td>缺这一句，你后面无法判断自己是不是错了。</td></tr><tr><td>你有清晰的一句话，且否定条件可测</td><td><a href="#b-next">b-next</a></td><td>进入设计。</td></tr></tbody></table>
+<div class="card" id="b-func"><h3>功能清单不是问题</h3><p>「要有登录」是解决方案。要问的是：登录是为了让谁做什么？如果答案是"让每一个用户只能看到自己的数据"，那么真正的问题是隔离，而隔离可以用别的方式解决。<br><br><b>怎么改</b>：每个功能后面追问一句"它让用户能做什么以前做不到的事"。答不上来的功能，先不做。</p></div>
+<div class="card" id="b-cat"><h3>品类不是用途</h3><p>「用 AI 做内容」等于没说。它可以是任何人做任何事。<br><br><b>怎么改</b>：问三个具体问题——谁、在什么情况下、他今天没有更好的办法是因为什么。第三个问题是关键，它决定了这个产品有没有存在理由。</p></div>
+<div class="card" id="b-falsify"><h3>缺一个可证伪的否定条件</h3><p>「如果没人用」不是否定条件，那是任何产品都成立的废话。<br><br><b>怎么改</b>：写一个可以被测量的事件。例："如果五个指标拼出来的结论，和资深从业者凭经验判断的不一致超过三成，那这些指标不承载判断。"这句话在产品做出来之后能被验证。</p></div>
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
-<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>做三次，历史里有三条</td><td>做 N 次数 N 条</td></tr><tr><td>故意弄坏一次，能在记录里找到它和原因</td><td>找不到就是记录有洞</td></tr><tr><td>知道花了多少</td><td>这个产品花的是 API 配额，不是 token——两个都要能看清</td></tr></tbody></table>
+<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>把五句话念给一个不做这行的人，他能复述出用途和对象</td><td>他能说出"所以你是在帮谁解决什么"</td></tr><tr><td>你的否定条件是一个可以被测量的事件</td><td>不是"如果没人用"，而是"如果 X 和 Y 不一致超过三成"</td></tr><tr><td>写下了"这一步需要谁参与"</td><td>如果需要别人而你找不到，现在就记成未通过</td></tr></tbody></table>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/site/skills.html#anb-observable"><code>anb-observable</code></a> — 三个数字：跑几次、花多少、为什么失败。</li><li><a href="/mas_router_method/site/skills.html#observability-and-instrumentation"><code>observability-and-instrumentation</code></a> — 从 on-call 问题倒推日志、指标、追踪、告警。</li><li><a href="/mas_router_method/site/skills.html#instrument-product-analytics"><code>instrument-product-analytics</code></a> — 事件表、漏斗、留存、身份策略。</li><li><a href="/mas_router_method/site/skills.html#artifact-registry"><code>artifact-registry</code></a> — 每个有持续成本的东西登记 owner 与过期。</li><li><a href="/mas_router_method/site/skills.html#tech-debt"><code>tech-debt</code></a> — 打分排序的债务登记表。</li><li><a href="/mas_router_method/site/skills.html#deprecation-and-migration"><code>deprecation-and-migration</code></a> — 弃用策略与 expand/contract 迁移。</li><li><a href="/mas_router_method/site/skills.html#repo-gc"><code>repo-gc</code></a> — E1–E4 分级的删除计划。</li><li><a href="/mas_router_method/site/skills.html#ponytail-audit"><code>ponytail-audit</code></a> — 全仓审计：什么可以删。</li></ul>
+<ul><li><a href="/mas_router_method/site/skills.html#interview-me"><code>interview-me</code></a> — 把一句话想法问成可验收的意图。需求阶段的内核。</li><li><a href="/mas_router_method/site/skills.html#anb-idea"><code>anb-idea</code></a> — 五句话写成想法，含可证伪的否定条件。</li><li><a href="/mas_router_method/site/skills.html#grilling"><code>grilling</code></a> — 攻击已有草稿，把含糊处问空。</li><li><a href="/mas_router_method/site/skills.html#grill-me"><code>grill-me</code></a> — 七行壳，转调 grilling。</li><li><a href="/mas_router_method/site/skills.html#grill-with-docs"><code>grill-with-docs</code></a> — 拷问同时沉淀术语表与 ADR。</li><li><a href="/mas_router_method/site/skills.html#wayfinder"><code>wayfinder</code></a> — 目标大到一个会话装不下时，先画决策地图。</li><li><a href="/mas_router_method/site/skills.html#agent-delivery-router"><code>agent-delivery-router</code></a> — 先定车道：incident/exploration/capability/fast。</li></ul>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/site/docs.html#anb2-full.html">第二次实测：观测手段污染了观测结果</a></li></ul>
+<ul><li><a href="/mas_router_method/site/docs.html#decision-tree.html">决策树：三个问题定位到阶段</a></li><li><a href="/mas_router_method/site/docs.html#failure-atlas.html">失败图鉴：第五类「找不到≠不存在」在这里最常见</a></li></ul>
   <div class="nextprev">
-<a href="/mas_router_method/site/05-ship.html"><span class="lbl">上一步</span>交付</a>
-<a href="/mas_router_method/site/07-iterate.html" style="text-align:right"><span class="lbl">下一步</span>迭代</a>
+<span></span>
+<a href="/mas_router_method/site/design.html" style="text-align:right"><span class="lbl">下一步</span>设计</a>
 </div>
 </main>
 <div class="shell"><footer>

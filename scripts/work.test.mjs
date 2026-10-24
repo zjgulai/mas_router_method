@@ -355,3 +355,29 @@ test('live schema: every stage names a skill that exists on disk', async () => {
     assert.notEqual(st.oneline, '', `stage "${st.id}" has no one-line description`);
   }
 });
+
+test('facts: --check fails when a claim points at a file that is not there', async () => {
+  // 这条断言曾经在文件读不到时 `continue` —— 于是它引用的文件一旦被移动或改名，
+  // 断言就静默停止工作，而 --check 照样报绿。原件移进 originals/ 时就发生了这件事。
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname, join } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { rename } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const target = join(root, 'docs/site/manage.html');
+  const hidden = join(root, 'docs/site/manage.html.hidden');
+
+  await rename(target, hidden);
+  try {
+    let code = 0, stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/facts.mjs'), '--check']);
+      stdout = r.stdout;
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    assert.equal(code, 1, 'a claim whose file vanished must fail, not be skipped');
+    assert.match(stdout, /cannot be read/);
+  } finally {
+    await rename(hidden, target);
+  }
+});

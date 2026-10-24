@@ -54,7 +54,9 @@ async function promptCount() {
 /** Count numbered class sections in the failure atlas. */
 async function atlasClasses() {
   try {
-    const html = await readFile(join(ROOT, 'docs/site/failure-atlas.html'), 'utf8');
+    // originals/ 是手写原件的新家。旧路径读不到时这里曾静默返回 0，
+    // 而 0 和「真的没有」长得一样。
+    const html = await readFile(join(ROOT, 'docs/site/originals/failure-atlas.html'), 'utf8');
     // Each class opens with <span class="fn">N</span>; the checklist and appendix
     // use the same markup but are not classes, so exclude them by their heading.
     const sections = [...html.matchAll(/<span class="fn">[一二三四五六七八九十]<\/span><h2 class="fam">([^<]+)/g)];
@@ -64,14 +66,20 @@ async function atlasClasses() {
   }
 }
 
-/** Count generated stage pages (01-*.html … 07-*.html). */
+/**
+ * The stage count, from the single source.
+ *
+ * This used to count files matching `0\d-*.html`. When stage page filenames lost
+ * their numeric prefix, that pattern would have quietly returned 0 — a number
+ * that changes by becoming wrong rather than by becoming different, which is the
+ * exact failure `facts` exists to catch. So it asks the schema instead.
+ */
 async function stagePages() {
-  try {
-    const files = await readdir(join(ROOT, 'docs/site'));
-    return files.filter((f) => /^0\d-.+\.html$/.test(f)).length;
-  } catch {
-    return 0;
-  }
+  // No catch: a schema that cannot be read is a broken gate, not a project with
+  // zero stages. Returning 0 here would print a number that is wrong in a way
+  // that looks exactly like a real one.
+  const schema = await loadSchema();
+  return schema.stages.length;
 }
 
 async function collectFacts() {
@@ -92,7 +100,6 @@ async function collectFacts() {
     'vendored skills': vendored.length,
     'skill dirs total': skillDirs.length,
     'site pages': await count(join(ROOT, 'docs/site'), /\.html$/),
-    'stage pages': (await readdir(join(ROOT, 'docs/site'))).filter((f) => /^0\d-.+\.html$/.test(f)).length,
     'adrs': await count(join(ROOT, 'docs/adr'), /^\d{4}-.*\.md$/),
     'tickets': Object.values(tickets).reduce((a, b) => a + b, 0),
     'tickets done': tickets.done,
@@ -125,7 +132,7 @@ const CLAIMS = [
   { file: 'docs/skills/skill-catalog.md', pattern: /仓库自带的 (\d+) 个/, fact: 'vendored skills', what: 'vendored count' },
   // The atlas states its own size in the title; if a class is added and the title
   // is not updated, the page argues against itself.
-  { file: 'docs/site/failure-atlas.html', pattern: /<h1>七种误判/, fact: 'atlas classes', what: 'atlas classes', literal: 7 },
+  { file: 'docs/site/originals/failure-atlas.html', pattern: /<h1>七种误判/, fact: 'atlas classes', what: 'atlas classes', literal: 7 },
   // Seven stages, but eight registers — the management layer's entities are not
   // one per stage. Quoting `stages` here was wrong the moment designs joined.
   { file: 'docs/site/manage.html', pattern: /八个寄存器/, fact: 'registers', what: 'registers', literal: 8 },
@@ -140,6 +147,10 @@ if (process.argv.includes('--check')) {
     try {
       text = await readFile(join(ROOT, claim.file), 'utf8');
     } catch {
+      // 之前这里是 `continue`：断言引用的文件一旦被移动或改名，这条断言就
+      // 静默停止工作，而 --check 仍然报绿。一个不再检查任何东西的断言，
+      // 和一条永远不会红的检查是同一种东西。
+      problems.push(`${claim.file}: claim refers to a file that cannot be read (moved or renamed?)`);
       continue;
     }
     const m = claim.pattern.exec(text);

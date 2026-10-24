@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>迭代 · Agent Native Builder</title>
+<title>交付 · Agent Native Builder</title>
 <style>
   :root{
     color-scheme:light;
@@ -87,13 +87,13 @@
   <a class="home" href="/mas_router_method/site/">ANB</a>
   <nav>
       <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/01-need.html">需求</a>
-      <a href="/mas_router_method/site/02-design.html">设计</a>
-      <a href="/mas_router_method/site/03-build.html">开发</a>
-      <a href="/mas_router_method/site/04-verify.html">验收</a>
-      <a href="/mas_router_method/site/05-ship.html">交付</a>
-      <a href="/mas_router_method/site/06-operate.html">运营</a>
-      <a href="/mas_router_method/site/07-iterate.html" class="on">迭代</a>
+      <a href="/mas_router_method/site/need.html">需求</a>
+      <a href="/mas_router_method/site/design.html">设计</a>
+      <a href="/mas_router_method/site/build.html">开发</a>
+      <a href="/mas_router_method/site/verify.html">验收</a>
+      <a href="/mas_router_method/site/ship.html" class="on">交付</a>
+      <a href="/mas_router_method/site/operate.html">运营</a>
+      <a href="/mas_router_method/site/iterate.html">迭代</a>
       <a href="/mas_router_method/site/manage.html">管理</a>
       <a href="/mas_router_method/site/branches.html">分支</a>
       <a href="/mas_router_method/site/skills.html">Skill 全表</a>
@@ -102,27 +102,27 @@
   </nav>
 </div></header>
 <main class="shell">
-  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 迭代</div>
-  <h1><span class="num">07</span>迭代</h1>
-<p class="lede">只留下真的用过的，改掉真的错的。下一个产品从模板起步，但不要背上一堆用不上的东西。</p>
-<div class="note"><span class="tag t-must">方法论已覆盖</span>　ANB 阶段 5+6 覆盖这一步，并且推翻了它自己的一条规则（"用过三次才抽"太严）。<br><br><b>为什么这一步重要：</b>迭代不是加功能，是去掉不该留的。判断标准是"上个产品用过吗"，不是"这个可能有用"。</div>
+  <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 交付</div>
+  <h1><span class="num">05</span>交付</h1>
+<p class="lede">别人拿到一个地址就能用，不需要你在旁边。</p>
+<div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-shipable</code> 覆盖，但它有一个我做不到的验收动作：换一台设备、让另一个人试。<br><br><b>为什么这一步重要：</b>这是你第一次从使用者的位置看它。前面每一步你都在里面，所有东西都是配好的。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
-<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你要加一个新功能</td><td><a href="#b-add">b-add</a></td><td>先问：它解决的是观测到的哪个问题？答不出来就是猜。</td></tr><tr><td>你想抽一个通用模板</td><td><a href="#b-template">b-template</a></td><td>判据不是"用了几次"，是"它的形状会不会随产品变"。</td></tr><tr><td>一个东西你想保留，但说不清为什么</td><td><a href="#b-keep">b-keep</a></td><td>删掉。想不清理由的东西会成为下个项目的负担。</td></tr><tr><td>有了真实使用数据，知道该改什么</td><td><a href="#b-next">b-next</a></td><td>回到需求，开始下一轮。</td></tr></tbody></table>
-<div class="card" id="b-add"><h3>要加新功能</h3><p>先问：它解决的是你在观测里看到的哪个问题？<br><br>答不出来，那就是猜。猜的功能不会被用，而且会挤占维护别人在用的功能的精力。</p></div>
-<div class="card" id="b-template"><h3>想抽通用模板</h3><p>判据不是"用了几次"。<br><br><b>真正的判据是：这东西的形状会不会随产品变。</b>测试运行器的形状不变，抽出来两次就够；仓库骨架的形状每次都变，抽出来就是负担。<br><br>第二个判据：它要不要在每个产品里都重新验证一次"它可靠"。如果要，那抽取省的不是行数，是验证次数。</p></div>
-<div class="card" id="b-keep"><h3>想保留但说不清理由</h3><p>删掉。<br><br>没有理由的保留物会成为下个项目的负担，因为每个未来的决定都要塞进它的形状里。而且你会在三个月后忘记它为什么在那儿，于是没人敢删。</p></div>
+<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="#b-local">b-local</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="#b-wall">b-wall</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="#b-nobody">b-nobody</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="#b-next">b-next</a></td><td>进入运营。</td></tr></tbody></table>
+<div class="card" id="b-local"><h3>只有你能打开</h3><p>本机地址、localhost、只在你的机器上有效。<br><br><b>这不是交付。</b>有四件事在你这里是配好的，在别人那里全是缺的：密钥、数据、权限、地址。它们不会在开发时报错，因为开发时它们本来就没被用到。</p></div>
+<div class="card" id="b-wall"><h3>别人一进来就撞墙</h3><p>最常见的四种：API 配额耗尽、权限不足、依赖没装、域名/证书问题。<br><br><b>怎么提前发现</b>：算一遍配额。如果一次使用消耗 N 次配额，而你只有 M 次，那第 M/N 个用户就会撞墙。这个算术在写完代码时就能做。</p></div>
+<div class="card" id="b-nobody"><h3>没人告诉你哪不好</h3><p>你需要一个人，在旁边看着他用，不说话。<br><br><b>看三件事</b>：他第一次点哪里、第一次停顿超过三秒在哪、他问了你什么。<b>每一个问题都是一个缺陷</b>，不是文档缺口。</p></div>
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
-<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>每一项保留物都能说出"在哪个产品用过、用了几次"</td><td>答不出来的删掉</td></tr><tr><td>用模板开第二个产品，计时比第一个快</td><td>更慢说明模板是负担</td></tr><tr><td>复盘产出的每一项有 owner 和复查日期</td><td>没有归属的改进项等于没有</td></tr></tbody></table>
+<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>用手机打开这个地址</td><td>打得开才算交付</td></tr><tr><td>另一个人在没有解释的情况下用了一次</td><td>他问的每一个问题都是一个缺陷，不是文档缺口</td></tr><tr><td>所有密钥来自环境，不在任何文件里</td><td>全仓搜一次</td></tr></tbody></table>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/site/skills.html#anb-reusable"><code>anb-reusable</code></a> — 只用过三次以上的才抽；形状会变的别抽。</li><li><a href="/mas_router_method/site/skills.html#retro"><code>retro</code></a> — 按严重度排序的环境改进项。</li><li><a href="/mas_router_method/site/skills.html#improve-codebase-architecture"><code>improve-codebase-architecture</code></a> — 找架构里的深化机会。</li><li><a href="/mas_router_method/site/skills.html#triage"><code>triage</code></a> — issue 状态机、分类、agent brief。</li><li><a href="/mas_router_method/site/skills.html#setup-matt-pocock-skills"><code>setup-matt-pocock-skills</code></a> — 新仓库首次接入工程 skill。</li><li><a href="/mas_router_method/site/skills.html#consolidate-memory"><code>consolidate-memory</code></a> — 合并重复记忆，修剪索引。</li></ul>
+<ul><li><a href="/mas_router_method/site/skills.html#anb-shipable"><code>anb-shipable</code></a> — 别人能打开、能用，不需要你在旁边。</li><li><a href="/mas_router_method/site/skills.html#anb-check-otherdevice"><code>anb-check-otherdevice</code></a> — 换一台设备打开，让另一个人试。</li><li><a href="/mas_router_method/site/skills.html#pr"><code>pr</code></a> — PR 正文：最小视图、前后证据、合并风险。</li><li><a href="/mas_router_method/site/skills.html#deploy-checklist"><code>deploy-checklist</code></a> — 发布前清单与回滚触发条件。</li><li><a href="/mas_router_method/site/skills.html#deployment-patterns"><code>deployment-patterns</code></a> — 滚动/蓝绿/金丝雀、容器化、CI/CD。</li><li><a href="/mas_router_method/site/skills.html#milestone-report"><code>milestone-report</code></a> — 一页 HTML 里程碑报告，结论先行。</li></ul>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/site/docs.html#anb2-full.html">第二次实测：阶段六的规则被自己的实验推翻</a></li></ul>
+<ul><li><a href="/mas_router_method/site/docs.html#decision-tree.html">决策树：怎么判断自己卡在交付还是别的地方</a></li></ul>
   <div class="nextprev">
-<a href="/mas_router_method/site/06-operate.html"><span class="lbl">上一步</span>运营</a>
-<span></span>
+<a href="/mas_router_method/site/verify.html"><span class="lbl">上一步</span>验收</a>
+<a href="/mas_router_method/site/operate.html" style="text-align:right"><span class="lbl">下一步</span>运营</a>
 </div>
 </main>
 <div class="shell"><footer>
