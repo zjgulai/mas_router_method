@@ -18,6 +18,8 @@ anything: it becomes half plan, half postmortem, and neither.
 Read `work/LAYOUT.md` before answering anything about where a file goes. The rule is one
 line: **if it changes state it goes in `work/`, if it does not it goes in `docs/`.**
 
+- `work/designs/` — the four-question records from the design stage; once confirmed they
+  are a spec the build and verify stages read, not a document
 - `work/tickets/` — planned work, cross-session only
 - `work/incidents/` — unplanned, with its own entry point
 - `work/requirements/` — one sentence each, can be dropped
@@ -78,6 +80,14 @@ still open if it is.
 **Only file a ticket if the work spans sessions.** Something finished and verified inside one
 conversation does not need a ticket, and creating one makes the register a diary — diaries are
 not read.
+
+### "Is this design still current?"
+
+Read `work/designs/confirmed/`. A record that has been overtaken moves to
+`superseded` with `work-move.mjs` — never edited in place, because the record of
+what you decided last time is the only evidence about whether the decision was
+right. `node scripts/design.mjs refusals` prints what the newest one currently says,
+which is the quickest way to see whether a stage is reading a stale one.
 
 ### "Something went wrong"
 
