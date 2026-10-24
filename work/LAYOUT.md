@@ -26,7 +26,7 @@
 
 | 目录 | 放什么 | 状态机 | ID | 谁写 | 什么时候清 |
 |---|---|---|---|---|---|
-| `work/requirements/` | 需求：一句话承诺 | drafting → confirmed → dropped | `R-` | 需求 | 被废后留 30 天 |
+| `work/requirements/` | 需求：一句话承诺 | drafting → awaiting-verification → confirmed → dropped | `R-` | 需求 | 被废后留 30 天 |
 | `work/designs/` | 设计记录：四问的答案 | drafting → confirmed → superseded | `D-` | 设计 | 保留；被推翻进 superseded，不改原件 |
 | `work/tickets/` | 执行票：跨会话的工作单元 | open → in-progress → awaiting-verification → done | `T-` | 开发–交付 | 永不删（历史） |
 | `work/incidents/` | 事故：计划外发生的事 | open → contained → closed | `INC-` | 任何阶段 | 关闭后留 90 天 |

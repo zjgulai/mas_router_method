@@ -474,3 +474,27 @@ test('design: a drafting record may be missing blocks, but not have an empty one
     await rmdir(dir).catch(() => {});
   }
 });
+
+test('live schema: a requirement can say "settled, verification not run"', async () => {
+  // 试跑加上的。需求阶段有自己的 exit test——「念给一个不做这行的人听」——而它可能没跑。
+  // 原来只有 drafting/confirmed，于是那个状态只能塞进 drafting，读起来像「还在写」。
+  // 票据一直有 awaiting-verification，需求没有：同一个框架里，一个寄存器能说「差一步」，
+  // 另一个不能。这是实测中撞到的八条缺口之一。
+  const schema = await loadSchema();
+  const r = schema.entities.requirement;
+
+  assert.ok(r.states.includes('awaiting-verification'),
+    'the need stage has an exit test; the register must be able to say it has not been run');
+
+  // 与票据的形状一致：能进去、能确认、也能打回重写。
+  assert.ok(r.transitions.drafting.includes('awaiting-verification'),
+    'a drafted requirement goes to awaiting-verification');
+  assert.ok(r.transitions['awaiting-verification'].includes('confirmed'),
+    'a requirement whose exit test passed becomes confirmed');
+  assert.ok(r.transitions['awaiting-verification'].includes('drafting'),
+    'a requirement whose exit test failed goes back to drafting, as a ticket does to in-progress');
+
+  // 用词与票据一致，不是另发明一个词。
+  assert.ok(schema.entities.ticket.states.includes('awaiting-verification'),
+    'the two registers should use the same word for the same situation');
+});

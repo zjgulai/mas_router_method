@@ -46,6 +46,17 @@ pipeline and it will be cheap, fast and easy to check. Three or more: either the
 product genuinely needs to improvise, or the thinking is not finished and the
 model is being asked to do it for you.
 
+**Write each judgement point down and name it. The number is the length of that
+list, not a separate answer.** The first version asked only for a count, and a count
+cannot be argued with: in the first real run the two people disagreed about whether a
+case was a judgement call or a rule, and there was nothing to point at, because no list
+had ever been produced. Two people can agree on "three" while meaning different threes.
+
+The list is also what settles the disagreement. A judgement point earns its place by
+having no rule. Write the rule you think covers it, then try to break it with a real
+case: if the rule holds, it is a fixed step; if you can construct a case that beats the
+rule, that case is the judgement point — and now you can name it.
+
 Retype, summarise, extract, format, route by a rule — all fixed. Decide which of
 five sources is authoritative, judge whether a claim is substantiated, choose
 which of three tactics fits this customer — these are judgement. If they cannot
@@ -75,6 +86,20 @@ Each row has a fixed shape: **a concrete input → what it must do instead.**
 If they cannot name a concrete input, it is a value, not a refusal. "Be honest",
 "don't be harmful", "stay on brand" are values. Values cannot be tested at the verify stage
 and will be quietly dropped when the checks get written. Ask for the input.
+
+**Then ask where the list comes from.** Three answers, and only two are simple:
+
+- **It exists in one place.** Use it.
+- **It does not exist at all.** Stop — that is the disconfirming condition from the
+  need stage, and the first work is writing the policy, not building the product.
+- **It exists, scattered across several places** — a template in the platform's back
+  office, three internal threads, and what the supervisor says out loud. This is the
+  common case, and the method had no room for it: the need stage only asks whether the
+  policy exists, and this question assumes the answer is usable. The missing work is
+  *consolidating it*, nobody owns that, and it spans sessions — so it is a ticket, and
+  **this block is blocked until it is done.** Say that plainly rather than writing the
+  list from memory: a refusal list assembled from what everyone remembers is values with
+  arrows drawn on.
 
 The exit condition for this question: **each row can become a check.** If a row
 cannot be written as "given this input, that output must not appear", it is not a
@@ -201,8 +226,14 @@ answered, move it to `confirmed` — that is what turns it from a document into 
 spec the verify stage can read.
 
 Four sections, skips marked with a reason, and the condition that would make this
-design wrong. `work check` fails a record missing any of them, and fails a
-confirmed one that cannot say what would overturn it.
+design wrong. `work check` fails a record missing any of them, and fails a confirmed
+one that cannot say what would overturn it.
+
+**While the record is in `drafting`, a missing block is fine.** This stage is answered
+one question at a time, so a block you have not reached yet is not an omission. But a
+block that *exists* is held to the rules from the moment you write it, `drafting`
+included: an empty block, or a refusal list whose rows name no concrete input, fails
+immediately. Only the four-blocks-present requirement waits for `confirmed`.
 
 ## Exit test
 

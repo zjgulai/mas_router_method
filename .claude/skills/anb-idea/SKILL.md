@@ -48,9 +48,19 @@ One page, five sentences, each one line:
 
 The fifth is the one that saves money, and the one they will want to skip.
 
-Then one line under the five, which is a sixth answer and not a sixth sentence:
-**fixed steps, or judgement at runtime.** `pipeline` or `agent`. One word is enough
-at this stage; the design stage redraws it properly.
+Then **two** more lines. They are answers rather than sentences, and both get left out.
+
+**Does this need an agent at all** — `pipeline` or `agent`. One word is enough here;
+the design stage redraws it properly.
+
+**What it hands back.** The artifact, not the capability. Sentence four says what they
+can *do* afterwards; this says what they *receive*. The difference is not academic:
+in the first real run, an agent given only the five sentences read back the purpose and
+the user correctly — the exit test passed on its own terms — and then said it had no
+idea what it would get.
+
+Write it as a noun a person could hold: "a draft reply with each sentence annotated by
+the policy it rests on", not "better answers".
 
 ## How to run it
 
@@ -59,6 +69,12 @@ can agree or correct rather than compose from scratch:
 
 > "I'd guess the person is a brand manager who gets a viral video forwarded in a
 > group chat. Is that right, or is it someone else?"
+
+**Sentence three is two questions, so ask it twice.** "What do you do instead today"
+and "why is that worse" look like one line and are not. Asked together they collect
+half an answer — the workaround, and no reason — which leaves the product with no case
+for existing. Ask for the workaround; then ask for **one specific time it went wrong**,
+from the last month. "It's slow" is true of everything and settles nothing.
 
 When an answer is a feature ("it should have login", "it needs to export"), do not
 accept it — ask what the person is trying to do that login or export would let them
@@ -81,6 +97,19 @@ is the right one.
 Your job here is to **ask**, not to answer. If they say "you decide", give two
 concrete options and make them pick. Do not pick for them.
 
+**And there is a second version of the same trap, which is harder to see.** These
+instructions *also* tell you to offer your recommended answer, so they can agree rather
+than compose from scratch. That is right, and it is exactly how you end up writing the
+page for them anyway: if they agree with every question, you cannot tell whether they
+meant it or simply had nothing to object to.
+
+Agreement on everything is a signal, not a success. When it happens, stop and ask for
+one concrete fact only they can supply — the last time it went wrong, who the person is,
+what the number was.
+
+> A recommended answer that survives contact with a specific instance was theirs all
+> along. One that does not was yours.
+
 ## What you record
 
 The five sentences are a conversation until they are written down. A requirement
@@ -93,8 +122,12 @@ read.
 
 ## Exit test
 
-They read the page to someone who does not work in tech, and that person can say
-back what it is for and who it is for.
+They read the page to someone who does not work in tech, and that person can say back
+three things: what it is for, who it is for, **and what it hands back to them.**
+
+The third was added after the first real run. The stranger read back the first two
+correctly and then said it had no idea what it would get. A test can do exactly what it
+claims and still be asking about the wrong thing.
 
 If it needs explaining, it is not done. Rewrite it shorter, not clearer — the
 problem is almost always that it is describing two things.

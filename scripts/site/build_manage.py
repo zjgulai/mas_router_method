@@ -28,7 +28,7 @@ def manage_page():
 
     b.append('<h2 id="m-registers">八个寄存器</h2>')
     rows = [
-        ('<code>work/requirements/</code>', '需求：一句话承诺', 'drafting → confirmed → dropped', 'R-', '需求'),
+        ('<code>work/requirements/</code>', '需求：一句话承诺', 'drafting → awaiting-verification → confirmed → dropped', 'R-', '需求'),
         ('<code>work/designs/</code>', '设计记录：四问的答案', 'drafting → confirmed → superseded', 'D-', '设计'),
         ('<code>work/tickets/</code>', '执行票：跨会话的工作单元', 'open → in-progress → awaiting-verification → done', 'T-', '开发–交付'),
         ('<code>work/incidents/</code>', '事故：计划外发生的事', 'open → contained → closed', 'INC-', '任何阶段'),

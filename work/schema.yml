@@ -17,9 +17,17 @@ entities:
     dir: requirements
     prefix: R
     # 单向为主：需求可以被废，但不会"完成"——完成的是实现它的票。
-    states: [drafting, confirmed, dropped]
+    #
+    # awaiting-verification 是实测加上的。需求阶段的 exit test 是「念给一个不做这行的人，
+    # 他能复述出用途和对象」——那是一次验收，而它可能没跑。原来只有 drafting/confirmed，
+    # 于是「内容谈定了、验收还没做」无处安放，只能留在 drafting，而 drafting 读起来
+    # 像「还在写」。票据一直有 awaiting-verification，需求没有——同一个框架里
+    # 一个能说「差一步」，另一个不能。实测中当场撞到。
+    states: [drafting, awaiting-verification, confirmed, dropped]
     transitions:
-      drafting: [confirmed, dropped]
+      drafting: [awaiting-verification, dropped]
+      # 验收没过就打回 drafting 重写，和票据的 awaiting-verification → in-progress 同形。
+      awaiting-verification: [confirmed, drafting, dropped]
       confirmed: [dropped]
       dropped: []
     # 哪个阶段创建它
