@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开发 · Agent Native Builder</title>
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .shell{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+  .top{position:sticky;top:0;z-index:20;background:var(--ink);color:#e9e7e0;padding:.55rem 0}
+  .top .shell{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .top a{color:#e9e7e0;text-decoration:none;font-size:.84rem;opacity:.78}
+  .top a:hover{opacity:1}
+  .top a.home{font-weight:650;opacity:1;font-family:var(--serif);font-size:.92rem}
+  .top nav{display:flex;gap:.2rem;flex-wrap:wrap;margin-left:auto}
+  .top nav a{padding:.2rem .5rem}
+  .top nav a.on{background:#e9e7e0;color:var(--ink);opacity:1}
+  main{padding:clamp(2rem,4.5vw,3.4rem) 0 4rem}
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<header class="top"><div class="shell">
+  <a class="home" href="/mas_router_method/">ANB</a>
+  <nav>
+      <a href="/mas_router_method/">总览</a>
+      <a href="/mas_router_method/01-need.html">需求</a>
+      <a href="/mas_router_method/02-design.html">设计</a>
+      <a href="/mas_router_method/03-build.html" class="on">开发</a>
+      <a href="/mas_router_method/04-verify.html">验收</a>
+      <a href="/mas_router_method/05-ship.html">交付</a>
+      <a href="/mas_router_method/06-operate.html">运营</a>
+      <a href="/mas_router_method/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/manage.html">管理</a>
+      <a href="/mas_router_method/branches.html">分支</a>
+      <a href="/mas_router_method/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/prompts.html">提示词</a>
+      <a href="/mas_router_method/docs.html">原始文档</a>
+  </nav>
+</div></header>
+<main class="shell">
+  <div class="crumb"><a href="/mas_router_method/">总览</a> / 开发</div>
+  <h1><span class="num">03</span>开发</h1>
+<p class="lede">一条真实输入从头走到尾，出一个真实结果。不做功能，只做一条最窄的路。</p>
+<div class="note"><span class="tag t-must">方法论已覆盖</span>　ANB 阶段 2 覆盖这一步，核心纪律是"不许有任何假数据"。<br><br><b>为什么这一步重要：</b>这是最容易假装成功的阶段：界面有、按钮有反应、看起来通了，但背后是样例数据。</div>
+<h2 id="branches">什么情况走哪条路</h2>
+<p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
+<table><thead><tr><th style="width:38%">如果</th><th style="width:14%">去</th><th>为什么</th></tr></thead><tbody><tr><td>跑通了，但结果来自样例/固定数据</td><td><a href="#b-fake">b-fake</a></td><td>这是第一类假信号的温床。换一个你自己随手找的真实输入再试。</td></tr><tr><td>跑通了，但只对一种输入有效</td><td><a href="#b-narrow">b-narrow</a></td><td>那不是跑通，是特判。换第二个说不上来的输入。</td></tr><tr><td>跑不通，报错看不懂</td><td><a href="#b-error">b-error</a></td><td>错误必须是句子，不是堆栈。这是产品问题，不是调试问题。</td></tr><tr><td>真实输入跑通两次，结果都能给人看</td><td><a href="#b-next">b-next</a></td><td>进入验收。</td></tr></tbody></table>
+<div class="card" id="b-fake"><h3>结果来自样例数据</h3><p>这是最危险的一种"跑通"：界面完整、按钮有反应、输出看起来合理，但背后是写死的。<br><br><b>怎么发现</b>：给它一个你自己随手找的真实输入（真的链接、真的文件、真的需求），看它给出什么。再用一个你说不上来的输入试第二次——第一次可能是被特判过的。</p></div>
+<div class="card" id="b-narrow"><h3>只对一种输入有效</h3><p>那不叫跑通，叫特判。<br><br><b>怎么发现</b>：换一个你没预想过的输入。如果它崩了或者给出荒谬结果，说明这条路径只为一个案例存在。<br><br>这不是要你做通用产品，是要你知道自己现在的东西能覆盖多大的范围。</p></div>
+<div class="card" id="b-error"><h3>错误看不懂</h3><p>用户看到一段英文堆栈，等于什么都没看到。<br><br><b>正确标准</b>：错误信息要说清三件事——哪一步失败了、为什么、用户能做什么。"出错了"不是错误信息。</p></div>
+<div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
+<h2 id="verify">谁来验，怎么验</h2>
+<p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
+<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>你自己用随手找的输入跑了一次</td><td>不是它准备好的样例</td></tr><tr><td>换一个你没预想过的输入，也跑通了</td><td>两个都能跑，才算跑通</td></tr><tr><td>失败时报的是一句人话，且退出码非零</td><td>不是静默通过，也不是堆栈</td></tr></tbody></table>
+<h2 id="skills">这一步用到哪些 skill</h2>
+<ul><li><a href="/mas_router_method/skills.html#anb-runnable"><code>anb-runnable</code></a> — 一条真实输入走通，不含假数据。</li><li><a href="/mas_router_method/skills.html#implement"><code>implement</code></a> — 读票 → tdd → typecheck → code-review → commit。</li><li><a href="/mas_router_method/skills.html#implement-spec"><code>implement-spec</code></a> — 一个 spec 下多张票按 frontier 落地。</li><li><a href="/mas_router_method/skills.html#tdd"><code>tdd</code></a> — 红绿重构。</li><li><a href="/mas_router_method/skills.html#ponytail"><code>ponytail</code></a> — 最小完整改动，不加没人要的抽象。</li><li><a href="/mas_router_method/skills.html#karpathy-guidelines"><code>karpathy-guidelines</code></a> — 先声明假设，只改必须改的。</li><li><a href="/mas_router_method/skills.html#reuse-first"><code>reuse-first</code></a> — 写工具前先搜仓库、标准库、GitHub。</li><li><a href="/mas_router_method/skills.html#prototype"><code>prototype</code></a> — 一次性原型回答一个设计问题。</li><li><a href="/mas_router_method/skills.html#using-git-worktrees"><code>using-git-worktrees</code></a> — 独立工作区，基线先绿。</li></ul>
+<h2 id="docs">原文与依据</h2>
+<ul><li><a href="/mas_router_method/docs.html#failure-atlas.html">失败图鉴：第二类「测的不是你的产品」全部在这一步发生</a></li></ul>
+  <div class="nextprev">
+<a href="/mas_router_method/02-design.html"><span class="lbl">上一步</span>设计</a>
+<a href="/mas_router_method/04-verify.html" style="text-align:right"><span class="lbl">下一步</span>验收</a>
+</div>
+</main>
+<div class="shell"><footer>
+  Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/docs.html">原始文档</a>。
+</footer></div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+# 唯一的状态定义。每个脚本、每个 skill 都从这里读，不许各写一套。
+#
+# 这个文件只管 work/ 目录下"会变的东西"。不会变的东西（ADR、评测设计、产品论点）
+# 归 docs/，不在这里——它们不进状态机，因为写完就不该再动。
+#
+# 判断一类信息该进 work/ 还是 docs/ 只有一个标准：
+#   它会不会改变状态？
+#   会（票会走到 done、事故会关闭、产物会过期）→ work/
+#   不会（ADR 接受后不改、规格是某一版的快照）  → docs/
+#
+# 完整归属表见 work/LAYOUT.md。
+
+version: 1
+
+entities:
+  requirement:
+    dir: requirements
+    prefix: R
+    # 单向为主：需求可以被废，但不会"完成"——完成的是实现它的票。
+    states: [drafting, confirmed, dropped]
+    transitions:
+      drafting: [confirmed, dropped]
+      confirmed: [dropped]
+      dropped: []
+    # 哪个阶段创建它
+    stage: need
+
+  ticket:
+    dir: tickets
+    prefix: T
+    states: [open, in-progress, awaiting-verification, done, abandoned]
+    transitions:
+      open: [in-progress, abandoned]
+      in-progress: [awaiting-verification, open, abandoned]
+      # awaiting-verification 可以到 done，也可以打回 in-progress（验收没过）。
+      # 第一版把这里写成 [done, in-progress] 却仍报"terminal state"，是因为读取
+      # transitions 的代码把整个 ticket 段当成了扁平结构——这里同时修 schema 与读取。
+      awaiting-verification: [done, in-progress, abandoned]
+      done: []
+      abandoned: []
+    stage: build
+    # 只有跨会话的工作才升格为票。一次会话内做完并验证的，不进这个表。
+    rule: "只在跨会话时开票。一次性工作不要开。"
+
+  incident:
+    dir: incidents
+    prefix: INC
+    # 计划外的事故。与票分开，因为触发方式不同：票是你打算做，事故是发生了。
+    states: [open, contained, closed]
+    transitions:
+      open: [contained, closed]
+      contained: [closed, open]
+      closed: []
+    stage: any
+
+  artifact:
+    dir: artifacts
+    prefix: ART
+    # 有持续成本的东西：脚本、探针、开关、面板、定时任务。
+    # 必须有 owner 和删除条件，否则会永远留着。
+    states: [active, expired]
+    transitions:
+      active: [expired]
+      expired: []
+    stage: operate
+
+# 只增不改的两个寄存器。它们没有状态，也没有状态机——
+# 这正是它们的价值：证据和回执一旦记下，就不该被润色。
+append_only:
+  - evidence
+  - receipts
+
+# 阶段到实体的映射。网站的每个阶段页会引用这一段。
+stage_entities:
+  need: [requirement]
+  design: []   # ADR 是永久记录，归 docs/adr/，不在 work/ 里
+  build: [ticket]
+  verify: [ticket, evidence]
+  ship: [receipt]
+  operate: [artifact, incident]
+  iterate: [incident, ticket]

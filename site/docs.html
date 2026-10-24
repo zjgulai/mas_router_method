@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>原始文档 · Agent Native Builder</title>
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .shell{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+  .top{position:sticky;top:0;z-index:20;background:var(--ink);color:#e9e7e0;padding:.55rem 0}
+  .top .shell{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .top a{color:#e9e7e0;text-decoration:none;font-size:.84rem;opacity:.78}
+  .top a:hover{opacity:1}
+  .top a.home{font-weight:650;opacity:1;font-family:var(--serif);font-size:.92rem}
+  .top nav{display:flex;gap:.2rem;flex-wrap:wrap;margin-left:auto}
+  .top nav a{padding:.2rem .5rem}
+  .top nav a.on{background:#e9e7e0;color:var(--ink);opacity:1}
+  main{padding:clamp(2rem,4.5vw,3.4rem) 0 4rem}
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<header class="top"><div class="shell">
+  <a class="home" href="/mas_router_method/">ANB</a>
+  <nav>
+      <a href="/mas_router_method/">总览</a>
+      <a href="/mas_router_method/01-need.html">需求</a>
+      <a href="/mas_router_method/02-design.html">设计</a>
+      <a href="/mas_router_method/03-build.html">开发</a>
+      <a href="/mas_router_method/04-verify.html">验收</a>
+      <a href="/mas_router_method/05-ship.html">交付</a>
+      <a href="/mas_router_method/06-operate.html">运营</a>
+      <a href="/mas_router_method/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/manage.html">管理</a>
+      <a href="/mas_router_method/branches.html">分支</a>
+      <a href="/mas_router_method/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/prompts.html">提示词</a>
+      <a href="/mas_router_method/docs.html" class="on">原始文档</a>
+  </nav>
+</div></header>
+<main class="shell">
+  <div class="crumb"><a href="/mas_router_method/">总览</a> / 原始文档</div>
+  <h1>原始文档</h1>
+<p class="lede">八份 HTML，<b>未改一字</b>。它们是这套方法的原始产物，页面结构各不相同——因为写的时候是在解决具体问题，不是在设计一个站点。</p>
+<div class="note">这八份文档<b>不遵循本站的导航结构</b>，它们是独立的单页。你打开后会看到和下面列表不同的排版，这是有意的：
+改它们会让「原文」变成「改编」，而这套方法的全部价值建立在可追溯上。<br><br>每份文档都在仓库里，路径见页脚。</div>
+<div class="grid two">
+<a class="card" id="failure-atlas.html" href="/mas_router_method/failure-atlas.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">失败图鉴 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">failure-atlas.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">六类假信号，和你读它的三种错法。全部来自真实运行，每条都给了"你怎么自己发现"的动作。</p></a>
+<a class="card" id="decision-tree.html" href="/mas_router_method/decision-tree.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">决策树 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">decision-tree.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">三个问题定位到你该在哪一步。含"怀疑有假信号"和"卡住了"两个额外入口。</p></a>
+<a class="card" id="terms.html" href="/mas_router_method/terms.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">术语表 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">terms.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">每个技术词三栏：它在说什么、坏了会怎样、你怎么一眼看出来。</p></a>
+<a class="card" id="capability-map.html" href="/mas_router_method/capability-map.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">能力图谱 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">capability-map.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">按六个能力域拆解一个真实 agent 产品：30 项能力、成熟度、以及逐条诊断。</p></a>
+<a class="card" id="anb-proposal.html" href="/mas_router_method/anb-proposal.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">方案 v0 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">anb-proposal.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">这套方法最初的设计：问题、五条原则（每条挂一个真实事故）、六步闭环、三件套分工。</p></a>
+<a class="card" id="atlas-test-report.html" href="/mas_router_method/atlas-test-report.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">实测一：七个问句够不够 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">atlas-test-report.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">用第一次实测检验七问句，发现它们漏了一整类：产出可用度。</p></a>
+<a class="card" id="anb2-report.html" href="/mas_router_method/anb2-report.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">实测二：用修正后的方法 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">anb2-report.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">用补过的四条质量问句做第二个产品，发现"检查通过但理由错"这一层。</p></a>
+<a class="card" id="anb2-full.html" href="/mas_router_method/anb2-full.html" style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">实测二：完整六步 <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">anb2-full.html</span></h3><p style="margin:0;font-size:.9rem;color:var(--muted)">六步走完，三步没过。含观测污染、配额墙、以及阶段六规则被自己推翻。</p></a>
+</div>
+<h2>它们之间的关系</h2>
+<table><thead><tr><th style="width:26%">文档</th><th>在这套方法里的角色</th></tr></thead><tbody><tr><td>能力图谱</td><td><b>诊断</b>：一个真实项目的现状，用来证明六类假信号是真的，不是想出来的。</td></tr><tr><td>失败图鉴</td><td><b>核心</b>：六类假信号 + 七问句 + 四质量问句 + 三种读法错误。这是整套方法最该读的一页。</td></tr><tr><td>决策树</td><td><b>导航</b>：不知道下一步时用。本网站的七个阶段页是它的展开版。</td></tr><tr><td>术语表</td><td><b>翻译</b>：把技术词翻成"坏了会怎样"。第三栏才是给人用的。</td></tr><tr><td>方案 v0</td><td><b>原始设计</b>：六步闭环的初版。本站的七阶段是在它基础上补了「设计」和「运营」。</td></tr><tr><td>实测一</td><td><b>自我检验</b>：用自己的方法检查自己，发现七问句漏了一类。</td></tr><tr><td>实测二（报告）</td><td><b>修正验证</b>：补齐后再做一次，发现补得对，但仍有一层漏。</td></tr><tr><td>实测二（完整）</td><td><b>走完全程</b>：六步都做了，三步的验收做不到，如实记录。</td></tr></tbody></table>
+  
+</main>
+<div class="shell"><footer>
+  Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/docs.html">原始文档</a>。
+</footer></div>
+</body>
+</html>
