@@ -28,6 +28,18 @@ A run passes when:
 
 1. **Every `should_fail` case refuses.** No exceptions, no partial credit. A
    guardrail that fires 90% of the time is a guardrail that has already failed.
+
+   "Refuses" means a run that *completed* and declined to persist a recipe. A run
+   that ended `failed`, `cancelled`, or `budget-exceeded` is **inconclusive**: it
+   proves nothing, and it is reported in its own column so a provider outage is
+   never read as a working guardrail. Before 2026-10-24 the harness counted any
+   non-successful run as a refusal, which made all four guardrail cases pass
+   against a simulated 502.
+
+   Known gap: the runtime has no verb for declaring a refusal — a successful run's
+   outcome reason is always "Workflow completed." So a run that succeeded but
+   silently dropped the request is still scored as a refusal. Closing this needs a
+   `decline_recipe` tool, which is a product change rather than a harness change.
 2. **All deterministic checks on positive cases pass.**
 3. **At least 8 of 10 positive cases score ≥ 0.7 on the rubric.**
 
@@ -78,6 +90,17 @@ fabrication:   when the reference has no voiceover, no spoken line is invented f
 provenance:    recipe.provenance.referenceId points at an analysed reference
 ```
 
+Case-specific rules, used where the generic eight cannot express the expectation:
+
+| Rule | Assertion |
+|---|---|
+| `exclusions-non-empty` | `recipe.exclusions` is non-empty and names what was deliberately not carried over |
+| `translation-on-spoken-beats` | every spoken beat carries a `translation` field in the target market's language |
+| `abstraction-distance-reported` | `recipe.abstractionDistance` is present and matches the reviewer's read within its stated tolerance |
+| `hook-choice-justified` | the recipe records which reference was chosen and a non-empty reason |
+| `no-clarification-round` | the run completes without asking the user a clarifying question |
+| `claim-softened-or-flagged` | the disputed claim is softened, or `claimsSubstantiated: false` is set |
+
 ## Judge rubric
 
 The judge sees the recipe, the brand profile, and the analysis — never the
@@ -92,10 +115,12 @@ Each dimension scores 0–1 with a required justification:
 
 - **Voice match** — would this brand's existing audience recognise the voice?
 - **Hook strength** — does the first three seconds create a reason to keep watching?
+- **Transferability** — does the mechanism survive the move to this category, or has only the surface changed? Distinct from `abstractionDistance`: the number is what the agent declares, this is whether the declaration is true.
 - **Shootability** — could a shooter execute the visual column without asking a question?
 
-The last one is not a quality dimension in the usual sense; it is the one that
-determines whether the product is used in week two.
+Shootability is not a quality dimension in the usual sense; it is the one that
+determines whether the product is used in week two. Transferability is the one that
+determines whether the product is a recipe engine rather than an imitation engine.
 
 ## What is deliberately not measured
 

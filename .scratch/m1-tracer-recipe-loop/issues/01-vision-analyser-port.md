@@ -1,10 +1,10 @@
 # 01: A real vision analyser behind the existing port
 
-**What to build:** `VisionAnalyzer.analyze()` implemented against the model, so
-`analyze_reference_video` returns a real `ReferenceAnalysis` for a real TikTok URL
-instead of throwing.
+**What to build:** `VisionAnalyzer.analyze()` implemented against the provider
+chosen by the spike (ticket 00, ADR 0007), so `analyze_reference_video` returns a
+real `ReferenceAnalysis` for a real TikTok URL instead of throwing.
 
-**Blocked by:** None (can start immediately)
+**Blocked by:** 00
 
 **Status:** ready-for-agent
 

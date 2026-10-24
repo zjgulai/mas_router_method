@@ -40,16 +40,16 @@ surface gets built on it.
 
 ## Decisions already made
 
-**The vision analyser is a port.** `VisionAnalyzer` already exists in
-`packages/core/src/tools/brand.ts`. The first real implementation can be a single
-model call with the video frames attached; it must validate its output against
-`ReferenceAnalysis` before returning, because a malformed analysis silently
-becomes a bad script.
+**The vision analyser is a port, implemented by a dedicated service.** ADR 0007
+chose a dedicated video-understanding service over model-plus-sampled-frames. The
+provider is selected by the spike in `docs/evals/vision-spike.md`. The adapter must
+validate its output against `ReferenceAnalysis` before returning, because a
+malformed analysis silently becomes a bad script.
 
-**Persistence is a port too.** No database decision is required for this tracer.
-An in-memory implementation behind `RecipeStore` proves the loop and lets the
-schema change cheaply; the tracer earns the database choice rather than
-pre-empting it.
+**Persistence is a port, backed by SQLite for the tracer.** ADR 0006 settles the
+storage decision: SQLite through adapters now, Postgres before milestone 2. The
+in-memory implementations remain, but as eval fakes that must pass the same
+contract tests as the real adapter.
 
 **The workbench shows the timeline via a server-rendered page.** No client state,
 no design work. The point of this slice is that a human can read what happened,

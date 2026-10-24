@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./adapters/sqlite": "./src/adapters/sqlite/index.ts",
+    "./adapters/vod": "./src/adapters/vod/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

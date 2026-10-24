@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>术语表 · 它在说什么，坏了会怎样</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ground:#f2f1ec; --surface:#fbfaf6; --sunk:#e7e6df; --deep:#d6d5cc;
+    --ink:#191a17; --muted:#54564f; --faint:#5f6159;
+    --accent:#0d5a51; --accent-2:#d9e6e2;
+    --alert:#782c2c; --alert-2:#eedcd8;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); font-size:16.5px; line-height:1.64; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1000px; margin:0 auto; padding:0 clamp(18px,4vw,52px); }
+  main{ padding-bottom:5rem; }
+  .masthead{ padding:clamp(2.8rem,6vw,4.4rem) 0 clamp(1.5rem,3vw,2rem); }
+  .meta{ font-size:.84rem; color:var(--muted); }
+  .meta span + span::before{ content:"·"; margin:0 .55rem; color:var(--deep); }
+  h1{ font-family:var(--serif); font-weight:600; letter-spacing:-.022em; line-height:1.05; font-size:clamp(1.95rem,5vw,3.05rem); margin:.7rem 0 0; }
+  h1 em{ font-style:normal; color:var(--accent); }
+  .standfirst{ font-size:clamp(1rem,1.7vw,1.16rem); line-height:1.6; color:var(--muted); max-width:44rem; margin:1.1rem 0 0; }
+  .standfirst strong{ color:var(--ink); font-weight:600; }
+
+  .howto{ background:var(--surface); padding:1.3rem 1.45rem 1.4rem; margin-top:1.7rem; }
+  .howto h2{ font-family:var(--serif); font-size:1.18rem; font-weight:600; margin:0 0 .55rem; }
+  .howto p{ margin:0 0 .6rem; font-size:.92rem; color:var(--muted); }
+  .howto p:last-child{ margin-bottom:0; }
+  .howto b{ color:var(--ink); }
+  .howto .key{ background:var(--accent-2); color:#173f39; padding:.7rem .85rem; font-size:.89rem; margin-top:.8rem; }
+
+  section{ padding:clamp(2.2rem,4.2vw,3.2rem) 0 0; }
+  .grp{ display:flex; align-items:baseline; gap:.75rem; flex-wrap:wrap; margin-bottom:.35rem; }
+  .grp .gn{ font-family:var(--serif); font-size:1.3rem; color:var(--accent); line-height:1; }
+  h2{ font-family:var(--serif); font-size:clamp(1.32rem,2.8vw,1.7rem); font-weight:600; letter-spacing:-.02em; margin:0; }
+  .grpsub{ font-size:.91rem; color:var(--faint); margin:0 0 1.1rem; max-width:42rem; }
+
+  .term{ background:var(--surface); padding:1.15rem 1.35rem 1.25rem; margin-bottom:1px; }
+  .term h3{ margin:0; font-size:1.01rem; font-weight:650; letter-spacing:-.005em; }
+  .term h3 .en{ font-family:var(--mono); font-size:.8rem; color:var(--faint); font-weight:400; margin-left:.5rem; }
+  .term dl{ margin:.7rem 0 0; display:grid; gap:.6rem; }
+  .term dt{ font-size:.75rem; font-weight:650; letter-spacing:.02em; color:var(--faint); }
+  .term dd{ margin:.12rem 0 0; font-size:.9rem; color:var(--muted); }
+  .term dd b{ color:var(--ink); }
+  .term .bad dt{ color:var(--alert); }
+  .term .bad dd{ color:#4a1e1e; }
+  .term .see dt{ color:var(--accent); }
+  .term .see dd{ color:#173f39; }
+  .term code{ font-family:var(--mono); font-size:.86em; background:var(--sunk); padding:.05em .3em; }
+
+  .closing{ background:var(--ink); color:#e9e7e0; padding:clamp(1.6rem,3.2vw,2.4rem) clamp(1.2rem,3.1vw,2.2rem); margin-top:clamp(2.1rem,4.2vw,3.2rem); }
+  .closing h2{ color:#fbfaf6; font-family:var(--serif); font-size:clamp(1.25rem,2.5vw,1.6rem); margin:0 0 .85rem; }
+  .closing p{ color:#b9b7ae; max-width:42rem; }
+  .closing b{ color:#fdfcf8; }
+  footer{ margin-top:2rem; padding:1.1rem 1.2rem; background:var(--sunk); font-size:.8rem; color:var(--muted); line-height:1.7; }
+  footer code{ font-family:var(--mono); font-size:.94em; }
+  @media print{ body{ background:#fff; } .term{ break-inside:avoid; } .closing{ background:#fff; border:1px solid #999; } .closing p, .closing b, .closing h2{ color:#000; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+
+<header class="masthead">
+  <div class="meta"><span>Agent Native Builder · 第三页</span><span>2026-10-24</span><span>读者：不写代码的产品开发者</span></div>
+  <h1>这些词它在说<em>什么</em><br>坏了会怎样</h1>
+  <p class="standfirst">
+    你不写代码，但你要读它给你的报告、要判断它说的「做好了」是不是真的。
+    <strong>所以每个词给你三栏：它指的是什么、这个词相关的环节坏掉时你会看到什么、你怎么一眼看出来。</strong>
+    第三栏才是你真正要用的。
+  </p>
+</header>
+
+<div class="howto">
+  <h2>怎么用</h2>
+  <p>不用背。你在它的话里看到一个不认识的词，回来查一次；查三次之后就不需要再查了。</p>
+  <p><b>先看第二栏。</b>如果那个「坏了会怎样」的场景你听着耳熟，直接看第三栏的动作——比理解这个词本身有用得多。</p>
+  <div class="key">判断标准：一个词如果你只知道意思、不知道它坏了是什么样，那你还是不能用它做判断。这一页就是为了补后面那一半。</div>
+</div>
+
+<!-- ============ 1 ============ -->
+<section>
+  <div class="grp"><span class="gn">一</span><h2>它说「做完了」时用的词</h2></div>
+  <p class="grpsub">这一组是你最常遇到的，也是最容易被糊弄的一组。</p>
+
+  <div class="term">
+    <h3>跑通<span class="en">it runs</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>程序从头到尾执行了一遍，没有中途崩掉。仅此而已——它<b>不代表</b>结果是对的、有用的、或者是你想要的。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>最常见的坏法不是崩，是<b>跑通了但跑的是假的</b>：界面能用、按钮有反应，背后是准备好的样例数据。你以为通了，实际只通了外壳。<b>这次实测里我就见过：31 个检查全过，第一次真实运行必失败。</b></dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问一句「用的是真数据还是假数据」。然后<b>自己随手找一个输入给它</b>，不要用它给的样例。换第二个说不上来的输入再试一次——第一个可能是特判的。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>测试通过<span class="en">tests passing</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>事先写好的一批自动检查都过了。它证明的是<b>「在你测的那些情况里它没出错」</b>，不证明「它在别的情况下也不会出错」，更不证明「它做出来的东西好用」。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>三种假的通过：检查程序自己出错时记成通过；该检查的部分没实现，记成「跳过」而跳过算通过；检查写好了但没接进最终判定，等于不存在。<b>三种都让报告显示全绿。</b></dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问两个问题：<b>「这次有几条跳过了，为什么」</b>和<b>「上次有检查失败是什么时候，给我看那次记录」</b>。一条从没失败过的检查，很可能不是检查。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>完成<span class="en">done</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>它认为这件事达到它理解的目标了。<b>而「它理解的目标」和你想要的经常不是一回事</b>——尤其是你只说了功能没说用途的时候。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>你会收到一份看起来完整的交付，做的是它猜的那个目标。而「猜错方向」比「没做完」更难发现，因为它有产出，你会倾向于接受它。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问「用什么动作能证明它完成了」。如果答案是「看代码」「应该没问题」「测试过了」，那不算——<b>必须是一个你能亲手做的动作</b>。</dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+  <div class="grp"><span class="gn">二</span><h2>它说「花了多少钱」时的词</h2></div>
+  <p class="grpsub">做 AI 产品和做别的产品最大的不同：每次运行都在花钱。所以这一组你必须能看懂。</p>
+
+  <div class="term">
+    <h3>Token<span class="en">token</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>模型按「块」算钱和算容量，一块就是一小段文字（大致是一个词或半个词）。<b>中文一个字大约 1–2 块，英文一个词大约 1 块多。</b>你输入的和它输出的都要算。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>真正的坑不是贵，是<b>看不见</b>：你让它记住一整份长文档，之后每问一次都要把那份文档重新算一遍钱。用久了成本会自己胀上去，而单次看每次都「不贵」。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问「这次用掉多少，其中多少是我贴进去的内容，多少是它自己说的话」。如果它答不上这两个数的区别，它就没在记。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>成本上限<span class="en">budget / max cost</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>一次运行最多花多少，超了就停。这是唯一能防止「一晚上跑掉一个月的钱」的东西。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>最常见的是<b>上限设了但从不触发</b>：代码在那儿，注释还写着「没有它就会超支」，但检查的那个数字只在结束时才有值，条件永远不成立。<b>这次实测里就有一个这样的，至今没修。</b></dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>不要问「有没有上限」，问<b>「它上次拦住是什么时候，给我看那次记录」</b>。拿不出证据，就当它不存在。同一个问法适用于任何「有上限的东西」：重试次数、请求大小、并发数。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>上下文窗口<span class="en">context window</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>模型一次能「同时看见」的内容总量有上限。超出就得丢掉一些——丢什么由程序决定，不由你决定。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>聊到很长之后，它开始忘记前面的约定、重复问已经回答过的事、或者忘掉你给过的限制。你以为是它变笨了，其实是<b>你要它记住的东西被挤出去了</b>。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>让它忽然复述一条很早之前给过它的限制（比如「我说过不能提什么」）。它复述不出来，就是被挤掉了。<b>这时候该做的不是重说一遍，是把那条限制写进「永远不许丢」的地方。</b></dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section>
+  <div class="grp"><span class="gn">三</span><h2>它说「我改好了」时的词</h2></div>
+  <p class="grpsub">这一组最危险，因为改动本身看不出来，只有后果能看出来。</p>
+
+  <div class="term">
+    <h3>提示词 / 系统提示<span class="en">prompt / system prompt</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>你（或者它）写给模型的那段长期指令：你是谁、怎么做事、不许做什么。<b>它不是代码，改一个字行为就可能变。</b></dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>改提示词是最容易的改动，所以会被用来解决一切问题——包括那些其实应该改代码的问题。改完「感觉好点了」，但没有测量，你无法知道它是不是在别处变差了。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问「这次改的是提示词还是代码，为什么是这一边」。如果每次出问题它都改提示词，说明它没有别的办法——那说明缺的是机制，不是措辞。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>回归<span class="en">regression</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>原本好的东西被改坏了。它和「没做好」不同：<b>回归是「以前能用的现在不能用了」</b>。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>没有留存旧结果，就永远发现不了回归。你会一直以为产品在变好，直到某个客户告诉你三个月前那个功能不能用了。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问「改之前的结果还留着吗，能拿来对比吗」。留不下来，就没有回归这个概念——只能说「这次看起来还行」。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>把坏的当成好的<span class="en">false positive</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>检查报「通过」，实际是坏的。这是这套方法里反复出现的假信号的共同形状，也是对你伤害最大的一种错误。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>你会带着一个坏产品往前走，而且每一步都在它上面加东西。发现得越晚，返工越贵。<b>比这更糟的是：你会因为「一直很顺」而对它产生信任，之后连怀疑都不会有了。</b></dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>这一页的第三栏全部是为这个准备的。<b>最通用的一招：想办法让它失败一次，看它会不会告诉你。</b>不会告诉你的，就是假的。</dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section>
+  <div class="grp"><span class="gn">四</span><h2>它说「接好了」时的词</h2></div>
+  <p class="grpsub">这一组关系到「别人能不能用上」。</p>
+
+  <div class="term">
+    <h3>接口 / API<span class="en">API</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>两个程序之间说话的约定：你给我什么、我还你什么。<b>说「接好了接口」的意思是「两个程序能互相说话了」，不代表说对了话。</b></dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>能连上但内容对不上——比如对方给的是「元」，你当成「分」；对方偶尔返回空，你没处理，于是页面空白。这类错误不会报错，只会产出错的东西。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问「如果对方返回空，会发生什么」加上「如果我故意传一个错的值，会发生什么」。这两个都是「不该发生」的情况，而真实世界里最常见的就是它们。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>密钥 / 环境变量<span class="en">API key / env var</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>那些不能写进代码里的密码（访问别家服务的凭证）。通常放在一个配置文件里，程序启动时读进来。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>两个方向都坏：<b>泄露</b>（被写进代码提交出去，任何人都能用你的账号花钱）或者<b>缺失</b>（在你电脑上配好了，别人那里没有，于是别人一用就崩）。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问「这个密钥在几个地方能读到」和「别人拿到这个项目，需要自己做哪几步才能跑起来」。后一个问题的答案就是「交付需要补的洞」。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>部署 / 上线<span class="en">deploy</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>把它从「你的电脑上能跑」变成「一个地址，谁都能打开」。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>最常见的是<b>「本地能跑」被说成「可以用了」</b>。区别在于：密钥、域名、权限、数据这四件事在你电脑上全都是配好的，在别人那里全都是缺的。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>用手机打开那个地址。<b>打得开，才算部署了。</b>打不开，前面做的一切都还没交付。</dd></div>
+    </dl>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section>
+  <div class="grp"><span class="gn">五</span><h2>它说「有记录」时的词</h2></div>
+  <p class="grpsub">这一组决定「出事时你能不能查」。写得少，但缺了就很难补。</p>
+
+  <div class="term">
+    <h3>日志<span class="en">log</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>程序自己记下的流水账：什么时候发生了什么。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>三种：<b>只记成功不记失败</b>（于是你永远不知道失败多少次）；<b>记了但丢了</b>（内容太长存不进去，而错误被吞掉，你看到的是「成功」）；<b>记的全是技术细节</b>（你要的三个数字一个都找不到）。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd><b>做三次，去历史里数几条。</b>做 N 次数 N 条就对了。再故意弄坏一次，看那次失败在不在里面。</dd></div>
+    </dl>
+  </div>
+
+  <div class="term">
+    <h3>超时<span class="en">timeout</span></h3>
+    <dl>
+      <div><dt>它在说什么</dt><dd>等一个操作最多等多久，超过就放弃。没有超时的程序会无限等下去，看起来像「卡住了」。</dd></div>
+      <div class="bad"><dt>坏了会怎样</dt><dd>设得太长，用户体验是「点了没反应」；<b>设了但没处理失败</b>，超时之后程序继续用一个空结果往下走，产出错的东西而你不知道。</dd></div>
+      <div class="see"><dt>你怎么一眼看出来</dt><dd>问「超时之后会发生什么」。正确回答是「告诉用户失败了」；如果回答是「继续」或者「重试」，追问「重试几次，几次之后放弃」。</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <div class="closing">
+    <h2>这一页真正的用法</h2>
+    <p>你不该把这一页当词典读。它是一份<b>提问脚本</b>——每个词的第三栏，都是你在那个时刻应该问它的一句话。</p>
+    <p style="margin-top:.9rem">词会变。模型换代、工具换名、框架换掉，这些词两三年就会换一批。但第三栏那个结构不会变：<b>任何自动化的东西，你都要能自己想办法让它失败一次，并且它必须告诉你。</b></p>
+    <p style="margin-top:.9rem">记住这一条，这一页剩下的内容都可以忘。</p>
+  </div>
+
+  <footer>
+    配套：<code>failure-atlas.html</code>（四类假信号 + 七问句 + 四质量问句 + 读信号规则）、<code>decision-tree.html</code>（三个问题定位到阶段）、<code>atlas-test-report.html</code>（方法自身的实测记录）。
+    本文档为 Agent Native Builder 方案第四页。术语取舍原则：只收「你会在它的报告里遇到、且理解错会导致判断错」的词，技术原理类一律不收。
+  </footer>
+</section>
+
+</main>
+</div>
+</body>
+</html>

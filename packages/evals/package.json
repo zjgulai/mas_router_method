@@ -7,7 +7,12 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "eval": "tsx src/run-evals.ts",
-    "clean": "rm -rf dist .turbo *.tsbuildinfo"
+    "clean": "rm -rf dist .turbo *.tsbuildinfo",
+    "eval:fast": "tsx src/run-evals.ts --fast",
+    "eval:self-test": "tsx src/run-evals.ts --self-test",
+    "eval:baseline": "tsx src/run-evals.ts --fast --save-baseline",
+    "try-one": "tsx src/try-one.ts",
+    "spike:vod": "tsx src/spike-vod.ts"
   },
   "dependencies": {
     "@mas/core": "workspace:*",

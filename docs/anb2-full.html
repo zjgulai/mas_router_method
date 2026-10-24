@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>六步走完 · 第二次实测的完整结果</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ground:#f2f1ec; --surface:#fbfaf6; --sunk:#e7e6df; --deep:#d6d5cc;
+    --ink:#191a17; --muted:#54564f; --faint:#5f6159;
+    --accent:#0d5a51; --accent-2:#d9e6e2;
+    --alert:#782c2c; --alert-2:#eedcd8;
+    --warn:#6b5312; --warn-2:#f0e8d2;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); font-size:16.5px; line-height:1.64; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1020px; margin:0 auto; padding:0 clamp(18px,4vw,52px); }
+  main{ padding-bottom:5rem; }
+  .masthead{ padding:clamp(2.8rem,6vw,4.6rem) 0 clamp(1.6rem,3.2vw,2.2rem); }
+  .meta{ font-size:.84rem; color:var(--muted); }
+  .meta span + span::before{ content:"·"; margin:0 .55rem; color:var(--deep); }
+  h1{ font-family:var(--serif); font-weight:600; letter-spacing:-.022em; line-height:1.05; font-size:clamp(1.95rem,5vw,3.1rem); margin:.7rem 0 0; }
+  h1 em{ font-style:normal; color:var(--accent); }
+  .standfirst{ font-size:clamp(1rem,1.75vw,1.18rem); line-height:1.6; color:var(--muted); max-width:44rem; margin:1.2rem 0 0; }
+  .standfirst strong{ color:var(--ink); font-weight:600; }
+
+  .tally{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--deep); margin-top:2rem; }
+  .tally > div{ background:var(--surface); padding:1.1rem 1.2rem 1.2rem; }
+  .tally b{ display:block; font-family:var(--serif); font-size:1.05rem; line-height:1.2; font-weight:600; letter-spacing:-.01em; }
+  .tally span{ display:block; margin-top:.4rem; font-size:.78rem; color:var(--muted); }
+  .tally .pass b{ color:var(--accent); }
+  .tally .part b{ color:var(--warn); }
+  .tally .fail b{ color:var(--alert); }
+
+  section{ padding:clamp(2.3rem,4.4vw,3.4rem) 0 0; }
+  h2{ font-family:var(--serif); font-size:clamp(1.35rem,3vw,1.8rem); font-weight:600; letter-spacing:-.02em; margin:0 0 .45rem; }
+  .sub{ font-size:.92rem; color:var(--faint); margin:0 0 1.25rem; max-width:42rem; }
+
+  .stage{ background:var(--surface); padding:1.25rem 1.4rem 1.35rem; margin-bottom:1px; }
+  .sh{ display:flex; align-items:baseline; gap:.7rem; flex-wrap:wrap; }
+  .sn{ font-family:var(--serif); font-size:1.18rem; color:var(--accent); line-height:1; }
+  .stage h3{ margin:0; font-size:1rem; font-weight:650; }
+  .tag{ font-size:.75rem; font-weight:650; padding:.1rem .42rem; }
+  .t-pass{ background:var(--accent-2); color:var(--accent); }
+  .t-part{ background:var(--warn-2); color:var(--warn); }
+  .stage p{ margin:.55rem 0 0; font-size:.91rem; color:var(--muted); }
+  .stage p b{ color:var(--ink); }
+  .stage .qd{ margin-top:.55rem; padding-left:.75rem; border-left:2px solid var(--accent); font-size:.88rem; color:#173f39; }
+
+  pre{ margin:.55rem 0 0; background:#20211d; color:#e6e4dc; padding:.75rem .9rem; overflow-x:auto; font-family:var(--mono); font-size:.77rem; line-height:1.5; }
+  pre .r{ color:#e8a4a0; } pre .k{ color:#9fd6c6; } pre .y{ color:#e8d9a0; }
+
+  .lesson{ background:var(--surface); padding:1.35rem 1.45rem 1.45rem; margin-bottom:1px; }
+  .lesson h3{ margin:0 0 .5rem; font-size:1rem; font-weight:650; }
+  .lesson p{ margin:0 0 .7rem; font-size:.92rem; color:var(--muted); }
+  .lesson p:last-child{ margin-bottom:0; }
+  .lesson b{ color:var(--ink); }
+  .lesson .rev{ background:var(--alert-2); color:#4a1e1e; padding:.65rem .8rem; font-size:.88rem; margin-top:.2rem; }
+  .lesson .rev b{ color:#2e1111; }
+
+  .closing{ background:var(--ink); color:#e9e7e0; padding:clamp(1.7rem,3.4vw,2.5rem) clamp(1.2rem,3.2vw,2.3rem); margin-top:clamp(2.2rem,4.4vw,3.4rem); }
+  .closing h2{ color:#fbfaf6; }
+  .closing p{ color:#b9b7ae; max-width:42rem; }
+  .closing b{ color:#fdfcf8; }
+  .closing ol{ margin:1rem 0 0; padding-left:1.2rem; color:#d5d3cb; }
+  .closing li{ margin-bottom:.7rem; font-size:.94rem; line-height:1.6; }
+  .closing li b{ color:#fdfcf8; }
+  footer{ margin-top:2.2rem; padding:1.15rem 1.25rem; background:var(--sunk); font-size:.8rem; color:var(--muted); line-height:1.7; }
+  footer code{ font-family:var(--mono); font-size:.94em; }
+  table{ border-collapse:collapse; width:100%; background:var(--surface); }
+  thead th{ font-size:.77rem; font-weight:650; color:var(--faint); text-align:left; padding:.72rem .85rem .58rem; border-bottom:1px solid var(--deep); }
+  tbody td{ font-size:.87rem; color:var(--muted); padding:.68rem .85rem; border-bottom:1px solid var(--sunk); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:0; }
+  tbody td:first-child{ color:var(--ink); font-weight:600; white-space:nowrap; }
+  @media print{ body{ background:#fff; } .stage, .lesson{ break-inside:avoid; } .closing{ background:#fff; border:1px solid #999; } .closing p, .closing b, .closing h2, .closing li{ color:#000; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+
+<header class="masthead">
+  <div class="meta"><span>第二次实测 · 完整</span><span>2026-10-24</span><span>repo-vitals · 1400 行 · 35 条检查</span></div>
+  <h1>六步走完了，<br><em>三步没过</em></h1>
+  <p class="standfirst">
+    上一次我只做到第三步。这次把六步全部走了一遍，包括那些我做不到的验收——而做不到就是做不到，
+    <strong>它们被标成未通过，不是被绕过去。</strong>
+    六步里三步真通过，一步部分通过，两步的验收动作我做不到。
+  </p>
+</header>
+
+<div class="tally">
+  <div class="part"><b>① 想法</b><span>五句写完，验收需他人复述，做不到</span></div>
+  <div class="pass"><b>② 能跑</b><span>真实输入跑通，且当场打穿产品</span></div>
+  <div class="pass"><b>③ 能判断</b><span>硬门通过，35 条检查全部可失败</span></div>
+  <div class="part"><b>④ 能交付</b><span>能起服务能打开，换设备/他人试做不到</span></div>
+  <div class="pass"><b>⑤ 能观测</b><span>三个数字，做 N 次数 N 条</span></div>
+  <div class="part"><b>⑥ 能复用</b><span>抽了运行器，但没做模板仓库</span></div>
+</div>
+
+<section>
+  <h2>三件只有走完才能发现的事</h2>
+  <p class="sub">前两件在阶段四、五，是全新的；第三件推翻了阶段六的一条规则。</p>
+
+  <div class="lesson">
+    <h3>一、观测手段会污染观测结果</h3>
+    <p>做完指标页面再去看数字，第一次就对不上：<b>总数 6，成功 1，失败归因 4，差一条。</b></p>
+    <p>查下去是两个具体原因。第一，<b>首页和错误页只增加总数、从不记录结局</b>——一次请求开了头没结尾。第二，更隐蔽的一个：<b>去看指标的这次请求，自己也被计入了指标。</b></p>
+    <div class="rev">这意味着一件反直觉的事：<b>每看一次仪表盘，数字就变一次。</b>而它是往「多」变，所以你越频繁地看，越会以为流量在涨。修法是把观测请求本身从计数里剔除——<b>观测不该改变被观测的东西</b>。</div>
+    <p style="margin-top:.7rem">这一条，七个问句和四条质量问句都抓不到。它不是「信号是假的」，是「测量动作本身产生了信号」。</p>
+  </div>
+
+  <div class="lesson">
+    <h3>二、交付阶段的失败，是别人一进来就撞墙</h3>
+    <p>阶段 4 的要求是「别人能打开」。技术上满足了：监听 <code>0.0.0.0</code>、密钥从环境读、失败给一句人话。</p>
+    <p>但我算了一下配额：<b>匿名访问每小时 60 次，每次查询用 4 次请求——十五次查询就耗尽。</b></p>
+    <div class="rev"><b>任何真的有人用的部署都必须配 token。这不是优化，是能不能用的问题。</b>而这恰好是阶段 4 要防的那类失败：本地跑得好好的，一上线就有人在第一分钟撞墙。我自己是在写完 DEPLOY 清单时才算出来的，不是设计时想到的。</div>
+  </div>
+
+  <div class="lesson">
+    <h3>三、阶段六的规则，被自己的实验推翻了</h3>
+    <p>手册说：只抽「用过三次以上」的东西。我核对了一遍——<b>三个产品的共同部分，最多用过 2 次，一项都不够。</b></p>
+    <p>按规则该什么都不抽。但直接不抽，等于没验这条规则。所以我抽了最小的一个：测试运行器。两份 162 行合成 83 行，第三个产品接上只需要 5 行。</p>
+    <div class="rev">结论是<b>规则太严，但严的方向对</b>。真正的判据不是「用了几次」，是<b>「这东西要不要在每个产品里重新验证一次它可靠」</b>。重复写代码的成本很小且线性；重复验证「它真的会红」的成本每次都一样大，而那是唯一能证明它在工作的东西。</div>
+    <p style="margin-top:.7rem">同时有一个相反的结论：<b>仓库骨架仍然不该抽</b>，原因不是用得少，是<b>它的形状会随产品变</b>。运行器的形状不变，骨架的形状每次都变。同一个阶段，两种东西的结论可以相反。</p>
+  </div>
+</section>
+
+<section>
+  <h2>六步逐项</h2>
+  <table>
+    <thead><tr><th style="width:12%">阶段</th><th style="width:10%">验收</th><th>实际发生的事</th></tr></thead>
+    <tbody>
+      <tr><td>① 想法</td><td>未完成</td><td>五句写完，并修掉自己一个错误：否定条件不能写「如果没人用」，那是废话。真正的否定条件是「这些指标不承载判断」，它可以被测量。但验收要另一个人复述用途，做不到。</td></tr>
+      <tr><td>② 能跑</td><td>通过</td><td>一条真实输入跑通。而这一跑就把产品打穿：<code>moment/moment</code> 被判为 looks solid，而它是作者自己宣布不要用的库。产品的否定条件提前显形。</td></tr>
+      <tr><td>③ 能判断</td><td>通过</td><td>七条标准，先写检查后改产品。分 A 组（机制）和 B 组（结果对不对）——B 组就是上次缺的那一类，一上来就抓住了 moment。故意弄坏四次，每次都有检查变红。</td></tr>
+      <tr><td>④ 能交付</td><td>部分</td><td>服务能起、能打开、坏输入有句子、404 有退路、密钥从环境读。但「换一台设备打开、让另一个人试」做不到，且发现不配 token 时十五次查询就用尽配额。</td></tr>
+      <tr><td>⑤ 能观测</td><td>通过</td><td>三个数字：跑几次、花多少（配额而非 token）、为什么失败。做 2 次记 2 条，两次失败都能找到且原因清楚。修掉两个真缺陷：空输入算成功、观测自己被计数。</td></tr>
+      <tr><td>⑥ 能复用</td><td>部分</td><td>抽出测试运行器（162→83 行，接入 5 行），并推翻「三次」这条规则。但模板仓库没做，理由变了：不是用得不够，是没有第三个产品，骨架形状没有样本。</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>这次抓到的六个真缺陷</h2>
+  <p class="sub">全部是我自己写出来、自己没看出来的。全部由检查或真实数据发现，没有一个由推理发现。</p>
+  <table>
+    <thead><tr><th style="width:26%">缺陷</th><th style="width:22%">谁发现的</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>moment 被判满分</td><td>真实输入</td><td>元数据全绿，真相只在 README 里</td></tr>
+      <tr><td>B4 通过但理由错</td><td>追问「靠哪一条通过」</td><td>抓的是陈旧，不是废弃。活跃但已废弃的库会漏</td></tr>
+      <tr><td>检测器认不出真实措辞</td><td>真实数据</td><td>「legacy project / maintenance mode」不在我写的模式里</td></tr>
+      <tr><td>jquery 误报</td><td>真实数据</td><td>「2.x 和 1.x 分支不再支持」被当成项目废弃</td></tr>
+      <tr><td>首页只增不减</td><td>数字对不上</td><td>请求开了头没结尾，总数与归因差一条</td></tr>
+      <tr><td>观测污染观测</td><td>数字对不上</td><td>看仪表盘这次请求自己也被计数</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <div class="closing">
+    <h2>这套方法现在缺什么</h2>
+    <p>它已经能抓住大部分「假信号」，但这次暴露了两类它现在还抓不到的：</p>
+    <ol>
+      <li><b>测量动作本身产生信号。</b>看仪表盘改变仪表盘、跑测试改变状态、加观测影响性能。这类问题的特征是「数字对不上」，而现有问句里没有一条问「总数和分项对得上吗」。要补的动作是：<b>把总数拆开加一遍。</b></li>
+      <li><b>验收动作需要的能力你没有。</b>阶段 1 和 4 都卡在「需要另一个人」。手册假设你能找到人试，实际可能找不到。这种情况下正确的做法不是跳过，是<b>把它记成未通过并且继续</b>——但必须写下来，因为「这一步没验」和「这一步验过了」在后来的记忆里会混成一个。</li>
+    </ol>
+    <p style="margin-top:1.1rem">还有一件更根本的：<b>六步走完，产品仍然没有被人用过一次。</b>所有检查都是我自己在验自己。这一步手册答不了——它只能告诉你哪些是假的，不能告诉你有没有人要。</p>
+    <p style="margin-top:.9rem">而这是这套方法边界上的一句话，值得写在最前面：<b>它能让你不骗自己，不能让你不骗市场。</b></p>
+  </div>
+
+  <footer>
+    <b>产物</b>：<code>anb2-repo-vitals/</code>（1400 行，35 条检查，<code>node test/runner.js</code> 可复现；<code>node src/server.js</code> 起服务）。
+    <b>阶段记录</b>：<code>IDEA.md</code>、<code>CRITERIA.md</code>、<code>DEPLOY.md</code>、<code>template-experiment/attempt.md</code>。
+    <b>验证方式</b>：破坏四次（检测器恒返未废弃 → 2 红；删误报防线 → jquery 误判 1 红；首页计入 → 计数不守恒；观测被计数 → 计数不守恒）。
+    <b>未验证</b>：任何真人使用、任何第二台设备、任何公网部署。
+  </footer>
+</section>
+
+</main>
+</div>
+</body>
+</html>

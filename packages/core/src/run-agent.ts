@@ -35,6 +35,8 @@ export interface AgentRunResult {
   outcome: { reason: string; retryable: boolean };
   /** SDK session id, so a human can resume the conversation later. */
   sessionId?: string;
+  /** Set by `createRuntime` once the run has been recorded in the RunStore. */
+  runId?: string;
 }
 
 export interface RunAgentOptions {

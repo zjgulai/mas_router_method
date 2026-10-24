@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>决策树 · 我现在该做什么</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ground:#f2f1ec; --surface:#fbfaf6; --sunk:#e7e6df; --deep:#d6d5cc;
+    --ink:#191a17; --muted:#54564f; --faint:#5f6159;
+    --accent:#0d5a51; --accent-2:#d9e6e2;
+    --alert:#782c2c; --alert-2:#eedcd8;
+    --warn:#6b5312; --warn-2:#f0e8d2;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); font-size:16.5px; line-height:1.64; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1000px; margin:0 auto; padding:0 clamp(18px,4vw,52px); }
+  main{ padding-bottom:5rem; }
+  .masthead{ padding:clamp(2.8rem,6vw,4.6rem) 0 clamp(1.6rem,3.2vw,2.2rem); }
+  .meta{ font-size:.84rem; color:var(--muted); }
+  .meta span + span::before{ content:"·"; margin:0 .55rem; color:var(--deep); }
+  h1{ font-family:var(--serif); font-weight:600; letter-spacing:-.022em; line-height:1.05; font-size:clamp(2rem,5.2vw,3.2rem); margin:.7rem 0 0; }
+  h1 em{ font-style:normal; color:var(--accent); }
+  .standfirst{ font-size:clamp(1.02rem,1.75vw,1.2rem); line-height:1.6; color:var(--muted); max-width:44rem; margin:1.2rem 0 0; }
+  .standfirst strong{ color:var(--ink); font-weight:600; }
+
+  .starthere{ background:var(--surface); padding:1.4rem 1.5rem 1.5rem; margin-top:1.8rem; }
+  .starthere h2{ font-family:var(--serif); font-size:1.22rem; font-weight:600; margin:0 0 .5rem; }
+  .starthere p{ margin:0; font-size:.93rem; color:var(--muted); }
+  .starthere .big{ font-size:1.05rem; color:var(--ink); margin-top:.7rem; }
+
+  section{ padding:clamp(2.3rem,4.4vw,3.4rem) 0 0; }
+  h2{ font-family:var(--serif); font-size:clamp(1.4rem,3vw,1.8rem); font-weight:600; letter-spacing:-.02em; margin:0 0 .45rem; }
+  .sub{ font-size:.92rem; color:var(--faint); margin:0 0 1.3rem; max-width:42rem; }
+
+  /* question cards */
+  .q-block{ background:var(--surface); padding:1.5rem 1.5rem 1.6rem; margin-bottom:1px; }
+  .q-label{ font-size:.76rem; font-weight:650; color:var(--accent); letter-spacing:.02em; }
+  .q-block h3{ margin:.25rem 0 .9rem; font-size:1.15rem; font-weight:650; letter-spacing:-.01em; }
+  .branches{ display:grid; gap:1px; background:var(--deep); margin-top:.3rem; }
+  .branch{ background:var(--surface); padding:.95rem 1.1rem; display:grid; grid-template-columns:auto 1fr; gap:.4rem .9rem; align-items:baseline; }
+  .branch .arrow{ font-family:var(--mono); font-size:.85rem; color:var(--faint); }
+  .branch .body p{ margin:0; font-size:.92rem; color:var(--muted); }
+  .branch .body p + p{ margin-top:.4rem; }
+  .branch .body b{ color:var(--ink); }
+  .branch .to{ font-size:.82rem; font-weight:650; color:var(--accent); }
+  .branch.hot .to{ color:var(--alert); }
+
+  /* stage map */
+  .map{ background:var(--surface); padding:1.2rem .8rem; margin-top:.3rem; overflow-x:auto; }
+  svg{ display:block; width:100%; min-width:660px; height:auto; }
+
+  /* table */
+  table{ border-collapse:collapse; width:100%; background:var(--surface); }
+  thead th{ font-size:.77rem; font-weight:650; color:var(--faint); text-align:left; padding:.75rem .85rem .6rem; border-bottom:1px solid var(--deep); }
+  tbody td{ font-size:.87rem; color:var(--muted); padding:.72rem .85rem; border-bottom:1px solid var(--sunk); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:0; }
+  tbody td:first-child{ color:var(--ink); font-weight:600; }
+
+  /* stuck cards */
+  .stuck{ display:grid; gap:1px; background:var(--deep); margin-top:.3rem; }
+  .stuck > div{ background:var(--surface); padding:1.15rem 1.3rem 1.25rem; }
+  .stuck h4{ margin:0 0 .45rem; font-size:.98rem; font-weight:650; }
+  .stuck p{ margin:0; font-size:.9rem; color:var(--muted); }
+  .stuck p + p{ margin-top:.5rem; }
+  .stuck p b{ color:var(--ink); }
+  .stuck .do{ color:var(--accent); font-weight:600; }
+
+  .closing{ background:var(--ink); color:#e9e7e0; padding:clamp(1.7rem,3.4vw,2.5rem) clamp(1.2rem,3.2vw,2.3rem); margin-top:clamp(2.2rem,4.4vw,3.4rem); }
+  .closing h2{ color:#fbfaf6; }
+  .closing p{ color:#b9b7ae; max-width:42rem; }
+  .closing b{ color:#fdfcf8; }
+  footer{ margin-top:2.2rem; padding:1.15rem 1.25rem; background:var(--sunk); font-size:.8rem; color:var(--muted); line-height:1.7; }
+  footer code{ font-family:var(--mono); font-size:.94em; }
+  @media print{ body{ background:#fff; } .map{ break-inside:avoid; } .closing{ background:#fff; border:1px solid #999; } .closing p, .closing b, .closing h2{ color:#000; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+
+<header class="masthead">
+  <div class="meta"><span>Agent Native Builder · 第二页</span><span>2026-10-24</span><span>读者：不写代码的产品开发者</span></div>
+  <h1>我现在<em>该做什么</em></h1>
+  <p class="standfirst">
+    回答三个问题，定位到你该在的那一步。不用看完整流程。
+    <strong>如果你的答案是「我不知道自己现在卡在哪」，直接跳到最后一节</strong>——那里有四种最常见的卡住，每种对应一个动作。
+  </p>
+</header>
+
+<div class="starthere">
+  <h2>先说一件会让你省很多时间的事</h2>
+  <p>六步不是必须按顺序走完的清单。它是六道<b>门</b>：你不知道下一步做什么的时候，回头看自己上一次真正完成的是哪一步，下一步就是它后面那个。</p>
+  <p class="big">判断「完成」的标准只有一个：那一步的产物存在，而且你亲手验过。</p>
+</div>
+
+<section>
+  <h2>三个问题</h2>
+  <p class="sub">按顺序问。第一个能答上来就不用问第二个。</p>
+
+  <div class="q-block">
+    <div class="q-label">问题一</div>
+    <h3>你能用一句话说出「谁在什么情况下用它，用完他能做什么以前做不到的事」吗？</h3>
+    <div class="branches">
+      <div class="branch hot">
+        <span class="arrow">不能</span>
+        <div class="body">
+          <p>你说的是功能（「要有登录」「能导出」）或者方向（「用 AI 做内容」），不是用途。</p>
+          <p class="to">→ 你在第 1 步：想法</p>
+        </div>
+      </div>
+      <div class="branch">
+        <span class="arrow">能</span>
+        <div class="body"><p>继续问第二个。</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label">问题二</div>
+    <h3>有没有一条真实的输入，你已经让它跑完过整条路，并且出来的结果是你能拿给别人看的？</h3>
+    <div class="branches">
+      <div class="branch hot">
+        <span class="arrow">没有</span>
+        <div class="body">
+          <p>或者：跑通的是界面，背后还是假数据；或者你只跑过它准备好的样例。</p>
+          <p class="to">→ 你在第 2 步：能跑</p>
+        </div>
+      </div>
+      <div class="branch">
+        <span class="arrow">有</span>
+        <div class="body"><p>继续问第三个。</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="q-block">
+    <div class="q-label">问题三</div>
+    <h3>如果这条路上有东西坏了，你能在不问任何人的情况下看出是哪一层出了问题吗？</h3>
+    <div class="branches">
+      <div class="branch">
+        <span class="arrow">不能</span>
+        <div class="body">
+          <p>你不知道它失败了几次、花了多少、为什么失败。</p>
+          <p>先补第 5 步（能观测），不要往下做功能。<b>没有观测就做功能，等于在黑暗里往前挪。</b></p>
+          <p class="to">→ 你在第 5 步：能观测</p>
+        </div>
+      </div>
+      <div class="branch">
+        <span class="arrow">能</span>
+        <div class="body">
+          <p>你已经跑通并且看得见了。剩下的是「怎么知道它好不好」和「怎么让别人用上」——这两件事的顺序很重要，<b>先判断，再交付</b>。</p>
+          <p class="to">→ 你在第 3 步：能判断（如果还没定标准）或第 4 步：能交付</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>六步的位置</h2>
+  <p class="sub">真实推进里，第 5 步（观测）常常要提前做——上面第三个问题就是这么用的。这不是流程错误，是它本来就该早。</p>
+
+  <div class="map">
+    <svg viewBox="0 0 880 250" role="img" aria-label="六步位置图">
+      <defs>
+        <marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#0d5a51"/>
+        </marker>
+        <marker id="b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#782c2c"/>
+        </marker>
+      </defs>
+      <g font-family="ui-sans-serif, system-ui, sans-serif">
+        <rect x="8" y="60" width="128" height="70" fill="#fbfaf6" stroke="#0d5a51" stroke-width="1.4"/>
+        <text x="20" y="84" font-size="12.5" font-weight="650" fill="#0d5a51">1 想法</text>
+        <text x="20" y="103" font-size="11" fill="#54564f">谁·何时·为什么</text>
+        <text x="20" y="119" font-size="11" fill="#54564f">做完能做什么</text>
+
+        <rect x="152" y="60" width="128" height="70" fill="#fbfaf6" stroke="#0d5a51" stroke-width="1.4"/>
+        <text x="164" y="84" font-size="12.5" font-weight="650" fill="#0d5a51">2 能跑</text>
+        <text x="164" y="103" font-size="11" fill="#54564f">真实输入</text>
+        <text x="164" y="119" font-size="11" fill="#54564f">走完全程出结果</text>
+
+        <rect x="296" y="60" width="128" height="70" fill="#fbfaf6" stroke="#782c2c" stroke-width="1.6"/>
+        <text x="308" y="84" font-size="12.5" font-weight="650" fill="#782c2c">3 能判断</text>
+        <text x="308" y="103" font-size="11" fill="#54564f">什么算好</text>
+        <text x="308" y="119" font-size="11" fill="#54564f">而且能自动测</text>
+
+        <rect x="440" y="60" width="128" height="70" fill="#fbfaf6" stroke="#0d5a51" stroke-width="1.4"/>
+        <text x="452" y="84" font-size="12.5" font-weight="650" fill="#0d5a51">4 能交付</text>
+        <text x="452" y="103" font-size="11" fill="#54564f">别人能打开</text>
+        <text x="452" y="119" font-size="11" fill="#54564f">不需要你在旁</text>
+
+        <rect x="584" y="60" width="128" height="70" fill="#fbfaf6" stroke="#0d5a51" stroke-width="1.4"/>
+        <text x="596" y="84" font-size="12.5" font-weight="650" fill="#0d5a51">5 能观测</text>
+        <text x="596" y="103" font-size="11" fill="#54564f">跑几次·花多少</text>
+        <text x="596" y="119" font-size="11" fill="#54564f">为什么失败</text>
+
+        <rect x="728" y="60" width="144" height="70" fill="#fbfaf6" stroke="#0d5a51" stroke-width="1.4"/>
+        <text x="740" y="84" font-size="12.5" font-weight="650" fill="#0d5a51">6 能复用</text>
+        <text x="740" y="103" font-size="11" fill="#54564f">下一个产品</text>
+        <text x="740" y="119" font-size="11" fill="#54564f">从这里起步</text>
+      </g>
+      <line x1="136" y1="95" x2="148" y2="95" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#a)"/>
+      <line x1="280" y1="95" x2="292" y2="95" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#a)"/>
+      <line x1="424" y1="95" x2="436" y2="95" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#a)"/>
+      <line x1="568" y1="95" x2="580" y2="95" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#a)"/>
+      <line x1="712" y1="95" x2="724" y2="95" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#a)"/>
+
+      <path d="M648,130 L648,170 L366,170 L366,196" fill="none" stroke="#782c2c" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#b)"/>
+      <text x="380" y="188" font-size="11" fill="#782c2c" font-family="ui-sans-serif, system-ui, sans-serif">观测常常要提前做：看不见就别往下做</text>
+
+      <text x="308" y="40" font-size="11" font-weight="650" fill="#782c2c" font-family="ui-sans-serif, system-ui, sans-serif">唯一的硬门：这一步不过，不往下走</text>
+      <line x1="360" y1="46" x2="360" y2="56" stroke="#782c2c" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <table style="margin-top:1.2rem">
+    <thead><tr><th style="width:14%">步骤</th><th style="width:38%">这一步唯一要产出的是</th><th>你亲手验的动作</th></tr></thead>
+    <tbody>
+      <tr><td>1 想法</td><td>一页：谁、何时、为什么现在没有更好的办法、做完能做什么、什么情况说明不该做</td><td>念给一个不懂技术的人，他能复述出用途</td></tr>
+      <tr><td>2 能跑</td><td>一条真实输入跑通的完整路径</td><td>给一个你自己随手找的输入，再换一个说不上来的</td></tr>
+      <tr><td>3 能判断</td><td>5–10 条判断标准，每条都能自动跑</td><td>故意做坏一次，看它红不红；断网，看它报「无法判断」</td></tr>
+      <tr><td>4 能交付</td><td>一个别人能打开的链接</td><td>用手机打开，找一个人试一次</td></tr>
+      <tr><td>5 能观测</td><td>三个数字：跑几次、花多少、为什么失败</td><td>故意弄坏一次，去记录里找不找得到</td></tr>
+      <tr><td>6 能复用</td><td>一份只用过三次以上的东西抽出来的模板</td><td>用它开第二个产品，计时比第一个快还是慢</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>你怀疑有东西在骗你</h2>
+  <p class="sub">这个入口独立于六步。任何时候你看到「全部通过」但心里没底，从这里进。</p>
+
+  <div class="branches">
+    <div class="branch">
+      <span class="arrow">全部通过</span>
+      <div class="body">
+        <p><b>先用两分钟自检表的七个问句过一遍</b>（见失败图鉴）。七条里任何一条答不上来，就往那一类去找。</p>
+        <p class="to">→ 失败图鉴 · 两分钟自检表</p>
+      </div>
+    </div>
+    <div class="branch">
+      <span class="arrow">大概率没问题</span>
+      <div class="body">
+        <p>但你不确定做出来的东西好不好用。<b>这是另一类问题，七个问句答不了。</b></p>
+        <p>问这四个：给我看三个真实输入的输出 / 这个你会拿给客户看吗 / 有没有一条检查是关于结果对不对的 / 最常见的输入会发生什么。</p>
+        <p class="to">→ 失败图鉴 · 四条质量问句</p>
+      </div>
+    </div>
+    <div class="branch hot">
+      <span class="arrow">测试红了</span>
+      <div class="body">
+        <p><b>先别让它修。</b>先问：「你认为这是产品错了还是测试错了？理由是什么？」</p>
+        <p>实测中我遇过三条红的，三条全是测试自己写错。如果直接改代码迁就错的测试，测试会变绿而产品会变坏。</p>
+        <p class="to">→ 失败图鉴 · 读信号规则</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>四种最常见的卡住</h2>
+  <p class="sub">这些不是六步里的某一步，是任何一步都可能遇到的。每种给一个具体动作，不给建议。</p>
+
+  <div class="stuck">
+    <div>
+      <h4>「它说做完了，但我觉得不对，又说不出哪里不对」</h4>
+      <p>这是最常见的，也是最有价值的直觉。<b>不要压下去。</b></p>
+      <p>动作：让它把这次做的事<b>逐条念给你听</b>，一条不合并。你听到的第几件让你不舒服，就是那件。然后针对那一件问「它上次失败是什么时候」。</p>
+      <p class="do">→ 不要问「你确定吗」，要问「给我看证据」</p>
+    </div>
+    <div>
+      <h4>「改了一个地方，另一个地方坏了」</h4>
+      <p>说明同一条规则写在了两个地方，或者两个地方共享了一个你以为独立的东西。</p>
+      <p>动作：问「这条规则在几个地方各写了一遍」。然后把它们合成一处——这是唯一能根治的做法，绕过它只会让它下次以更难看的方式出现。</p>
+      <p class="do">→ 这属于第四类假信号：两个地方各写一遍</p>
+    </div>
+    <div>
+      <h4>「它一直在改，越改越乱」</h4>
+      <p>说明它没有能判断「改对了没有」的东西，所以只能靠感觉改。</p>
+      <p>动作：<b>停下来，先做第 3 步。</b>没有判断标准的时候，改动的唯一效果是把问题从一处挪到另一处。先定「什么算好」，再改。</p>
+      <p class="do">→ 退回到第 3 步：能判断</p>
+    </div>
+    <div>
+      <h4>「我不知道这一步算不算做完了」</h4>
+      <p>说明这一步没有定义完成。你缺的不是进度，是标准。</p>
+      <p>动作：问「用什么动作能证明这一步完成了」。如果它给你的答案是「看代码」或者「应该没问题」，那就不算——<b>必须是一个你能亲手做的动作</b>。</p>
+      <p class="do">→ 对照上一节的表，找到那一步「你亲手验的动作」</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="closing">
+    <h2>这份东西的边界</h2>
+    <p>它解决的是「不知道下一步」和「怀疑有假信号」。它<b>不解决</b>「这个产品值不值得做」——那是第 1 步的判断，只有你能做，而且可能做错。</p>
+    <p style="margin-top:.9rem">还有一件：三个问题里第二个问的是「结果能不能拿给别人看」。这个标准是我定的，会随产品类型变化。如果你做的是给自己用的工具，标准要放宽；如果你做的是要收费的东西，要收紧到「陌生人用了不会问你怎么用」。</p>
+    <p style="margin-top:.9rem">最后一句话：<b>这份决策树只在一种情况下有用——你愿意在它说「退回第 3 步」的时候真的退回去。</b>不愿意退，它只是一张图。</p>
+  </div>
+
+  <footer>
+    配套文档：<code>failure-atlas.html</code>（四类假信号 + 七问句 + 四质量问句 + 读信号规则）、<code>terms.html</code>（术语表）、<code>atlas-test-report.html</code>（这份方法自己的实测记录）。
+    本文档为 Agent Native Builder 方案第三页。所有「实测中」的引用均来自 <code>anb-experiment-linkdigest/</code> 与 <code>packages/</code> 的真实运行。
+  </footer>
+</section>
+
+</main>
+</div>
+</body>
+</html>

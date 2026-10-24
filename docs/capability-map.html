@@ -1,0 +1,1153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>能力图谱 · mas_router_method</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ground:#f2f1ec;
+    --surface:#fbfaf6;
+    --sunk:#e7e6df;
+    --deep:#dcdbd3;
+    --ink:#191a17;
+    --muted:#585a53;
+    --faint:#5f6159;
+    --accent:#0d5a51;
+    --accent-2:#d7e5e1;
+    --alert:#782c2c;
+    --alert-2:#eedcd8;
+    --warn:#6b5312;
+    --warn-2:#efe6cf;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, "Cascadia Mono", monospace;
+    --gap: 1rem;
+  }
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--sans); font-size:16.5px; line-height:1.62;
+    font-feature-settings:"tnum" 1;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1120px; margin:0 auto; padding:0 clamp(18px, 4vw, 56px); }
+  main{ padding-bottom:6rem; }
+
+  /* ---------- masthead ---------- */
+  .masthead{ padding:clamp(3.2rem,7vw,6rem) 0 clamp(2.2rem,4vw,3.4rem); }
+  .kicker{
+    font-size:.84rem; letter-spacing:.03em; color:var(--muted);
+    display:flex; gap:.7rem; flex-wrap:wrap; align-items:center;
+  }
+  .kicker span + span::before{ content:"/"; color:var(--deep); margin-right:.7rem; }
+  h1{
+    font-family:var(--serif); font-weight:600; letter-spacing:-.022em; line-height:1.02;
+    font-size:clamp(2.5rem, 6.4vw, 4.35rem); margin:.9rem 0 0;
+  }
+  h1 em{ font-style:normal; color:var(--accent); }
+  .standfirst{
+    font-size:clamp(1.06rem,1.9vw,1.32rem); line-height:1.55; color:var(--muted);
+    max-width:46rem; margin:1.4rem 0 0;
+  }
+  .standfirst strong{ color:var(--ink); font-weight:600; }
+
+  /* ---------- stats ---------- */
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+    gap:1px; background:var(--deep); margin:2.6rem 0 0;
+  }
+  .stat{ background:var(--surface); padding:1.15rem 1.1rem 1.25rem; }
+  .stat b{
+    display:block; font-family:var(--serif); font-size:clamp(1.9rem,4vw,2.5rem);
+    line-height:1; letter-spacing:-.03em; font-weight:600;
+  }
+  .stat span{ display:block; margin-top:.5rem; font-size:.8rem; color:var(--muted); line-height:1.35; }
+  .stat.hot b{ color:var(--alert); }
+  .stat.cool b{ color:var(--accent); }
+
+  /* ---------- sections ---------- */
+  section{ padding:clamp(3rem,6vw,5.4rem) 0 0; }
+  .sec-head{ display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap; margin-bottom:1.6rem; }
+  h2{
+    font-family:var(--serif); font-weight:600; letter-spacing:-.02em; line-height:1.12;
+    font-size:clamp(1.55rem,3.4vw,2.1rem); margin:0;
+  }
+  .sec-note{ font-size:.9rem; color:var(--faint); max-width:38rem; }
+  h3{
+    font-size:1.06rem; font-weight:650; letter-spacing:-.01em; margin:2.2rem 0 .7rem;
+  }
+  p{ margin:0 0 1rem; }
+  p.tight{ margin-bottom:.5rem; }
+  .lede{ font-size:1.03rem; }
+
+  /* ---------- reading rules ---------- */
+  .rules{ display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:calc(var(--gap) * 1.6); }
+  .rule{ background:var(--surface); padding:1.3rem 1.35rem 1.4rem; }
+  .rule h4{ margin:0 0 .55rem; font-size:.98rem; font-weight:650; }
+  .rule p{ margin:0; font-size:.92rem; color:var(--muted); line-height:1.6; }
+  .scale{ display:flex; gap:.28rem; margin:.7rem 0 .55rem; }
+  .scale i{ display:block; height:9px; flex:1; background:var(--deep); }
+  .scale i.on{ background:var(--accent); }
+
+  /* ---------- domain cards ---------- */
+  .domains{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1px; background:var(--deep); }
+  .domain{ background:var(--surface); padding:1.5rem 1.45rem 1.55rem; display:flex; flex-direction:column; }
+  .domain h4{ font-family:var(--serif); font-size:1.24rem; font-weight:600; margin:0 0 .2rem; letter-spacing:-.01em; }
+  .domain h4 .dno{ color:var(--accent); margin-right:.45rem; }
+  .domain .role{ font-size:.88rem; color:var(--faint); margin:0 0 1rem; line-height:1.5; }
+  .domain ul{ list-style:none; margin:0 0 1.05rem; padding:0; display:grid; gap:.34rem; }
+  .domain li{ display:flex; align-items:center; gap:.6rem; font-size:.88rem; color:var(--muted); }
+  .domain li .nm{ flex:1; }
+  .domain li .dotbox{ display:flex; gap:2px; flex:0 0 auto; }
+  .domain li .dotbox i{ width:6px; height:6px; background:var(--deep); display:block; }
+  .domain li .dotbox i.on{ background:var(--accent); }
+  .domain li .dotbox i.on0{ background:var(--alert); }
+  .domain .verdict{ font-size:.88rem; line-height:1.55; margin:auto 0 0; color:var(--ink); border-top:0; padding-top:.9rem; }
+  .domain .verdict b{ color:var(--accent); font-weight:650; }
+
+  /* ---------- controls ---------- */
+  .controls{ display:flex; flex-wrap:wrap; gap:.45rem; align-items:center; margin:0 0 1.3rem; }
+  .controls .lbl{ font-size:.8rem; color:var(--faint); margin-right:.2rem; }
+  button.chip{
+    font:inherit; font-size:.82rem; padding:.42rem .8rem; border:0; cursor:pointer;
+    background:var(--surface); color:var(--muted); transition:background .18s ease, color .18s ease, transform .18s ease;
+  }
+  button.chip:hover{ background:var(--accent-2); color:var(--accent); }
+  button.chip:active{ transform:translateY(1px); }
+  button.chip[aria-pressed="true"]{ background:var(--accent); color:#f8fbf9; }
+  button.chip.flag[aria-pressed="true"]{ background:var(--alert); color:#fdf7f5; }
+
+  /* ---------- capability tables ---------- */
+  .domain-block{ margin-top:2.6rem; }
+  .domain-block > .dbhead{ display:flex; align-items:baseline; gap:.85rem; flex-wrap:wrap; margin-bottom:.5rem; }
+  .domain-block h3{ margin:0; font-size:1.22rem; letter-spacing:-.015em; }
+  .domain-block .dbno{ font-family:var(--serif); color:var(--accent); font-size:1.05rem; }
+  .domain-block .dbrole{ font-size:.9rem; color:var(--muted); margin:0 0 1.05rem; max-width:52rem; }
+
+  .tablewrap{ overflow-x:auto; background:var(--surface); }
+  table{ border-collapse:collapse; width:100%; min-width:830px; text-align:left; }
+  thead th{
+    font-size:.76rem; font-weight:650; color:var(--faint); letter-spacing:.02em;
+    padding:.8rem .9rem .65rem; border-bottom:1px solid var(--deep); white-space:nowrap;
+    background:var(--surface); position:sticky; top:0;
+  }
+  tbody td{
+    padding:.85rem .9rem .95rem; vertical-align:top; font-size:.885rem; line-height:1.55;
+    border-bottom:1px solid var(--sunk); color:var(--muted);
+  }
+  tbody tr:last-child td{ border-bottom:0; }
+  tbody tr{ transition:background .2s ease, opacity .25s ease; }
+  tbody tr:hover{ background:var(--sunk); }
+  tbody tr.dim{ opacity:.24; }
+  td.cap{ width:21%; color:var(--ink); }
+  td.cap b{ display:block; font-weight:650; font-size:.94rem; letter-spacing:-.005em; }
+  td.cap code{ display:block; margin-top:.24rem; font-size:.74rem; color:var(--faint); font-family:var(--mono); word-break:break-all; }
+  td.scene{ width:19%; }
+  td.value{ width:11%; white-space:nowrap; }
+  td.mat{ width:9%; white-space:nowrap; }
+  td.diag{ width:40%; }
+  .valtag{ font-size:.8rem; color:var(--accent); font-weight:600; }
+  .valtag.v2{ color:var(--warn); }
+  .valtag.v3{ color:#2c4a78; }
+  .valtag.v4{ color:#5a4a78; }
+  .maturity{ display:inline-flex; align-items:center; gap:.42rem; white-space:nowrap; }
+  .maturity .bar{ display:flex; gap:2px; }
+  .maturity .bar i{ width:6px; height:6px; background:var(--deep); display:block; }
+  .maturity .bar i.on{ background:var(--accent); }
+  .maturity .bar i.on0{ background:var(--alert); }
+  .maturity .lv{ font-size:.76rem; color:var(--faint); letter-spacing:.01em; }
+  .dtype{ font-weight:650; }
+  .dtype.defect{ color:var(--alert); }
+  .dtype.conflict{ color:var(--warn); }
+  .dtype.odd{ color:#3f4657; }
+  .dtype.raise{ color:var(--accent); }
+  .diag .why{ display:block; margin-top:.3rem; color:var(--muted); }
+  .diag .why code, td.cap code{ font-family:var(--mono); font-size:.82em; }
+  .diag .why code{ background:var(--sunk); padding:.05em .3em; color:var(--ink); }
+
+  /* ---------- defect cards ---------- */
+  .defect{
+    background:var(--surface); padding:1.5rem 1.5rem 1.6rem; margin-top:1.4rem;
+    border-left:3px solid var(--alert);
+  }
+  .defect .dhead{ display:flex; gap:.7rem; align-items:baseline; flex-wrap:wrap; }
+  .defect .did{ font-family:var(--serif); font-size:1.5rem; color:var(--alert); line-height:1; }
+  .defect h4{ margin:0; font-size:1.1rem; font-weight:650; letter-spacing:-.01em; }
+  .defect .loc{ font-family:var(--mono); font-size:.78rem; color:var(--faint); }
+  .defect dl{ margin:1rem 0 0; display:grid; gap:.85rem; }
+  .defect dt{ font-size:.78rem; color:var(--faint); font-weight:650; letter-spacing:.02em; }
+  .defect dd{ margin:.18rem 0 0; font-size:.92rem; color:var(--muted); }
+  .defect dd b{ color:var(--ink); font-weight:600; }
+  pre{
+    margin:.35rem 0 0; background:#20211d; color:#e6e4dc; padding:.85rem 1rem;
+    overflow-x:auto; font-family:var(--mono); font-size:.79rem; line-height:1.55;
+  }
+  pre .k{ color:#9fd6c6; }
+  pre .r{ color:#e8a4a0; }
+  .fixline{ margin:1rem 0 0; font-size:.9rem; color:var(--ink); }
+  .fixline b{ color:var(--accent); }
+
+  /* ---------- contradiction table ---------- */
+  table.conf{ min-width:760px; }
+  table.conf td{ font-size:.86rem; }
+  table.conf td.where{ width:26%; color:var(--ink); font-weight:600; }
+  table.conf td.pair{ width:34%; }
+  table.conf td.win{ width:16%; color:var(--accent); }
+  table.conf td.impact{ width:24%; }
+
+  /* ---------- prose lists ---------- */
+  .items{ display:grid; gap:1px; background:var(--deep); margin-top:.4rem; }
+  .item{ background:var(--surface); padding:1.2rem 1.35rem 1.3rem; }
+  .item h4{ margin:0 0 .45rem; font-size:.99rem; font-weight:650; }
+  .item p{ margin:0; font-size:.91rem; color:var(--muted); line-height:1.6; }
+  .item p + p{ margin-top:.55rem; }
+  .item .hint{ font-size:.85rem; color:var(--accent); margin-top:.6rem; }
+
+  /* ---------- ranked list ---------- */
+  ol.rank{ list-style:none; counter-reset:r; margin:.4rem 0 0; padding:0; display:grid; gap:1px; background:var(--deep); }
+  ol.rank > li{ background:var(--surface); padding:1.15rem 1.3rem; counter-increment:r; display:grid; grid-template-columns:2.1rem 1fr; gap:.2rem 1rem; }
+  ol.rank > li::before{ content:counter(r); font-family:var(--serif); font-size:1.5rem; color:var(--accent); grid-row:1 / span 3; line-height:1.1; }
+  ol.rank h4{ margin:0; font-size:1rem; font-weight:650; }
+  ol.rank p{ margin:.35rem 0 0; font-size:.9rem; color:var(--muted); }
+  ol.rank .meta2{ margin:.3rem 0 0; font-size:.8rem; color:var(--faint); }
+
+  /* ---------- closing ---------- */
+  .closing{ background:var(--ink); color:#e9e7e0; padding:clamp(2.2rem,4.5vw,3.4rem) clamp(1.4rem,4vw,3rem); margin-top:clamp(3rem,6vw,5rem); }
+  .closing h2{ color:#fbfaf6; }
+  .closing p{ color:#b9b7ae; max-width:44rem; }
+  .closing ol{ margin:1.5rem 0 0; padding-left:1.3rem; color:#d8d6ce; }
+  .closing li{ margin-bottom:.9rem; font-size:.98rem; line-height:1.6; }
+  .closing li b{ color:#fdfcf8; }
+  .closing li span{ display:block; color:#9c9a92; font-size:.86rem; margin-top:.2rem; }
+
+  .bounds{ margin-top:2.2rem; font-size:.88rem; color:var(--muted); max-width:52rem; }
+  .bounds h3{ font-size:.95rem; color:var(--ink); }
+  .bounds ul{ padding-left:1.1rem; margin:.5rem 0 0; }
+  .bounds li{ margin-bottom:.45rem; }
+
+  footer{ margin-top:3rem; padding:1.35rem 1.4rem; background:var(--sunk); font-size:.82rem; line-height:1.7; color:var(--muted); }
+
+  /* ---------- motion ---------- */
+  html.js .reveal{ opacity:0; transform:translateY(16px); transition:opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1); }
+  html.js .reveal.in{ opacity:1; transform:none; }
+  tbody tr{ }
+  .r1{ transition-delay:.04s } .r2{ transition-delay:.08s } .r3{ transition-delay:.12s }
+  .r4{ transition-delay:.16s } .r5{ transition-delay:.2s }
+  @media (prefers-reduced-motion: reduce){
+    html.js .reveal{ opacity:1; transform:none; transition:none; }
+    *{ transition-duration:.001s !important; animation:none !important; }
+  }
+  @media print{
+    body{ background:#fff; }
+    .controls{ display:none; }
+    html.js .reveal{ opacity:1; transform:none; }
+    section{ break-inside:avoid; }
+  }
+
+  @media (max-width:760px){
+    .tablewrap{ overflow-x:visible; background:transparent; }
+    table{ min-width:0; }
+    thead{ display:none; }
+    tbody tr{
+      display:block; background:var(--surface); margin-bottom:1px; padding:.35rem 0;
+    }
+    tbody td{
+      display:block; width:auto !important; border-bottom:0; padding:.5rem 1.1rem;
+    }
+    tbody td::before{
+      content:attr(data-label); display:block; font-size:.74rem; font-weight:650;
+      letter-spacing:.02em; color:var(--faint); margin-bottom:.18rem;
+    }
+    tbody td.cap b{ font-size:1rem; }
+    tbody td.diag{ padding-bottom:.85rem; }
+    .domain-block > .dbrole{ font-size:.88rem; }
+  }
+  @media (max-width:640px){
+    body{ font-size:16px; }
+    .domain{ padding:1.3rem 1.15rem; }
+    .closing{ padding:1.8rem 1.2rem; }
+  }
+</style>
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+<div class="wrap">
+<main>
+
+<header class="masthead reveal">
+  <div class="kicker"><span>能力盘点</span><span>mas_router_method</span><span>2026-10-24</span><span>commit fe08fd6 + 工作区实况</span></div>
+  <h1>六域 · 三十项<em>能力</em><br>与它们的代价</h1>
+  <p class="standfirst">
+    按「分类—场景—价值」把仓库拆成可数的能力节点，每个节点只归属一个域，
+    然后逐项诊断：哪些是<strong>跑一下就错</strong>的缺陷，哪些是两处说法必有一处要改的矛盾，
+    哪些是可修但代价大于收益的取舍，哪些只是天花板偏低。
+    结论先说：<strong>工程治理已经领先于产品能力</strong>——真正决定产品主张的三件事，还停在纸面与假数据上。
+  </p>
+  <div class="stats">
+    <div class="stat"><b>6</b><span>能力域，按交付环节划分</span></div>
+    <div class="stat"><b>30</b><span>能力节点，各归属唯一一域</span></div>
+    <div class="stat cool"><b>54</b><span>通过的单测（core 21 / evals 14 / feishu 19）</span></div>
+    <div class="stat hot"><b>5</b><span>已复现缺陷，全部在真实路径上</span></div>
+    <div class="stat"><b>1</b><span>仍在设计级、尚未落地的能力</span></div>
+    <div class="stat hot"><b>0</b><span>被人重复使用过的能力（在用级）</span></div>
+  </div>
+</header>
+
+<section class="reveal">
+  <div class="sec-head">
+    <h2>读法</h2>
+    <p class="sec-note">四个轴各自独立：域是「这件事由谁负责」，场景是「什么时候会用到它」，价值是「它卖的是什么」，成熟度是「它现在能不能用」。</p>
+  </div>
+
+  <div class="rules">
+    <div class="rule">
+      <h4>域 · MECE 的切法</h4>
+      <p>按<strong>失败落点</strong>划分，不按目录。任一能力出问题，责任必然落在且只落在一个域：契约错了是 A，循环错了是 B，取数错了是 C，判断错了是 D，投递错了是 E，流程错了是 F。跨域复用的东西（如 schema）只登记在它拥有决策权的那一域。</p>
+    </div>
+    <div class="rule">
+      <h4>价值 · 只有一种主价值</h4>
+      <p>交付价值（产出客户买单的物件）、保障价值（挡住一类失败）、效率价值（让后面的事更便宜）、认知价值（让真相可见）。一项能力只登记主价值，否则排序就会失去意义。</p>
+    </div>
+    <div class="rule">
+      <h4>成熟度 · 五级</h4>
+      <div class="scale"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+      <p>设计 → 骨架 → 可跑 → 可用 → 在用。判定标准是<strong>证据</strong>，不是代码量：有测试通过才算「可跑」，有真实输入跑通才算「可用」，有真实用户重复使用才算「在用」。</p>
+    </div>
+    <div class="rule">
+      <h4>诊断 · 四种问题，不要混说</h4>
+      <p><span class="dtype defect">缺陷</span>跑一下就错，可复现；<span class="dtype conflict">矛盾</span>两处说法必有一处要改；<span class="dtype odd">取舍</span>可改但代价大于收益；<span class="dtype raise">精进</span>天花板偏低，现在不改也不会错。</p>
+    </div>
+  </div>
+
+  <div class="items" style="margin-top:calc(var(--gap) * 1.8)">
+    <div class="item">
+      <h4>证据只有三档，本文全部标注</h4>
+      <p><b>复现</b>：我在仓库里跑了命令并拿到输出（6 个包 typecheck 通过、54 个单测通过、5 段复现脚本）。<b>静态</b>：读代码或读文档可确定，但没跑。<b>推断</b>：需要真实模型或外部服务才能确认，本文标为「未验证」。</p>
+      <p class="hint">凡标注「未验证」的，不要当成结论用——这个仓库自己的规矩就是证据先于声明。</p>
+    </div>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="sec-head">
+    <h2>六域总览</h2>
+    <p class="sec-note">圆点从左到右对应五级成熟度。红色表示「有东西在跑，但跑出来的结果是错的」——比没有更危险，因为它会给出可信的信号。</p>
+  </div>
+
+  <div class="domains">
+    <div class="domain">
+      <h4><span class="dno">A</span>领域建模与契约</h4>
+      <p class="role">决定「Recipe 是什么」。所有下游都靠这里对齐，改一次全仓共振。</p>
+      <ul>
+        <li><span class="nm">领域对象 schema</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">ID 与边界校验</span><span class="dotbox"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></li>
+        <li><span class="nm">时长等常量的单一来源</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></li>
+        <li><span class="nm">provenance 与可审计性</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></li>
+      </ul>
+      <p class="verdict"><b>最强的一域。</b>唯一的问题是它约束了输入却没有约束输出：分析里的 hook 是枚举，成品的 hook 是自由字符串。</p>
+    </div>
+
+    <div class="domain">
+      <h4><span class="dno">B</span>执行内核</h4>
+      <p class="role">一次运行从进到出：循环、预算、取消、失败语义、成本记账。</p>
+      <ul>
+        <li><span class="nm">循环与步骤记录</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span></li>
+        <li><span class="nm">预算双保险</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span></li>
+        <li><span class="nm">工具失败值化</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">headless 权限模型</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">成本核算与归属</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span></li>
+        <li><span class="nm">workflow 版本化</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></li>
+      </ul>
+      <p class="verdict"><b>设计最清醒，实现最漏风。</b>三处「写了两遍的保险」，实际只有一遍在起作用（见 D1、D2、D9）。</p>
+    </div>
+
+    <div class="domain">
+      <h4><span class="dno">C</span>工具与数据接入</h4>
+      <p class="role">模型能做的动作，以及它读到的东西从哪来。产品真实表面积在这里。</p>
+      <ul>
+        <li><span class="nm">工具面（5 个动词）</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">品牌隔离</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">持久化适配器</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">视频理解适配器</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></li>
+        <li><span class="nm">分析落库与缓存</span><span class="dotbox"><i class="on"></i><i class="on0"></i><i></i><i></i><i></i></span></li>
+        <li><span class="nm">参考视频生命周期</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></li>
+      </ul>
+      <p class="verdict"><b>产品的命门。</b>分析既不落库也不缓存，最贵、最不可替代的那份资产，每次运行都要重新买一遍。</p>
+    </div>
+
+    <div class="domain">
+      <h4><span class="dno">D</span>质量闭环</h4>
+      <p class="role">怎么知道它变好了还是变差了。这个仓库把它当作 spec 本身。</p>
+      <ul>
+        <li><span class="nm">14 条 eval 用例</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">确定性规则引擎</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">rubric 评判</span><span class="dotbox"><i class="on"></i><i></i><i></i><i></i><i></i></span></li>
+        <li><span class="nm">基线与回归门</span><span class="dotbox"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></li>
+        <li><span class="nm">should_fail 护栏证明</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></li>
+        <li><span class="nm">vision spike 协议</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></li>
+      </ul>
+      <p class="verdict"><b>文档质量全场最高，执行率全场最低。</b>5 份评估记录全部 costUsd = 0：4 份自检，1 份连 API key 都没拿到。真实评测至今为零次。</p>
+    </div>
+
+    <div class="domain">
+      <h4><span class="dno">E</span>界面与投递</h4>
+      <p class="role">请求怎么来、结果怎么回去。两个界面故意分离，共用同一个 runtime。</p>
+      <ul>
+        <li><span class="nm">飞书验签与解密</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">事件归一</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span></li>
+        <li><span class="nm">投递与队列</span><span class="dotbox"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></li>
+        <li><span class="nm">workbench 会话与租户</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></li>
+        <li><span class="nm">workbench 界面</span><span class="dotbox"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></li>
+      </ul>
+      <p class="verdict"><b>代码质量不错，覆盖面为零。</b>安全那一半做得很扎实；产品那一半（把结果送回去）还只是注释里的接口清单。</p>
+    </div>
+
+    <div class="domain">
+      <h4><span class="dno">F</span>工程治理</h4>
+      <p class="role">让下一个 session、下一个人不重复踩坑的东西：决策记录、流程技能、构建门禁。</p>
+      <ul>
+        <li><span class="nm">ADR 与决策清单</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></li>
+        <li><span class="nm">skills 与流程路由</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></li>
+        <li><span class="nm">构建 / 检查 / CI 门禁</span><span class="dotbox"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></li>
+      </ul>
+      <p class="verdict"><b>这份仓库最贵的资产，也是最开始腐烂的资产。</b>九份 ADR 里有四份的核心断言，现在代码已经不支持了。</p>
+    </div>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="sec-head">
+    <h2>能力矩阵</h2>
+    <p class="sec-note">每行标注一个主诊断，次要问题写在诊断文字里。点击按钮可筛选。</p>
+  </div>
+
+  <div class="controls" role="group" aria-label="按诊断类型筛选">
+    <span class="lbl">筛选</span>
+    <button class="chip" data-filter="all" aria-pressed="true">全部 30</button>
+    <button class="chip flag" data-filter="defect" aria-pressed="false">缺陷 11</button>
+    <button class="chip flag" data-filter="conflict" aria-pressed="false">矛盾 4</button>
+    <button class="chip" data-filter="odd" aria-pressed="false">取舍 1</button>
+    <button class="chip" data-filter="raise" aria-pressed="false">精进 6</button>
+    <button class="chip" data-filter="ok" aria-pressed="false">无问题 8</button>
+  </div>
+
+  <!-- ============ A ============ -->
+  <div class="domain-block" data-domain="A">
+    <div class="dbhead"><span class="dbno">A</span><h3>领域建模与契约</h3></div>
+    <p class="dbrole">判据：这里定义的形状，下游能不能不改一行代码就用好。四个节点，其中三个是真正的资产。</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>能力</th><th>场景</th><th>价值</th><th>成熟度</th><th>诊断</th></tr></thead>
+      <tbody>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>领域对象 schema</b><code>packages/shared/src/*</code></td>
+          <td class="scene" data-label="场景">模型输出、落库、渲染、断言四个入口共用一套形状</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><span class="lv">可用</span></span></td>
+          <td class="diag" data-label="诊断">Recipe、BrandProfile、ReferenceAnalysis、Run 四个核心对象定义完整，Zod 同时产出类型、运行时校验和模型契约。ADR 0002 的推理站得住：一个定义三种消费者。<span class="why">没有发现需要立刻改的问题。</span></td>
+        </tr>
+        <tr data-dtype="odd">
+          <td class="cap" data-label="能力"><b>品牌化 ID</b><code>shared/src/ids.ts</code></td>
+          <td class="scene" data-label="场景">模型把 rec_ 写成 run_ 时应当立刻报错</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span><span class="lv">骨架</span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype odd">取舍</span>六个 ID 校验器 + <code>mintId</code> 全部导出，但<strong>全仓零处引用</strong>：<code>Recipe.id</code> 是 <code>z.string()</code> 不是 <code>RecipeId</code>，适配器用的是自己手写的 <code>mint()</code>。<span class="why">整套意图没有生效。要么接上（改 2 处 schema + 1 处适配器），要么删掉——按 ADR 0002 自己的规则「没人读的字段应当删除」，这六个校验器现在是负债。</span></td>
+        </tr>
+        <tr data-dtype="conflict">
+          <td class="cap" data-label="能力"><b>时常常量的单一来源</b><code>shared/src/recipe.ts:106</code></td>
+          <td class="scene" data-label="场景">prompt 说 15–45 秒、schema 限制 hook ≤5 秒、规则判 ≤3 秒</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="lv">可跑</span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype conflict">矛盾</span><code>TARGET_DURATION_SEC</code> 被规则和测试引用，但<strong>系统 prompt 里是硬编码的 <code>${'15-45'}</code></strong>（<code>core/src/index.ts:53</code>，那个 <code>${}</code> 是死插值，等于没插），工具描述里也硬编码了一遍。<span class="why">改常量会让规则和 prompt 脱钩，而且没有任何测试会红。同源的还有 hook：schema 允许 5 秒、规则只认 3 秒、glossary 说 1–3 秒——三个数字，三处写死。</span></td>
+        </tr>
+        <tr data-dtype="raise">
+          <td class="cap" data-label="能力"><b>provenance 与可审计性</b><code>shared/src/recipe.ts:60</code></td>
+          <td class="scene" data-label="场景">合规同事问「凭什么可以这么说」，reviewer 问「为什么长这样」</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="lv">可跑</span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype raise">精进</span>三个字段（referenceId / abstractionDistance / exclusions）齐全，<code>recipeFromDraft</code> 是唯一映射点，设计正确。<span class="why">但「谁说的」只到 reference 粒度：没有记录当次运行的 workflow 版本与模型，也没记录分析用的 provider。<code>Run</code> 里有 workflow 却没有 model 字段（ADR 0005 声称「每个 Run 记录模型」——这条已经不成立了）。审计链在运行层断了。</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ============ B ============ -->
+  <div class="domain-block" data-domain="B">
+    <div class="dbhead"><span class="dbno">B</span><h3>执行内核</h3></div>
+    <p class="dbrole">判据：一次运行在付钱、出错、被打断、被追问时，行为是否可预测。这一域是全场工程密度最高的地方，也是「双保险只装了一半」的地方。</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>能力</th><th>场景</th><th>价值</th><th>成熟度</th><th>诊断</th></tr></thead>
+      <tbody>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>循环与步骤记录</b><code>core/src/run-agent.ts</code></td>
+          <td class="scene" data-label="场景">reviewer 在 workbench 上还原「它到底做了什么」</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span><span class="lv">可跑·带伤</span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span><code>truncate()</code> 把摘要截到 2000 字符再追加 26 字符的省略尾巴，<code>RunStep.summary</code> 恰好限制 <code>max(2000)</code>。<span class="why">任何一条超过 2000 字符的工具结果都会让整条 Run 落库失败；而 <code>createRuntime</code> 对这一失败是 <code>catch + console.error</code>——运行成功、时间线丢失、无人报警。复现：构造 6000 字符结果 → <code>Run.parse</code> 报 <code>Too big: expected string to have &lt;=2000 characters</code>。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>预算双保险</b><code>run-agent.ts:202</code></td>
+          <td class="scene" data-label="场景">单次运行不能超过 $2.00</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span><span class="lv">可跑·带伤</span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span>循环内的成本检查读 <code>costUsd</code>，而这个变量<strong>只在收到 <code>type: 'result'</code> 时赋值</strong>——也就是循环即将结束的那一刻。它永远不可能在「下一轮昂贵调用之前」触发。<span class="why">注释写的是「没有它，一轮昂贵调用就会发生」，实际上保护只剩 SDK 的 <code>maxBudgetUsd</code>（在超支之后才返回）。ADR 0005 把这个机制当作已成事实来描述，这是「注释比代码更乐观」的典型。</span></td>
+        </tr>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>工具失败值化</b><code>core/src/tools/result.ts</code></td>
+          <td class="scene" data-label="场景">vision 服务 502、TikTok 链接 404、品牌未配置</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">这是全仓最干净的一处设计：<code>ok/err</code> 是值，<code>retryable</code> 是类型的一部分，<code>guard()</code> 把意外异常降级为不可重试错误并打上 <code>Tool crashed:</code> 标记便于 grep。<span class="why">有单测覆盖抛出路径与 MCP 转换路径。ADR 0003 的推理与实现完全对得上。</span></td>
+        </tr>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>headless 权限模型</b><code>run-agent.ts:131-146</code></td>
+          <td class="scene" data-label="场景">群里 @ 机器人时没人能点「允许」</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><code>dontAsk</code> + <code>settingSources: []</code> + 派生白名单，三者互相印证。ADR 0004 把「prompt 是挂起」和「ambient config 是注入面」两个失败模式讲清楚了，代码照做了。<span class="why">这一处不需要改。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>成本核算与归属</b><code>run-agent.ts:174-182</code></td>
+          <td class="scene" data-label="场景">回答「这次运行花了多少、花在哪个模型上」</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span>token 按 <code>modelUsage</code> 逐个模型累加（正确），但成本用的是顶层的 <code>msg.total_cost_usd</code>；且 <code>Run</code> 没有 model 字段，SQLite 里 <code>runs.model</code> 列在写入时被<strong>硬编码成 <code>null</code></strong>。<span class="why">ADR 0005 的整套升级闸门建立在「结果可追溯到模型版本」之上。现在这句话是假的：数据库里那一列永远是空的。</span></td>
+        </tr>
+        <tr data-dtype="conflict">
+          <td class="cap" data-label="能力"><b>workflow 版本化</b><code>ADR 0008</code></td>
+          <td class="scene" data-label="场景">「上周二之后 Recipe 变差了」要能归因</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype conflict">矛盾</span>ADR 0008 要求「任何改动都升版本」，但版本号是<strong>调用方传的字符串字面量</strong>，三个调用点全写 <code>'recipe-tracer', 'v0'</code>，系统 prompt 也没有版本常量。<span class="why">结果是：改了 prompt 版本号不会变，基线会安静地漂移。ADR 说「prompt 以命名常量形式存在，像代码一样 review」——实际上它还是 <code>index.ts</code> 里的内联模板字符串。这条 ADR 目前是愿望，不是机制。</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ============ C ============ -->
+  <div class="domain-block" data-domain="C">
+    <div class="dbhead"><span class="dbno">C</span><h3>工具与数据接入</h3></div>
+    <p class="dbrole">判据：模型能做的动作对不对，它读到的东西能不能拿到。这一域藏着一个会让你以为一切正常的假环境。</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>能力</th><th>场景</th><th>价值</th><th>成熟度</th><th>诊断</th></tr></thead>
+      <tbody>
+        <tr data-dtype="raise">
+          <td class="cap" data-label="能力"><b>工具面 · 5 个动词</b><code>core/src/tools/brand.ts</code></td>
+          <td class="scene" data-label="场景">模型需要读品牌、存参考、列参考、做分析、存成品</td>
+          <td class="value" data-label="价值"><span class="valtag">交付</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">描述写得像「给模型的说明书」而不像 API 文档——说明为何要先调它、说明什么情况别调，这是正确写法。<span class="why"><span class="dtype raise">精进</span>但白名单是手写的字符串数组，与工具数组并列维护；ADR 0004 说「派生而非手写」，<code>brandToolNames()</code> 实际是第二个手写清单。加工具漏改这里仍是静默 no-op，ADR 想防的那个 bug 依然存在。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>品牌隔离</b><code>ADR 0009 · sqlite adapter</code></td>
+          <td class="scene" data-label="场景">第二个品牌接入后，A 不能读到 B 的配方</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">SQL 层实处到位：每个查询都带 brand 谓词，跨品牌写入直接 <code>changes===0</code> 抛错，<code>brandId</code> 不进入任何工具 schema（模型无法自己扩权）。<span class="why"><span class="dtype defect">缺陷</span>ADR 0009 承诺「同一套契约测试跑在 SQLite 与 eval fakes 上，fake 不能比生产更宽松」。实际上没有这套共享套件，且 eval 的 fake <code>references.list()</code> <strong>永远返回空数组</strong>、<code>getAnalysis</code> 永远 <code>null</code>——比生产宽松得多，见 D3。</span></td>
+        </tr>
+        <tr data-dtype="raise">
+          <td class="cap" data-label="能力"><b>持久化适配器</b><code>core/src/adapters/sqlite</code></td>
+          <td class="scene" data-label="场景">tracer 阶段要有零运维的库，且在重启后还在</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">所有 SQL 集中在一个文件（ADR 0006 的规则被遵守），<code>saveDraft</code> 在写库前过 <code>Recipe.parse</code>，重启后仍可读有测试。<span class="why"><span class="dtype raise">精进</span>ADR 0006 要求「写入时对 <code>sk-</code>／bearer／长 hex 做脱敏并替换为 <code>&lt;REDACTED&gt;</code>」——全仓 grep 不到任何脱敏代码。这是一条已签署但未实现的安全约定。</span></td>
+        </tr>
+        <tr data-dtype="raise">
+          <td class="cap" data-label="能力"><b>视频理解适配器</b><code>core/src/adapters/vod</code></td>
+          <td class="scene" data-label="场景">把一条 TikTok 链接变成带时间戳的 ReferenceAnalysis</td>
+          <td class="value" data-label="价值"><span class="valtag">交付</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">请求构造、超时、JSON 抽取、<code>ReferenceAnalysis.safeParse</code> 校验、失败即抛（由工具层转成 err）——链路形状正确，5 个单测覆盖，且 <code>videoPart</code> 开关为网关差异留了口。<span class="why"><span class="dtype raise">精进</span>三个能力缺口写在自己文档里：URL 直传能否抓取未验证、无上传分支、无缓存。ADR 0007 的 provider addendum 仍是空的。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>分析落库与缓存</b><code>ReferenceStore</code></td>
+          <td class="scene" data-label="场景">同一条参考被分析两次，不该付两次钱</td>
+          <td class="value" data-label="价值"><span class="valtag">交付</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on0"></i><i></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span><code>ReferenceStore.saveAnalysis()</code> 有实现、有测试，<strong>但生产代码里没有任何调用点</strong>：<code>analyze_reference_video</code> 把分析返回给模型后就丢弃了。<span class="why">后果是三重：ADR 0006 的缓存键 <code>(provider, modelVersion, platformVideoId)</code> 无落点；「Analysis 是长期资产、参考媒体不保留」（ADR 0006 / glossary）在实现上反了过来；同名工具描述却写着「结果会缓存在参考上」——对模型说了假话。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>参考视频生命周期</b><code>save_reference_video</code></td>
+          <td class="scene" data-label="场景">用户粘一条链接 → 分析它 → 存配方</td>
+          <td class="value" data-label="价值"><span class="valtag">交付</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span>两个 store 已经漂移：<code>ReferenceStore.save()</code> 声明 <code>platformVideoId?: string</code> 且允许省略，但 <code>ReferenceSource</code> 齐全；更关键的是 <code>analyze_reference_video</code> 靠 <code>list()</code> 反查 URL，这样一个「读列表」的接口承担了「按 id 取一条」的职责。<span class="why">eval 的 fake 正好在这里不实现 <code>list</code>，于是——见 D3——所有 eval 用例的第一次分析调用都会失败。</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ============ D ============ -->
+  <div class="domain-block" data-domain="D">
+    <div class="dbhead"><span class="dbno">D</span><h3>质量闭环</h3></div>
+    <p class="dbrole">判据：这个分数能不能改变一个决定。文档写到这里是全仓最高水平，然后链条断在四个地方。</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>能力</th><th>场景</th><th>价值</th><th>成熟度</th><th>诊断</th></tr></thead>
+      <tbody>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>14 条 eval 用例</b><code>evals/src/cases/index.ts</code></td>
+          <td class="scene" data-label="场景">「什么算好」需要在第一份配方存在之前就定下</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">10 正例 + 4 护栏，每一条都有 <code>why</code>（它防止什么真实失败），没有一条是「为了覆盖率」。用例设计与文档一一对应。<span class="why">这是全仓最该保留的东西。<span class="dtype odd">取舍</span>唯一薄弱处：<code>terse-request</code> 的请求是「same as last time」，但运行时无会话记忆、也无历史注入，这条用例在真实路径上不可能通过——它测的是一个尚未存在的会话能力。</span></td>
+        </tr>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>确定性规则引擎</b><code>evals/src/rules.ts</code></td>
+          <td class="scene" data-label="场景">不花钱、稳定、能进 CI 硬门的那 60%</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">15 条规则实现，13 条被用例引用，<code>abstraction-distance-at-least:</code> 支持参数化。<span class="why"><span class="dtype odd">取舍</span>两条规则实现后从未被任何用例引用：<code>disclaimer-present-for-regulated-claims</code> 与 <code>provenance-valid</code>——恰好是「法务抽检」和「可审计」这两件事。写了、测了、没接进门禁，等于没有。<span class="dtype raise">精进</span>另有 4 条规则的判定逻辑偏弱（见 D5–D8）。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>rubric 评判</b><code>rules.ts:259</code></td>
+          <td class="scene" data-label="场景">voice match、hook strength、shootability 这些只能靠判断的维度</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i></i><i></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span>完全没有实现。每个 rubric 期望都被推进 <code>skipped</code>，理由是 <code>'rubric judge not implemented yet'</code>，而 <code>evaluateCase</code> 把「全部跳过」当作通过（<code>failures.length === 0</code>）。<span class="why">于是 playbook 第 3 条通过线（「至少 8/10 正例 rubric ≥ 0.7」）<strong>永远满足，且永远不可能失败</strong>。这是最坏的一种指标：它总是在通过。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>基线与回归门</b><code>evals/run-evals.ts</code></td>
+          <td class="scene" data-label="场景">「模型升级之后有没有变差」要能自动回答</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span>三处缺失叠在一起：<code>baselines/</code> 目录不存在（从未 <code>--save-baseline</code>）；<code>runs/</code> 里 5 份记录 <code>costUsd</code> 全为 0——4 份是 <code>--self-test</code> 的通过记录（用固定 fixture 跑出来的，不测质量），1 份是把「没有 API key」写成 case 失败的真实尝试。<code>.github/</code> 不存在，「进 CI 硬门」没有落点。<span class="why">ADR 0005 与 0008 的所有闸门都假定这个能力存在。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>should_fail 护栏证明</b><code>rules.ts:243</code></td>
+          <td class="scene" data-label="场景">证明「它不能」而不是「它通常不」</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span>判定条件是 <code>recipe === undefined &amp;&amp; status !== 'succeeded'</code>，也就是<strong>任何失败都算通过</strong>。我用一份「vision 服务 502、没产出配方」的 artifact 跑四条护栏用例，三条直接判 PASS。<span class="why">一条因基础设施故障而中止的运行，会被记成「护栏成功拒绝」。playbook 说「护栏 90% 生效等于已失效」——现在它衡量的是「运行有没有崩」，不是「它有没有守住边界」。</span></td>
+        </tr>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>vision spike 协议</b><code>docs/evals/vision-spike.md</code></td>
+          <td class="scene" data-label="场景">选供应商时不要靠猜</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">协议本身写得很好：闸门先于打分、任一闸门失败即淘汰、不做加权平均、平局用成本打破、样本从三条开始且不因结果接近而扩样本。<code>spike-rules.ts</code> 有 6 个单测，<code>spike-vod.ts</code> 可执行。<span class="why">但 <code>docs/evals/vision-spike/</code> 目录只有 <code>clips.example.json</code>：ground truth、原始响应、评分表三份交付物都不存在。协议跑过零次。</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ============ E ============ -->
+  <div class="domain-block" data-domain="E">
+    <div class="dbhead"><span class="dbno">E</span><h3>界面与投递</h3></div>
+    <p class="dbrole">判据：用户能不能在自己的工具里拿到东西。两个界面都还没通，但「安全的那一半」做得比「产品的那一半」好得多。</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>能力</th><th>场景</th><th>价值</th><th>成熟度</th><th>诊断</th></tr></thead>
+      <tbody>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>飞书验签与解密</b><code>feishu/src/verify.ts</code></td>
+          <td class="scene" data-label="场景">公开 webhook 上，任何人可以构造请求体</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">两件独立的事被分开做对了：AES-256-CBC 解密（key = SHA-256，IV = 前 16 字节）与 token 常量时间比较，缺一即失败。<code>timingSafeEqual</code> 前先比长度、截断密文单独报错、非法 JSON 不向上抛 <code>SyntaxError</code>。<span class="why">9 个测试的加密实现是照真实协议写的，不是照假设写的。这一处可以直接用。</span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>事件归一</b><code>feishu/src/events.ts:106,121</code></td>
+          <td class="scene" data-label="场景">群里有人说「@小王 你看这个」</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on0"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype defect">缺陷</span><code>addressedToBot = chat_type === 'p2p' || hadMention</code>，其中 <code>hadMention</code> 只判断「有没有 @ 任何人」，<strong>没有比对被 @ 的是不是机器人自己</strong>。<span class="why">复现：构造一条 @ 同事的消息，归一结果为 <code>addressedToBot=true</code>，文本「can you review this?」将被当成给 agent 的指令。它还有自环风险：剥掉 mention 占位符后剩下的对话会进入模型。修法很小——<code>mentions[].id.open_id</code> 已经解析出来了，与 bot 自身 open_id 比对即可。</span></td>
+        </tr>
+        <tr data-dtype="raise">
+          <td class="cap" data-label="能力"><b>投递与队列</b><code>apps/bot-gateway</code></td>
+          <td class="scene" data-label="场景">一次运行远超 Feishu 的超时窗口</td>
+          <td class="value" data-label="价值"><span class="valtag">交付</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype raise">精进</span>34 行入口，里面是一份很清楚的待办清单：<code>POST /events</code> 校验→归一→入队→立刻 200、<code>GET /healthz</code>、event_id 幂等、运行队列。<span class="why">所谓「精进」是说它还没开始，不是它做错了。值得表扬的是把「为什么现在不做」写进了注释——这是这个仓库的一贯优点。</span></td>
+        </tr>
+        <tr data-dtype="ok">
+          <td class="cap" data-label="能力"><b>workbench 会话与租户</b><code>apps/workbench/src/lib/session.ts</code></td>
+          <td class="scene" data-label="场景">一个人的会话决定他看得见哪些品牌</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">关键决策正确：会话携带的是 <code>brandIds</code> 而不是 role，未登录返回 <code>null</code> 而不是假用户，dev 旁路要求显式环境变量且 <code>NODE_ENV !== 'production'</code>。<span class="why">这段注释「dev-mode bypass 是『以后再补鉴权』最常见的事故方式」本身就是有价值的判断。</span></td>
+        </tr>
+        <tr data-dtype="raise">
+          <td class="cap" data-label="能力"><b>workbench 界面</b><code>apps/workbench/src/app</code></td>
+          <td class="scene" data-label="场景">reviewer 要回答「为什么这份配方长这样」</td>
+          <td class="value" data-label="价值"><span class="valtag">交付</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><span class="dtype raise">精进</span>86 行：一个 layout、一个页面、一个 session。<span class="why">还没到能做诊断的阶段。但有一个信号值得注意：<code>package.json</code> 声明了 <code>next lint</code>，而 Next 16 已移除该命令——<code>pnpm lint</code> 今天就是坏的（见 F3）。在一个「先建门禁再建功能」的仓库里，这是要优先修的。</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ============ F ============ -->
+  <div class="domain-block" data-domain="F">
+    <div class="dbhead"><span class="dbno">F</span><h3>工程治理</h3></div>
+    <p class="dbrole">判据：下一个会话能不能只靠仓库就接上。这一域贡献了这个项目最大的资产，也贡献了最隐蔽的负债——过期的权威。</p>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>能力</th><th>场景</th><th>价值</th><th>成熟度</th><th>诊断</th></tr></thead>
+      <tbody>
+        <tr data-dtype="conflict">
+          <td class="cap" data-label="能力"><b>ADR 与决策清单</b><code>docs/adr/ ×10</code></td>
+          <td class="scene" data-label="场景">一个难回退的选择，三个月后要能被重新理解</td>
+          <td class="value" data-label="价值"><span class="valtag">认知</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">9 份 ADR + 1 份索引，写清了放弃的选项和代价，还有一份「隐式／缺失决策」清单——这个做法本身很少见，很有价值。<span class="why"><span class="dtype conflict">矛盾</span>但四份 ADR 的核心断言已被代码推翻：0005 说「每个 Run 记录模型」（无此字段，DB 里写 null）、0006 说「写入时脱敏」（无实现）、0008 说「prompt 是命名常量、版本必升」（内联字符串、字面量 v0）、0009 说「同一套契约测试跑在 fake 与生产上」（不存在）。<b>过期的权威比没有权威更贵</b>——它会让人照着错误的前提做决定。</span></td>
+        </tr>
+        <tr data-dtype="conflict">
+          <td class="cap" data-label="能力"><b>skills 与流程路由</b><code>.claude/skills/ · docs/skills/</code></td>
+          <td class="scene" data-label="场景">任何一件工作，先知道它在哪个阶段、该用哪把工具</td>
+          <td class="value" data-label="价值"><span class="valtag">效率</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断">34 个本地技能目录、4059 行技能文档，一个 <code>/native-agent-dev</code> 六阶段路由，加上 P0–P9 双链路 SOP。<span class="why"><span class="dtype conflict">矛盾</span><code>docs/skills/skill-catalog.md</code> 列出 63 个 skill，仓库 <code>.claude/skills/</code> 里只有 34 个（现为 46 个，含新增的 12 个）。<strong>差额 42 个不是「不存在」——它们由客户端插件提供，调用要带前缀</strong>，而文档从没说明这一点。SOP 的十四个阶段依赖它们，照着走的人会在第一步找不到命令，而错误信息看起来像「这个 skill 是假的」。<span class="dtype odd">取舍</span>另有 13 个装了但不在目录里的（ask-matt、wait-what、wizard…），没有任何文档解释它们何时用。<b>已于 2026-10-24 修正</b>：目录新增「来源」列逐条标注，SOP 加了 v3 说明。<span class="why"><b>这一条本身也值得记：我第一版把它写成「42 个根本不存在」，那是一个错的结论——查目录查到、没查调用方式。它恰好是这本图谱描述的第六类问题（两个地方各写一遍：文档一套、现实一套），而我当时没对自己用一遍。</b></span></span></td>
+        </tr>
+        <tr data-dtype="defect">
+          <td class="cap" data-label="能力"><b>构建 / 检查 / CI 门禁</b><code>turbo.json · package.json</code></td>
+          <td class="scene" data-label="场景">每次提交都能自动回答「有没有更差」</td>
+          <td class="value" data-label="价值"><span class="valtag">保障</span></td>
+          <td class="mat" data-label="成熟度"><span class="maturity"><span class="bar"><i class="on"></i><i class="on"></i><i class="on0"></i><i></i><i></i></span></span></td>
+          <td class="diag" data-label="诊断"><code>pnpm typecheck</code> 与 <code>pnpm test</code> 是真能跑的：6 个包 tsc 全过，8 个测试文件 54 个用例全过（我逐个跑过）。<span class="why"><span class="dtype defect">缺陷</span><code>pnpm lint</code> 是坏的：<code>apps/workbench</code> 用 <code>next lint</code>，Next 16 已移除该子命令，直接报 <code>Invalid project directory provided</code>；其余包根本没定义 lint 脚本；根 <code>turbo run lint</code> 因找不到 pnpm 二进制而失败。而 <code>.github/</code> 不存在——所谓「CI 门禁」目前是零。</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="sec-head">
+    <h2>八个缺陷</h2>
+    <p class="sec-note">前五个我在仓库里跑出来了，输出贴在卡片里；后三个是静态确认。共同点：都不在测试覆盖的路径上，而且都会给出看起来正常的信号。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D1</span><h4>摘要截断到 2006 字符，整条运行记录写入失败</h4></div>
+    <p class="loc">core/src/run-agent.ts:66 · shared/src/run.ts:38 · core/src/index.ts:112</p>
+    <dl>
+      <div>
+        <dt>机制</dt>
+        <dd><code>truncate(text, 2000)</code> 返回的是 <code>2000 字符 + "... [N chars truncated]"</code>，实际长度 2006；<code>RunStep.summary</code> 的上限恰好是 <code>2000</code>。schema 校验发生在 <code>buildRunRecord → Run.parse</code>。</dd>
+      </div>
+      <div>
+        <dt>复现</dt>
+        <dd>构造一条 6000 字符的 <code>summary</code>，走 <code>Run.parse</code>：
+<pre><span class="k">summary length:</span> 2026  <span class="r">// 2000 + 26 字符尾巴</span>
+<span class="k">Run validation:</span> <span class="r">FAIL -&gt; {"code":"too_big","maximum":2000,</span>
+  <span class="r">"path":["steps",0,"summary"],"message":"Too big: expected string to have &lt;=2000 characters"}</span></pre>
+        </dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd>工具结果最容易超长——<code>get_brand_profile</code> 返回整个品牌档案、<code>analyze_reference_video</code> 返回整份分析。触发时 <code>createRuntime</code> 的 <code>catch</code> 只打一行 <code>console.error</code>，用户看到运行成功，时间线却永久缺失。而 ADR 0006 的 90 天留存、workbench 的时间线、eval 的历史对比全部建立在这条记录上。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b>把尾巴计入上限（<code>max - suffix.length</code>），或让 schema 上限大于截断上限并加一条断言把两个数字绑在一起。后者更好——它让「两个数字必须同源」变成会红的东西。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D2</span><h4>循环内的成本检查永远不会触发</h4></div>
+    <p class="loc">core/src/run-agent.ts:159-206</p>
+    <dl>
+      <div>
+        <dt>机制</dt>
+        <dd><code>let costUsd = 0</code>，唯一赋值处是 <code>if (msg.type === 'result') { costUsd = msg.total_cost_usd }</code>。而 <code>result</code> 消息是本次查询的终结消息。检查写成 <code>if (costUsd &gt; max &amp;&amp; status === 'running')</code>——当循环走到这一步时，<code>status</code> 已经被同一个 <code>result</code> 分支改成 <code>succeeded</code> 或 <code>failed</code>，条件恒假。</dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd>注释与 ADR 0005 都把它当作第二道防线：「没有它，一轮昂贵调用就会在触及上限时仍然付钱」。实际上只剩 SDK 的 <code>maxBudgetUsd</code>，而它按 ADR 自己的说法是在超支之后才返回。这个错误的方向是坏的：它让人以为有冗余，于是不敢把上限调紧。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b>成本要从流式消息里持续累加（assistant 消息带 usage），而不是只读终结消息。加一条测试：「给一个在第 N 轮超支的假消息序列，断言第 N+1 轮没有发生」——这条测试现在写不出来，正是问题所在。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D3</span><h4>eval 的假环境让第一次分析必然失败</h4></div>
+    <p class="loc">evals/src/fixtures.ts:113 · core/src/tools/brand.ts:171</p>
+    <dl>
+      <div>
+        <dt>机制</dt>
+        <dd><code>analyze_reference_video</code> 通过 <code>references.list(brandId)</code> 反查 URL。eval 的 fake 里 <code>list()</code> 直接 <code>return []</code>，<code>getAnalysis()</code> 直接 <code>return null</code>。</dd>
+      </div>
+      <div>
+        <dt>复现</dt>
+        <dd>用 <code>createFakeEnv()</code> 存一条参考再列出来：
+<pre><span class="k">saved</span> ref_000000000006 | <span class="k">list() -&gt;</span> <span class="r">[]</span>
+<span class="k">analyze would resolve:</span> <span class="r">false</span></pre>
+        </dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd>runner 固定使用这份 fake，所以任何一次真实的 <code>pnpm eval</code>，模型调 <code>analyze_reference_video</code> 都会拿到 <code>No reference ... for this brand. Call list_reference_videos to see valid ids.</code>（前半句已复现，后半句是对代码路径的推断——因为还没跑过一次真实评测）。模型会去调 <code>list_reference_videos</code>，也得到空——然后大概率放弃分析直接写配方，或直接失败。<b>两种结果都让评测分不出「agent 判断差」还是「测试台坏了」。</b>这正好违反了这个仓库自己最重要的规矩：诊断要先定层，而这里的数据层是假的。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b>fake 内部维护一个 <code>Map&lt;referenceId, {url, analysis}&gt;</code>，让 <code>save/list/getAnalysis</code> 自洽；更重要的是把 ADR 0009 承诺的共享契约套件真的建起来——一份测试同时跑 SQLite 与 fake，fake 就不敢再宽松。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D4</span><h4>护栏用例把「任何失败」都记成「成功拒绝」</h4></div>
+    <p class="loc">evals/src/rules.ts:243-250</p>
+    <dl>
+      <div>
+        <dt>机制</dt>
+        <dd><code>const refused = artifact.recipe === undefined &amp;&amp; artifact.status !== 'succeeded'</code>，随后 <code>if (evalCase.shouldFail &amp;&amp; refused &amp;&amp; !needsRecipe) return { passed: true }</code>。</dd>
+      </div>
+      <div>
+        <dt>复现</dt>
+        <dd>用一份「vision 服务 502、status=failed、无配方」的 artifact 跑四条护栏用例：
+<pre><span class="k">banned-health-claim</span>      passed=<span class="r">true</span>  refused=true
+<span class="k">competitor-asset</span>         passed=false refused=false   <span class="r">// 唯一要求真产出的那条</span>
+<span class="k">audio-rights</span>             passed=<span class="r">true</span>  refused=true
+<span class="k">unsupported-superlative</span>  passed=<span class="r">true</span>  refused=true</pre>
+        </dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd>它衡量的不是「护栏挡住了」，而是「运行没有成功」。于是任何基础设施故障、任何预算超支、任何超时，都会让护栏套件变成绿色。而 playbook 把「所有 should_fail 必须拒绝」定为无部分分、阻塞发布的硬门——这个门现在测的是错误的东西，而且它只会往「通过」的方向错。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b>区分三种终态：<b>主动拒绝</b>（运行成功但明确说明不产出，带拒绝理由）、<b>违规产出</b>（产出了配方且含被禁内容 → 失败）、<b>未能判定</b>（运行失败 → 不算通过，标记为 inconclusive 并让整轮不可发布）。宁可让结果「不确定」也不要让它「假通过」。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D5</span><h4>群里 @ 任何同事，都会被当成在叫机器人</h4></div>
+    <p class="loc">feishu/src/events.ts:106,121</p>
+    <dl>
+      <div>
+        <dt>机制</dt>
+        <dd><code>const hadMention = mentions.length &gt; 0</code> → <code>addressedToBot: chat_type === 'p2p' || hadMention</code>。判断的是「有 @」，不是「@ 了我」。</dd>
+      </div>
+      <div>
+        <dt>复现</dt>
+        <dd>一条 @ 同事 Bob（open_id: ou_bob）的群消息：
+<pre><span class="k">@-ing a colleague -&gt;</span> addressedToBot=<span class="r">true</span> text=<span class="r">"can you review this?"</span></pre>
+        </dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd>「能不能 review 一下」会变成一条给 agent 的指令，而 agent 最可能的反应是花掉预算去做点什么东西出来。在一个群里，这意味着误触发、误花钱、误回复。讽刺的是自环保护做对了（<code>sender_type === 'app'</code> 直接丢），而真正决定「谁在说话」的那一处漏了。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b>schema 已经解析出 <code>mentions[].id.open_id</code>，与配置的 bot open_id 比对即可。顺手加一条测试：@ 别人的群消息 <code>addressedToBot === false</code>——现在这条测试会红。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D6</span><h4>分析从不落库，「缓存」只存在于工具描述里</h4></div>
+    <p class="loc">core/src/tools/brand.ts:186-200 · 全仓 grep saveAnalysis</p>
+    <dl>
+      <div>
+        <dt>机制</dt>
+        <dd><code>ReferenceStore.saveAnalysis()</code> 有 SQLite 实现、有单测、有跨品牌拒绝测试，但生产代码里零调用点。<code>analyze_reference_video</code> 拿到分析后直接 <code>return ok(JSON.stringify(analysis), ...)</code>，然后它就没了。</dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd>三件事同时坏掉：其一，最贵的一步（视频理解）每次重跑都要重新付钱，ADR 0006 的缓存键 <code>(provider, modelVersion, platformVideoId)</code> 无处安放；其二，glossary 与 ADR 0006 都写「参考媒体是临时的，Analysis 才是长期资产」，实现恰好相反——分析了就丢，源 URL 反而一直在库里；其三，工具描述对模型说「结果会缓存在参考上」，这是假话，而模型是会读这句话的。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b>在工具 handler 里 <code>await references.saveAnalysis(...)</code>，并在进入分析前先 <code>getAnalysis</code> 命中则直接返回。这两行代码是这个域里单位收益最高的一次修改。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D7</span><h4>每条运行记录的 model 列永远是 null</h4></div>
+    <p class="loc">adapters/sqlite/index.ts:258 · shared/src/run.ts（无 model 字段）</p>
+    <dl>
+      <div>
+        <dt>机制</dt>
+        <dd>建表时留了 <code>model TEXT</code> 列，写入语句里硬编码 <code>null</code>；<code>Run</code> schema 里根本没有 <code>model</code> 字段，所以也没有值可传。</dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd>ADR 0005 的全部内容——升级要跑十四例、逐维度不低于基线、新基线记录模型版本——都依赖「一条运行能追溯到模型」。ADR 0008 的 <code>workflowVersion</code> 同样依赖它。一列永远为空的字段会让人在写报表时以为是「这个环境没设模型」，而不是「这个能力不存在」。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b><code>Run</code> 加 <code>model: z.string()</code>，<code>buildRunRecord</code> 从 <code>config.model</code> 注入，适配器写真实值。顺带让 <code>usage</code> 也按模型分组，才算真的「可归因」。</p>
+  </div>
+
+  <div class="defect">
+    <div class="dhead"><span class="did">D8</span><h4><code>pnpm lint</code> 今天是坏的，CI 门禁不存在</h4></div>
+    <p class="loc">apps/workbench/package.json · turbo.json · 根目录</p>
+    <dl>
+      <div>
+        <dt>复现</dt>
+        <dd><code>cd apps/workbench &amp;&amp; next lint</code>：
+<pre><span class="r">Invalid project directory provided, no such directory:</span>
+  .../apps/workbench/<span class="r">lint</span>
+<span class="k">exit=1</span>
+
+<span class="k">turbo run lint</span> -&gt; <span class="r">x Unable to find package manager binary: cannot find binary path</span></pre>
+        </dd>
+      </div>
+      <div>
+        <dt>为什么危险</dt>
+        <dd><code>next lint</code> 在 Next 16 已移除；其余五个包没有 lint 脚本；根 <code>turbo run lint</code> 连二进制都找不到。同时 <code>.github/</code> 不存在，<code>pnpm typecheck</code> 与 <code>pnpm test</code> 虽然真能跑、真能过，但没有任何自动触发。这个仓库的核心主张是「证据先于声明」，而它自己的门禁有一半是断的。</dd>
+      </div>
+    </dl>
+    <p class="fixline"><b>修法：</b>要么换成 ESLint 9 的 flat config 直接跑 <code>eslint .</code>，要么明确删掉 lint 这个根任务（比留一个假的强）。然后加一个最小 workflow：<code>pnpm typecheck &amp;&amp; pnpm test</code>。eval 不进 CI 是对的——它要钱。</p>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="sec-head">
+    <h2>七处矛盾</h2>
+    <p class="sec-note">矛盾与缺陷不同：两处单独看都合理，放在一起必有一处要改。矛盾的代价是决策依据不可信，所以它对一个「文档驱动」的仓库杀伤力更大。</p>
+  </div>
+
+  <div class="tablewrap">
+  <table class="conf">
+    <thead><tr><th>位置</th><th>两处说法</th><th>应当谁赢</th><th>不改的后果</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="where" data-label="位置">预算上限</td>
+        <td class="pair" data-label="两处说法"><code>.env.example</code> 写 <code>AGENT_MAX_COST_USD=0.50</code>；<code>config.ts</code> 默认 <code>2.0</code>；ADR 0005 与 playbook 都说「唯一上限 $2.00」</td>
+        <td class="win" data-label="应当谁赢">2.00（ADR 0005）</td>
+        <td class="impact" data-label="不改的后果">抄 <code>.env.example</code> 的人拿到的是 0.50。ADR 0005 当初就是为了消灭这个冲突才写的，而冲突换了个位置又回来了。</td>
+      </tr>
+      <tr>
+        <td class="where" data-label="位置">hook 时长</td>
+        <td class="pair" data-label="两处说法">glossary 说「1–3 秒」；<code>Recipe.hook.durationSec</code> 允许 <code>max(5)</code>；规则 <code>hook-at-most-3s</code> 判 ≤3；工具描述没提</td>
+        <td class="win" data-label="应当谁赢">三者取一，写进常量</td>
+        <td class="impact" data-label="不改的后果">模型按 schema 产 4 秒 hook 是合法的，然后被 eval 判失败。这是「产品规格模糊」伪装成「模型判断差」的典型。</td>
+      </tr>
+      <tr>
+        <td class="where" data-label="位置">Analysis 的保留</td>
+        <td class="pair" data-label="两处说法">glossary / ADR 0006：「保留 Analysis，不保留源媒体」；实现：分析即弃，源 URL 长期在库</td>
+        <td class="win" data-label="应当谁赢">文档（这是产品主张）</td>
+        <td class="impact" data-label="不改的后果">「可审计」「跨品类迁移」「缓存省钱」三件事都建立在分析长期留存上。实现反了，等于三件事同时不成立（见 D6）。</td>
+      </tr>
+      <tr>
+        <td class="where" data-label="位置">prompt 的可管理性</td>
+        <td class="pair" data-label="两处说法">ADR 0008：「prompt 以命名常量存在、像代码一样 review、版本必升」；实现：<code>index.ts</code> 内联模板字符串、版本字面量 <code>'v0'</code></td>
+        <td class="win" data-label="应当谁赢">ADR 0008</td>
+        <td class="impact" data-label="不改的后果">改了 prompt，<code>workflowVersion</code> 不变，基线会安静漂移。这正是 0008 想防的事。</td>
+      </tr>
+      <tr>
+        <td class="where" data-label="位置">租户契约测试</td>
+        <td class="pair" data-label="两处说法">ADR 0009：「同一套套件跑在 SQLite 与 eval fakes 上」；实现：无共享套件，fake 的 <code>list()</code> 恒空</td>
+        <td class="win" data-label="应当谁赢">ADR 0009</td>
+        <td class="impact" data-label="不改的后果">fake 比生产宽松，于是 eval 环境比生产更容易坏，而且坏在第一步（见 D3）。</td>
+      </tr>
+      <tr>
+        <td class="where" data-label="位置">规则与用例的一致性</td>
+        <td class="pair" data-label="两处说法"><code>recipe-quality.md</code> 说「本文是意图，代码是 bug」；但文档列的 8 项确定性检查里，<code>disclaimer</code> 与 <code>provenance</code> 两条从未被任何 case 引用</td>
+        <td class="win" data-label="应当谁赢">文档</td>
+        <td class="impact" data-label="不改的后果">法务抽检与可审计这两件事，写在文档里、实现在代码里、就是没进门禁。看起来像覆盖了。</td>
+      </tr>
+      <tr>
+        <td class="where" data-label="位置">技能目录</td>
+        <td class="pair" data-label="两处说法"><code>skill-catalog.md</code> 列 63 个、给出一句话调用；仓库目录只有 34 个，差额 42 个实为客户端插件，文档未标注来源</td>
+        <td class="win" data-label="应当谁赢">目录改成实际</td>
+        <td class="impact" data-label="不改的后果">SOP 的十一个阶段依赖不存在的工具。一个照着 SOP 干活的人会在 S5 就卡住——而这是最容易让人放弃流程的体验。</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="sec-head">
+    <h2>可精进 · 五个天花板</h2>
+    <p class="sec-note">矩阵里标为「精进」的六行是逐项判断；这里是五条<strong>跨能力</strong>的改进机会，不与上面一一对应。按收益／代价排序，第一条便宜得不像话。</p>
+  </div>
+
+  <div class="items">
+    <div class="item">
+      <h4>让 13 条规则都能被引用，尤其是那两条没人用的</h4>
+      <p><code>disclaimer-present-for-regulated-claims</code> 和 <code>provenance-valid</code> 已经实现并有单测，只需在 <code>banned-health-claim</code> 与 <code>near-copy</code> 的期望里各加一行。代价两行代码，收益是把「法务」和「可审计」这两个卖点真的接进了门禁。</p>
+    </div>
+    <div class="item">
+      <h4>抽象距离应当可被反驳</h4>
+      <p>现在 <code>abstraction-distance-at-least:0.6</code> 只校验模型<strong>自报</strong>的数字——自评越诚实越吃亏，越乐观越安全。文档已经说破这件事（「数字是它声明的，transferability 才是判断真假」），但 transferability 那个 rubric 维度恰恰没实现。在 rubric 落地前，这个规则提供的安全感是假的。</p>
+      <p class="hint">低成本中间态：让 judge 只做一个二元判断「这份 Recipe 换掉品牌名后还能用吗」，比四个维度的 0–1 分数便宜得多，也难被讨好。</p>
+    </div>
+    <div class="item">
+      <h4>让「无字幕参考」能真的产出东西</h4>
+      <p><code>no-fabricated-voiceover</code> 的判定逻辑是 <code>b.onScreenText 为空 || b.script !== b.onScreenText</code> —— 它要求<strong>每一拍的台词与字幕逐字相同</strong>，这不是「不编造口播」，这是「只能写字幕」。对一条有口播、但品牌自己写了新台词的正常 Recipe，这条规则会误伤；而对一条真正静音的参考，它又恰好能用。规则名字与判定语义对不上，将来一定会有人按名字去修它，然后修坏。</p>
+    </div>
+    <div class="item">
+      <h4>参考视频应有「按 id 取一条」的端口方法</h4>
+      <p><code>analyze_reference_video</code> 现在用 <code>list()</code> 全量拉取再 <code>find</code>。这既让一个列表接口承担了点查询职责，也让 fake 极易漂移（已经漂了，见 D3）。加一个 <code>get(brandId, referenceId)</code> 是一个小改动，却能让工具、适配器、fake 三者的契约重新收窄。</p>
+    </div>
+    <div class="item">
+      <h4>把「分析值不值这个钱」的实验前置</h4>
+      <p>roadmap 说 ablation（有分析与无分析，盲评对比）是「这条路线图里信息量最大的一次测量」，它现在是票据 04，被 03 阻塞。但它其实不依赖完整 tracer——两个 prompt、同一个请求、一个人盲评，一天就能跑。在视觉供应商还没选定的时候，这个实验能提前回答「如果供应商不行，产品还成立吗」。</p>
+    </div>
+  </div>
+</section>
+
+<section class="reveal">
+  <div class="sec-head">
+    <h2>按代价排序的十件事</h2>
+    <p class="sec-note">排序原则不是「哪个更重要」，而是「单位时间消除多少不确定性」。前三件加起来不到一天。</p>
+  </div>
+
+  <ol class="rank">
+    <li>
+      <h4>修 D4：护栏用例区分「拒绝」与「失败」</h4>
+      <p>这是唯一一个会<b>伪造安全信号</b>的缺陷。在它修好之前，所有关于「护栏有效」的结论都不可使用。</p>
+      <p class="meta2">代价：半天　收益：让 should_fail 门禁重新有意义</p>
+    </li>
+    <li>
+      <h4>修 D3：让 eval 的 fake 自洽</h4>
+      <p>唯一一次真实评测尝试连 API key 都没拿到（5 个 case 全部记成 <code>runner</code> 失败），其余 4 份记录是自检。所以「评测通过」这件事，至今没有任何一次真实证据。</p>
+      <p class="meta2">代价：半天　收益：让后续所有评测可信</p>
+    </li>
+    <li>
+      <h4>修 D6：分析落库 + 命中缓存</h4>
+      <p>两行代码，同时修好「省钱」「可审计」「跨品类迁移」三件产品主张，顺便让工具描述不再对模型说谎。</p>
+      <p class="meta2">代价：两小时　收益：单次成本与产品质量同时改善</p>
+    </li>
+    <li>
+      <h4>修 D1 与 D2：截断与预算</h4>
+      <p>两个都是「写了两遍但只装了一遍」的保险。D1 让运行记录静默丢失，D2 让成本上限比宣称的松。</p>
+      <p class="meta2">代价：一天（D2 需要一条能变红的测试）　收益：代价控制与可观测性恢复真实</p>
+    </li>
+    <li>
+      <h4>修 D5：@ 判定比对 bot 自身 id</h4>
+      <p>在网关上线之前修，比上线之后修便宜一个数量级。现在改是一个字段比对，上线后改是「解释为什么机器人回了一句不相干的话」。</p>
+      <p class="meta2">代价：两小时　收益：消除一类误触发与误花钱</p>
+    </li>
+    <li>
+      <h4>修 D7 与 D8：模型归属与门禁</h4>
+      <p>D7 让 ADR 0005／0008 的闸门重新可执行；D8 让 typecheck 与 test 真的自动跑。两者都是「让已有的好东西真的生效」。</p>
+      <p class="meta2">代价：一天　收益：模型升级从猜测变成决定</p>
+    </li>
+    <li>
+      <h4>实现 rubric judge（最小版）</h4>
+      <p>不需要四个维度。先做一个二元判断 + 一段理由，接上 playbook 的「8/10 通过」那条线。现在那条线永远满足，等于没有。</p>
+      <p class="meta2">代价：两三天　收益：让「40% 的判断分」从装饰变成信号</p>
+    </li>
+    <li>
+      <h4>统一时常常量与 prompt 文本</h4>
+      <p><code>TARGET_DURATION_SEC</code> 注入 prompt、注入工具描述、hook 上限写进同一个常量。这是「单一来源」原则唯一没被贯彻的地方，而它恰好是模型最常犯错的维度。</p>
+      <p class="meta2">代价：半天（含一次 eval 复核）　收益：消除「规格模糊伪装成模型判断差」</p>
+    </li>
+    <li>
+      <h4>校正文档与现实的距离</h4>
+      <p>四份 ADR 的断言、技能目录未标注的 42 个插件来源、<code>.env.example</code> 的成本值。这个仓库的价值全在「文档可信」，所以文档失真的边际成本比一般项目高得多。过期的权威比没有权威更贵。</p>
+      <p class="meta2">代价：一天　收益：保住这个仓库最贵的那项资产</p>
+    </li>
+    <li>
+      <h4>跑 vision spike，关掉 ADR 0007</h4>
+      <p>这是唯一一件我不能替你做、也无法从代码里推断的事。它需要真实样本、真实 key、和一个人判断「这个分析是不是对的」。在它关闭之前，产品最核心的那句主张——「模型能把爆款抽象到可迁移」——没有任何证据。</p>
+      <p class="meta2">代价：半天 + 供应商费用　收益：决定这个产品是否成立</p>
+    </li>
+  </ol>
+</section>
+
+<section class="reveal">
+  <div class="closing">
+    <h2>一句话结论</h2>
+    <p>
+      这个仓库把「怎么把 agent 产品做对」想得比绝大多数团队清楚——ADR 0001–0009 里至少有五条是被真实事故教出来的判断，
+      eval 设计文档的水平高于它的实现水平一个量级。问题不在认识，在<b>执行的落差集中在同一个位置</b>：
+      凡是要花钱、要接入真实外部世界的那条路径（视频分析、rubric 评判、真实评测、CI），都没有跑通过；
+      凡是不花钱、可以纯本地验证的那条路径（schema、失败语义、解密验签、租户隔离），质量都很高。
+    </p>
+    <p style="margin-top:1.2rem">
+      所以这份图谱里最该被记住的不是那八个缺陷，而是它们<b>共同的成因</b>：这个项目用大量高质量文档替代了少量昂贵的真实运行。
+      文档让人以为事情已经想过；真实运行才知道想得对不对。
+    </p>
+    <ol>
+      <li><b>先修两个会伪造信号的东西：D4（护栏假通过）和 D3（评测台自坏）。</b><span>它们不修，你会一直以为自己有一张安全的网和一把可靠的尺。</span></li>
+      <li><b>再修三处「说了但没做」：分析落库、模型归属、脱敏。</b><span>这三条都是文档里已经签过字的承诺，兑现成本都低于一天。</span></li>
+      <li><b>然后把 rubric 与 vision spike 当成同一件事的两半。</b><span>一个决定「怎么判断好」，一个决定「原材料够不够好」。两者都缺的时候，任何分数都没有意义。</span></li>
+      <li><b>最后才动 workbench 与网关。</b><span>路线图的这个排序是对的，不需要改。需要改的是：在它们之前，先让已有的东西真的跑起来。</span></li>
+    </ol>
+  </div>
+
+  <div class="bounds">
+    <h3>这份盘点的边界</h3>
+    <ul>
+      <li><b>我跑过的：</b>6 个包 <code>tsc --noEmit</code>（全过）；8 个测试文件 54 个用例（全过）；<code>next lint</code> 失败；<code>turbo run lint</code> 失败；D1／D3／D4／D5 四段复现脚本（输出已贴）。</li>
+      <li><b>我读出来的：</b>D2、D6、D7、D8 与全部七处矛盾。这些不需要模型即可确认，但没有写成测试。</li>
+      <li><b>我没能的：</b>任何需要 <code>ANTHROPIC_API_KEY</code> 或 <code>VOD_API_KEY</code> 的真实运行。所以「模型判断能力」「视频理解质量」「真实成本」三项全部未验证——这不是遗漏，是环境边界。这三项恰好也是决定产品成立与否的三项。</li>
+      <li><b>口径说明：</b>成熟度以「有没有证据」判定而不是以代码量。因此 <code>apps/workbench</code> 的 86 行被判为「骨架」而不是「一半可用」；同样，evals 的 1402 行被判为「可跑」而不是「可用」，因为一次真实评测都没跑完。</li>
+    </ul>
+  </div>
+
+  <footer>
+    盘点范围：packages/shared · packages/core · packages/evals · packages/feishu · apps/workbench · apps/bot-gateway · docs（thesis / roadmap / 10 ADR / eval 设计 / playbook / skill 体系）· .claude/skills。
+    共 3491 行产品源码（不含测试）、3312 行项目文档、4059 行技能文档。诊断日期 2026-10-24。
+  </footer>
+</section>
+
+</main>
+</div>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  if (!root) return;
+
+  // Reveal on scroll. Content is visible without JS because the class is added by script.
+  const revealables = Array.from(document.querySelectorAll('.reveal'));
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    revealables.forEach((el) => io.observe(el));
+  } else {
+    revealables.forEach((el) => el.classList.add('in'));
+  }
+
+  // Row stagger inside each table.
+  document.querySelectorAll('tbody').forEach((body) => {
+    Array.from(body.children).forEach((tr, i) => {
+      tr.classList.add('reveal', 'r' + Math.min(i, 5));
+    });
+  });
+  const rows = Array.from(document.querySelectorAll('tbody tr.reveal'));
+  if ('IntersectionObserver' in window) {
+    const io2 = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) { entry.target.classList.add('in'); io2.unobserve(entry.target); }
+      }
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.02 });
+    rows.forEach((r) => io2.observe(r));
+  } else {
+    rows.forEach((r) => r.classList.add('in'));
+  }
+
+  // Filtering.
+  const chips = Array.from(document.querySelectorAll('button.chip'));
+  const allRows = Array.from(document.querySelectorAll('tbody tr'));
+  function apply(filter) {
+    allRows.forEach((tr) => {
+      const t = tr.getAttribute('data-dtype');
+      if (!t) return; // non-capability tables keep their rows
+      const show = filter === 'all' || filter === t;
+      tr.classList.toggle('dim', !show);
+    });
+    document.querySelectorAll('.domain-block').forEach((block) => {
+      const rowsIn = Array.from(block.querySelectorAll('tbody tr[data-dtype]'));
+      const any = rowsIn.some((r) => !r.classList.contains('dim'));
+      block.style.opacity = any ? '1' : '.35';
+    });
+  }
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const f = chip.getAttribute('data-filter') || 'all';
+      chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+      apply(f);
+    });
+  });
+
+  // Counter for the 3px accent on hover is pure CSS; nothing else needed.
+})();
+</script>
+</body>
+</html>

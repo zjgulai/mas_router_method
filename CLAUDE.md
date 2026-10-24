@@ -61,6 +61,12 @@ single place where a domain object is defined. If two packages need the same typ
 it belongs there; a second definition is a bug that only surfaces after a schema
 change.
 
+The same rule applies to seed data: the four brand profiles live in
+`packages/core/src/seed/brands.ts`, not in the eval fixtures. `evals` depends on
+`core`, so a second copy in the fixtures would drift the moment a guardrail
+changes — and the guardrails are exactly what the `should_fail` cases are built
+on.
+
 ### `packages/core` is the whole product in one loop
 
 `run-agent.ts` owns the agent loop: model call, step recording, budget enforcement,
@@ -146,6 +152,24 @@ clarify → spec → tickets → build → eval → release. Use the vendored sk
 (`/implement`, `/tdd`, `/code-review`, `/diagnosing-bugs`) directly for ordinary
 software work that has no model in it.
 
+**Which skills exist where is not obvious, and guessing wrong is expensive.** Three
+sources, different locations:
+
+| Source | Count | Where | How to call it |
+| --- | --- | --- | --- |
+| Vendored into this repo | 34 | `.claude/skills/` | by name, e.g. `/implement` |
+| Client-provided plugins | 38 | not in the repo | needs a prefix, e.g. `anthropic-skills:agent-browser` |
+| Agent Native Builder | 13 | `.claude/skills/anb*` | by name, e.g. `/anb` |
+
+A skill missing from `.claude/skills/` is **not** a skill that does not exist — check
+the "source" column in `docs/skills/skill-catalog.md` before concluding anything. The
+first pass at auditing this repo got that wrong and reported 42 skills as fake.
+
+`/anb` is a second, separate flow for non-technical product builders: six stages
+(idea → runs → judgeable → shipable → observable → reusable) plus five checks. It
+shares the runtime with `/native-agent-dev` but not the audience. See
+`ANB-README.md`.
+
 Two gates are worth being strict about:
 
 - **The eval set is the spec.** A spec without eval cases is a wish; every later
@@ -170,7 +194,12 @@ Single-context: one `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See
 Honest status, so the next session does not over-estimate what exists:
 
 - `packages/shared` — complete schemas, typechecked, exported.
-- `packages/core` — working runtime, tool contracts, 9 unit tests passing.
-- `apps/workbench`, `apps/bot-gateway`, `packages/feishu`, `packages/evals` —
-  **manifest and tsconfig only.** No source yet. This is intentional: the first
-  tracer ticket is specified in `docs/roadmap.md` and has not been built.
+- `packages/core` — runtime, tool contracts, SQLite + vod adapters, the four seed
+  brands, and the store contract suite. 31 unit tests passing.
+- `packages/feishu` — signature verification, decryption, event normalisation.
+  19 tests passing. Delivery and the HTTP server are not built.
+- `packages/evals` — harness, 14 cases, 15 deterministic rules, store conformance.
+  30 tests passing. Rubric judging is not implemented, and **no eval run has ever
+  reached a real model** (the one attempt had no API key).
+- `apps/workbench`, `apps/bot-gateway` — placeholder surfaces. Their designs are
+  specified; only session resolution and a placeholder page exist.

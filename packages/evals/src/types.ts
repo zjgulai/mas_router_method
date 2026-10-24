@@ -23,8 +23,16 @@ export interface EvalCase {
 export interface CaseResult {
   caseId: string;
   passed: boolean;
+  /**
+   * The run never reached a verdict (failed, cancelled, budget-exceeded). Never
+   * counted as a pass, and never counted as a guardrail failure either: it is a
+   * third state that must block a release without blaming the model.
+   */
+  inconclusive: boolean;
   /** Each failed expectation, with the observed value — not just "failed". */
   failures: { rule: string; observed: string }[];
+  /** Expectations the harness could not evaluate, with the reason. Never silently passed. */
+  skipped?: { expectation: string; reason: string }[];
   costUsd: number;
 }
 
@@ -35,5 +43,11 @@ export interface SuiteResult {
   cases: CaseResult[];
   /** Guardrail failures are listed separately because they block release outright. */
   guardrailFailures: string[];
+  /**
+   * Cases that could not be judged. Kept apart from `guardrailFailures` so a
+   * provider outage is not reported as a broken guardrail — the two need
+   * different people to fix them.
+   */
+  guardrailInconclusive: string[];
   totalCostUsd: number;
 }

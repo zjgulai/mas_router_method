@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第二次实测 · 用修正后的方法做一个产品</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ground:#f2f1ec; --surface:#fbfaf6; --sunk:#e7e6df; --deep:#d6d5cc;
+    --ink:#191a17; --muted:#54564f; --faint:#5f6159;
+    --accent:#0d5a51; --accent-2:#d9e6e2;
+    --alert:#782c2c; --alert-2:#eedcd8;
+    --warn:#6b5312; --warn-2:#f0e8d2;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); font-size:16.5px; line-height:1.64; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1020px; margin:0 auto; padding:0 clamp(18px,4vw,52px); }
+  main{ padding-bottom:5rem; }
+  .masthead{ padding:clamp(2.8rem,6vw,4.6rem) 0 clamp(1.6rem,3.2vw,2.3rem); }
+  .meta{ font-size:.84rem; color:var(--muted); }
+  .meta span + span::before{ content:"·"; margin:0 .55rem; color:var(--deep); }
+  h1{ font-family:var(--serif); font-weight:600; letter-spacing:-.022em; line-height:1.05; font-size:clamp(2rem,5.2vw,3.2rem); margin:.7rem 0 0; }
+  h1 em{ font-style:normal; color:var(--accent); }
+  .standfirst{ font-size:clamp(1.02rem,1.75vw,1.2rem); line-height:1.6; color:var(--muted); max-width:44rem; margin:1.2rem 0 0; }
+  .standfirst strong{ color:var(--ink); font-weight:600; }
+
+  .verdict{ background:var(--surface); padding:1.5rem 1.55rem 1.6rem; margin-top:2rem; }
+  .verdict h2{ font-family:var(--serif); font-size:1.3rem; font-weight:600; margin:0 0 .8rem; }
+  .verdict p{ margin:0 0 .85rem; font-size:.96rem; color:var(--muted); }
+  .verdict p:last-child{ margin-bottom:0; }
+  .verdict b{ color:var(--ink); }
+  .big{ display:flex; gap:1px; background:var(--deep); margin-top:1.2rem; }
+  .big > div{ background:var(--surface); padding:1.1rem 1.2rem 1.2rem; flex:1; }
+  .big b{ display:block; font-family:var(--serif); font-size:2rem; line-height:1; letter-spacing:-.03em; font-weight:600; }
+  .big span{ display:block; margin-top:.4rem; font-size:.79rem; color:var(--muted); line-height:1.4; }
+
+  section{ padding:clamp(2.4rem,4.6vw,3.6rem) 0 0; }
+  h2{ font-family:var(--serif); font-size:clamp(1.4rem,3vw,1.85rem); font-weight:600; letter-spacing:-.02em; margin:0 0 .45rem; }
+  .sub{ font-size:.92rem; color:var(--faint); margin:0 0 1.3rem; max-width:42rem; }
+  h3{ font-size:1.04rem; font-weight:650; margin:1.8rem 0 .6rem; }
+
+  .stage{ background:var(--surface); padding:1.3rem 1.45rem 1.4rem; margin-bottom:1px; }
+  .stage .sh{ display:flex; align-items:baseline; gap:.7rem; flex-wrap:wrap; }
+  .stage .sn{ font-family:var(--serif); font-size:1.2rem; color:var(--accent); line-height:1; }
+  .stage h3{ margin:0; font-size:1rem; }
+  .stage .badge{ font-size:.76rem; font-weight:650; padding:.12rem .45rem; background:var(--accent-2); color:var(--accent); }
+  .stage .badge.warn{ background:var(--warn-2); color:var(--warn); }
+  .stage .badge.fail{ background:var(--alert-2); color:var(--alert); }
+  .stage p{ margin:.6rem 0 0; font-size:.91rem; color:var(--muted); }
+  .stage p b{ color:var(--ink); }
+  .stage ul{ margin:.6rem 0 0; padding-left:1.15rem; }
+  .stage li{ font-size:.9rem; color:var(--muted); margin-bottom:.4rem; line-height:1.55; }
+  .stage li b{ color:var(--ink); }
+
+  pre{ margin:.6rem 0 0; background:#20211d; color:#e6e4dc; padding:.8rem .95rem; overflow-x:auto; font-family:var(--mono); font-size:.78rem; line-height:1.55; }
+  pre .r{ color:#e8a4a0; } pre .k{ color:#9fd6c6; } pre .y{ color:#e8d9a0; }
+
+  table{ border-collapse:collapse; width:100%; background:var(--surface); }
+  thead th{ font-size:.77rem; font-weight:650; color:var(--faint); text-align:left; padding:.75rem .85rem .6rem; border-bottom:1px solid var(--deep); }
+  tbody td{ font-size:.87rem; color:var(--muted); padding:.7rem .85rem; border-bottom:1px solid var(--sunk); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:0; }
+  tbody td:first-child{ color:var(--ink); font-weight:600; }
+
+  .found{ background:var(--alert-2); padding:1.35rem 1.45rem 1.45rem; margin-top:1.3rem; }
+  .found h3{ margin:0 0 .6rem; color:#4a1e1e; }
+  .found p{ margin:0 0 .75rem; font-size:.93rem; color:#4a1e1e; }
+  .found p:last-child{ margin-bottom:0; }
+  .found b{ color:#2e1111; }
+
+  .closing{ background:var(--ink); color:#e9e7e0; padding:clamp(1.7rem,3.4vw,2.5rem) clamp(1.2rem,3.2vw,2.3rem); margin-top:clamp(2.2rem,4.4vw,3.4rem); }
+  .closing h2{ color:#fbfaf6; }
+  .closing p{ color:#b9b7ae; max-width:42rem; }
+  .closing b{ color:#fdfcf8; }
+  .closing ul{ margin:1rem 0 0; padding-left:1.15rem; color:#d5d3cb; }
+  .closing li{ margin-bottom:.6rem; font-size:.94rem; line-height:1.6; }
+  .closing li b{ color:#fdfcf8; }
+  footer{ margin-top:2.2rem; padding:1.15rem 1.25rem; background:var(--sunk); font-size:.8rem; color:var(--muted); line-height:1.7; }
+  footer code{ font-family:var(--mono); font-size:.94em; }
+  @media print{ body{ background:#fff; } .stage, .found{ break-inside:avoid; } .closing{ background:#fff; border:1px solid #999; } .closing p, .closing b, .closing h2, .closing li{ color:#000; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+
+<header class="masthead">
+  <div class="meta"><span>第二次实测</span><span>2026-10-24</span><span>产品：repo-vitals · 955 行（源码 511 / 测试 444）</span></div>
+  <h1>修正后的方法，<br>补上缺口了吗</h1>
+  <p class="standfirst">
+    上一次实测发现七个问句漏了一整类：它们管「机制可不可信」，不管「结果对不对」。
+    于是我加了四条质量问句，然后<b>用修正后的方法做一个新产品</b>——看那四条是不是真的补上了。
+    <strong>答案是补上了，而且它以我没预料到的方式咬了我一口。</strong>
+  </p>
+</header>
+
+<div class="verdict">
+  <h2>结论</h2>
+  <p>四条质量问句确实补上了缺口。第一步就见效：<b>阶段 2 刚跑通，它们就抓到一个「看起来没问题、实际是坏的」结论</b>——工具给一个已被作者废弃的库打了满分。</p>
+  <p>但更重要的是第二件事：<b>修好之后，检查通过了，而通过的原因是错的。</b>这一层，四条问句也拦不住。</p>
+  <div class="big">
+    <div><b>3</b><span>次「检查通过但理由错」</span></div>
+    <div><b>2</b><span>个真实的误报，被真实数据抓到</span></div>
+    <div><b>22</b><span>条检查，全部可失败</span></div>
+    <div><b>1</b><span>次产品否定条件提前显形</span></div>
+  </div>
+</div>
+
+<section>
+  <h2>做了什么</h2>
+  <p class="sub">一个仓库名进去，一句可审计的结论出来——这个该不该用。选它是因为它天生带一个可量化的质量维度：结论对不对，可以拿真实仓库验证。</p>
+
+  <div class="stage">
+    <div class="sh"><span class="sn">1</span><h3>想法</h3><span class="badge warn">验收未完成</span></div>
+    <p>五句话写完了。但验收动作是「念给一个不懂技术的人听，他能复述出用途」——<b>这一步我做不了，需要另一个人。</b>我先往下走了，这是一个真实的卡点，不是演示。</p>
+    <p>写的过程中修了一个自己的错误：第一版的「什么情况说明不该做」写的是「如果没人用」。那是废话，任何产品没人用都不该做。真正的否定条件是<b>「这些指标不承载判断」</b>——它可以被测量，所以它才是可证伪的假设。</p>
+  </div>
+
+  <div class="stage">
+    <div class="sh"><span class="sn">2</span><h3>能跑</h3><span class="badge">验收通过</span></div>
+    <p>一条真实输入走通。验收动作是「用我自己随手找的输入，再换一个说不上来的」——两个都跑了。</p>
+    <p><b>而这一跑就把产品打穿了：</b></p>
+    <pre><span class="k">$ node src/index.js --repo moment/moment</span>
+moment/moment: <span class="r">looks solid</span>. No red flags in the five signals checked.</pre>
+    <p>moment 是作者自己宣布进入维护模式、建议新项目不要用的库。工具给了它满分。<b>产品的否定条件在阶段 2 就显形了</b>——如果修不好，这个产品就该停。</p>
+  </div>
+
+  <div class="stage">
+    <div class="sh"><span class="sn">3</span><h3>能判断</h3><span class="badge">硬门通过</span></div>
+    <p>七条标准，<b>先写检查，再改产品</b>。关键是把检查分成两组：</p>
+    <p>A 组测机制——来源可追溯、失败不出结论、结论与表格一致、可重复。B 组测<b>结果对不对</b>——已知坏样本必须判坏、已知好样本不能误杀、每条信号必须说明盲区。</p>
+    <p><b>B 组就是上一次缺的那一类。</b>它一上来就把 moment 抓了出来。</p>
+  </div>
+</section>
+
+<section>
+  <h2>三次「通过但理由错」</h2>
+  <p class="sub">这是这次实测最有价值的发现。三次都是我自己写的检查，三次都是绿的，三次都绿得不对。</p>
+
+  <div class="found">
+    <h3>第一次：B4 通过了，但抓的是错的东西</h3>
+    <p>我把「moment 不能被判成 looks solid」写成检查，它通过了。我差一点就收工。</p>
+    <p>查了一下才知道：<b>它通过是因为 moment 已经 496 天没提交</b>，被「维护活跃度」判为 bad。而我写这条检查的本意是「作者说别用」。</p>
+    <p>这意味着：<b>一个仍在活跃维护、但作者已宣布废弃的库，会拿到满分。</b>我用一个假想样本验证了——确实满分。检查通过了，但它守的根本不是我以为的那扇门。</p>
+    <p><b>做法：</b>把这个空洞显式写成一条<b>断言错误行为</b>的检查，锁住它。它会在空洞被填上时失败，提醒人「这里变了，想一想」。</p>
+  </div>
+
+  <div class="found">
+    <h3>第二次：检测器写好了，但认不出真实世界的措辞</h3>
+    <p>我按自己想到的措辞写了废弃检测：「this package is no longer supported」「DEPRECATED: use X」。八种措辞，全部正确识别，零误报。</p>
+    <p>接到真实仓库上一跑——<b>moment 认不出来。</b></p>
+    <p>因为它的 README 写的是：<code>Moment.js is a legacy project, now in maintenance mode. New features are not being accepted.</code></p>
+    <p><b>这三句里没有一个词在我的模式库里。</b>我是按「我想象一份废弃声明怎么写」来写的，不是按「真实世界怎么写」。</p>
+  </div>
+
+  <div class="found">
+    <h3>第三次：误报。而误报比漏报更贵</h3>
+    <p>补上真实措辞后再跑：moment 认出来了，<b>但 jquery 也被判成废弃了。</b></p>
+    <p>原因：jquery 的 README 里有一句「<code>The 2.x and 1.x branches are no longer supported.</code>」——说的是两个分支，不是项目本身。而我新加的「no longer supported」匹配到了它。</p>
+    <p>这一步让我意识到一件事：<b>漏报只是少一个信号，误报会教人忽略所有信号。</b>所以这个模块的取舍是明确偏向沉默的——宁可漏，不可错。</p>
+  </div>
+</section>
+
+<section>
+  <h2>这些说明手册还缺什么</h2>
+
+  <div class="stage">
+    <p><b>四条质量问句补上了原来的缺口，但它们还有一层漏。</b>它们能发现「检查通过了但结果是坏的」，发现不了「检查通过了但通过的理由是错的」。</p>
+    <p>后者比前者更隐蔽，因为结果看起来是对的。B4 那次就是：结论正确（moment 被判为有风险），理由错误（因为陈旧，不是因为废弃）。<b>如果样本换成一个活跃但已废弃的库，结论就会跟着错。</b></p>
+    <p><b>要加的不是第五条问句，而是一个动作：</b>每次检查通过之后，问一句——<b>「它是靠哪一条通过的？如果那一条不成立，它还会通过吗？」</b></p>
+    <p>具体做法：把那个「不成立」的情况造出来跑一遍。这一招在事后验证过两次（把贡献者数改成 unknown、把 readme 去掉），两次都发现了新的洞。</p>
+  </div>
+</section>
+
+<section>
+  <h2>真实数据抓到的两个误判</h2>
+  <p class="sub">这是「用真实输入」这条纪律的直接回报。两个都是我自己写出来、自己没看出来的问题。</p>
+  <table>
+    <thead><tr><th style="width:22%">样本</th><th style="width:26%">第一次跑的结果</th><th>说明什么</th></tr></thead>
+    <tbody>
+      <tr><td>moment/moment</td><td>looks solid</td><td>元数据全绿（4.8 万星、未归档、近期有提交）。<b>真相只写在 README 里</b>，而 GitHub 的字段表达不了它</td></tr>
+      <tr><td>jquery/jquery</td><td>usable with caveats（误报）</td><td>README 里「2.x 和 1.x 分支不再支持」被当成「项目废弃」。<b>版本范围的主语被我漏掉了</b></td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:1rem">修完之后，六个真实仓库全部判对：moment 判为有风险，jquery、request、node、express、lodash 都没误报。</p>
+</section>
+
+<section>
+  <div class="closing">
+    <h2>这次实测改变了什么</h2>
+    <p>方法从三块变成四块，新增的一块是「检查通过之后要问它靠什么通过」。但更值得记的是另一件事：</p>
+    <ul>
+      <li><b>四次实测，四次都是「我以为的」被真实数据推翻。</b>第一次是评测台自坏，第二次是七个问句漏类，第三次是「42 个不存在」的误判，这次是「通过但理由错」。</li>
+      <li><b>每一次推翻都发生在第一次接触真实输入的时候</b>，没有一次发生在我的推演里。</li>
+      <li><b>所以「用真实输入跑一遍」不是流程的最后一步，它是最便宜的一次验证。</b>我这次花在真实仓库上的时间不到十分钟，抓到的两个问题，靠推理一个都发现不了。</li>
+    </ul>
+    <p style="margin-top:1.1rem">还有一点关于这套方法本身：<b>它不能防住所有错误，但它让错误留下名字。</b>这次三次「通过但理由错」，我每次都能发现，是因为手册里已经有「检查通过但结果是坏的」这个概念——它给了我一个方向去找。没有这个名字，我会直接收工。</p>
+  </div>
+
+  <footer>
+    <b>产物</b>：<code>anb2-repo-vitals/</code>（955 行，22 条检查全部可失败，<code>node test/runner.js</code> 可复现）。阶段记录：<code>IDEA.md</code>、<code>CRITERIA.md</code>。
+    <b>验证方式</b>：故意弄坏两次（让检测器永远返回未废弃 → 两条检查红；删掉误报防线 → jquery 被误判、一条检查红），两次都确认检查会失败。
+    <b>未完成</b>：阶段 1 的验收动作需要另一个人复述用途，我做不到；阶段 4–6 未开始。
+  </footer>
+</section>
+
+</main>
+</div>
+</body>
+</html>

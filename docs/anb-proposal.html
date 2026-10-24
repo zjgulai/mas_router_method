@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Native Builder · 方案 v0</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ground:#f2f1ec; --surface:#fbfaf6; --sunk:#e7e6df; --deep:#d6d5cc;
+    --ink:#191a17; --muted:#54564f; --faint:#5f6159;
+    --accent:#0d5a51; --accent-2:#d9e6e2;
+    --alert:#782c2c; --alert-2:#eedcd8;
+    --warn:#6b5312;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--sans); font-size:16.5px; line-height:1.64;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 clamp(18px,4vw,56px); }
+  main{ padding-bottom:5rem; }
+
+  .masthead{ padding:clamp(3rem,6.5vw,5.4rem) 0 clamp(2rem,4vw,3rem); }
+  .meta{ font-size:.84rem; color:var(--muted); }
+  .meta span + span::before{ content:"·"; margin:0 .55rem; color:var(--deep); }
+  h1{
+    font-family:var(--serif); font-weight:600; letter-spacing:-.022em; line-height:1.04;
+    font-size:clamp(2.2rem,5.6vw,3.7rem); margin:.8rem 0 0;
+  }
+  h1 em{ font-style:normal; color:var(--accent); }
+  .standfirst{
+    font-size:clamp(1.04rem,1.8vw,1.26rem); line-height:1.58; color:var(--muted);
+    max-width:44rem; margin:1.3rem 0 0;
+  }
+  .standfirst strong{ color:var(--ink); font-weight:600; }
+
+  section{ padding:clamp(2.6rem,5vw,4.4rem) 0 0; }
+  h2{
+    font-family:var(--serif); font-weight:600; letter-spacing:-.02em; line-height:1.14;
+    font-size:clamp(1.5rem,3.2vw,2rem); margin:0 0 .5rem;
+  }
+  .sub{ font-size:.92rem; color:var(--faint); margin:0 0 1.5rem; max-width:42rem; }
+  h3{ font-size:1.04rem; font-weight:650; margin:2rem 0 .6rem; letter-spacing:-.008em; }
+  p{ margin:0 0 .95rem; }
+  .lede{ font-size:1.02rem; }
+
+  /* thesis */
+  .thesis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:1px; background:var(--deep); margin-top:.4rem; }
+  .thesis > div{ background:var(--surface); padding:1.5rem 1.45rem 1.6rem; }
+  .thesis h4{ margin:0 0 .55rem; font-size:1rem; font-weight:650; }
+  .thesis p{ margin:0; font-size:.93rem; color:var(--muted); }
+  .thesis .k{ font-family:var(--serif); font-size:1.7rem; color:var(--accent); line-height:1; display:block; margin-bottom:.7rem; }
+
+  /* principles */
+  .principles{ display:grid; gap:1px; background:var(--deep); margin-top:.2rem; }
+  .principle{ background:var(--surface); padding:1.25rem 1.4rem 1.35rem; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:.4rem 2rem; }
+  .principle h4{ margin:0; font-size:.99rem; font-weight:650; }
+  .principle .incident{ margin:0; font-size:.88rem; color:var(--muted); }
+  .principle .incident b{ color:var(--alert); font-weight:650; }
+  @media (max-width:720px){ .principle{ grid-template-columns:1fr; gap:.5rem; } }
+
+  /* loop svg */
+  .loopwrap{ background:var(--surface); padding:1.4rem 1rem 1rem; margin-top:.2rem; overflow-x:auto; }
+  svg.loop{ display:block; width:100%; min-width:620px; height:auto; }
+
+  /* stage cards */
+  .stages{ display:grid; gap:1px; background:var(--deep); margin-top:.2rem; }
+  .stage{ background:var(--surface); padding:1.5rem 1.5rem 1.6rem; }
+  .stage-head{ display:flex; align-items:baseline; gap:.7rem; flex-wrap:wrap; margin-bottom:.2rem; }
+  .stage-head .n{ font-family:var(--serif); font-size:1.35rem; color:var(--accent); line-height:1; }
+  .stage-head h3{ margin:0; font-size:1.12rem; }
+  .stage-head .goal{ font-size:.88rem; color:var(--faint); }
+  .stage dl{ margin:.9rem 0 0; display:grid; gap:.75rem; }
+  .stage dt{ font-size:.76rem; font-weight:650; color:var(--faint); letter-spacing:.02em; }
+  .stage dd{ margin:.14rem 0 0; font-size:.91rem; color:var(--muted); }
+  .stage dd b{ color:var(--ink); font-weight:600; }
+  .stage .fake{ border-left:2px solid var(--alert); padding-left:.8rem; }
+  .stage .fake dt{ color:var(--alert); }
+  .stage .gate{ border-left:2px solid var(--accent); padding-left:.8rem; }
+  .stage .gate dt{ color:var(--accent); }
+
+  /* kit */
+  .kit{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1px; background:var(--deep); margin-top:.2rem; }
+  .kitcol{ background:var(--surface); padding:1.45rem 1.4rem 1.5rem; }
+  .kitcol h4{ margin:0 0 .3rem; font-family:var(--serif); font-size:1.16rem; font-weight:600; }
+  .kitcol .role{ font-size:.86rem; color:var(--faint); margin:0 0 .9rem; }
+  .kitcol ul{ margin:0; padding:0; list-style:none; display:grid; gap:.5rem; }
+  .kitcol li{ font-size:.89rem; color:var(--muted); padding-left:1rem; position:relative; line-height:1.5; }
+  .kitcol li::before{ content:""; position:absolute; left:0; top:.62em; width:4px; height:4px; background:var(--accent); }
+  .kitcol li b{ color:var(--ink); font-weight:600; }
+
+  /* table */
+  .tablewrap{ overflow-x:auto; background:var(--surface); margin-top:.2rem; }
+  table{ border-collapse:collapse; width:100%; min-width:640px; }
+  thead th{ font-size:.77rem; font-weight:650; color:var(--faint); text-align:left; padding:.75rem .9rem .6rem; border-bottom:1px solid var(--deep); letter-spacing:.02em; }
+  tbody td{ font-size:.88rem; color:var(--muted); padding:.8rem .9rem; border-bottom:1px solid var(--sunk); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:0; }
+  tbody td:first-child{ color:var(--ink); font-weight:600; }
+  @media (max-width:760px){
+    .tablewrap{ overflow-x:visible; background:transparent; }
+    table{ min-width:0; } thead{ display:none; }
+    tbody tr{ display:block; background:var(--surface); margin-bottom:1px; padding:.4rem 0; }
+    tbody td{ display:block; border-bottom:0; padding:.45rem 1.1rem; }
+    tbody td:first-child{ padding-top:.7rem; }
+  }
+
+  /* not-doing */
+  .nots{ margin-top:.2rem; }
+  .not{ background:var(--surface); padding:1.1rem 1.35rem; margin-bottom:1px; }
+  .not h4{ margin:0 0 .35rem; font-size:.97rem; font-weight:650; }
+  .not p{ margin:0; font-size:.89rem; color:var(--muted); }
+
+  /* unknown */
+  .unknown{ background:var(--ink); color:#e9e7e0; padding:clamp(1.8rem,3.6vw,2.8rem) clamp(1.3rem,3.5vw,2.6rem); margin-top:clamp(2.4rem,5vw,4rem); }
+  .unknown h2{ color:#fbfaf6; margin-bottom:.8rem; }
+  .unknown p{ color:#b9b7ae; max-width:42rem; }
+  .unknown ul{ margin:1.1rem 0 0; padding-left:1.15rem; color:#d5d3cb; }
+  .unknown li{ margin-bottom:.65rem; font-size:.95rem; line-height:1.6; }
+  .unknown li b{ color:#fdfcf8; }
+
+  .ask{ margin-top:2.4rem; background:var(--accent-2); padding:1.5rem 1.5rem 1.6rem; }
+  .ask h3{ margin:0 0 .5rem; font-size:1.02rem; color:var(--accent); }
+  .ask p{ margin:0; font-size:.93rem; color:#173f39; }
+  .ask p + p{ margin-top:.7rem; }
+
+  footer{ margin-top:2.6rem; padding:1.2rem 1.3rem; background:var(--sunk); font-size:.82rem; color:var(--muted); }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+
+<header class="masthead">
+  <div class="meta"><span>方案 v0</span><span>2026-10-24</span><span>状态：待你定方向</span><span>读者：不会写代码的产品开发者</span></div>
+  <h1>Agent Native Builder<br><em>让不会写代码的人，能判断自己做的东西是真的能用</em></h1>
+  <p class="standfirst">
+    这不是一套"教你写代码"的方案。代码由 agent 写。
+    这套方案要解决的是另一件事：<strong>当你看不懂代码时，你怎么知道自己做出来的东西是真的能跑，而不是看起来能跑。</strong>
+    全部内容围绕这一个问题组织。
+  </p>
+</header>
+
+<section>
+  <h2>问题说准了，方案才对得上</h2>
+  <p class="sub">先纠正一个我自己的误判：我上一轮是在为工程师设计流程。对不会写代码的人，那套东西的每一处假设都错。</p>
+
+  <div class="thesis">
+    <div>
+      <span class="k">01</span>
+      <h4>他们不缺代码，缺判断力</h4>
+      <p>agent 能把代码写出来，而且写得比他们自己学三年还好。真正卡住他们的是：面对一段正在运行的程序，不知道哪里会坏、坏了看不出来、好了也不确定。</p>
+    </div>
+    <div>
+      <span class="k">02</span>
+      <h4>他们最大的风险是「假绿色」</h4>
+      <p>测试全过、没有报错、界面能点——这三件事同时成立，产品仍然可能完全不能用。能读代码的人能发现，他们不能。所以他们会带着一个坏产品继续往前走。</p>
+    </div>
+    <div>
+      <span class="k">03</span>
+      <h4>他们要的不是流程，是「能亲手检验的一下」</h4>
+      <p>十二个阶段的 SOP 他们记不住也不会遵守。但如果每个阶段都以「你现在可以自己点一下这个」结束，他们会做完——因为那一下给的是确定感。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>五条设计原则，每条都挂着一个真实事故</h2>
+  <p class="sub">这不是从方法论推出来的原则，是从我上一轮在这个仓库里实际挖出来的缺陷倒推出来的。每条后面的事件都真实发生过，可以查。</p>
+
+  <div class="principles">
+    <div class="principle">
+      <h4>一、每个自动信号必须声明它能证明什么、不能证明什么</h4>
+      <p class="incident">事故：<b>护栏把服务 502 记成「成功拒绝」</b>。四条安全用例全部变绿，实际一条都没被验证。原因只有一行判定条件写错了。</p>
+    </div>
+    <div class="principle">
+      <h4>二、「测试通过」和「能用」是两件事，必须分开报</h4>
+      <p class="incident">事故：<b>所有单测通过，但第一次真实分析必然失败</b>。测试用的假环境返回空列表，而那条路径只在真实运行时才走到。</p>
+    </div>
+    <div class="principle">
+      <h4>三、任何保护机制，都要有证据证明它真的会触发</h4>
+      <p class="incident">事故：<b>成本上限的检查永远不触发</b>。它读的那个数字只在运行结束时才有值，所以条件恒假。注释写着"没有它就会超支"，代码里它什么也没做。</p>
+    </div>
+    <div class="principle">
+      <h4>四、同一个数字不许在两个地方各写一遍</h4>
+      <p class="incident">事故：<b>截断到 2000 字符，加个尾巴变成 2006，而上限正好是 2000</b>。于是每次运行记录写入都失败，用户看到的是"运行成功"。</p>
+    </div>
+    <div class="principle">
+      <h4>五、没验证过的东西必须写「未验证」，不许留白</h4>
+      <p class="incident">事故：<b>五份评测记录成本全是 0，一次真实评测都没跑过</b>，但目录看起来像有历史。空白会被读成「正常」。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>闭环长什么样</h2>
+  <p class="sub">六步，不是十二步。每一步的出口都是一次「你自己能动手的检验」，不是一个文档。测试不过不往前走——这是唯一一条硬规矩。</p>
+
+  <div class="loopwrap">
+    <svg class="loop" viewBox="0 0 900 300" role="img" aria-label="六步闭环：想法、能跑、能判断、能交付、能观测，回到想法">
+      <defs>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#0d5a51"/>
+        </marker>
+        <marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#782c2c"/>
+        </marker>
+      </defs>
+
+      <!-- row 1 -->
+      <g font-family="ui-sans-serif, system-ui, sans-serif">
+        <rect x="10" y="30" width="180" height="76" fill="#fbfaf6" stroke="#d6d5cc"/>
+        <text x="24" y="54" font-size="13" font-weight="650" fill="#0d5a51">1 想法</text>
+        <text x="24" y="74" font-size="12" fill="#54564f">说清谁在什么情况下用</text>
+        <text x="24" y="92" font-size="12" fill="#54564f">产出：一页意图</text>
+
+        <rect x="240" y="30" width="180" height="76" fill="#fbfaf6" stroke="#d6d5cc"/>
+        <text x="254" y="54" font-size="13" font-weight="650" fill="#0d5a51">2 能跑</text>
+        <text x="254" y="74" font-size="12" fill="#54564f">一条真实输入走完全程</text>
+        <text x="254" y="92" font-size="12" fill="#54564f">产出：一个真实结果</text>
+
+        <rect x="470" y="30" width="180" height="76" fill="#fbfaf6" stroke="#d6d5cc"/>
+        <text x="484" y="54" font-size="13" font-weight="650" fill="#0d5a51">3 能判断</text>
+        <text x="484" y="74" font-size="12" fill="#54564f">定什么算好，且能测</text>
+        <text x="484" y="92" font-size="12" fill="#54564f">产出：一页评测清单</text>
+
+        <rect x="700" y="30" width="190" height="76" fill="#fbfaf6" stroke="#d6d5cc"/>
+        <text x="714" y="54" font-size="13" font-weight="650" fill="#0d5a51">4 能交付</text>
+        <text x="714" y="74" font-size="12" fill="#54564f">别人能打开、能用</text>
+        <text x="714" y="92" font-size="12" fill="#54564f">产出：一个链接</text>
+      </g>
+
+      <!-- arrows row1 -->
+      <line x1="190" y1="68" x2="234" y2="68" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#ar)"/>
+      <line x1="420" y1="68" x2="464" y2="68" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#ar)"/>
+      <line x1="650" y1="68" x2="694" y2="68" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#ar)"/>
+
+      <!-- down from 4 to 5 -->
+      <path d="M795,106 L795,150 L620,150 L620,186" fill="none" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#ar)"/>
+
+      <g font-family="ui-sans-serif, system-ui, sans-serif">
+        <rect x="530" y="190" width="180" height="76" fill="#fbfaf6" stroke="#d6d5cc"/>
+        <text x="544" y="214" font-size="13" font-weight="650" fill="#0d5a51">5 能观测</text>
+        <text x="544" y="234" font-size="12" fill="#54564f">出事时你看得出来</text>
+        <text x="544" y="252" font-size="12" fill="#54564f">产出：三条信号</text>
+
+        <rect x="300" y="190" width="180" height="76" fill="#fbfaf6" stroke="#d6d5cc"/>
+        <text x="314" y="214" font-size="13" font-weight="650" fill="#0d5a51">6 能复用</text>
+        <text x="314" y="234" font-size="12" fill="#54564f">下一个产品从模板起步</text>
+        <text x="314" y="252" font-size="12" fill="#54564f">产出：一份模板</text>
+      </g>
+
+      <line x1="530" y1="228" x2="484" y2="228" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#ar)"/>
+      <line x1="300" y1="228" x2="254" y2="228" stroke="#0d5a51" stroke-width="1.2" marker-end="url(#ar)"/>
+
+      <!-- back up to 1 -->
+      <path d="M300,190 L300,150 L100,150 L100,110" fill="none" stroke="#782c2c" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
+      <text x="108" y="142" font-size="11" fill="#782c2c" font-family="ui-sans-serif, system-ui, sans-serif">改了想法，回到第一步</text>
+
+      <!-- the hard gate marker -->
+      <line x1="425" y1="120" x2="425" y2="176" stroke="#d6d5cc" stroke-width="1" stroke-dasharray="2 3"/>
+      <text x="432" y="140" font-size="11" fill="#782c2c" font-family="ui-sans-serif, system-ui, sans-serif">这两步之间是唯一的硬门</text>
+      <text x="432" y="156" font-size="11" fill="#782c2c" font-family="ui-sans-serif, system-ui, sans-serif">评测不过，不往下走</text>
+    </svg>
+  </div>
+
+  <h3>为什么是这六步，而不是更多</h3>
+  <p class="lede">因为我按「哪一步能拦下一个会毁掉整个产品的错误」来切的。多出来的步骤是给团队协作和长期维护的——你现在的规模用不上，加进去只会让流程被放弃。第三步（能判断）之所以被单独立出来而不是塞进「能跑」，是因为不会写代码的人最容易跳过它：东西跑起来了，看着挺好，就继续做下一件事了。而所有「做了三个月发现方向错了」的项目，都是在这一步没停下来。</p>
+</section>
+
+<section>
+  <h2>六个阶段，每个阶段四栏</h2>
+  <p class="sub">「你在做什么」是给你的；「它会假装成什么样」是我今天实际挖出来的坑；「你可以自己验」是你亲手能做的动作，不需要看懂代码。</p>
+
+  <div class="stages">
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">1</span><h3>想法</h3><span class="goal">目标：把「我想做个 X」变成一句话，能判断做完了没有</span></div>
+      <dl>
+        <div><dt>你在做什么</dt><dd>回答四个问题，每个用一句话：谁在什么情况下用它、他为什么现在没有更好的办法、做完之后他具体能做什么以前做不到的事、什么情况说明这事不该做。<b>第四个问题最重要</b>，它决定你要不要开始。</dd></div>
+        <div class="fake"><dt>它会假装成什么样</dt><dd>agent 会很热心地替你补全答案，写出一份看起来完整的方案。而那份方案的每一条都是它的猜测，不是你的判断。这就是为什么第一步必须你自己说完，agent 只负责提问、不负责回答。</dd></div>
+        <div class="gate"><dt>你可以自己验</dt><dd>把那一页念给一个不懂技术的人听。如果他听完能说出「所以你是在帮谁解决什么」，这一步过了。如果他要问「这是什么意思」，重写。</dd></div>
+        <div><dt>反模式</dt><dd>写功能清单（"要有登录、要有导出、要有后台"）。功能清单不是想法，它是想法的替代品，而且它让你在第三步无从判断好坏。</dd></div>
+      </dl>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">2</span><h3>能跑</h3><span class="goal">目标：一条真实输入，从头走到尾，出一个真实结果</span></div>
+      <dl>
+        <div><dt>你在做什么</dt><dd>不做功能，只做一条最窄的路：一个真实输入进去，一个真实结果出来。不要样例数据，不要「先做个界面」，不要「以后再接真实数据」。这条路要能重复跑第二次。</dd></div>
+        <div class="fake"><dt>它会假装成什么样</dt><dd>这是最容易骗人的一步。agent 给你的东西会有界面、有按钮、点下去有反应——但背后用的是假数据。你以为跑通了，其实只跑通了界面。我上一轮那个仓库就是这样：所有单测通过，第一次真实分析必然失败，因为测试用的假环境返回空。</dd></div>
+        <div class="gate"><dt>你可以自己验</dt><dd>给它一个你自己随手找的真实输入（一个真链接、一份真文件、一句真需求），看它给出什么。<b>然后换一个你说不上来的输入再试一次。</b>第二次才是真的测——第一次可能是被特判过的。</dd></div>
+        <div><dt>反模式</dt><dd>「先把架子搭好，功能后面填」。对不会写代码的人，架子没有任何价值，因为它不产生任何你能判断的东西。先做那条最窄的、能出结果的、丑的路。</dd></div>
+      </dl>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">3</span><h3>能判断</h3><span class="goal">目标：定下「什么算好」，并且这个标准能自动跑</span></div>
+      <dl>
+        <div><dt>你在做什么</dt><dd>写下 5 到 10 条「什么样算好、什么样算坏」。每条都要能变成一次自动检查：要么是能数的（时长在 15 到 45 秒之间、必须包含某个字段），要么是需要人读一遍判断的（这段话像不像这个品牌说的）。<b>然后先写检查，再让它改产品。</b></dd></div>
+        <div class="fake"><dt>它会假装成什么样</dt><dd>三种，全都见过：<br>一、<b>把崩溃当通过</b>——检查程序自己出错时，报「通过」。于是我这边四条安全用例全绿，实际一条没验。<br>二、<b>检查项永远跳过</b>——需要人判断的那部分没实现，每次都记为「跳过」，而「跳过」被算成通过。<br>三、<b>规则写了但没接上</b>——代码里有这条检查，用例里没引用它，等于不存在。</dd></div>
+        <div class="gate"><dt>你可以自己验</dt><dd>三重验证，缺一不可：<br>一、<b>故意做坏一次</b>：让它产出一个明确违反某条标准的东西，看检查会不会红。如果还是绿的，这条检查是假的。<br>二、<b>故意断网或删掉密钥</b>，再跑一次。这时候应该是「无法判断」，不能是「通过」。<br>三、<b>让它把检查结果逐条念给你听</b>，你要听到「跳过了几条、为什么」。没听到，就是被藏起来了。</dd></div>
+        <div><dt>反模式</dt><dd>只测「正常情况」。十条全测正常路径，等于零条。真正会毁掉产品的是那些「不该发生却发生了」的情况——说错话、超支、把 A 用户的数据给了 B。</dd></div>
+      </dl>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">4</span><h3>能交付</h3><span class="goal">目标：别人拿到一个链接就能用，不需要你在旁边</span></div>
+      <dl>
+        <div><dt>你在做什么</dt><dd>让它能被人打开。这一步不是为了「上线」，是为了<b>让你第一次从使用者的位置看它</b>。你在自己电脑上跑，永远看不到别人会遇到什么。</dd></div>
+        <div class="fake"><dt>它会假装成什么样</dt><dd>「本地能跑」被说成「可以用了」。区别在于：环境变量、密钥、域名、权限，这四件事在你自己电脑上全都是配好的，在别人那里全都是缺的。另外它可能给你一个只在你电脑上开着的地址，你发给别人，别人打不开。</dd></div>
+        <div class="gate"><dt>你可以自己验</dt><dd>用另一台设备（手机）打开它，用你之外的一个人试一次。如果他卡在某一步，那一步就是你接下来要做的全部工作。</dd></div>
+        <div><dt>反模式</dt><dd>在这一步补功能。能交付的意思是「现有的东西能被用」，不是「再加三个功能就更好了」。</dd></div>
+      </dl>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">5</span><h3>能观测</h3><span class="goal">目标：出事的时候，你不问人也能看出是哪一层出了问题</span></div>
+      <dl>
+        <div><dt>你在做什么</dt><dd>只要三条信号：<b>它一共跑了多少次</b>、<b>每次花了多少钱</b>、<b>失败的都是什么原因</b>。三条都必须是你能打开就看到的，不是要跑命令才看得到的。</dd></div>
+        <div class="fake"><dt>它会假装成什么样</dt><dd>日志里全是技术细节，但你想要的三个数字一个都找不到。或者更糟：<b>成本显示为 0</b>，因为根本没记。我见过五份运行记录成本全是 0，一眼看不出那是「没记」还是「很便宜」。</dd></div>
+        <div class="gate"><dt>你可以自己验</dt><dd>故意弄坏一次（用掉一个不存在的输入），然后在记录里找不找得到这一次失败、以及失败原因说得清不清楚。找不到，或者原因写的是「出错了」，这一步没过。</dd></div>
+        <div><dt>反模式</dt><dd>先做漂亮的仪表盘。你要的是「出事能查」，不是「平时好看」。三条数字够了。</dd></div>
+      </dl>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">6</span><h3>能复用</h3><span class="goal">目标：下一个产品不用从零开始，但也不要背上一堆用不上的东西</span></div>
+      <dl>
+        <div><dt>你在做什么</dt><dd>把这一次里<b>你真的用过三次以上</b>的部分抽出来，做成下一个产品的起点。其余全部丢掉。</dd></div>
+        <div class="fake"><dt>它会假装成什么样</dt><dd>「通用框架」的诱惑。agent 很擅长给你造一个灵活的、可配置的、能支持各种情况的底座——而这个底座本身会变成下一个项目最大的负担。判断标准很简单：<b>这个东西上个产品用过吗？没有就别抽。</b></dd></div>
+        <div class="gate"><dt>你可以自己验</dt><dd>用抽出来的模板开第二个产品，计时：多久能跑出第一个真实结果？如果比第一个产品更慢，模板是负担，不是资产。</dd></div>
+        <div><dt>反模式</dt><dd>为了复用而复用。第二次做同类产品时你会知道该抽什么；第一次就想抽，抽出来的全是猜的。</dd></div>
+      </dl>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>三件套各管一件事</h2>
+  <p class="sub">你选了这个形态。它们的分工不是按内容分的，是按「什么时候用得上」分的——这决定了它们不会互相重复。</p>
+
+  <div class="kit">
+    <div class="kitcol">
+      <h4>Skill</h4>
+      <p class="role">你坐在 agent 面前工作时用。它是给 agent 的指令，不是给你读的。</p>
+      <ul>
+        <li><b>六个阶段技能</b>，每个包含：提问清单（一次只问一个、带推荐答案）、产出物模板、自检项、以及「这一步最容易假装成功的地方」。</li>
+        <li><b>四个检查技能</b>：故意做坏、断网试、念给我听、第二台设备。这四个是可执行的动作，不是建议。</li>
+        <li><b>一个路由</b>：你只要说「我不知道下一步做什么」，它判断你在哪一步，然后只拉起那一个阶段技能。不给你看全流程。</li>
+        <li><b>关键设计</b>：每个技能在动手前先问「这一步的验收是什么」，答不出来就不许往下——这是唯一硬规矩的落地点。</li>
+      </ul>
+    </div>
+
+    <div class="kitcol">
+      <h4>文档</h4>
+      <p class="role">你不在 agent 面前时用。它要在没有对话上下文的情况下也能读懂。</p>
+      <ul>
+        <li><b>一页决策树</b>：我现在该做什么？回答三个问题就能定位到阶段。</li>
+        <li><b>一页术语表</b>：每个技术词配一句「用人话说」+「它坏了会怎样」。后一半是给非工程师的，一般文档没有。</li>
+        <li><b>一页失败图鉴</b>：今天挖出来的六个事故，每个写清「它长什么样」「你怎么自己发现」。<b>这一页是整套东西里最值钱的。</b></li>
+        <li><b>不写</b>：架构原理、设计模式、技术选型对比。这些对你没有决策价值，而且会稀释前面三页。</li>
+      </ul>
+    </div>
+
+    <div class="kitcol">
+      <h4>模板仓库</h4>
+      <p class="role">新项目从它起步。它必须是能跑通的，不能是骨架。</p>
+      <ul>
+        <li><b>只放被验证过的部分</b>：一个 agent 循环、一套数据形状、一个评测跑法、一条成本上限、三条观测信号。就这些。</li>
+        <li><b>自带一个能跑通的例子</b>，不是一个空架子。空架子会被误认为「已经搭好了」。</li>
+        <li><b>自带六个已知坑的防护</b>：每个坑对应一段代码 + 一条会红的测试。这是模板最大的价值——它把踩过的坑固化成默认行为。</li>
+        <li><b>刻意不做的事</b>：不做多租户、不做权限体系、不做多平台。这些是这个仓库上一个版本最大的时间黑洞，而且它们不影响第一个产品能不能用。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>和现有东西的关系</h2>
+  <p class="sub">这个仓库里已经有 34 个 skill 和一堆流程文档。直接叠上去只会让它更重。</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>现有的</th><th>怎么处理</th><th>为什么</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>42 个被引用但不存在的 skill</td>
+          <td>从目录里删掉，不要装</td>
+          <td>十一个流程阶段依赖它们，照着走的人会在第五步卡住。这是最快让人放弃流程的方式。</td>
+        </tr>
+        <tr>
+          <td>十二阶段 SOP（S0–S15）</td>
+          <td>压缩成六步</td>
+          <td>它的每一段都写得对，但它是给有工程团队的人写的。对一个人做产品，阶段数比阶段质量更致命。</td>
+        </tr>
+        <tr>
+          <td>六阶段路由 native-agent-dev</td>
+          <td>保留骨架，换掉内核</td>
+          <td>「按你说的阻塞点路由」这个设计是对的。要换的是每个阶段的内容：从「写给工程师的纪律」换成「给非工程师的判断动作」。</td>
+        </tr>
+        <tr>
+          <td>九个 ADR 与决策清单</td>
+          <td>保留，但对非工程师隐藏</td>
+          <td>它们是给下一个 agent 读的，不是给你的。你不需要读，但需要它们在——否则下次改动会推翻上次的判断而没人知道。</td>
+        </tr>
+        <tr>
+          <td>评测设计与用例</td>
+          <td>保留并前置到第二步</td>
+          <td>这是这个仓库写得最好的东西，也是唯一能替非工程师兜住质量的机制。它现在排在很后面，要挪到「能跑」之前。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>这次明确不做的</h2>
+  <p class="sub">每一条都有理由，不是偷懒。</p>
+  <div class="nots">
+    <div class="not"><h4>不做「从零教你理解代码」</h4><p>那是一条三年的路，而且学完了 agent 又会往前跑一代。你要的是能判断，不是能写。</p></div>
+    <div class="not"><h4>不做多产品矩阵、增长、投放</h4><p>那是产品做出来之后的问题。现在做，等于在还不知道能不能做出来的东西上分配注意力。</p></div>
+    <div class="not"><h4>不做团队协作流程</h4><p>票据、交接、评审委员会，这些在有第二个人之前全是负担。整个方案默认读者是一个人。</p></div>
+    <div class="not"><h4>不做技术选型建议</h4><p>选什么模型、什么数据库，这个问题对最终结果的影响，远小于「有没有做第三步」。</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="unknown">
+    <h2>我不知道的部分</h2>
+    <p>这套方案里有一半是我能证明的（六个事故、五条原则、六步的切法），另一半是判断，得说出来让你知道边界在哪。</p>
+    <ul>
+      <li><b>我不知道非工程师实际会卡在哪一步。</b>我推的是「判断力」是瓶颈，依据是那些事故的形状。但真实的卡点可能是别的——比如耐心，比如不知道自己做的东西值不值得做。这个只能靠你试一轮才知道。</li>
+      <li><b>六步是不是够了，我不敢确定。</b>它是我按「能拦下什么错误」切的，不是按真实使用数据切的。有可能第五步（观测）对你其实是多余的，也有可能漏了你真正需要的一步。</li>
+      <li><b>「故意做坏一次」这个办法我没在非工程师身上验证过。</b>它在工程上成立（能变红的测试才算测试），但让人手动去弄坏自己的东西，心理上是有阻力的。可能需要在 skill 里做成「一键弄坏」。</li>
+      <li><b>模板仓库我还没做。</b>它必须从一个真实跑通的产品里长出来。这个仓库现在还没有一次真实的端到端运行成功——所以现在做模板，做出来的是骨架，而骨架最危险，因为看起来像成品。</li>
+    </ul>
+  </div>
+
+  <div class="ask">
+    <h3>下一步，两件事需要你定一件事</h3>
+    <p><b>第一，先做哪个。</b>我建议先做「文档里的失败图鉴」那一页——六个事故我已经有了，一页纸，半天的量，而且它是唯一能立刻改变你判断力的东西。Skill 和模板仓库都依赖它先把语言定下来。</p>
+    <p><b>第二，这个仓库怎么处理。</b>它现在是个半成品，修好了六个缺陷但没有一次真实运行。要么我们花一天把它跑通（需要你有模型和视频分析的密钥），让它成为模板仓库的源头；要么把它当成纯证据存档，模板仓库以后另起。前者能让这套方案有实证，后者更快但会缺一块。</p>
+  </div>
+
+  <footer>
+    方案基于对该仓库的实测：6 个包 typecheck 通过、80 个测试通过（core 31 / evals 30 / feishu 19）、6 个缺陷中 4 个已修复并有测试、2 个（截断超限、预算检查）已定位未修。文中所有「事故」均可在 <code>packages/</code> 与 <code>docs/evals/recipe-quality.md</code> 中查证。生成于 2026-10-24。
+  </footer>
+</section>
+
+</main>
+</div>
+</body>
+</html>

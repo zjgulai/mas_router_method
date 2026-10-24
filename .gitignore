@@ -39,3 +39,6 @@ coverage/
 # Specs and tickets ARE committed: they are the work's memory and the skills
 # read them. Only throwaway experiments stay local.
 .scratch/local/
+
+# --- eval runs (transient); baselines are committed ---
+packages/evals/runs/

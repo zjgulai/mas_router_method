@@ -1,0 +1,35 @@
+[
+  {
+    "id": "A-spoken",
+    "url": "https://www.tiktok.com/@REPLACE/video/0000000000000000000",
+    "brandContext": "skincare, direct tone",
+    "groundTruth": {
+      "hookEndSec": 2.0,
+      "beatStartSecs": [2.0, 8.0, 16.0],
+      "hasVoiceover": true,
+      "audioRights": "unknown"
+    }
+  },
+  {
+    "id": "B-silent",
+    "url": "https://www.tiktok.com/@REPLACE/video/0000000000000000001",
+    "brandContext": "skincare, direct tone",
+    "groundTruth": {
+      "hookEndSec": 1.5,
+      "beatStartSecs": [1.5, 7.0, 14.0],
+      "hasVoiceover": false,
+      "audioRights": "unknown"
+    }
+  },
+  {
+    "id": "C-cross-category",
+    "url": "https://www.tiktok.com/@REPLACE/video/0000000000000000002",
+    "brandContext": "coffee pods, warm tone",
+    "groundTruth": {
+      "hookEndSec": 2.5,
+      "beatStartSecs": [2.5, 10.0, 20.0, 30.0],
+      "hasVoiceover": true,
+      "audioRights": "unknown"
+    }
+  }
+]

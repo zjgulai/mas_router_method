@@ -9,11 +9,18 @@ import type {
 import { brandToolNames, createBrandTools } from './tools/brand.js';
 import { runAgent, type AgentRunRequest, type AgentRunResult } from './run-agent.js';
 import { loadConfig, type RuntimeConfig } from './config.js';
+import { randomBytes } from 'node:crypto';
+import type { RunStore } from './run-store.js';
+import { buildRunRecord } from './run-record.js';
 
 export * from './config.js';
 export * from './run-agent.js';
 export * from './tools/result.js';
 export * from './tools/brand.js';
+export * from './run-store.js';
+export * from './recipe-draft.js';
+export * from './seed/brands.js';
+export * from './contracts/index.js';
 
 /**
  * Composes the pieces into the one thing the apps actually call.
@@ -27,6 +34,8 @@ export interface RuntimeDeps {
   references: ReferenceStore;
   recipes: RecipeStore;
   vision: VisionAnalyzer;
+  /** Every run is recorded here; the workbench, evals, and reports read it. */
+  runs: RunStore;
   /** Injected so tests can pin a clock or fake a model. */
   config?: RuntimeConfig;
   /** Absolute path the SDK runs in. Should be the repo root in dev. */
@@ -79,7 +88,9 @@ export function createRuntime(deps: RuntimeDeps) {
           ? SYSTEM_PROMPT
           : `${SYSTEM_PROMPT}\n\n${opts.appendSystemPrompt}`;
 
-      return runAgent(
+      const runId = `run_${randomBytes(9).toString('hex')}`;
+      const startedAt = new Date().toISOString();
+      const result = await runAgent(
         req,
         {
           model: config.model,
@@ -92,6 +103,22 @@ export function createRuntime(deps: RuntimeDeps) {
         },
         opts.signal === undefined ? {} : { signal: opts.signal },
       );
+      const endedAt = new Date().toISOString();
+
+      try {
+        await deps.runs.saveRun(
+          buildRunRecord({ id: runId, startedAt, endedAt, request: req, result }),
+        );
+      } catch (cause) {
+        // A lost run record must not turn a completed run into a failed one for the
+        // user, but it must be loud: without the record there is no timeline, no
+        // eval history, and no cost trail.
+        console.error(
+          `[run ${runId}] failed to persist run: ${cause instanceof Error ? cause.message : String(cause)}`,
+        );
+      }
+
+      return { ...result, runId };
     },
   };
 }

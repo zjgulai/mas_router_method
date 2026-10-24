@@ -1,0 +1,6 @@
+{
+  "name": "link-digest",
+  "private": true,
+  "type": "module",
+  "scripts": { "digest": "node src/index.js" }
+}

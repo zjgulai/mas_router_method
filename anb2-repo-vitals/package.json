@@ -1,0 +1,2 @@
+{ "name": "repo-vitals", "private": true, "type": "module",
+  "scripts": { "vitals": "node src/index.js" } }

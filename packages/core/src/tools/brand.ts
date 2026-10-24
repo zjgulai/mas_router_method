@@ -1,6 +1,6 @@
 import { tool } from '@anthropic-ai/claude-agent-sdk';
 import { z } from 'zod';
-import type { BrandProfile } from '@mas/shared';
+import type { BrandProfile, Recipe } from '@mas/shared';
 import { err, guard, ok, toCallToolResult } from './result.js';
 
 /**
@@ -31,6 +31,9 @@ export interface ReferenceStore {
     },
   ): Promise<{ referenceId: string }>;
   list(brandId: string): Promise<{ referenceId: string; url: string; analysed: boolean }[]>;
+  /** Analysis is the durable artifact; the source video is never stored (ADR 0006). */
+  saveAnalysis(brandId: string, referenceId: string, analysis: unknown): Promise<void>;
+  getAnalysis(brandId: string, referenceId: string): Promise<unknown | null>;
 }
 
 export interface VisionAnalyzer {
@@ -44,7 +47,9 @@ export interface RecipeStore {
     referenceId: string;
     recipe: unknown;
   }): Promise<{ recipeId: string }>;
-  get(recipeId: string): Promise<unknown | null>;
+  getRecipe(brandId: string, recipeId: string): Promise<unknown | null>;
+  /** Newest first; scoped by brand (ADR 0009). */
+  listRecipes(brandId: string, limit?: number): Promise<Recipe[]>;
 }
 
 export interface ToolDeps {

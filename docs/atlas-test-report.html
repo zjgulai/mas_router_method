@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>手册实测报告 · 七个问句够不够用</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ground:#f2f1ec; --surface:#fbfaf6; --sunk:#e7e6df; --deep:#d6d5cc;
+    --ink:#191a17; --muted:#54564f; --faint:#5f6159;
+    --accent:#0d5a51; --accent-2:#d9e6e2;
+    --alert:#782c2c; --alert-2:#eedcd8;
+    --warn:#6b5312; --warn-2:#f0e8d2;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    --serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans); font-size:16.5px; line-height:1.64; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1020px; margin:0 auto; padding:0 clamp(18px,4vw,52px); }
+  main{ padding-bottom:5rem; }
+  .masthead{ padding:clamp(2.8rem,6vw,4.6rem) 0 clamp(1.6rem,3.2vw,2.4rem); }
+  .meta{ font-size:.84rem; color:var(--muted); }
+  .meta span + span::before{ content:"·"; margin:0 .55rem; color:var(--deep); }
+  h1{ font-family:var(--serif); font-weight:600; letter-spacing:-.022em; line-height:1.05; font-size:clamp(2rem,5.2vw,3.2rem); margin:.7rem 0 0; }
+  h1 em{ font-style:normal; color:var(--accent); }
+  .standfirst{ font-size:clamp(1.02rem,1.75vw,1.2rem); line-height:1.6; color:var(--muted); max-width:44rem; margin:1.2rem 0 0; }
+  .standfirst strong{ color:var(--ink); font-weight:600; }
+
+  .verdict{ background:var(--surface); padding:1.5rem 1.55rem 1.6rem; margin-top:2rem; }
+  .verdict h2{ font-family:var(--serif); font-size:1.3rem; font-weight:600; margin:0 0 .8rem; }
+  .verdict p{ margin:0 0 .85rem; font-size:.96rem; color:var(--muted); }
+  .verdict p:last-child{ margin-bottom:0; }
+  .verdict b{ color:var(--ink); }
+  .big{ display:flex; gap:1px; background:var(--deep); margin-top:1.2rem; }
+  .big > div{ background:var(--surface); padding:1.1rem 1.2rem 1.2rem; flex:1; }
+  .big b{ display:block; font-family:var(--serif); font-size:2rem; line-height:1; letter-spacing:-.03em; font-weight:600; }
+  .big span{ display:block; margin-top:.4rem; font-size:.79rem; color:var(--muted); line-height:1.4; }
+
+  section{ padding:clamp(2.4rem,4.6vw,3.6rem) 0 0; }
+  h2{ font-family:var(--serif); font-size:clamp(1.4rem,3vw,1.85rem); font-weight:600; letter-spacing:-.02em; margin:0 0 .45rem; }
+  .sub{ font-size:.92rem; color:var(--faint); margin:0 0 1.3rem; max-width:42rem; }
+
+  .q{ background:var(--surface); padding:1.25rem 1.4rem 1.4rem; margin-bottom:1px; }
+  .qhead{ display:flex; gap:.7rem; align-items:baseline; flex-wrap:wrap; }
+  .qn{ font-family:var(--serif); font-size:1.15rem; color:var(--accent); line-height:1; }
+  .qhead h3{ margin:0; font-size:1rem; font-weight:650; }
+  .qresult{ font-size:.78rem; font-weight:650; padding:.14rem .5rem; }
+  .r-pass{ background:var(--accent-2); color:var(--accent); }
+  .r-warn{ background:var(--warn-2); color:var(--warn); }
+  .r-fail{ background:var(--alert-2); color:var(--alert); }
+  .q p{ margin:.75rem 0 0; font-size:.91rem; color:var(--muted); }
+  .q p b{ color:var(--ink); }
+  .q .gap{ margin-top:.8rem; padding:.7rem .85rem; background:var(--sunk); font-size:.88rem; color:var(--ink); }
+  .q .gap b{ color:var(--alert); }
+
+  pre{ margin:.6rem 0 0; background:#20211d; color:#e6e4dc; padding:.8rem .95rem; overflow-x:auto; font-family:var(--mono); font-size:.77rem; line-height:1.5; }
+  pre .r{ color:#e8a4a0; } pre .k{ color:#9fd6c6; }
+
+  .blind{ background:var(--alert-2); padding:1.4rem 1.5rem 1.5rem; margin-top:1.3rem; }
+  .blind h3{ margin:0 0 .7rem; font-size:1.05rem; color:#4a1e1e; }
+  .blind p{ margin:0 0 .8rem; font-size:.93rem; color:#4a1e1e; }
+  .blind p:last-child{ margin-bottom:0; }
+  .blind b{ color:#2e1111; }
+
+  .add{ background:var(--surface); padding:1.4rem 1.5rem 1.5rem; margin-top:1.3rem; }
+  .add h3{ margin:0 0 .6rem; font-size:1.05rem; color:var(--accent); }
+  .add p{ margin:0 0 .8rem; font-size:.93rem; color:var(--muted); }
+  .add ol{ margin:.6rem 0 0; padding-left:1.2rem; }
+  .add li{ margin-bottom:.75rem; font-size:.93rem; color:var(--muted); line-height:1.6; }
+  .add li b{ color:var(--ink); }
+
+  table{ border-collapse:collapse; width:100%; background:var(--surface); }
+  thead th{ font-size:.77rem; font-weight:650; color:var(--faint); text-align:left; padding:.75rem .85rem .6rem; border-bottom:1px solid var(--deep); }
+  tbody td{ font-size:.87rem; color:var(--muted); padding:.7rem .85rem; border-bottom:1px solid var(--sunk); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:0; }
+  tbody td:first-child{ color:var(--ink); font-weight:600; }
+
+  .closing{ background:var(--ink); color:#e9e7e0; padding:clamp(1.7rem,3.4vw,2.5rem) clamp(1.2rem,3.2vw,2.3rem); margin-top:clamp(2.2rem,4.4vw,3.4rem); }
+  .closing h2{ color:#fbfaf6; }
+  .closing p{ color:#b9b7ae; max-width:42rem; }
+  .closing b{ color:#fdfcf8; }
+  .closing ul{ margin:1rem 0 0; padding-left:1.15rem; color:#d5d3cb; }
+  .closing li{ margin-bottom:.6rem; font-size:.94rem; line-height:1.6; }
+  .closing li b{ color:#fdfcf8; }
+
+  footer{ margin-top:2.2rem; padding:1.15rem 1.25rem; background:var(--sunk); font-size:.8rem; color:var(--muted); line-height:1.7; }
+  footer code{ font-family:var(--mono); font-size:.94em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+
+<header class="masthead">
+  <div class="meta"><span>手册实测 · 第 1 次</span><span>2026-10-24</span><span>被测对象：link-digest（403 行源码 / 358 行测试）</span></div>
+  <h1>七个问句，<em>漏了一整类</em></h1>
+  <p class="standfirst">
+    失败图鉴里那七个问句，我拿一个刚做完的小工具逐条试了一遍。
+    <strong>机制层面它们全过了：31 个测试、全部保护机制可验证、假数据不比真数据宽松。</strong>
+    但这个工具在真实网页上产出的摘要基本不可用，而七个问句里没有一条能发现它。
+  </p>
+</header>
+
+<div class="verdict">
+  <h2>结论</h2>
+  <p>七个问句回答的是同一个问题：<b>「这个机制的证据可信吗」</b>。它们能抓出四类假信号，因为它们本身就是针对假信号设计的。</p>
+  <p>但它们完全回答不了另一个问题：<b>「这个东西做出来的结果，好用吗」</b>。这两件事之间没有自动联系——一个机制完全可信的工具，可以稳定地输出垃圾。</p>
+  <div class="big">
+    <div><b>7</b><span>问句里能发现「产出质量」问题的</span></div>
+    <div><b>31</b><span>通过的测试数，全部关于机制</span></div>
+    <div><b>3</b><span>真实网站里，3 个摘要都不可用</span></div>
+    <div><b>1</b><span>我的测试自身写错、被误判为代码错的次数</span></div>
+  </div>
+</div>
+
+<section>
+  <h2>逐条结果</h2>
+  <p class="sub">每一条我都真的做了动作，不是判断「应该会过」。结果分成：通过、有缺口、失败。</p>
+
+  <div class="q">
+    <div class="qhead"><span class="qn">1</span><h3>上次有检查失败是什么时候？给我看那次记录</h3><span class="qresult r-pass">通过</span></div>
+    <p>建的过程中确实红过：<b>truncate 在 cap 小于标记长度时会超限</b>。我把它改回去再跑，测试立刻红。</p>
+    <pre><span class="k">故意改坏后：</span>
+30/31 checks passed
+<span class="r">FAIL [limits.test.js] truncate never returns more than the cap
+     cap 0: got 12 chars</span></pre>
+    <p>这条问句有效，而且是我建的过程中唯一主动发现的机制 bug。</p>
+  </div>
+
+  <div class="q">
+    <div class="qhead"><span class="qn">2</span><h3>这次结果里跳过了几条？为什么跳过？</h3><span class="qresult r-warn">有缺口</span></div>
+    <p>工具报「31/31 通过」，没有跳过。但追问下去发现：<b>这套测试根本没有「跳过」这个概念</b>。</p>
+    <div class="gap">这意味着这条问句只能用于「已经有了跳过机制」的系统。如果 agent 从一开始就没实现跳过，你问它「跳过了几条」，它会答「零」——一个听起来很好、实际毫无信息的答案。<b>问句需要改：不是问跳过了几条，是问「你这套检查一共能得出几种结果」。</b></div>
+  </div>
+
+  <div class="q">
+    <div class="qhead"><span class="qn">3</span><h3>把密钥改错／断网，再跑一次</h3><span class="qresult r-pass">通过</span></div>
+    <p>断网后报的是「无法判断」，退出码 1，而且这次失败也被写进了日志：</p>
+    <pre>Could not make a digest: Could not fetch no-such-domain...: fetch failed
+exit code = 1</pre>
+    <p>这条问句在一个小工具上就能用，不需要专业知识。它的价值是被低估的——它同时验了三件事：错误可见、退出码正确、失败被记录。</p>
+  </div>
+
+  <div class="q">
+    <div class="qhead"><span class="qn">4</span><h3>这个测试用的是真数据还是假数据？</h3><span class="qresult r-pass">通过</span></div>
+    <p>假的是网络层。我验证了假网络也遵守真实的大小上限：</p>
+    <pre>假 fetch + 真实限制 -&gt; bytes: 1000  truncated: true  html.len: 1000
+和真实路径一致吗？ YES</pre>
+    <p>这条问句的价值在于它逼出一个具体检查：<b>假的那一层，会不会让真实的规则失效</b>。这是第二类事故（测的不是你的产品）的唯一抓手。</p>
+  </div>
+
+  <div class="q">
+    <div class="qhead"><span class="qn">5</span><h3>成本上限上次拦住是什么时候？</h3><span class="qresult r-pass">通过</span></div>
+    <p>这个工具不调模型，没有成本。但同类的保护（响应大小上限）能拿到拦截证据：</p>
+    <pre>拦截证据: bytes=500  truncated=true</pre>
+    <p>这条问句的措辞需要改：<b>不该只问成本</b>。任何「有上限的东西」都适用——请求大小、重试次数、并发数、文件个数。问题是「上次拦住是什么时候」，不是「成本」。</p>
+  </div>
+
+  <div class="q">
+    <div class="qhead"><span class="qn">6</span><h3>同一条规则在几个地方各写了一遍？</h3><span class="qresult r-pass">通过</span></div>
+    <p>把所有限制集中到一个文件，然后搜硬编码数字：</p>
+    <pre><span class="k">grep 2000|10000|2000000|5000 在 src/ 下（排除 limits.js）：</span>
+（空 —— 没有第二处）</pre>
+    <p>这条问句有效且便宜。它的做法（把所有限制放一处，然后搜重复）是可以机械执行的，不需要判断力。</p>
+  </div>
+
+  <div class="q">
+    <div class="qhead"><span class="qn">7</span><h3>做三次，历史里有几条？</h3><span class="qresult r-pass">通过</span></div>
+    <p>3 次成功 + 3 次尝试（2 次失败），日志 6 条，一条不少，失败的也在里面。</p>
+    <pre>1. succeeded  https://example.com
+2. succeeded  https://example.com
+3. succeeded  https://example.com
+4. failed     not a url
+5. failed     https://no-such-xyz-123.invalid
+6. succeeded  https://text.npr.org/</pre>
+    <p>这条最好用：<b>不需要任何解释，做一个数一个就行</b>。而且它对「静默丢记录」这一类问题是最直接的探测。</p>
+  </div>
+</section>
+
+<section>
+  <h2>七个问句漏掉的那一类</h2>
+
+  <div class="blind">
+    <h3>31 个测试全绿，产品仍然是坏的</h3>
+    <p>我拿三个真实网站试了。维基百科的「Coffee」页面，摘要第一条是：</p>
+    <pre style="background:#2e1111;color:#f0d8d4">Coffee - Wikipedia Jump to content Main menu Main menu move to sidebar hide
+Navigation Main page Contents Current events Random article About Wikipedia Contact us
+Contribute Help Learn to edit Community portal Recent changes Upload file Special pages
+Search Search Appearance Donate Create account Log in Personal tools ... 210 languages
+Afrikaans Alemannisch አማርኛ Aragonés Ænglisc Obolo ...</pre>
+    <p>后面还有原样未解析的维基模板代码（<code>&lt;ref name="ukers"&gt;{{Cite book...}}</code>）。NPR 的首页摘要则是一整段头条标题串在一起。</p>
+    <p><b>这不是机制问题。所有保护机制都工作正常，测试全绿，日志完整。是产出质量本身不成立。</b>而七个问句全部通过了，因为它们问的都是「证据可不可信」，没有一条问「结果能不能用」。</p>
+  </div>
+
+  <div class="add">
+    <h3>要补的不是第八个问句，是另一类问题</h3>
+    <p>我原本想说「加一条就够」，但试下来发现加一条不够——这是一个独立维度，需要一组。它们和原有的七条性质不同：原来七条验的是<b>可信度</b>，新的这组验的是<b>可用度</b>。</p>
+    <ol>
+      <li><b>给我看三个真实输入的输出。</b>不是它挑的样例，是你随手找的。三个都要看，因为第一个可能是特判的。</li>
+      <li><b>这个输出你会拿给客户看吗？如果不会，差在哪一步？</b>这个问题逼出一个具体位置，而不是「整体不够好」。</li>
+      <li><b>有没有一条检查是关于「结果对不对」的？还是全都是关于「程序有没有崩」？</b>大多数项目在这一步会发现：全部是后者。这就是我这次的发现。</li>
+      <li><b>最差的那种输入，会发生什么？</b>不是最难的，是最常见的——真实世界里最多的那种页面，通常是最脏的那种。</li>
+    </ol>
+    <p style="margin-top:1rem">补上这四条之后，手册的结构会变成两半：<b>「四类假信号」管可信度，「四条质量问句」管可用度</b>。前者能防止你被误导，后者能防止你做出一个诚实但没用的东西。</p>
+  </div>
+</section>
+
+<section>
+  <h2>还有一个发现：我的测试自己也错过</h2>
+  <p class="sub">这件事对手册的意义，比工具本身的 bug 更大。</p>
+
+  <div class="q">
+    <p>写完第一轮测试，跑出来 <b>3 条失败</b>。我逐条查了：<b>三条全部是我的测试写错了，不是代码错了。</b></p>
+    <table style="margin-top:.9rem">
+      <thead><tr><th style="width:38%">测试说</th><th style="width:30%">实际</th><th>为什么会错</th></tr></thead>
+      <tbody>
+        <tr><td>导航词混进了摘要</td><td>代码对，是我的输入构造方式不对</td><td>我以为「Home 后面接正文」是两句话，实际没有句号，合成了一句</td></tr>
+        <tr><td>阈值判断差一</td><td>代码对，是我算错了字符数</td><td>我把「长度 ≥ 30」和「30 个字符加句号」搞混了</td></tr>
+        <tr><td>排序不符合预期</td><td>代码对，是我写的预期顺序错了</td><td>我以为同分按字母序，实际代码是按次数降序——代码更合理</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:.9rem">这意味着：<b>「测试红了」不等于「产品坏了」，也可能是尺子坏了。</b>而不会写代码的人看到红色的第一反应会是「又出问题了，让 agent 修」——如果 agent 直接去改代码迁就错的测试，测试会变绿而产品会变坏。</p>
+    <p>所以手册里需要加一条，它属于「怎么读信号」而不是「怎么测」：<b>测试红了，先问「是产品错了还是测试错了」，不要直接让它修。</b>这个判断你自己做不了，但你可以要求 agent 明确回答「我认为是哪一边错了，理由是什么」——如果它答不上来，它就是在猜。</p>
+  </div>
+</section>
+
+<section>
+  <div class="closing">
+    <h2>这次实测改变了什么</h2>
+    <p>原本我以为这套手册的核心是「假信号清单 + 七个问句」。实测之后它变成了三块（后来又补了第四块，见页尾）：</p>
+    <ul>
+      <li><b>四类假信号（不变）</b>——抓可信度问题，仍然有效，其中三条在这次实测里直接起了作用。</li>
+      <li><b>四条质量问句（新增）</b>——抓可用度问题。这是原来完全缺失的一整类，也是这次最重要的发现。</li>
+      <li><b>一条读信号规则（新增）</b>——测试红了先判断是产品错还是尺子错。没有这条，前面所有准备都会在一次误判里被毁掉。</li>
+    </ul>
+    <p style="margin-top:1.1rem">还有一件事值得记下来：<b>我是在知道图鉴里那几类坑的情况下建这个工具的，仍然踩到了新的一种。</b>这说明手册的价值不在于让人不犯错，而在于<b>让人犯的错有一个名字，因而能被指出来</b>。我这次能发现它，是因为我在写手册；别人发现不了，是因为没人把这件事说破。</p>
+  </div>
+
+  <div style="background:var(--surface); padding:1.4rem 1.5rem 1.5rem; margin-top:1.4rem;">
+    <h3 style="margin:0 0 .6rem; font-size:1.05rem; color:var(--alert)">实测之后又补的第四块：找不到 ≠ 不存在</h3>
+    <p style="margin:0 0 .8rem; font-size:.93rem; color:var(--muted)">这份实测报告写完的同一周，我在清理另一个任务的文档时犯了第七种错误：看到目录里少了 42 个工具，就写下「它们根本不存在」，还配了一段听起来很有说服力的推理。</p>
+    <p style="margin:0; font-size:.93rem; color:var(--muted)">实际上它们全部存在，只是由别处提供、调用要带前缀。而我在同一周里已经成功调用过其中一个，却从没把这个矛盾跟当时的结论对上。</p>
+    <p style="margin:.8rem 0 0; font-size:.93rem; color:#4a1e1e"><b>它和前面几类的区别</b>：前面那些是系统给了你一个假信号；这一种是系统什么都没给，而你把空白填成了结论。防法也不同——前者要识破，这一种要忍住不填。</p>
+    <p style="margin:.6rem 0 0; font-size:.88rem; color:var(--faint)">已写入失败图鉴第五类，并在两分钟自检表里加了对应的一行。</p>
+  </div>
+
+  <footer>
+    <b>被测对象</b>：<code>anb-experiment-linkdigest/</code>（403 行源码，358 行测试，零依赖，31 个检查全部通过）。
+    <b>实测方法</b>：建工具时刻意避开失败图鉴里的假信号，建完之后只用那七个问句检查，另外用三个真实网站试产出。
+    <b>可复现</b>：<code>cd anb-experiment-linkdigest &amp;&amp; node test/run-tests.js</code>；真实页面测试见 <code>node src/index.js --url &lt;地址&gt;</code>。</footer>
+</section>
+
+</main>
+</div>
+</body>
+</html>

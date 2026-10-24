@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>提示词库 · Agent Native Builder</title>
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .shell{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+  .top{position:sticky;top:0;z-index:20;background:var(--ink);color:#e9e7e0;padding:.55rem 0}
+  .top .shell{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .top a{color:#e9e7e0;text-decoration:none;font-size:.84rem;opacity:.78}
+  .top a:hover{opacity:1}
+  .top a.home{font-weight:650;opacity:1;font-family:var(--serif);font-size:.92rem}
+  .top nav{display:flex;gap:.2rem;flex-wrap:wrap;margin-left:auto}
+  .top nav a{padding:.2rem .5rem}
+  .top nav a.on{background:#e9e7e0;color:var(--ink);opacity:1}
+  main{padding:clamp(2rem,4.5vw,3.4rem) 0 4rem}
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<header class="top"><div class="shell">
+  <a class="home" href="/mas_router_method/">ANB</a>
+  <nav>
+      <a href="/mas_router_method/">总览</a>
+      <a href="/mas_router_method/01-need.html">需求</a>
+      <a href="/mas_router_method/02-design.html">设计</a>
+      <a href="/mas_router_method/03-build.html">开发</a>
+      <a href="/mas_router_method/04-verify.html">验收</a>
+      <a href="/mas_router_method/05-ship.html">交付</a>
+      <a href="/mas_router_method/06-operate.html">运营</a>
+      <a href="/mas_router_method/07-iterate.html">迭代</a>
+      <a href="/mas_router_method/branches.html">分支</a>
+      <a href="/mas_router_method/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/prompts.html" class="on">提示词</a>
+      <a href="/mas_router_method/docs.html">原始文档</a>
+  </nav>
+</div></header>
+<main class="shell">
+  <div class="crumb"><a href="/mas_router_method/">总览</a> / 提示词库</div>
+  <h1>提示词库</h1>
+<p class="lede">可以直接复制的会话提示词。按阶段分类，每条都标明：<b>什么时候用、以及为什么这么写</b>。</p>
+<div class="note">这些提示词的共同点：<b>都在要求一个具体动作，而不是一个结论。</b>
+"帮我检查一下"会让它给你一段看起来认真的话；"造一个会让它失败的情况，跑一次，把结果原样贴给我"会让它给你证据。
+<br><br>把 <code>___</code> 换成你的内容。带 <code>&lt;b&gt;</code> 的地方是强调，复制时可以去掉。</div>
+<h2>跨阶段</h2>
+<div class="card">
+<h3>会话开始</h3>
+<pre>用 todo-ledger 读一下当前状态，确认分支和 worktree，告诉我 Now 和下一件事。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">每次新会话</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">凭记忆开工是万恶之源。</span></div></div>
+</div>
+<div class="card">
+<h3>会话结束</h3>
+<pre>用 handoff 写交接文档：目标、状态、决策、下一步、待答问题。指向已有产物，不要重复。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">换人或换 agent 时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">交接文档写给下一个 agent 读，不是给你自己看的。</span></div></div>
+</div>
+<div class="card">
+<h3>不知道下一步</h3>
+<pre>用 anb 判断我现在卡在哪一步。只问必要的问题，然后只给我那一步要做的事，不要列全流程。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">任何时候</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">列表单会让你更迷茫。要一个动作。</span></div></div>
+</div>
+<div class="card">
+<h3>诊断卡住</h3>
+<pre>用 diagnosing-bugs 查这个 bug：先建一个能变红的反馈回路，再谈假设。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">有 bug 但不知道在哪</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">不能变红的复现不算复现。</span></div></div>
+</div>
+<h2>需求</h2>
+<div class="card">
+<h3>把一句话想法问成意图</h3>
+<pre>用 interview-me 采访我：我想做 ___，但还没想清给谁用、成功长什么样。一次只问一个问题，每个问题带上你的推荐答案。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">只有一句模糊想法时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">不要让它替你回答。它替你想的每一句都是猜测，你会在验收时无从判断。</span></div></div>
+</div>
+<div class="card">
+<h3>攻击已有草稿</h3>
+<pre>用 grilling 拷问这份方案，按 frontier 分轮提问，每个问题给出你的推荐答案。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">已经写了一份 PRD 或方案</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">前提是草稿是你写的。攻击一份它自己写的草稿，只会听到附和。</span></div></div>
+</div>
+<div class="card">
+<h3>确定该走哪条车道</h3>
+<pre>用 agent-delivery-router 判断这个需求走哪条车道：incident / exploration / capability / fast。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">每个任务开始</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这一步只要 30 秒，但省掉它你会用错误的节奏做事。</span></div></div>
+</div>
+<div class="card">
+<h3>写想法的第五句</h3>
+<pre>帮我写"什么情况说明这个产品不该做"。要求：是一个可以被测量的事件，不是"如果没人用"。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">你能说清用途但说不清否定条件时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这是整个第一步里唯一能后期验证的一句。</span></div></div>
+</div>
+<h2>设计</h2>
+<div class="card">
+<h3>写一条 ADR</h3>
+<pre>用 architecture-decision-records 为 ___ 的选择写一份 ADR，把放弃的选项和各自的代价写进去。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">做了难回退的选择</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">没有"放弃的选项"那一节的 ADR 是宣布，不是决策。</span></div></div>
+</div>
+<div class="card">
+<h3>定死一个术语</h3>
+<pre>用 domain-modeling 把"___"这个词定死，写进 GLOSSARY。给出它在这里的具体含义，以及一个反例（它不包含什么）。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">同一个词在两处意思不同时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">反例比定义有用。说不清它不包含什么，等于没定义。</span></div></div>
+</div>
+<div class="card">
+<h3>契约先行</h3>
+<pre>用 api-and-interface-design 设计 ___ 的接口。先出契约和错误语义，再谈实现。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">要对接外部或跨模块时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">错误语义是重点。只写成功路径的契约会在第一个失败时崩掉。</span></div></div>
+</div>
+<div class="card">
+<h3>拆成可验收的票</h3>
+<pre>用 to-tickets 把这份计划拆成纵向切片，每张票切穿所有层、能单独演示，标清阻塞关系。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">计划已批准</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">一张票如果跨了多个不相干的能力，继续拆。</span></div></div>
+</div>
+<h2>开发</h2>
+<div class="card">
+<h3>做一条最窄的路</h3>
+<pre>只做一条路径：一个真实输入进去，一个真实结果出来。不要界面，不要配置，不要"以后扩展"。做完让我自己跑一次。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">开始开发时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">它一定想给你搭架子。拒绝。架子不产生任何你能判断的东西。</span></div></div>
+</div>
+<div class="card">
+<h3>测试先行</h3>
+<pre>用 tdd 在 ___ 这个 seam 上做：先写会失败的测试，再写最小实现。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">写新逻辑或修 bug</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">先跑一次确认它真的红。没红过的测试不是测试。</span></div></div>
+</div>
+<div class="card">
+<h3>控制范围</h3>
+<pre>ponytail full：用最小完整改动解决，不要加没人要的抽象。结束时告诉我你跳过了什么、风险在哪。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">任何编码任务</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">"跳过了什么"这一项最有价值，它让省略变成决定而不是遗漏。</span></div></div>
+</div>
+<div class="card">
+<h3>分析这个模块</h3>
+<pre>用 codebase-design 的词汇分析这个模块：接口是不是太浅，seam 该放哪。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">要改一块现有代码前</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">先理解形状，再动。</span></div></div>
+</div>
+<h2>验收</h2>
+<div class="card">
+<h3>故意弄坏一次</h3>
+<pre>挑一条检查和一种会让它失败的情况。造出来，跑一次，把结果原样贴给我。必须告诉我它是红了还是绿了。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">任何检查通过之后</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这是全套方法里最重要的一条。没红过的检查是装饰。</span></div></div>
+</div>
+<div class="card">
+<h3>断网试</h3>
+<pre>把 ___ 的密钥改成错的（或删掉），再跑一次。我要看到的是"无法判断"，不是"通过"。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">一切正常得可疑时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">它的表现应该是明确报错 + 非零退出码，而不是静默降级。</span></div></div>
+</div>
+<div class="card">
+<h3>念给我听</h3>
+<pre>把这次检查结果逐条念：一共几条、跑了几条、过了几条、失败几条、<b>跳过了几条、为什么</b>。不许合并成一句。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">收到"全部通过"之后</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">第五节最容易省。省了就是被藏起来了。</span></div></div>
+</div>
+<div class="card">
+<h3>把总数加一遍</h3>
+<pre>把总数拆开加一遍：成功的 + 各种失败原因的 = 总数吗？给我算式。然后什么都不做刷新五次，看数字会不会自己动。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">看到任何仪表盘或计数时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">两分钟，只需要计算器。这是唯一能查"记录有洞"的方法。</span></div></div>
+</div>
+<div class="card">
+<h3>看三个真实输出</h3>
+<pre>给我看三个真实输入的输出——不是你挑的样例，是我随手找的。然后告诉我：你会把这个交给客户吗？不会的话，哪一行最先出问题？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">机制全绿但你不确定结果好不好时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这一条抓的是"结果对不对"，前四条抓的是"机制可不可信"。两件事。</span></div></div>
+</div>
+<div class="card">
+<h3>读信号：红还是尺子坏了</h3>
+<pre>我认为这条测试红了。先别改代码。告诉我：你认为这是产品错了还是测试错了？理由是什么？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">检查红了的时候</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">实测中三条红的，三条全是测试自己写错。直接改代码迁就错的测试 = 测试变绿、产品变坏。</span></div></div>
+</div>
+<h2>交付</h2>
+<div class="card">
+<h3>换台设备</h3>
+<pre>给我这个地址，我要在手机上打开。打的开的截图给我。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">认为做完了的时候</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">在你机器上能开不叫能开。密钥、数据、权限、地址，四件事在你这里全是配好的。</span></div></div>
+</div>
+<div class="card">
+<h3>算一遍配额</h3>
+<pre>这个功能每次使用会消耗多少次外部调用？我们有多少配额？第几个用户会撞墙？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">上线前</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这个算术在写完代码时就能做，不用等到用户撞墙。</span></div></div>
+</div>
+<div class="card">
+<h3>找人试</h3>
+<pre>给我一个陌生人第一次使用的说明：他要做什么、可能卡在哪。不要写功能列表。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">准备给别人用时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">写不出"可能卡在哪"，说明你不知道用户是谁。</span></div></div>
+</div>
+<h2>运营</h2>
+<div class="card">
+<h3>补三个数字</h3>
+<pre>这个产品现在能回答：跑了多少次、花了多少、为什么失败？三个都要能打开就看到，不要跑命令。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">任何"感觉不太对"的时候</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">缺任何一个，后面所有判断都没有依据。</span></div></div>
+</div>
+<div class="card">
+<h3>产品侧观测</h3>
+<pre>除了技术日志，怎么知道"有没有人真的在用"？给出三个可以埋的点：谁、用了哪一步、在哪一步放弃。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">技术指标正常但不确定产品成不成立时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这是这套方法的边界。技术正常和没人用可以同时成立。</span></div></div>
+</div>
+<div class="card">
+<h3>登记产物</h3>
+<pre>这个东西（脚本/开关/面板）登记一下：owner 是谁、什么时候过期、满足什么条件就删。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">创建任何有持续成本的东西时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">没有过期条件的产物会永久留在仓库里。</span></div></div>
+</div>
+<h2>迭代</h2>
+<div class="card">
+<h3>复盘</h3>
+<pre>用 retro 复盘这一段：按严重度排序列出环境改进项，每项给 owner 和复查日期。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">一个周期结束</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">没有 owner 和日期的改进项等于没有。</span></div></div>
+</div>
+<div class="card">
+<h3>该不该抽模板</h3>
+<pre>这个东西要不要抽成模板？先回答两个问题：上个产品用过吗？它的形状会随产品变吗？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">想抽通用组件时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">判据不是"用了几次"。形状会变的，抽出来就是负担。</span></div></div>
+</div>
+<div class="card">
+<h3>分诊积压</h3>
+<pre>用 triage 过一遍待处理 issue，先给我需要我注意的三类，其余先不动。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">issue 堆积时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">全量分诊会让真正重要的三条被埋掉。</span></div></div>
+</div>
+  
+</main>
+<div class="shell"><footer>
+  Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/docs.html">原始文档</a>。
+</footer></div>
+</body>
+</html>

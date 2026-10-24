@@ -16,8 +16,6 @@ const Config = z.object({
    */
   maxCostUsd: z.number().positive(),
   maxTurns: z.number().int().positive(),
-  /** Where the SDK persists session transcripts. Must be inside the gitignored area. */
-  sessionDir: z.string().min(1),
 });
 
 export type RuntimeConfig = z.infer<typeof Config>;
@@ -26,8 +24,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig 
   return Config.parse({
     anthropicApiKey: env.ANTHROPIC_API_KEY,
     model: env.AGENT_MODEL ?? 'claude-sonnet-4-6',
-    maxCostUsd: Number(env.AGENT_MAX_COST_USD ?? 0.5),
+    maxCostUsd: Number(env.AGENT_MAX_COST_USD ?? 2.0),
     maxTurns: Number(env.AGENT_MAX_TURNS ?? 40),
-    sessionDir: env.AGENT_SESSION_DIR ?? '.agent-runs',
   });
 }
