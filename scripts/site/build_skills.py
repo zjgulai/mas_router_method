@@ -6,16 +6,28 @@ from paths import out_dir, SKILLS
 # 表里的行数，从归属表数出来——不在文档里写死数字，那是会过时的声明。
 N_ROWS = len(MAP)
 
-# map.py 用中文阶段名给每个 skill 标归属。它不再自己列举阶段列表（那是第二份会过时的
-# 声明），改为在这里校验：标了一个不存在的阶段就报错，而不是安静地不显示。
-_STAGE_LABELS = {label for _, label, _ in STAGES}
-_bad = sorted({v[0] for v in MAP.values()} - _STAGE_LABELS)
+# 八个模块：七个阶段，加上管理。管理不是阶段（它横跨全部七个），但它是一个归属单位，
+# 而技能表按归属单位分组——不这样做，anb-manage 在技能目录页上就不存在。
+MODULES = list(STAGES) + [('manage', '管理', '横跨七阶段')]
+
+# map.py 用中文名给每个 skill 标归属。它不再自己列举这份清单（那是第二份会过时的声明），
+# 改为在这里校验：标了一个不存在的模块就报错，而不是安静地不显示。
+_MODULE_LABELS = {label for _, label, _ in MODULES}
+_bad = sorted({v[0] for v in MAP.values()} - _MODULE_LABELS)
 if _bad:
-    raise SystemExit(f'map.py assigns skills to stages that do not exist: {_bad}')
+    raise SystemExit(f'map.py assigns skills to modules that do not exist: {_bad}')
+
 # 三层来源
 repo_dirs = {d for d in os.listdir(SKILLS) if os.path.isdir(os.path.join(SKILLS, d))}
 anb = {d for d in repo_dirs if d.startswith('anb')}
 vendored = repo_dirs - anb
+
+# 反向检查，必须放在 anb 定义之后：仓库里属于自己的 skill 必须出现在表上，
+# 否则它会从技能目录页上凭空消失，而页面看起来完好无损。
+# 这条是补上的——anb-manage 此前就不在 MAP 里，16 个 anb skill 只列出了 15 个。
+_unlisted = sorted(anb - set(MAP))
+if _unlisted:
+    raise SystemExit(f'these repo skills are in .claude/skills/ but not in map.py: {_unlisted}')
 
 def source_of(name):
     if name in anb: return ('anb', '本方法新增')
@@ -24,7 +36,7 @@ def source_of(name):
 
 def skills_page():
     b = ['<h1>Skill 全表</h1>']
-    b.append(f'<p class="lede">{N_ROWS} 个 skill，按七阶段归属。每个都标注了来源、用在哪一步、以及<b>它坏了会怎样</b>——最后一项才是你真正要用的。</p>')
+    b.append(f'<p class="lede">{N_ROWS} 个 skill，按八个模块归属（七阶段 + 管理）。每个都标注了来源、用在哪一步、以及<b>它坏了会怎样</b>——最后一项才是你真正要用的。</p>')
 
     b.append('''<div class="note warn"><b>先说清一件事：同一件事有三种"没有"。</b>
 「<code>.claude/skills/</code> 里没有」不等于「不存在」，也不等于「你调不到」。这三个问题的解法完全不同。
@@ -35,16 +47,19 @@ def skills_page():
     per_stage = Counter(v[0] for v in MAP.values())
     b.append('<h2>按阶段分布</h2>')
     b.append('<div class="grid three">')
-    for slug, sname, one in STAGES:
-        b.append(f'<a class="card" href="/mas_router_method/site/{slug}.html#skills" style="display:block;text-decoration:none;color:inherit">'
+    for slug, sname, one in MODULES:
+        # 管理没有阶段页，它的落点是 manage.html。
+        href = ('/mas_router_method/site/manage.html' if slug == 'manage'
+                else f'/mas_router_method/site/{slug}.html#skills')
+        b.append(f'<a class="card" href="{href}" style="display:block;text-decoration:none;color:inherit">'
                  f'<div style="font-family:var(--serif);color:var(--accent);font-size:1.3rem">{per_stage[sname]}</div>'
                  f'<div style="font-size:.9rem">{sname}</div></a>')
     b.append('</div>')
 
     # 全表
     b.append(f'<h2>全部 {N_ROWS} 个</h2>')
-    b.append('<p class="h2sub">按主归属阶段排列，同阶段内按名称。「坏了会怎样」写在最后一列。</p>')
-    for slug, sname, one in STAGES:
+    b.append('<p class="h2sub">按主归属模块排列，同模块内按名称。「坏了会怎样」写在最后一列。</p>')
+    for slug, sname, one in MODULES:
         items = sorted([(k, v) for k, v in MAP.items() if v[0] == sname])
         if not items: continue
         b.append(f'<h3>{sname} <span style="color:var(--faint);font-weight:400;font-size:.85rem">（{len(items)}）</span></h3>')

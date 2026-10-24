@@ -22,18 +22,37 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const read = (rel) => readFile(join(ROOT, rel), 'utf8');
 
+/**
+ * 整词匹配，不是子串匹配。
+ *
+ * 这些断言原本用 `text.includes(name)`。把路由表里的 `anb-judgeable` 改成
+ * `anb-judgeable-old` 仍然通过——因为它确实以 `anb-judgeable` 开头。
+ * 一条改名就能骗过的可达性断言，证明不了可达性。
+ */
+function mentions(text, name) {
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`${esc}(?![\\w.-])`).test(text);
+}
+
+/** 链接必须是完整的站内路径：后面跟引号或锚点，不能是更长的文件名。 */
+function linksTo(html, target) {
+  const esc = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`/mas_router_method/site/${esc}(?=["#])`).test(html);
+}
+
+
 test('the router names every stage skill and the management skill', async () => {
   const { stages } = await loadSchema();
   const router = await read('.claude/skills/anb/SKILL.md');
 
   for (const stage of stages) {
     assert.ok(
-      router.includes(stage.skill),
+      mentions(router, stage.skill),
       `the router never names ${stage.skill}, so the ${stage.label} stage is unreachable from the entry point`,
     );
   }
   assert.ok(
-    router.includes('anb-manage'),
+    mentions(router, 'anb-manage'),
     'the router never names anb-manage — the management layer becomes unreachable from the '
     + 'documented entry point, which is exactly how it was lost the first time',
   );
@@ -47,7 +66,7 @@ test('the site: every stage page and the management page is linked from the two 
     const html = await read(`docs/site/${page}`);
     for (const target of required) {
       assert.ok(
-        html.includes(`/mas_router_method/site/${target}`),
+        linksTo(html, target),
         `docs/site/${page} does not link to ${target}`,
       );
     }
@@ -64,7 +83,7 @@ test('the nav bar reaches management from every generated page', async () => {
     const html = await read(`docs/site/${page}`);
     // 顶部导航在每一页都有，所以管理在任何一页都只需一次点击。
     assert.ok(
-      html.includes('href="/mas_router_method/site/manage.html"'),
+      linksTo(html, 'manage.html'),
       `docs/site/${page} has no link to the management page`,
     );
   }
