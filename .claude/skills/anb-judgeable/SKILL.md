@@ -34,7 +34,7 @@ Countable first. Judgemental only where a countable check would be a lie.
 
 ## The five ways this stage fakes success
 
-All four were observed in one project, all four produce a green report.
+The first four were observed in one project; the fifth turned up in a second. All five produce a green report.
 
 **1. A crash counts as a pass.** The check for "this must be refused" was written
 as "no output was produced and the run did not succeed". A provider outage
