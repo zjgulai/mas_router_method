@@ -247,11 +247,9 @@ async function cmdStatus() {
     for (const p of problems.slice(0, 5)) console.log(`  ${RED}•${RESET} ${p}`);
   }
   if (missingDirs.length > 0) {
-    const known = missingDirs.filter((m) => {
-      const others = Object.entries(schema.entities).length;
-      return others > 0;
-    });
-    console.log(`\n${DIM}${known.length} state directories do not exist yet (normal until something is filed there)${RESET}`);
+    // 这里原本是一个恒真的 filter（谓词里算了 others 却没用它），所以它只是把
+    // missingDirs 原样复制了一遍。删掉，直接数。
+    console.log(`\n${DIM}${missingDirs.length} state directories do not exist yet (normal until something is filed there)${RESET}`);
   }
   console.log();
   return problems.length === 0 ? 0 : 1;
@@ -267,7 +265,11 @@ async function cmdCheck() {
 
   const schema = await loadSchema();
   const { found, missingDirs, problems } = await collect(schema);
-  const out = only === null ? [...problems] : [];
+
+  // collect() 的问题**始终**保留，即使带了 --only。
+  // 那些问题说的是树的形状本身：id 与文件名不符、目录读不出来。树坏了的时候，
+  // 一个局部的 "ok" 是假的——而这正是 --only design 要拿去当 CI 门禁的那条输出。
+  const out = [...problems];
 
   const runAll = only === null;
 
@@ -345,7 +347,14 @@ async function cmdCheck() {
   // 解析器在 scripts/markdown.mjs —— design.mjs 也要用它，而且它第一版的 bug
   // 值得只修一次（见那个文件顶部的说明）。
 
-  for (const bucket of ['drafting', 'confirmed', 'superseded']) {
+  // 状态从 schema 读，不写死。
+  //
+  // 这份列表原本硬编码成三个状态。给 design 加第四个状态之后，落在新状态里的记录
+  // 四块全缺也照样通过 check —— 同一个 bug 在同一个文件里已经犯过三次：
+  // 先是 ticket 的目录名（复数）、再是 artifact 的读取方式，现在是这个。
+  // 每一次的形式都一样：某处抄了一份本该只有一份的东西。
+  const designStates = schema.entities.design.states;
+  for (const bucket of designStates) {
     for (const r of found.design?.[bucket] ?? []) {
       const text = await readFile(r.path, 'utf8');
       const secs = sections(text);
@@ -383,7 +392,7 @@ async function cmdCheck() {
   const total = all.length;
   const scope = only === null ? '' : ` (--only ${only})`;
   if (out.length === 0) {
-    const designs = ['drafting', 'confirmed', 'superseded']
+    const designs = schema.entities.design.states
       .reduce((n, s2) => n + (found.design?.[s2]?.length ?? 0), 0);
     console.log(`${GREEN}ok${RESET} — ${total} records${only === 'design' ? `, ${designs} design` : ''}, ${missingDirs.length} empty state dirs, no problems${scope}`);
     return 0;

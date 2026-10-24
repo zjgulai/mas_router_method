@@ -59,11 +59,28 @@ function runGenerator(file, stage) {
   });
 }
 
-/** Root-level html only. originals/ is a subdirectory and is not generated. */
+/**
+ * Root-level html only. originals/ is a subdirectory and is not generated.
+ *
+ * Anything whose name ends in `.html`, case-insensitively, counts as a page claim —
+ * including things that are not regular files. The first version kept only regular
+ * files with a lowercase suffix, so a directory named `page.html`, a symlink, or
+ * `PAGE.HTML` sat in the site root unnoticed while the build reported success. A
+ * file whose name claims it is a page and which no generator produces needs a
+ * decision from a person, whether it is a file or not.
+ */
 async function rootHtml(dir) {
-  const entries = await readdir(dir, { withFileTypes: true });
-  return entries.filter((e) => e.isFile() && e.name.endsWith('.html'))
-    .map((e) => e.name).sort();
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  const pages = [];
+  const odd = [];
+  for (const e of entries) {
+    if (!/\.html$/i.test(e.name)) continue;
+    if (e.isFile()) pages.push(e.name);
+    else if (e.isDirectory()) odd.push(`${e.name} — a directory named like a page`);
+    else if (e.isSymbolicLink()) odd.push(`${e.name} — a symlink`);
+    else odd.push(`${e.name} — not a regular file`);
+  }
+  return { pages: pages.sort(), odd };
 }
 
 const stage = await mkdtemp(join(tmpdir(), 'site-build-'));
@@ -73,11 +90,16 @@ try {
     if (out !== '') console.log(`  ${g}: ${out.replace(/\n/g, ' ')}`);
   }
 
-  const generated = await rootHtml(stage);
-  const present = await rootHtml(SITE).catch(() => []);
+  const { pages: generated } = await rootHtml(stage);
+  const { pages: present, odd } = await rootHtml(SITE);
   const orphans = present.filter((f) => !generated.includes(f));
 
-  if (orphans.length > 0) {
+  if (odd.length > 0) {
+    console.error(`\n${odd.length} entry in docs/site is named like a page but is not one:\n`);
+    for (const o of odd) console.error(`  docs/site/${o}`);
+    console.error('\n  Remove it, or move it to docs/site/originals/.');
+    process.exitCode = 1;
+  } else if (orphans.length > 0) {
     console.error(`\n${orphans.length} file(s) in docs/site that no generator produces:\n`);
     for (const f of orphans) console.error(`  docs/site/${f}`);
     console.error('\n  A leftover from an older layout, or a hand-written page that belongs');

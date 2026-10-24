@@ -6,8 +6,6 @@ from map import MAP
 # 文档里的数字从归属表数，不写字面量。
 N_ROWS = len(MAP)
 
-# 寄存器数量同样从磁盘派生，不写死——写死的数字会过时，而且看起来和新鲜的一样。
-N_REGISTERS = 8
 
 # ---------- 每个阶段的详细内容 ----------
 # 结构：goal / gap / branches[(条件, 去哪, 说明)] / verify[(动作, 通过标准)] / order(代价排序理由)
@@ -221,8 +219,13 @@ def stage_page(slug, name, oneline):
 
     # skill
     body.append('<h2 id="skills">这一步用到哪些 skill</h2>')
-    sl = ''.join(f'<li><a href="/mas_router_method/site/skills.html#{s}"><code>{s}</code></a> — {MAP[s][2] if s in MAP else ""}</li>'
-                 for s in d['skills'] if s in MAP)
+    # 不在 MAP 里的 skill 之前被静默丢掉：一个拼错的 skill 名会让这一行凭空消失，
+    # 而页面看起来完好无损。缺了就报出来。
+    missing = [s for s in d['skills'] if s not in MAP]
+    if missing:
+        raise SystemExit(f"{slug}: these skills are not in map.py, so the page would silently omit them: {missing}")
+    sl = ''.join(f'<li><a href="/mas_router_method/site/skills.html#{s}"><code>{s}</code></a> — {MAP[s][2]}</li>'
+                 for s in d['skills'])
     body.append(f'<ul>{sl}</ul>')
 
     # 原文
@@ -270,7 +273,7 @@ def index_page():
     b.append(f'<a class="card" href="/mas_router_method/site/skills.html" style="display:block;text-decoration:none;color:inherit"><h3>Skill 全表 · {N_ROWS} 个</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">三层来源、七阶段归属、每个都要说清「它坏了会怎样」。</p></a>')
     b.append('<a class="card" href="/mas_router_method/site/prompts.html" style="display:block;text-decoration:none;color:inherit"><h3>提示词库</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">可直接复制的会话提示词，按阶段和用途分类。</p></a>')
     b.append('<a class="card" href="/mas_router_method/site/docs.html" style="display:block;text-decoration:none;color:inherit"><h3>原始文档</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">八份未改一字的原始 HTML：失败图鉴、决策树、术语表、能力图谱、实测报告。</p></a>')
-    b.append(f'<a class="card" href="/mas_router_method/site/manage.html" style="display:block;text-decoration:none;color:inherit"><h3>管理</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">横跨七阶段的记录层：{N_REGISTERS} 个寄存器、三条命令。状态就是目录，<code>ls</code> 即看板。</p></a>')
+    b.append(f'<a class="card" href="/mas_router_method/site/manage.html" style="display:block;text-decoration:none;color:inherit"><h3>管理</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">横跨七阶段的记录层：票据、事故、证据、设计记录各有归属，状态就是目录，<code>ls</code> 即看板。</p></a>')
     b.append('</div>')
 
     b.append('<h2>这套方法自己的证据</h2>')

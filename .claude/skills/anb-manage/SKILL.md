@@ -27,7 +27,7 @@ line: **if it changes state it goes in `work/`, if it does not it goes in `docs/
 - `work/receipts/` — who received what, and how they confirmed. Append-only.
 - `work/artifacts/` — anything with ongoing cost: scripts, flags, dashboards, cron jobs
 
-## The four things you will be asked to do
+## The things you will be asked to do
 
 ### "The docs say N of something and I think it changed"
 

@@ -31,10 +31,6 @@ def skills_page():
 <br><br>本页第三列标来源：<span class="tag t-must">仓库</span> 直接按名字调用；<span class="tag t-plain">插件</span> 调用时要带前缀，如 <code>anthropic-skills:agent-browser</code>；<span class="tag t-branch">ANB</span> 是本方法新增的。
 <br><br>如果某个 skill 你调不到，正确结论是「我这台客户端没装这个插件」，不是「这个 skill 是假的」。</div>''')
 
-    # 统计
-    counts = {'repo': 0, 'plugin': 0, 'anb': 0}
-    for slug, name, one in STAGES:
-        pass
     from collections import Counter
     per_stage = Counter(v[0] for v in MAP.values())
     b.append('<h2>按阶段分布</h2>')
@@ -66,7 +62,6 @@ def skills_page():
     # 未安装的
     b.append('<h2>装了但没接进流程的</h2>')
     b.append('<p class="h2sub">这些在仓库里、能调用，但不在七阶段的任何一步上。它们不是没用，是还没找到位置。</p>')
-    loose = [n for n, v in MAP.items() if v[0] in ('需求', '迭代') and '未安装' in v[2]]
     b.append('<p>见上表中标「（未安装）」的条目，以及 <code>ask-matt</code>、<code>wait-what</code>、<code>to-questionnaire</code>、<code>teach</code>、<code>wizard</code>、<code>writing-for-agents</code>。这几个的用途分别写在表里，但严格说它们服务于"怎么把话问清楚"，不专属于某一步。</p>')
     return page('skills', 'Skill 全表', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / Skill 全表')
 

@@ -20,6 +20,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseSchema, loadSchema, WORK } from './schema.mjs';
 import { writeAndConfirm } from './test-fs.mjs';
+import { sections } from './markdown.mjs';
 
 test('parser keeps hyphenated keys — the bug that hid two states', () => {
   const parsed = parseSchema(`
@@ -204,13 +205,9 @@ test('design check: a record whose block is filled parses as filled', async () =
     '',
   ].join('\n');
 
-  const sections = (t) => {
-    const parts = t.split(/^## /m).slice(1);
-    return parts.map((p) => {
-      const nl = p.indexOf('\n');
-      return nl < 0 ? { head: p.trim(), body: '' } : { head: p.slice(0, nl).trim(), body: p.slice(nl + 1).trim() };
-    });
-  };
+  // 用共享解析器，不在这里复制一份。
+  // 之前这份测试自带实现，所以 scripts/markdown.mjs 坏掉时它照样绿——
+  // 一条测的是自己副本的测试，和没有测试是同一种东西。
   const secs = sections(text);
   const flow = secs.find((s) => s.head.includes('流程形状'));
   assert.ok(flow !== undefined);
@@ -380,5 +377,57 @@ test('facts: --check fails when a claim points at a file that is not there', asy
     assert.match(stdout, /cannot be read/);
   } finally {
     await rename(hidden, target);
+  }
+});
+
+test('design rules follow the schema: a record in a newly added state is still checked', async () => {
+  // 这条断言针对的 bug 在这个文件里出现过三次：ticket 的目录名、artifact 的读取方式、
+  // 以及 design 的状态列表——每一次都是某处抄了一份本该只有一份的东西。
+  //
+  // 复现方式就是审查者的做法：给 design 加一个状态，放一份四块全缺的记录进去。
+  // 硬编码状态列表时，check 报「ok」；从 schema 读时，它报出那份记录缺块。
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { unlink, mkdir, rmdir } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+  const schemaPath = join(WORK, 'schema.yml');
+  const original = await readFile(schemaPath, 'utf8');
+  const NEW_STATE = 'rejected';
+  const patched = original
+    .replace('    states: [drafting, confirmed, superseded]',
+             `    states: [drafting, confirmed, superseded, ${NEW_STATE}]`)
+    .replace('      drafting: [confirmed, superseded]',
+             `      drafting: [confirmed, superseded, ${NEW_STATE}]`)
+    .replace('      confirmed: [superseded]',
+             `      confirmed: [superseded, ${NEW_STATE}]`)
+    .replace('      superseded: []',
+             `      superseded: []\n      ${NEW_STATE}: []`);
+
+  assert.notEqual(patched, original, 'the schema no longer looks the way this probe expects — update the probe');
+
+  const probeDir = join(WORK, 'designs', NEW_STATE);
+  const probe = join(probeDir, 'D-997-probe.md');
+  await mkdir(probeDir, { recursive: true });
+  try {
+    await writeAndConfirm(schemaPath, patched);
+    // 四块全缺：任何一条设计规则跑到了，这份记录都不可能通过。
+    await writeAndConfirm(probe, ['---', 'id: D-997', 'title: no blocks at all', '---', 'nothing here'].join('\n'));
+
+    let code = 0, stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      stdout = r.stdout;
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+
+    assert.equal(code, 1,
+      `a design record with no blocks passed the check because its state was not in a `
+      + `hardcoded list — the design rules must read work/schema.yml.\n${stdout}`);
+  } finally {
+    await unlink(probe).catch(() => {});
+    await rmdir(probeDir).catch(() => {});
+    await writeAndConfirm(schemaPath, original);
   }
 });

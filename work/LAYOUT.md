@@ -26,13 +26,13 @@
 
 | 目录 | 放什么 | 状态机 | ID | 谁写 | 什么时候清 |
 |---|---|---|---|---|---|
-| `work/requirements/` | 需求：一句话承诺 | drafting → confirmed → dropped | `R-` | 阶段 1 | 被废后留 30 天 |
-| `work/designs/` | 设计记录：四问的答案 | drafting → confirmed → superseded | `D-` | 阶段 2 | 保留；被推翻进 superseded，不改原件 |
-| `work/tickets/` | 执行票：跨会话的工作单元 | open → in-progress → awaiting-verification → done | `T-` | 阶段 2-5 | 永不删（历史） |
+| `work/requirements/` | 需求：一句话承诺 | drafting → confirmed → dropped | `R-` | 需求 | 被废后留 30 天 |
+| `work/designs/` | 设计记录：四问的答案 | drafting → confirmed → superseded | `D-` | 设计 | 保留；被推翻进 superseded，不改原件 |
+| `work/tickets/` | 执行票：跨会话的工作单元 | open → in-progress → awaiting-verification → done | `T-` | 开发–交付 | 永不删（历史） |
 | `work/incidents/` | 事故：计划外发生的事 | open → contained → closed | `INC-` | 任何阶段 | 关闭后留 90 天 |
-| `work/artifacts/` | 有持续成本的东西：脚本、开关、面板、定时任务 | active → expired | `ART-` | 阶段 6 | 到过期日即删 |
-| `work/evidence/` | 证据：一条可复跑的命令 + 原始输出 | **无状态，只增不改** | `E-` | 阶段 4 | 永不删 |
-| `work/receipts/` | 回执：交付给谁、什么时候、对方怎么确认 | **无状态，只增不改** | `REC-` | 阶段 5 | 永不删 |
+| `work/artifacts/` | 有持续成本的东西：脚本、开关、面板、定时任务 | active → expired | `ART-` | 运营 | 到过期日即删 |
+| `work/evidence/` | 证据：一条可复跑的命令 + 原始输出 | **无状态，只增不改** | `E-` | 验收 | 永不删 |
+| `work/receipts/` | 回执：交付给谁、什么时候、对方怎么确认 | **无状态，只增不改** | `REC-` | 交付 | 永不删 |
 
 **证据和回执为什么没有状态机**：它们一旦记下就不该被润色。给它们加状态，就会出现"证据待审核"这种东西，
 而审核过的证据和没审核的证据在可信度上没有区别——它只是一条命令的输出。
@@ -43,12 +43,12 @@
 
 | 目录 | 放什么 | 谁写 | 什么时候变 |
 |---|---|---|---|
-| `docs/adr/` | 架构决策记录 | 阶段 2 | 永不修改；被取代时加 `superseded_by`，旧文件原地保留 |
-| `docs/evals/` | 评测设计与用例说明 | 阶段 4 | 随产品演进，但每次改要带版本号 |
-| `docs/product/` | 产品论点、路线图 | 阶段 1 | 少改；改要写清为什么 |
+| `docs/adr/` | 架构决策记录 | 设计 | 永不修改；被取代时加 `superseded_by`，旧文件原地保留 |
+| `docs/evals/` | 评测设计与用例说明 | 验收 | 随产品演进，但每次改要带版本号 |
+| `docs/product/` | 产品论点、路线图 | 需求 | 少改；改要写清为什么 |
 | `docs/agents/` | 给 agent 读的流程约定（票据格式、提交规范） | 任何阶段 | 少改 |
-| `docs/skills/` | skill 目录与来源说明 | 阶段 6 | 随 skill 增减 |
-| `docs/plans/` | 实施计划：某一版的施工图 | 阶段 2 | 写完不改；被取代时新开一份 |
+| `docs/skills/` | skill 目录与来源说明 | 运营 | 随 skill 增减 |
+| `docs/plans/` | 实施计划：某一版的施工图 | 设计 | 写完不改；被取代时新开一份 |
 | `docs/product/method-audit-*.md` | 方法自身的审计快照 | 迭代 | 写完不改；下次审计新开一份 |
 | `docs/from-zero.md` | 从零搭仓库的顺序 | 一次性 | 不改 |
 
@@ -88,11 +88,25 @@ ADR 接受后不改，所以没有状态。设计记录会变——起草、确�
 
 ### 代码与工具
 
+**关于「工具必须有登记」这条规则**：它原本写的是 `scripts/` 下的东西一律要在
+`work/artifacts/` 登记。实际执行中从来没有遵守过——`scripts/` 里的十二个脚本有十个没有登记，
+而 `layout.mjs` 也不校验这一条。一条既不校验、也没人遵守的规则，和一个永远不会失败的检查
+是同一种东西。
+
+收窄之后它才成立：**登记针对的是有持续运营成本的东西**——对外提供的服务、定时任务、
+探针、开关、面板。`scripts/` 下的 `schema`、`work`、`facts`、`layout`、`naming`、`build`、
+`links` 这些是仓库自己的脚手架：它们随仓库一起存在，不会「累积」，删掉任何一个仓库就不完整了。
+站点生成器登记为 `ART-001`，因为它有一条真实的删除条件（站点若移出仓库它就该消失）。
+
+这条区分**无法机械化**，所以它只能是一条需要判断的规则。写在这里，是为了让下一个读到的人
+知道它被考虑过、而不是被漏掉。
+
 | 目录 | 放什么 | 说明 |
 |---|---|---|
 | `packages/` | 可复用的库 | 依赖方向单向：apps → core → shared |
 | `apps/` | 可部署的应用 | 薄，没有业务逻辑 |
-| `scripts/` | 一次性或有持续用途的工具 | **必须有 `work/artifacts/` 登记**，否则会累积 |
+| `scripts/` | 本仓库自己的工具链 | 属于仓库的脚手架，不登记（见下） |
+| 其它有持续成本的脚本 | 服务、定时任务、探针、开关 | **必须有 `work/artifacts/` 登记**，否则会累积 |
 | `scripts/site/` | 站点生成器（Python）+ 重建入口 `build.mjs` | 登记为 `ART-001`；改站点内容改这里，不改 `docs/site` 的生成页 |
 | `anb-*/` | 方法论的实验样本 | 可运行，能复现 |
 

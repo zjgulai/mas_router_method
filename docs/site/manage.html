@@ -144,10 +144,10 @@
 <h2 id="m-use">怎么用（不需要记命令）</h2>
 <p>一个 skill，<code>anb-manage</code>。你说话，它读写目录。</p>
 <table><thead><tr><th style="width:32%">你说</th><th>它做什么</th></tr></thead><tbody><tr id="m-status"><td>「现在什么情况？」</td><td>跑 <code>work status</code>，按它的输出回答，不凭记忆总结成"看起来还行"。</td></tr><tr id="m-close"><td>「这张票能关了吗？」</td><td>查三件：有证据吗、证据证明的是这张票还是别的东西、有没有一条检查真的红过。</td></tr><tr id="m-file"><td>「这里有个问题」</td><td>先分辨是"我们打算做的事"还是"发生在我们身上的事"——前者开票，后者开事故。</td></tr><tr id="m-where"><td>「这个东西该放哪？」</td><td>读 <code>work/LAYOUT.md</code>。它会不会变？会 → <code>work/</code>；不会 → <code>docs/</code>。</td></tr></tbody></table>
-<h2 id="m-commands">两条命令，都可以当 CI 门禁</h2>
+<h2 id="m-commands">几条命令，都可以当 CI 门禁</h2>
 <pre>node scripts/work.mjs check    # 记录本身是否合法：ID 唯一、done 有证据、needs 指向存在
 node scripts/layout.mjs        # 文件是否在 LAYOUT.md 说的位置</pre>
-<p><code>work check</code> 在一个票标 done 却没有证据时会拒绝。<code>layout check</code> 在一个文件放错目录时会报错。两个都返回非零退出码，能直接当门禁用。</p>
+<p><code>work check</code> 在一个票标 done 却没有证据时会拒绝；<code>facts --check</code> 在文档引用了过时的数字时会拒绝；<code>naming check</code> 在某个 skill 把阶段写成编号时会拒绝。<code>layout check</code> 在一个文件放错目录时会报错。两个都返回非零退出码，能直接当门禁用。</p>
 <div class="note"><b>这套东西自己出过三次错，都是同一个形状。</b><br><br>
       一、<code>work status</code> 里硬编码了 <code>ticket</code>，而 schema 写的是 <code>tickets</code>——五张票全部不可见，报告说"0 张票，一切正常"。<br>
       二、schema 解析器的正则只匹配 <code>[A-Za-z0-9_]</code>，带连字符的 <code>in-progress</code> 和 <code>awaiting-verification</code> 被丢掉——票永远到不了 done。<br>

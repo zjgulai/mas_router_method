@@ -12,12 +12,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { unlink, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { unlink, mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sections } from './markdown.mjs';
 import { pickLatest } from './design.mjs';
+import { writeAndConfirm } from './test-fs.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIRMED = join(ROOT, 'work/designs/confirmed');
@@ -43,14 +44,14 @@ test('pickLatest takes the highest D number, not the first thing readdir returne
 test('refusals reports an explicit skip, never an empty list', async () => {
   const probe = join(CONFIRMED, 'D-901-skip-probe.md');
   await mkdir(CONFIRMED, { recursive: true });
-  await writeFile(probe, [
+  await writeAndConfirm(probe, [
     '---', 'id: D-901', 'title: probe', 'status: confirmed', '---',
     '## 一、流程形状', '', '固定两步。', '',
     '## 二、拒绝清单', '', '（跳过：只读，没有动作）', '',
     '## 三、动作权限', '', '（跳过：只读）', '',
     '## 四、交接契约', '', '（跳过：单一调用）', '',
     '## 什么情况说明这个设计错了', '', '拿不到真实输入时。', '',
-  ].join('\n'), 'utf8');
+  ].join('\n'));
   try {
     const { code, out } = await run(['refusals', 'D-901']);
     assert.equal(code, 0, out);
@@ -87,8 +88,8 @@ test('latest picks the real record when several are confirmed', async () => {
   const b = join(CONFIRMED, 'D-902-bbb.md');
   const fm = (id) => ['---', `id: ${id}`, 'title: probe', 'status: confirmed', '---', '## 一、流程形状', '', 'x', ''].join('\n');
   await mkdir(CONFIRMED, { recursive: true });
-  await writeFile(a, fm('D-901'), 'utf8');
-  await writeFile(b, fm('D-902'), 'utf8');
+  await writeAndConfirm(a, fm('D-901'));
+  await writeAndConfirm(b, fm('D-902'));
   try {
     const { code, out } = await run(['latest']);
     assert.equal(code, 0, out);

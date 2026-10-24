@@ -70,3 +70,33 @@ test('build: the eight hand-written originals are present and untouched', async 
   const rootHtml = root.filter((e) => e.isFile() && e.name.endsWith('.html')).map((e) => e.name);
   assert.equal(rootHtml.length, 13, `docs/site root must hold only generated pages, found ${rootHtml.length}`);
 });
+
+test('build: goes red on a directory named like a page', async () => {
+  // 第一版只收「普通文件 + 小写 .html」，所以一个名为 page.html 的目录、一个软链接、
+  // 或者 PAGE.HTML 都能躲在站点根目录里，而构建照样报成功。
+  const { mkdir, rmdir } = await import('node:fs/promises');
+  const site = await mkdtemp(join(tmpdir(), 'site-'));
+  const dirPage = join(site, 'sneaky.html');
+  try {
+    await mkdir(dirPage, { recursive: true });
+    const { code, out } = await build(site);
+    assert.equal(code, 1, 'something named like a page that is not one needs a human decision');
+    assert.match(out, /named like a page but is not one/);
+  } finally {
+    await rmdir(dirPage).catch(() => {});
+    await rm(site, { recursive: true, force: true });
+  }
+});
+
+test('build: goes red on an uppercase .HTML orphan', async () => {
+  const site = await mkdtemp(join(tmpdir(), 'site-'));
+  const shout = join(site, 'SHOUT.HTML');
+  try {
+    await writeAndConfirm(shout, '<!doctype html><title>shout</title>');
+    const { code, out } = await build(site);
+    assert.equal(code, 1);
+    assert.match(out, /SHOUT\.HTML/);
+  } finally {
+    await rm(site, { recursive: true, force: true });
+  }
+});

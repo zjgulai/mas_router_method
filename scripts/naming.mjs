@@ -80,6 +80,12 @@ export async function scan() {
     if (e.isFile() && e.name.endsWith('.html')) files.push(join(siteDir, e.name));
   }
 
+  // work/LAYOUT.md too: it is where `anb-manage` sends anyone asking where a file
+  // goes, and its register table said "阶段 1", "阶段 2-5". The first scope missed
+  // it, so the checker reported "nothing in the repo restates the order as a
+  // number" while this file restated it eleven times.
+  files.push(join(ROOT, 'work/LAYOUT.md'));
+
   const hits = [];
   for (const file of files.sort()) {
     const text = await readFile(file, 'utf8').catch(() => null);

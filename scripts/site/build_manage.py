@@ -81,9 +81,9 @@ def manage_page():
     b.append('<table><thead><tr><th style="width:32%">你说</th><th>它做什么</th></tr></thead><tbody>'
              + ''.join(f'<tr id="{i}"><td>{a}</td><td>{c}</td></tr>' for i, a, c in prompts) + '</tbody></table>')
 
-    b.append('<h2 id="m-commands">两条命令，都可以当 CI 门禁</h2>')
+    b.append('<h2 id="m-commands">几条命令，都可以当 CI 门禁</h2>')
     b.append('<pre>node scripts/work.mjs check    # 记录本身是否合法：ID 唯一、done 有证据、needs 指向存在\nnode scripts/layout.mjs        # 文件是否在 LAYOUT.md 说的位置</pre>')
-    b.append('<p><code>work check</code> 在一个票标 done 却没有证据时会拒绝。<code>layout check</code> 在一个文件放错目录时会报错。'
+    b.append('<p><code>work check</code> 在一个票标 done 却没有证据时会拒绝；<code>facts --check</code> 在文档引用了过时的数字时会拒绝；<code>naming check</code> 在某个 skill 把阶段写成编号时会拒绝。<code>layout check</code> 在一个文件放错目录时会报错。'
              '两个都返回非零退出码，能直接当门禁用。</p>')
 
     b.append('''<div class="note"><b>这套东西自己出过三次错，都是同一个形状。</b><br><br>
