@@ -269,6 +269,26 @@
 <pre>给我一个陌生人第一次使用的说明：他要做什么、可能卡在哪。不要写功能列表。</pre>
 <div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">准备给别人用时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">写不出"可能卡在哪"，说明你不知道用户是谁。</span></div></div>
 </div>
+<div class="card">
+<h3>列一遍密钥与配置</h3>
+<pre>把这个产品跑起来需要的每一样东西列成清单：密钥、环境变量、数据库、外部服务。逐个回答：它从哪来？我是从环境变量读的，还是从某个文件读的？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">部署之前</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">四项在你机器上全是配好的：密钥、数据、权限、地址。它们不会在开发时报错，因为开发时本来就没用到未配置的形态。</span></div></div>
+</div>
+<div class="card">
+<h3>选一个部署平台</h3>
+<pre>帮我选一个部署平台。不要给我"最好的"，给我<b>最省事的</b>：从零到别人能打开，我需要做几步？哪一步最容易卡住？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">要给别人用之前</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这个阶段的目标不是架构漂亮，是让别人打得开。选完就得做完，中途换平台的成本比选错高。</span></div></div>
+</div>
+<div class="card">
+<h3>想好怎么退回去</h3>
+<pre>这个东西如果上线后发现坏了，我怎么退回去？给我具体步骤和大概要多久。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">上线前</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">没有回滚方案的部署不是部署，是单向门。写不出步骤说明你还没想清楚它依赖什么。</span></div></div>
+</div>
+<div class="card">
+<h3>上线后头 15 分钟看什么</h3>
+<pre>上线之后我该盯着看哪三样东西？分别看到什么数字算正常、什么数字说明要退回去？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">按下部署之后</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">这十五分钟里你会紧张，紧张的时候需要的是三个具体数字，不是"再看看"。</span></div></div>
+</div>
 <h2>运营</h2>
 <div class="card">
 <h3>补三个数字</h3>
