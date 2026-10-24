@@ -67,6 +67,16 @@ generalisation of one case, which is a guess dressed as architecture.
 4. Start the second product from what remains, and time how long until its first
    real result.
 
+## What you record
+
+What you decide to change goes back into the registers, not into a summary. A
+requirement in `work/requirements/` if the need itself moved; a ticket in
+`work/tickets/` if it is work you are now committing to.
+
+That is what closes the loop. Without it the observation stays in this
+conversation, and the next round starts from memory — which is how a project
+relearns the same thing every few months.
+
 ## Exit test
 
 Second product, first real result, faster than the first one.

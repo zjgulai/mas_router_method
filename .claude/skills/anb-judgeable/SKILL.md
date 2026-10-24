@@ -99,6 +99,18 @@ Say what it buys, concretely: without it, every later change is unmeasurable, an
 "is this better than last week" becomes an opinion. That is the stage where products
 quietly get worse for months while everyone believes they are improving.
 
+## What you record
+
+Every check that proves something gets an evidence file:
+`work/evidence/E-NNN-slug.md` — the command, its raw output, what it proves, and
+what it does not.
+
+The last section is the one that matters. "The parser handles this shape" and "the
+provider is reachable" are different claims, and a unit test only shows the first.
+Leaving that section out is how a green suite comes to mean less than it looks.
+
+Evidence is append-only. Never edit one — add another.
+
 ## Exit test
 
 A check that was green is now red, because someone deliberately broke the product.

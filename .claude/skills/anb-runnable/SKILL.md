@@ -61,6 +61,15 @@ guesses, and it will need to be torn out when the guesses are wrong.
 
 Build the smallest thing that produces a real result. If it is one file, one file.
 
+## What you record
+
+Work that spans more than this conversation gets a ticket:
+`work/tickets/open/T-NNN-slug.md`, saying what to do and how you will know it is
+done.
+
+Work that finishes and is verified inside one conversation does not. Opening a
+ticket for it is how the register becomes a diary.
+
 ## Exit test
 
 They run it themselves, with an input they chose, and get a result.

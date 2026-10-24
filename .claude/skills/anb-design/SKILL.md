@@ -194,6 +194,16 @@ yours and they cannot see its edges.
 Your job is to ask, and to notice when an answer is a value pretending to be a
 refusal. Say so, give two concrete options, make them pick.
 
+## What you record
+
+The four blocks go in `work/designs/drafting/D-NNN-slug.md`. When all four are
+answered, move it to `confirmed` — that is what turns it from a document into a
+spec the verify stage can read.
+
+Four sections, skips marked with a reason, and the condition that would make this
+design wrong. `work check` fails a record missing any of them, and fails a
+confirmed one that cannot say what would overturn it.
+
 ## Exit test
 
 They hand the four blocks to an agent, with no other context, and ask it to

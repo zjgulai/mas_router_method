@@ -81,6 +81,16 @@ is the right one.
 Your job here is to **ask**, not to answer. If they say "you decide", give two
 concrete options and make them pick. Do not pick for them.
 
+## What you record
+
+The five sentences are a conversation until they are written down. A requirement
+goes in `work/requirements/drafting/R-NNN-slug.md`: the one sentence, and what
+would make it wrong.
+
+Only when it will outlive this conversation. Something you decide and build today
+does not need a file — a register full of those is a diary, and diaries are not
+read.
+
 ## Exit test
 
 They read the page to someone who does not work in tech, and that person can say

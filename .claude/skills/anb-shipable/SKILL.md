@@ -65,6 +65,15 @@ Don't. Two reasons. First, unreleased features are unmeasured, and you now have 
 quality bar at the verify stage that you would have to extend to cover them. Second, the
 feedback from step 4 will invalidate some of what you would have built.
 
+## What you record
+
+Who received it, and how they confirmed, goes in `work/receipts/REC-NNN-slug.md`.
+Append-only, like evidence.
+
+This is the only register that records something outside the repository: a person
+opened it and said so. Write it the same day. In a week you will not remember
+whether they used it or you showed it to them.
+
 ## Exit test
 
 They open it on a different device. It loads. One other person uses it without

@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSchema } from './schema.mjs';
+import { loadSchema, WORK } from './schema.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -67,5 +67,35 @@ test('the nav bar reaches management from every generated page', async () => {
       html.includes('href="/mas_router_method/site/manage.html"'),
       `docs/site/${page} has no link to the management page`,
     );
+  }
+});
+
+test('every stage says which register it writes to, and that register exists', async () => {
+  // 管理不是第八个阶段，而是每一步的一部分。这条断言让「每一步都落记录」成为
+  // 结构上的事实而不是意图：阶段技能里必须写出它写哪个寄存器，而那个目录必须存在。
+  const { stages } = await loadSchema();
+  const { readdir } = await import('node:fs/promises');
+
+  for (const stage of stages) {
+    const text = await read(`.claude/skills/${stage.skill}/SKILL.md`);
+    const section = text.split('## What you record')[1];
+    assert.ok(
+      section !== undefined,
+      `${stage.skill} has no "What you record" section — the ${stage.label} stage leaves nothing behind`,
+    );
+    assert.ok(
+      section.includes('## Exit test'),
+      `${stage.skill}: the "What you record" section runs into the exit test, so it is not its own section`,
+    );
+
+    const dirs = [...section.matchAll(/`work\/([a-z]+)\//g)].map((m) => m[1]);
+    assert.ok(
+      dirs.length > 0,
+      `${stage.skill} names no register directory — "write it down" without a destination is not an instruction`,
+    );
+    for (const dir of new Set(dirs)) {
+      const exists = (await readdir(join(WORK, dir)).catch(() => null)) !== null;
+      assert.ok(exists, `${stage.skill} points at work/${dir}/, which does not exist`);
+    }
   }
 });

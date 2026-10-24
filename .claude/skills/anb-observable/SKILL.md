@@ -53,6 +53,17 @@ accurate or absent.
    shape. A separate error log is a log nobody reads.
 3. Record the cost of every run, even when it is zero — an explicit zero and a missing value must look different in the record.
 
+## What you record
+
+Anything with an ongoing cost gets an artifact record first:
+`work/artifacts/active/ART-NNN-slug.md`, with an owner and a condition for
+deleting it. A script, a flag, a dashboard, a scheduled job. Without the delete
+condition it stays forever, and nobody later dares remove it.
+
+Something that broke goes in `work/incidents/open/INC-NNN-slug.md`, not in a
+ticket. A ticket is work you intended; an incident is something that happened. An
+incident does not disappear when it is fixed — it closes, with what you learned.
+
 ## Exit test
 
 They cause a failure deliberately, then find it in the record.
