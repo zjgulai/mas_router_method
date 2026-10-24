@@ -26,7 +26,7 @@ def manage_page():
     b.append('<p style="margin-top:1rem">这条比"按主题分"可靠。按主题分的话，"决策"既像工作又像文档，每次都要重新吵一遍；'
              '按"会不会变"分，"ADR 接受后就不该改"是一个明确的事实，不需要判断。</p>')
 
-    b.append('<h2>八个寄存器</h2>')
+    b.append('<h2 id="m-registers">八个寄存器</h2>')
     rows = [
         ('<code>work/requirements/</code>', '需求：一句话承诺', 'drafting → confirmed → dropped', 'R-', '需求'),
         ('<code>work/designs/</code>', '设计记录：四问的答案', 'drafting → confirmed → superseded', 'D-', '设计'),
@@ -69,18 +69,19 @@ def manage_page():
       <p style="color:var(--faint);font-size:.88em">票要标 done，<code>work-move</code> 会检查 <code>evidence:</code> 字段；没有就拒绝。</p></div>''')
     b.append('</div>')
 
-    b.append('<h2>怎么用（不需要记命令）</h2>')
+    b.append('<h2 id="m-use">怎么用（不需要记命令）</h2>')
     b.append('<p>一个 skill，<code>anb-manage</code>。你说话，它读写目录。</p>')
+    # 每行带 id：分支总表要能跳到具体某一个用例，而不是只跳到这一页。
     prompts = [
-        ('「现在什么情况？」', '跑 <code>work status</code>，按它的输出回答，不凭记忆总结成"看起来还行"。'),
-        ('「这张票能关了吗？」', '查三件：有证据吗、证据证明的是这张票还是别的东西、有没有一条检查真的红过。'),
-        ('「这里有个问题」', '先分辨是"我们打算做的事"还是"发生在我们身上的事"——前者开票，后者开事故。'),
-        ('「这个东西该放哪？」', '读 <code>work/LAYOUT.md</code>。它会不会变？会 → <code>work/</code>；不会 → <code>docs/</code>。'),
+        ('m-status', '「现在什么情况？」', '跑 <code>work status</code>，按它的输出回答，不凭记忆总结成"看起来还行"。'),
+        ('m-close', '「这张票能关了吗？」', '查三件：有证据吗、证据证明的是这张票还是别的东西、有没有一条检查真的红过。'),
+        ('m-file', '「这里有个问题」', '先分辨是"我们打算做的事"还是"发生在我们身上的事"——前者开票，后者开事故。'),
+        ('m-where', '「这个东西该放哪？」', '读 <code>work/LAYOUT.md</code>。它会不会变？会 → <code>work/</code>；不会 → <code>docs/</code>。'),
     ]
     b.append('<table><thead><tr><th style="width:32%">你说</th><th>它做什么</th></tr></thead><tbody>'
-             + ''.join(f'<tr><td>{a}</td><td>{c}</td></tr>' for a, c in prompts) + '</tbody></table>')
+             + ''.join(f'<tr id="{i}"><td>{a}</td><td>{c}</td></tr>' for i, a, c in prompts) + '</tbody></table>')
 
-    b.append('<h2>两条命令，都可以当 CI 门禁</h2>')
+    b.append('<h2 id="m-commands">两条命令，都可以当 CI 门禁</h2>')
     b.append('<pre>node scripts/work.mjs check    # 记录本身是否合法：ID 唯一、done 有证据、needs 指向存在\nnode scripts/layout.mjs        # 文件是否在 LAYOUT.md 说的位置</pre>')
     b.append('<p><code>work check</code> 在一个票标 done 却没有证据时会拒绝。<code>layout check</code> 在一个文件放错目录时会报错。'
              '两个都返回非零退出码，能直接当门禁用。</p>')

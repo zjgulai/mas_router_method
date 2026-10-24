@@ -41,6 +41,16 @@ Two things are never allowed:
 | "How do I show this to someone" | `anb-shipable` |
 | "Something went wrong and I can't tell where" | `anb-observable` |
 | "I'm starting the next one" | `anb-reusable` |
+| "How do I manage this" / "can I close this ticket" / "record this" | `anb-manage` |
+
+**Management is not an eighth stage.** It runs underneath all seven: a ticket is
+opened in the need stage, evidence lands in the verify stage, and an incident can
+happen at any moment. Filing it as a step after the others would mean the first
+seven run with nothing written down.
+
+Reach for it whenever the question is about the project's own record rather than
+about the product — what is waiting, whether something can be closed, what has
+already happened.
 
 If they say "all of it", go to `anb-idea` first. Always.
 

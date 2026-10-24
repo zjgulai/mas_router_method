@@ -82,6 +82,27 @@ def branches_page():
         rows = ''.join(f'<tr><td>{c}</td><td><a href="/mas_router_method/site/{slug}.html#{a.lstrip("#")}">{a.lstrip("#")}</a></td><td>{note}</td></tr>'
                        for c, a, note in d['branches'])
         b.append(f'<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody>{rows}</tbody></table>')
+
+    # 管理横跨七阶段，不是第八个阶段，所以它在这里和阶段并列、单独一节。
+    # 之前它只出现在顶部导航里：一个卡住的人从路由表或分支总表出发都到不了它。
+    b.append('<h2><a href="/mas_router_method/site/manage.html" style="text-decoration:none">管理</a>'
+             '<span style="font-size:.6em;color:var(--faint);font-family:var(--sans);font-weight:400">'
+             '　横跨以上全部，不是第八个阶段</span></h2>')
+    b.append('<p class="h2sub">提问的对象是<b>项目自己的记录</b>而不是产品时，走这里。'
+             '票据在需求时开，证据在验收时落，事故可能发生在任何一刻。</p>')
+    mgmt = [
+        ('你打算做一件事，而且不止这一次会话', '#m-file',
+         '开一张票。一次会话内做完并验证的不要开——否则票据会变成流水账，流水账没人看。'),
+        ('发生了一件你没计划的事', '#m-file',
+         '那是事故，不是票。分开记，因为触发方式不同：票是你打算做，事故是发生了。'),
+        ('文档里的数字和实际对不上', '#m-commands',
+         '先跑 <code>facts</code>，再改文档。文档可能是对的，磁盘才是意外的那个。'),
+        ('你记不清它现在是什么状态', '#m-status',
+         '状态就是目录。<code>ls</code> 一次比回忆可靠，也比回忆便宜。'),
+    ]
+    mrows = ''.join(f'<tr><td>{c}</td><td><a href="/mas_router_method/site/manage.html{a}">{a}</a></td><td>{n}</td></tr>'
+                    for c, a, n in mgmt)
+    b.append(f'<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody>{mrows}</tbody></table>')
     return page('branches', '分支总表', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / 分支总表')
 
 if __name__ == '__main__':
