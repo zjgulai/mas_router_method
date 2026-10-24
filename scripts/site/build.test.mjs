@@ -14,11 +14,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { writeFile, readdir, mkdtemp, rm } from 'node:fs/promises';
+import { readdir, mkdtemp, rm } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeAndConfirm } from '../test-fs.mjs';
 import { tmpdir } from 'node:os';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -47,7 +48,7 @@ test('build: goes red on a page no generator produces', async () => {
   const site = await mkdtemp(join(tmpdir(), 'site-'));
   const orphan = join(site, 'zzz-orphan-probe.html');
   try {
-    await writeFile(orphan, '<!doctype html><title>orphan</title>', 'utf8');
+    await writeAndConfirm(orphan, '<!doctype html><title>orphan</title>');
     const { code, out } = await build(site);
     assert.equal(code, 1, 'a file nobody generated must fail the build, not be left to rot');
     assert.match(out, /zzz-orphan-probe\.html/);

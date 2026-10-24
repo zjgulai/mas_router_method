@@ -8,11 +8,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { writeFile, unlink } from 'node:fs/promises';
+import { unlink } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeAndConfirm } from '../test-fs.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const LINKS = join(ROOT, 'scripts', 'site', 'links.mjs');
@@ -23,7 +24,7 @@ const check = () => promisify(execFile)(process.execPath, [LINKS])
   .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 async function withProbe(href, body = '') {
-  await writeFile(PROBE, `<!doctype html><title>probe</title><div id="here">x</div><a href="${href}">y</a>${body}`, 'utf8');
+  await writeAndConfirm(PROBE, `<!doctype html><title>probe</title><div id="here">x</div><a href="${href}">y</a>${body}`);
   try {
     return await check();
   } finally {

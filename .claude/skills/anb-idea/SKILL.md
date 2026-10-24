@@ -1,11 +1,11 @@
 ---
 name: anb-idea
-description: Stage 1. Turn "I want to build X" into one sentence that says who uses it, when, and what they can do afterwards that they could not before. Use when the idea is vague, when it is described as a feature list, or before any building starts.
+description: The need stage (需求). Turn "I want to build X" into one sentence that says who uses it, when, and what they can do afterwards that they could not before. Use when the idea is vague, when it is described as a feature list, or before any building starts.
 disable-model-invocation: true
 argument-hint: "What do you want to build?"
 ---
 
-# Stage 1 — The idea
+# The idea
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -18,7 +18,7 @@ them find one.
 
 ## The sixth sentence: does this need an agent at all?
 
-Ask it here, at stage 1, because it is a decision about what you are building —
+Ask it here, in the need stage, because it is a decision about what you are building —
 and because getting it wrong is the most expensive mistake available.
 
 **One test: can you draw the decision tree?** If you can write the order of steps
@@ -29,7 +29,7 @@ An agent is worth its cost when the number of possible next steps is unknown at
 design time: when the right move depends on what came back last time, and you
 cannot enumerate the branches in advance.
 
-Write the answer as one line and keep it. At stage 2 the flow gets re-counted, and
+Write the answer as one line and keep it. At the design stage the flow gets re-counted, and
 if the count comes back with no judgement points, this line is what tells you to
 go back rather than build.
 
@@ -50,7 +50,7 @@ The fifth is the one that saves money, and the one they will want to skip.
 
 Then one line under the five, which is a sixth answer and not a sixth sentence:
 **fixed steps, or judgement at runtime.** `pipeline` or `agent`. One word is enough
-at this stage; stage 2 redraws it properly.
+at this stage; the design stage redraws it properly.
 
 ## How to run it
 
@@ -74,7 +74,7 @@ specifically, and on what day.
 like, and filling in the blanks takes thirty seconds.
 
 Do not. Every line you write is your guess about their intent, and they will
-approve it because it reads well. Then at stage 3 they will have no standard to
+approve it because it reads well. Then at the verify stage they will have no standard to
 judge against, because the standard came from you and they cannot tell whether it
 is the right one.
 

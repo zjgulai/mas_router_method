@@ -19,6 +19,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseSchema, loadSchema, WORK } from './schema.mjs';
+import { writeAndConfirm } from './test-fs.mjs';
 
 test('parser keeps hyphenated keys — the bug that hid two states', () => {
   const parsed = parseSchema(`
@@ -151,7 +152,7 @@ test('facts: --check fails when a document quotes a wrong number', async () => {
 
   const original = await readFile(target, 'utf8');
   try {
-    await writeFile(target, original.replace(/全部 \d+ 个/, '全部 3 个'), 'utf8');
+    await writeAndConfirm(target, original.replace(/全部 \d+ 个/, '全部 3 个'));
     let code = 0;
     let stdout = '';
     try {
@@ -164,7 +165,7 @@ test('facts: --check fails when a document quotes a wrong number', async () => {
     assert.equal(code, 1, 'a stale number must fail the check, not warn');
     assert.match(stdout, /says 3/, `the failure should name the claimed value:\n${stdout}`);
   } finally {
-    await writeFile(target, original, 'utf8');
+    await writeAndConfirm(target, original);
   }
 });
 
@@ -223,7 +224,7 @@ test('design check: a confirmed record with no re-open condition fails', async (
   const { promisify } = await import('node:util');
   const { resolve, dirname } = await import('node:path');
   const { fileURLToPath } = await import('node:url');
-  const { writeFile, unlink } = await import('node:fs/promises');
+  const { unlink } = await import('node:fs/promises');
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const probe = join(WORK, 'designs/confirmed/D-998-no-reopen.md');
 
@@ -236,7 +237,7 @@ test('design check: a confirmed record with no re-open condition fails', async (
   ].join('\n');
 
   try {
-    await writeFile(probe, body, 'utf8');
+    await writeAndConfirm(probe, body);
     let code = 0, stdout = '';
     try {
       const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
@@ -274,7 +275,7 @@ test('--only design: a value masquerading as a refusal fails in scope too', asyn
   const { promisify } = await import('node:util');
   const { resolve, dirname } = await import('node:path');
   const { fileURLToPath } = await import('node:url');
-  const { writeFile, unlink } = await import('node:fs/promises');
+  const { unlink } = await import('node:fs/promises');
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const probe = join(WORK, 'designs/drafting/D-996-probe.md');
 
@@ -287,7 +288,7 @@ test('--only design: a value masquerading as a refusal fails in scope too', asyn
   ].join('\n');
 
   try {
-    await writeFile(probe, body, 'utf8');
+    await writeAndConfirm(probe, body);
     let code = 0, stdout = '';
     try {
       await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check', '--only', 'design']);
@@ -304,7 +305,7 @@ test('check: an artifact with no delete_when fails — the rule that had gone de
   const { promisify } = await import('node:util');
   const { resolve, dirname } = await import('node:path');
   const { fileURLToPath } = await import('node:url');
-  const { writeFile, unlink, mkdir } = await import('node:fs/promises');
+  const { unlink, mkdir } = await import('node:fs/promises');
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const probe = join(WORK, 'artifacts/active/ART-099-probe.md');
 
@@ -313,7 +314,7 @@ test('check: an artifact with no delete_when fails — the rule that had gone de
   // entities have. The rule silently stopped running. Nothing noticed because no
   // artifact had ever been filed. This test is what makes that stay fixed.
   await mkdir(join(WORK, 'artifacts/active'), { recursive: true });
-  await writeFile(probe, ['---', 'id: ART-099', 'title: probe', 'owner: probe', '---', 'probe'].join('\n'), 'utf8');
+  await writeAndConfirm(probe, ['---', 'id: ART-099', 'title: probe', 'owner: probe', '---', 'probe'].join('\n'));
   try {
     let code = 0, stdout = '';
     try {

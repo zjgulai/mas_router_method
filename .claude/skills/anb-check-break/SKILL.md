@@ -1,6 +1,6 @@
 ---
 name: anb-check-break
-description: Break the product on purpose and confirm a check catches it. Use whenever a check passed and you don't believe it, before calling stage 3 finished, or any time "all green" feels wrong.
+description: Break the product on purpose and confirm a check catches it. Use whenever a check passed and you don't believe it, before calling the verify stage finished, or any time "all green" feels wrong.
 disable-model-invocation: true
 argument-hint: "Which check passed that you don't believe?"
 ---
@@ -52,6 +52,6 @@ day.
 
 ## Where this belongs in the flow
 
-Mandatory before stage 3 can be called finished. Recommended any time the person
+Mandatory before the verify stage can be called finished. Recommended any time the person
 expresses doubt, because their doubt is usually correct and this check either
 confirms it or removes it.

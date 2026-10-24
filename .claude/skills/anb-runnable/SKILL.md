@@ -1,11 +1,11 @@
 ---
 name: anb-runnable
-description: Stage 2. Build the narrowest path that takes one real input and produces one real result, with no fake data anywhere. Use when starting to build, when nothing comes out, or when the thing only works on prepared samples.
+description: The build stage (开发). Build the narrowest path that takes one real input and produces one real result, with no fake data anywhere. Use when starting to build, when nothing comes out, or when the thing only works on prepared samples.
 disable-model-invocation: true
 argument-hint: "What should go in, and what should come out?"
 ---
 
-# Stage 2 — It runs
+# It runs
 
 **Open by asking: "how will we know this stage is finished?"**
 

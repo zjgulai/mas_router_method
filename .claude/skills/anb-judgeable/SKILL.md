@@ -1,15 +1,15 @@
 ---
 name: anb-judgeable
-description: Stage 3. Define what "good" means and make it testable, then prove the tests can fail. This is the only hard gate in the whole method. Use when the output exists but nobody can say whether it is acceptable, or before shipping anything.
+description: The verify stage (验收). Define what "good" means and make it testable, then prove the tests can fail. This is the only hard gate in the whole method. Use when the output exists but nobody can say whether it is acceptable, or before shipping anything.
 disable-model-invocation: true
 argument-hint: "What does a good result look like?"
 ---
 
-# Stage 3 — It can be judged
+# It can be judged
 
 **This is the only stage that stops work outright.** Everything else can be
 revisited. This one cannot be skipped, and if it cannot be completed, the honest
-move is to go back to stage 1 rather than forward to stage 4.
+move is to go back to the need stage rather than forward to the ship stage.
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -92,7 +92,7 @@ but a calculator.
 
 ## The thing that goes wrong here
 
-**They will want to skip to stage 4.** The product runs, it looks fine, and this
+**They will want to skip to the ship stage.** The product runs, it looks fine, and this
 stage produces no visible artifact — just checks.
 
 Say what it buys, concretely: without it, every later change is unmeasurable, and

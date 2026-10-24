@@ -1,11 +1,11 @@
 ---
 name: anb-shipable
-description: Stage 4. Get it to a place where someone else can open it and use it without you sitting next to them. Use when the thing works on your machine and you want to show it to someone, or before calling anything finished.
+description: The ship stage (交付). Get it to a place where someone else can open it and use it without you sitting next to them. Use when the thing works on your machine and you want to show it to someone, or before calling anything finished.
 disable-model-invocation: true
 argument-hint: "Who needs to use it, and on what?"
 ---
 
-# Stage 4 — Someone else can use it
+# Someone else can use it
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -58,11 +58,11 @@ roadmap for the next stretch of work, and it will not be what you expected.
 
 ## The thing that goes wrong here
 
-**Filling the wait with features.** Stage 4 often has dead time — a deploy, a
+**Filling the wait with features.** The ship stage often has dead time — a deploy, a
 domain, a permission. The temptation is to add something while waiting.
 
 Don't. Two reasons. First, unreleased features are unmeasured, and you now have a
-quality bar at stage 3 that you would have to extend to cover them. Second, the
+quality bar at the verify stage that you would have to extend to cover them. Second, the
 feedback from step 4 will invalidate some of what you would have built.
 
 ## Exit test

@@ -40,6 +40,12 @@ jobs:
       - name: Design records answer all four questions
         run: node scripts/work.mjs check --only design
 
+      # The stage order lives in work/schema.yml and nowhere else. Prose that
+      # restates it as a number has already shipped a reversed instruction once
+      # ("do not build stage 4" reading as "do not build the verify stage").
+      - name: Skills name stages, they do not number them
+        run: node scripts/naming.mjs check
+
       - name: Files are where LAYOUT.md says
         run: node scripts/layout.mjs
 

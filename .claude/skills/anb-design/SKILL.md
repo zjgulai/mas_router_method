@@ -1,11 +1,11 @@
 ---
 name: anb-design
-description: Stage 2. Decide the four things that are expensive to change later — the shape of the flow, what it must refuse, what it may do without asking, and what the model sees when it acts. Use after the idea is confirmed and before anything is built, especially when the product can send, pay, delete or publish.
+description: The design stage (设计). Decide the four things that are expensive to change later — the shape of the flow, what it must refuse, what it may do without asking, and what the model sees when it acts. Use after the idea is confirmed and before anything is built, especially when the product can send, pay, delete or publish.
 disable-model-invocation: true
 argument-hint: "What does it have to get right that you cannot fix later?"
 ---
 
-# Stage 2 — Design
+# Design
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -55,7 +55,7 @@ it will behave differently every run.
 That count is also the honest answer to "should this be an agent at all". A flow
 with no judgement points does not need a model choosing its own steps; it needs a
 script with one model call inside it — cheaper, faster, and far easier to check.
-Say so when it is true. Stage 1 already asked whether a person would pay for this;
+Say so when it is true. The need stage already asked whether a person would pay for this;
 this question asks whether the model needs to be in charge of the order.
 
 ## Question 2 — what it must refuse
@@ -73,15 +73,15 @@ Each row has a fixed shape: **a concrete input → what it must do instead.**
 > and offer the appearance-wording alternative."
 
 If they cannot name a concrete input, it is a value, not a refusal. "Be honest",
-"don't be harmful", "stay on brand" are values. Values cannot be tested at stage 3
+"don't be harmful", "stay on brand" are values. Values cannot be tested at the verify stage
 and will be quietly dropped when the checks get written. Ask for the input.
 
 The exit condition for this question: **each row can become a check.** If a row
 cannot be written as "given this input, that output must not appear", it is not a
 refusal yet.
 
-This is also the one place where stage 2 and stage 3 overlap on purpose. Stage 2
-writes the list; stage 3 turns it into checks. That is not duplication — it is the
+This is also the one place where the design and verify stages overlap on purpose.
+Design writes the list; verify turns it into checks. That is not duplication — it is the
 list being born with somewhere to go.
 
 ## Question 3 — what it may do without asking
@@ -186,9 +186,9 @@ small". The size of the product is not the test. Two facts are:
 Neither: skip the whole stage, write one line saying why. Either one: it is not
 small in the way that matters, and question 2 is not optional.
 
-**Do not write this file for them.** Same trap as stage 1, higher cost: a design
+**Do not write this file for them.** Same trap as the need stage, higher cost: a design
 you wrote reads better than one they wrote, so they will approve it, and then at
-stage 3 there is no standard they can judge against — because the standard is
+the verify stage there is no standard they can judge against — because the standard is
 yours and they cannot see its edges.
 
 Your job is to ask, and to notice when an answer is a value pretending to be a
@@ -206,4 +206,4 @@ rather than underspecified.
 Then the second half, and it is the one that makes this stage worth anything:
 **every row in the refusal list can be written as a check that would go red.** A
 row that cannot becomes a value again, and gets deleted now rather than silently
-at stage 3.
+at the verify stage.

@@ -27,7 +27,7 @@ Two things are never allowed:
    whether code does what it was told. They do not measure whether the product is
    usable. These are different questions and conflating them is the single most
    expensive mistake in this domain.
-2. **Never proceed past stage 3 without evidence that a check has actually
+2. **Never proceed past the verify stage without evidence that a check has actually
    failed at least once.** A check that has never failed is not a check.
 
 ## Route
@@ -70,8 +70,8 @@ These are interventions, not stages. Any of them can be run at any time.
 
 ## The one hard rule
 
-Stage 3 is the only gate that stops work outright. If the checks at stage 3 cannot
-be made to fail on purpose, **do not build stage 4**. A product that ships on an
+The verify stage is the only gate that stops work outright. If the checks at the
+verify stage cannot be made to fail on purpose, **do not start the ship stage**. A product that ships on an
 unverified quality claim is not further along; it is in debt.
 
 Every other stage can be revisited. This one cannot be skipped.
@@ -108,6 +108,6 @@ an agent guesses intelligently where a person stops. Label it "partially verifie
 
 ## What this does not do
 
-It does not decide whether the product is worth building. That is stage 1 and only
+It does not decide whether the product is worth building. That is the need stage and only
 they can answer it — and they may be wrong. Say so when it is relevant; do not
 pretend the process covers it.
