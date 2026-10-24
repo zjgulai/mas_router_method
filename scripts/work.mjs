@@ -143,6 +143,22 @@ async function collect(schema) {
   return { found, missingDirs, problems };
 }
 
+/**
+ * 取某一类实体在任意形态下的全部记录。
+ *
+ * artifacts 原本是扁平实体，后来改成了状态目录，而有两条规则仍然在念
+ * `found[kind].list` —— 那个字段只有扁平实体才有。于是「没有 delete_when 的
+ * artifact 必须失败」这条规则悄悄地不再运行了：一个永远不会变红的检查。
+ * 没人发现，是因为从来没有任何 artifact 被登记过。这就是那个 bug 的修复。
+ */
+function recordsOf(bucket) {
+  if (bucket === undefined) return [];
+  if (Array.isArray(bucket.list)) return bucket.list;
+  const out = [];
+  for (const v of Object.values(bucket)) if (Array.isArray(v)) out.push(...v);
+  return out;
+}
+
 const fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const daysSince = (d) => Math.floor((Date.now() - d.getTime()) / 86_400_000);
 
@@ -204,7 +220,7 @@ async function cmdStatus() {
     if (daysSince(r.mtime) > 14) attention.push(`${r.id} in progress, untouched ${daysSince(r.mtime)} days`);
   }
   for (const r of found.incident?.open ?? []) attention.push(`${r.id} incident open — ${r.title}`);
-  for (const r of found.artifact?.list ?? []) {
+  for (const r of recordsOf(found.artifact)) {
     if (r.expires !== '' && r.expires < fmtDate(today)) attention.push(`${r.id} expired ${r.expires} — ${r.title}`);
     if (r.owner === '') attention.push(`${r.id} has no owner — ${r.title}`);
   }
@@ -278,7 +294,7 @@ async function cmdCheck() {
   }
 
   // 3. artifacts need an owner and a delete condition, or they live forever
-  if (runAll) for (const r of found.artifact?.list ?? []) {
+  if (runAll) for (const r of recordsOf(found.artifact)) {
     if (r.owner === '') out.push(`${r.id} artifact has no owner`);
     if (r.deleteWhen === '') out.push(`${r.id} artifact has no delete_when`);
   }

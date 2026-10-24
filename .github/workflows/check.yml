@@ -22,6 +22,12 @@ jobs:
         with:
           node-version: '22'
 
+      # The site generators are Python. They are isolated behind
+      # `node scripts/site/build.mjs`, so nothing else in the repo needs it.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       # Each step is separate so a failure names which class of problem it is:
       # a broken record, a misplaced file, or a stale number in a document.
       - name: Records are valid
@@ -40,5 +46,14 @@ jobs:
       - name: Quoted numbers match disk
         run: node scripts/facts.mjs --check
 
-      - name: The work tooling's own tests
-        run: node --test scripts/work.test.mjs
+      # The committed pages must be exactly what the generators produce. Without
+      # this, the site drifts from its source and the only way to find out is to
+      # read the HTML — which is what the generators exist to avoid.
+      - name: The site rebuilds from its generators
+        run: node scripts/site/build.mjs && git diff --exit-code docs/site/
+
+      # Quoted so Node expands the glob itself. An explicit file list would make a
+      # new test file easy to add and easy to never run — a silently skipped test
+      # is the exact failure this repo keeps finding.
+      - name: The tooling's own tests
+        run: node --test "scripts/**/*.test.mjs"

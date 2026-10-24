@@ -298,3 +298,31 @@ test('--only design: a value masquerading as a refusal fails in scope too', asyn
     await unlink(probe).catch(() => {});
   }
 });
+
+test('check: an artifact with no delete_when fails — the rule that had gone dead', async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { writeFile, unlink, mkdir } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const probe = join(WORK, 'artifacts/active/ART-099-probe.md');
+
+  // artifacts were switched from a flat entity to a state directory, and the
+  // owner/delete_when rule kept reading `found.artifact.list` — which only flat
+  // entities have. The rule silently stopped running. Nothing noticed because no
+  // artifact had ever been filed. This test is what makes that stay fixed.
+  await mkdir(join(WORK, 'artifacts/active'), { recursive: true });
+  await writeFile(probe, ['---', 'id: ART-099', 'title: probe', 'owner: probe', '---', 'probe'].join('\n'), 'utf8');
+  try {
+    let code = 0, stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      stdout = r.stdout;
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    assert.equal(code, 1, 'an artifact with no delete_when must fail; it lives forever otherwise');
+    assert.match(stdout, /ART-099 artifact has no delete_when/);
+  } finally {
+    await unlink(probe).catch(() => {});
+  }
+});
