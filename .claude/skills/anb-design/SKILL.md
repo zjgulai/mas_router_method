@@ -217,3 +217,9 @@ Then the second half, and it is the one that makes this stage worth anything:
 **every row in the refusal list can be written as a check that would go red.** A
 row that cannot becomes a value again, and gets deleted now rather than silently
 at the verify stage.
+
+That promise has a receiving end now. The verify stage runs
+`node scripts/design.mjs refusals` and turns each row into a check; the build stage
+runs `node scripts/design.mjs constraints` before writing any code. Move the record
+to `confirmed` once all four blocks are answered — that is what makes it readable
+to them. A record left in `drafting` is invisible to both.

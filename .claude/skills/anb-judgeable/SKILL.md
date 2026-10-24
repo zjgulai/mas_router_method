@@ -76,6 +76,30 @@ total, exactly. Then load the page five times doing nothing and check that no
 counter moves. Run `anb-check-reconcile`; it takes two minutes and needs nothing
 but a calculator.
 
+## Read the design record first
+
+Before writing any check:
+
+```bash
+node scripts/design.mjs refusals
+```
+
+Each row is a concrete input and the behaviour that must replace it. Those rows are
+your guardrail checks — the ones that catch a product breaking a promise to a person
+rather than a function breaking its contract. They are also the easiest to leave out,
+because nothing crashes when they are missing.
+
+Three outcomes. They are not the same thing, and treating them as one is how this
+stage fakes success:
+
+- **Rows printed.** Turn each into a check. Pass an id to pin the record if more
+  than one is confirmed.
+- **`跳过：<reason>`.** This layer is empty by decision. Report it with the reason.
+  Never report it as "nothing to refuse" — those are opposite claims.
+- **Exit code 3.** No confirmed design record exists. Say so plainly, then carry on
+  with the other checks. **Do not skip silently:** a guardrail layer that was never
+  built must not look like one that passed.
+
 ## How to run it
 
 1. Ask them what good looks like, in their own words. Take the first three things

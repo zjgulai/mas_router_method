@@ -99,3 +99,32 @@ test('every stage says which register it writes to, and that register exists', a
     }
   }
 });
+
+test('the stages that consume a design record actually say to read it', async () => {
+  // 审计里最要紧的一条断裂：设计阶段的 exit test 承诺「拒绝清单每一行都能写成一条
+  // 会变红的检查」，正文也说「验收阶段会把它变成检查」——而接收端提及设计记录 0 次。
+  // 承诺没有接收方时，记录是文档，不是规格。这条断言让接收方成为结构的一部分。
+  const design = await read('.claude/skills/anb-design/SKILL.md');
+  assert.match(
+    design,
+    /design\.mjs/,
+    'the design stage must name who reads the record, or the promise still has no receiving end',
+  );
+
+  const judgeable = await read('.claude/skills/anb-judgeable/SKILL.md');
+  assert.match(
+    judgeable,
+    /design\.mjs refusals/,
+    'the verify stage must read the refusal list — its guardrail checks come from there',
+  );
+  // 三种结果必须被区分开：有行、显式跳过、没有记录。混为一谈就是假通过。
+  assert.match(judgeable, /跳过/, 'the verify stage must handle an explicitly skipped refusal list');
+  assert.match(judgeable, /Exit code 3|退出码 3/, 'the verify stage must handle "no design record" without skipping silently');
+
+  const runnable = await read('.claude/skills/anb-runnable/SKILL.md');
+  assert.match(
+    runnable,
+    /design\.mjs constraints/,
+    'the build stage must read the judgement points and action permissions before writing code',
+  );
+});

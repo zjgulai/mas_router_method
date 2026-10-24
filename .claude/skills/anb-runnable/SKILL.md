@@ -24,6 +24,25 @@ Deliberately excluded at this stage: login, multiple users, settings, a nice
 interface, error messages for cases you haven't hit. Each of them is a way to spend
 a week without learning whether the idea works.
 
+## Read the constraints first
+
+```bash
+node scripts/design.mjs constraints
+```
+
+Two things to respect while building, both easy to break by accident:
+
+**Judgement points stay judgement.** If the design counts three places that need a
+decision at runtime, do not hard-code the common case into a special branch. That is
+exactly the "works for one case" failure this stage exists to prevent, wearing the
+design's authority.
+
+**Action permissions are implementation boundaries.** Anything the design puts in the
+ask-a-human tier must not be reachable without that gate. The build stage is where a
+missing gate becomes invisible: nothing errors, the action simply happens.
+
+Exit code 3 means no confirmed design. Carry on, but say so once.
+
 ## The failure this stage exists to prevent
 
 **The demo that was never connected to anything.**

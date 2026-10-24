@@ -54,7 +54,8 @@ DETAIL = {
  'docs': [('terms.html', '术语表：每个词配「坏了会怎样」'), ('capability-map.html', '能力图谱 A 域：领域建模与契约')],
 },
 'build': {
- 'goal': '一条真实输入从头走到尾，出一个真实结果。不做功能，只做一条最窄的路。',
+ 'goal': '一条真实输入从头走到尾，出一个真实结果。不做功能，只做一条最窄的路。'
+         '开工前跑 <code>node scripts/design.mjs constraints</code>：判断点要保持为判断，动作权限要实现成边界。',
  'gap': 'covered',
  'gapnote': '这一步由 <code>anb-runnable</code> 覆盖，核心纪律是"不许有任何假数据"。',
  'why': '这是最容易假装成功的阶段：界面有、按钮有反应、看起来通了，但背后是样例数据。',
@@ -73,7 +74,8 @@ DETAIL = {
  'docs': [('failure-atlas.html', '失败图鉴：第二类「测的不是你的产品」全部在这一步发生')],
 },
 'verify': {
- 'goal': '定下「什么算好」，并且让这个标准能自动跑。而且——必须亲眼看到它失败过一次。',
+ 'goal': '定下「什么算好」，并且让这个标准能自动跑。而且——必须亲眼看到它失败过一次。'
+         '这一阶段的护栏检查来自设计记录：先跑 <code>node scripts/design.mjs refusals</code>，把每一行变成一条检查。',
  'gap': 'covered',
  'gapnote': '这一步由 <code>anb-judgeable</code> 覆盖，它是整条链路里唯一的硬门。这里不过，不许往下走。',
  'why': '没有这一步，后面每一次改动都是无法测量的。产品会安静地变差，而所有人都以为在变好。',

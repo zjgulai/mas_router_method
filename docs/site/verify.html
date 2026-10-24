@@ -104,7 +104,7 @@
 <main class="shell">
   <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 验收</div>
   <h1><span class="num">04</span>验收</h1>
-<p class="lede">定下「什么算好」，并且让这个标准能自动跑。而且——必须亲眼看到它失败过一次。</p>
+<p class="lede">定下「什么算好」，并且让这个标准能自动跑。而且——必须亲眼看到它失败过一次。这一阶段的护栏检查来自设计记录：先跑 <code>node scripts/design.mjs refusals</code>，把每一行变成一条检查。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-judgeable</code> 覆盖，它是整条链路里唯一的硬门。这里不过，不许往下走。<br><br><b>为什么这一步重要：</b>没有这一步，后面每一次改动都是无法测量的。产品会安静地变差，而所有人都以为在变好。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
