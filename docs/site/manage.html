@@ -115,8 +115,20 @@
 <h2>判断标准只有一个：它会不会变</h2>
 <table><thead><tr><th style="width:12%"></th><th>会变</th><th>不会变</th></tr></thead><tbody><tr><td>特征</td><td>有状态、会流转、会关闭、会过期</td><td>写完就不该再动</td></tr><tr><td>住哪</td><td><code>work/</code></td><td><code>docs/</code></td></tr><tr><td>例子</td><td>票从 open 走到 done、事故从 open 到 closed、产物会过期</td><td>ADR 接受后不改、规格是某一版的快照</td></tr></tbody></table>
 <p style="margin-top:1rem">这条比"按主题分"可靠。按主题分的话，"决策"既像工作又像文档，每次都要重新吵一遍；按"会不会变"分，"ADR 接受后就不该改"是一个明确的事实，不需要判断。</p>
-<h2>七个寄存器</h2>
-<table><thead><tr><th style="width:24%">目录</th><th style="width:26%">放什么</th><th style="width:26%">流转</th><th style="width:8%">ID</th><th>谁写</th></tr></thead><tbody><tr><td><code>work/requirements/</code></td><td>需求：一句话承诺</td><td>drafting → confirmed → dropped</td><td>R-</td><td>阶段 1</td></tr><tr><td><code>work/tickets/</code></td><td>执行票：跨会话的工作单元</td><td>open → in-progress → awaiting-verification → done</td><td>T-</td><td>阶段 2–5</td></tr><tr><td><code>work/incidents/</code></td><td>事故：计划外发生的事</td><td>open → contained → closed</td><td>INC-</td><td>任何阶段</td></tr><tr><td><code>work/artifacts/</code></td><td>有持续成本的东西</td><td>active → expired</td><td>ART-</td><td>阶段 6</td></tr><tr><td><code>work/evidence/</code></td><td>证据：命令 + 原始输出</td><td><b>无状态，只增不改</b></td><td>E-</td><td>阶段 4</td></tr><tr><td><code>work/receipts/</code></td><td>回执：谁收到了什么</td><td><b>无状态，只增不改</b></td><td>REC-</td><td>阶段 5</td></tr><tr><td><code>docs/adr/</code></td><td>决策记录</td><td><b>无状态机，永久保留</b></td><td>ADR</td><td>阶段 2</td></tr></tbody></table>
+<h2>八个寄存器</h2>
+<table><thead><tr><th style="width:24%">目录</th><th style="width:26%">放什么</th><th style="width:26%">流转</th><th style="width:8%">ID</th><th>谁写</th></tr></thead><tbody><tr><td><code>work/requirements/</code></td><td>需求：一句话承诺</td><td>drafting → confirmed → dropped</td><td>R-</td><td>阶段 1</td></tr><tr><td><code>work/designs/</code></td><td>设计记录：四问的答案</td><td>drafting → confirmed → superseded</td><td>D-</td><td>阶段 2</td></tr><tr><td><code>work/tickets/</code></td><td>执行票：跨会话的工作单元</td><td>open → in-progress → awaiting-verification → done</td><td>T-</td><td>阶段 2–5</td></tr><tr><td><code>work/incidents/</code></td><td>事故：计划外发生的事</td><td>open → contained → closed</td><td>INC-</td><td>任何阶段</td></tr><tr><td><code>work/artifacts/</code></td><td>有持续成本的东西</td><td>active → expired</td><td>ART-</td><td>阶段 6</td></tr><tr><td><code>work/evidence/</code></td><td>证据：命令 + 原始输出</td><td><b>无状态，只增不改</b></td><td>E-</td><td>阶段 4</td></tr><tr><td><code>work/receipts/</code></td><td>回执：谁收到了什么</td><td><b>无状态，只增不改</b></td><td>REC-</td><td>阶段 5</td></tr><tr><td><code>docs/adr/</code></td><td>决策记录</td><td><b>无状态机，永久保留</b></td><td>ADR</td><td>阶段 2</td></tr></tbody></table>
+<h2>为什么设计记录在 work/ 而不是 docs/</h2>
+<p>这条最容易搞反。ADR 在 <code>docs/adr/</code>，因为它接受之后就不该再改——说"这个 ADR 现在是 done"没有意义。设计记录在 <code>work/designs/</code>，因为<b>它会变</b>：起草、确认、被推翻。<code>superseded</code> 是它真正的常态，而一个只会被覆盖的东西需要状态机。</p>
+<div class="card"><h3>它校验什么，为什么是这四条</h3>
+      <p><code>work check</code> 对每条设计记录查四件事——正好对应四问：</p>
+      <table><thead><tr><th style="width:26%">块</th><th>不合格的写法</th><th>为什么这算不合格</th></tr></thead><tbody>
+      <tr><td>流程形状</td><td>空着</td><td>没写，说明没问过；固定步骤和判断点没分开，第三步就没法判断该不该用 agent</td></tr>
+      <tr><td>拒绝清单</td><td>「要诚实」「不要有害」</td><td>写不出具体输入，验收时没法变成检查，会被安静删掉</td></tr>
+      <tr><td>动作权限</td><td>整块空白</td><td>跳过可以，但要写「跳过：只读」；沉默和"想过但决定不问"在三个月后读起来一样</td></tr>
+      <tr><td>交接契约</td><td>只写"它做什么"</td><td>等于授权模型在任何场景下用</td></tr>
+      </tbody></table>
+      <p style="color:var(--faint);font-size:.88em">另有一条：标了 confirmed 却没写"什么情况说明这个设计错了"的记录会失败。
+      没有重议条件的设计，三个月后没人敢动它，因为没人记得它当初假设了什么。</p></div>
 <h2>两个设计决定，都不显然</h2>
 <div class="grid two">
 <div class="card"><h3>状态是目录，不是文字</h3>

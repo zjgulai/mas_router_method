@@ -27,6 +27,7 @@ const GROUP_LABEL = {
   incident: '事故 incident',
   decision: '决策 decision',
   artifact: '产物 artifact',
+  design: '设计记录 design',
 };
 
 /** Frontmatter: `---` fenced, `key: value`, `key: [a, b]`. */
@@ -149,6 +150,7 @@ const STATE_COLOUR = {
   open: YELLOW, 'in-progress': CYAN, 'awaiting-verification': YELLOW,
   done: GREEN, abandoned: DIM, drafting: YELLOW, confirmed: GREEN,
   dropped: DIM, contained: YELLOW, closed: GREEN, active: GREEN, expired: DIM,
+  drafting: YELLOW, confirmed: GREEN, superseded: DIM,
 };
 
 async function cmdStatus() {
@@ -158,7 +160,7 @@ async function cmdStatus() {
 
   console.log(`\n${BOLD}work${RESET}  ${fmtDate(today)}  ${DIM}${WORK.replace(process.cwd() + '/', '')}${RESET}\n`);
 
-  const order = ['requirement', 'ticket', 'incident', 'artifact', 'decision'];
+  const order = ['requirement', 'design', 'ticket', 'incident', 'artifact', 'decision'];
   for (const kind of order) {
     const def = schema.entities[kind];
     if (def === undefined) continue;
@@ -239,9 +241,18 @@ async function cmdStatus() {
 }
 
 async function cmdCheck() {
+  // `--only design` runs just the design-record rules. CI calls it as its own
+  // step so that "a design question was never asked" names itself instead of
+  // arriving as one more line under "records are invalid".
+  const only = process.argv.includes('--only')
+    ? process.argv[process.argv.indexOf('--only') + 1]
+    : null;
+
   const schema = await loadSchema();
   const { found, missingDirs, problems } = await collect(schema);
-  const out = [...problems];
+  const out = only === null ? [...problems] : [];
+
+  const runAll = only === null;
 
   // 1. ids unique across all records
   const seen = new Map();
@@ -256,24 +267,24 @@ async function cmdCheck() {
     for (const r of found[name]?.list ?? []) all.push(r);
   }
   for (const r of all) {
-    if (seen.has(r.id)) out.push(`duplicate id ${r.id}: ${seen.get(r.id)} and ${r.path}`);
+    if (seen.has(r.id) && runAll) out.push(`duplicate id ${r.id}: ${seen.get(r.id)} and ${r.path}`);
     else seen.set(r.id, r.path);
   }
 
   // 2. a ticket marked done must carry evidence — "done" without a re-runnable
   //    command is a claim, and this is the rule the migration kept tripping on.
-  for (const r of found.ticket?.done ?? []) {
+  if (runAll) for (const r of found.ticket?.done ?? []) {
     if (r.evidence.length === 0) out.push(`${r.id} is done but records no evidence`);
   }
 
   // 3. artifacts need an owner and a delete condition, or they live forever
-  for (const r of found.artifact?.list ?? []) {
+  if (runAll) for (const r of found.artifact?.list ?? []) {
     if (r.owner === '') out.push(`${r.id} artifact has no owner`);
     if (r.deleteWhen === '') out.push(`${r.id} artifact has no delete_when`);
   }
 
   // 4. every `needs:` target must exist as a record
-  for (const r of all) {
+  if (runAll) for (const r of all) {
     for (const n of r.needs) {
       if (![...seen.keys()].includes(n) && !/^ADR-/.test(n) && !/^R-/.test(n)) {
         out.push(`${r.id} needs ${n}, which does not exist`);
@@ -288,15 +299,82 @@ async function cmdCheck() {
       if (f.endsWith('.md')) evidenceFiles.add(f.split('-').slice(0, 2).join('-'));
     }
   } catch { /* no evidence dir yet */ }
-  for (const r of all) {
+  if (runAll) for (const r of all) {
     for (const e of r.evidence) {
       if (!evidenceFiles.has(e)) out.push(`${r.id} cites evidence ${e}, which is not in work/evidence/`);
     }
   }
 
+  // 6. a design record must carry its four blocks. The blocks are the four
+  //    questions from anb-design; a design missing one was never asked, and
+  //    stage 3 will then have nothing to turn into checks.
+  //
+  //    A block may be skipped, but only explicitly: `（跳过：<reason>）`. Silence
+  //    and a decision not to ask are different things, and in three months they
+  //    read identically — which is why the skip has to carry a reason.
+  //
+  //    Parsing note: the first version matched a block with
+  //    `/^##[^\n]*KEY([\s\S]*?)(?=^## |\s*$)/m`. The `\s*$` alternative matches
+  //    at the end of *any* line under `m`, so every block was truncated to the
+  //    blank line after its heading and four correct records reported as empty.
+  //    A checker that cries wolf gets switched off, so this splits instead.
+  const DESIGN_BLOCKS = [
+    { key: '流程形状', what: 'the shape of the flow' },
+    { key: '拒绝清单', what: 'what it must refuse' },
+    { key: '动作权限', what: 'what it may do without asking' },
+    { key: '交接契约', what: 'what the model sees when it acts' },
+  ];
+
+  /** Split markdown into `## heading -> body` sections. */
+  const sections = (text) => {
+    const parts = text.split(/^## /m).slice(1);
+    return parts.map((p) => {
+      const nl = p.indexOf('\n');
+      return nl < 0 ? { head: p.trim(), body: '' } : { head: p.slice(0, nl).trim(), body: p.slice(nl + 1).trim() };
+    });
+  };
+
+  for (const bucket of ['drafting', 'confirmed', 'superseded']) {
+    for (const r of found.design?.[bucket] ?? []) {
+      const text = await readFile(r.path, 'utf8');
+      const secs = sections(text);
+
+      for (const block of DESIGN_BLOCKS) {
+        const sec = secs.find((x) => x.head.includes(block.key));
+        if (sec === undefined) {
+          out.push(`${r.id}: no 「${block.key}」 block — ${block.what} was never asked`);
+          continue;
+        }
+        if (sec.body === '') {
+          out.push(`${r.id}: 「${block.key}」 is empty — say what it is, or mark it 跳过 with a reason`);
+        } else if (/跳过/.test(sec.body) && !/跳过[：:]\s*\S/.test(sec.body)) {
+          out.push(`${r.id}: 「${block.key}」 is marked skipped without a reason`);
+        }
+      }
+
+      // A refusal row that names no concrete input cannot become a check at
+      // stage 3 — and becoming a check is the only reason to write it here.
+      const refusal = secs.find((x) => x.head.includes('拒绝清单'));
+      if (refusal !== undefined && !/跳过[：:]/.test(refusal.body)) {
+        const rows = refusal.body.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('-') || l.startsWith('|'));
+        const concrete = rows.filter((l) => /→|->/.test(l));
+        if (rows.length > 0 && concrete.length === 0) {
+          out.push(`${r.id}: refusal list names no concrete input → behaviour, so none of it can become a check`);
+        }
+      }
+
+      if (bucket === 'confirmed' && !/被推翻|重议|什么情况.{0,8}错/.test(text)) {
+        out.push(`${r.id}: confirmed but records no condition that would make this design wrong`);
+      }
+    }
+  }
+
   const total = all.length;
+  const scope = only === null ? '' : ` (--only ${only})`;
   if (out.length === 0) {
-    console.log(`${GREEN}ok${RESET} — ${total} records, ${missingDirs.length} empty state dirs, no problems`);
+    const designs = ['drafting', 'confirmed', 'superseded']
+      .reduce((n, s2) => n + (found.design?.[s2]?.length ?? 0), 0);
+    console.log(`${GREEN}ok${RESET} — ${total} records${only === 'design' ? `, ${designs} design` : ''}, ${missingDirs.length} empty state dirs, no problems${scope}`);
     return 0;
   }
   console.log(`${RED}${out.length} problem(s)${RESET} across ${total} records\n`);

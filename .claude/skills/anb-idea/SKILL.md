@@ -16,6 +16,26 @@ and they'll be able to tell me what it's for."*
 If they cannot give an answer, that is the stage-1 work. Say so plainly, then help
 them find one.
 
+## The sixth sentence: does this need an agent at all?
+
+Ask it here, at stage 1, because it is a decision about what you are building —
+and because getting it wrong is the most expensive mistake available.
+
+**One test: can you draw the decision tree?** If you can write the order of steps
+and where it branches, it is a workflow and it should be built as one — fixed
+sequence, one model call inside it, cheaper, faster, and far easier to check.
+
+An agent is worth its cost when the number of possible next steps is unknown at
+design time: when the right move depends on what came back last time, and you
+cannot enumerate the branches in advance.
+
+Write the answer as one line and keep it. At stage 2 the flow gets re-counted, and
+if the count comes back with no judgement points, this line is what tells you to
+go back rather than build.
+
+Do not accept "agents are the modern way" or "an agent sounds more capable". A
+pipeline that answers correctly beats an agent that improvises and sometimes does.
+
 ## What this stage produces
 
 One page, five sentences, each one line:
@@ -27,6 +47,10 @@ One page, five sentences, each one line:
 5. **What would tell you not to build this** — the disconfirming evidence.
 
 The fifth is the one that saves money, and the one they will want to skip.
+
+Then one line under the five, which is a sixth answer and not a sixth sentence:
+**fixed steps, or judgement at runtime.** `pipeline` or `agent`. One word is enough
+at this stage; stage 2 redraws it properly.
 
 ## How to run it
 

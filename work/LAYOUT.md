@@ -27,6 +27,7 @@
 | 目录 | 放什么 | 状态机 | ID | 谁写 | 什么时候清 |
 |---|---|---|---|---|---|
 | `work/requirements/` | 需求：一句话承诺 | drafting → confirmed → dropped | `R-` | 阶段 1 | 被废后留 30 天 |
+| `work/designs/` | 设计记录：四问的答案 | drafting → confirmed → superseded | `D-` | 阶段 2 | 保留；被推翻进 superseded，不改原件 |
 | `work/tickets/` | 执行票：跨会话的工作单元 | open → in-progress → awaiting-verification → done | `T-` | 阶段 2-5 | 永不删（历史） |
 | `work/incidents/` | 事故：计划外发生的事 | open → contained → closed | `INC-` | 任何阶段 | 关闭后留 90 天 |
 | `work/artifacts/` | 有持续成本的东西：脚本、开关、面板、定时任务 | active → expired | `ART-` | 阶段 6 | 到过期日即删 |
@@ -50,6 +51,13 @@
 | `docs/from-zero.md` | 从零搭仓库的顺序 | 一次性 | 不改 |
 
 **ADR 为什么不在 `work/`**：它没有状态机。接受之后就是一份历史记录，说"这个 ADR 现在是 done"没有意义。
+
+**设计记录为什么在 `work/`，而 ADR 不在**：这两条看起来矛盾，其实用的是同一个标准。
+ADR 接受后不改，所以没有状态。设计记录会变——起草、确认、被推翻——`superseded` 是它的常态，
+而一个会被推翻的东西需要状态机，所以它在 `work/`。
+
+两者的分工是：**设计记录写"我们决定了什么"，ADR 写"为什么这样选、放弃了什么"。**
+一条设计记录通常指向两三条 ADR，只留指针，不复制正文。
 
 ### `docs/site/` — 成品（受 Pages 限制）
 
@@ -93,7 +101,7 @@
 ## 怎么校验
 
 ```bash
-node scripts/work.mjs check     # 校验 work/ 下的记录
+node scripts/work.mjs check     # 校验 work/ 下的记录（含设计四块是否齐全）
 node scripts/layout.mjs         # 校验目录归属：文件放错地方会报错
 ```
 

@@ -53,6 +53,20 @@ entities:
       closed: []
     stage: any
 
+  design:
+    dir: designs
+    prefix: D
+    # 设计记录是一段对话的落盘，不是一份规格。
+    # 每答完一个问题就追加一块，四块齐了才算完成——所以它可校验，
+    # 但它不是"坐下来写出来的文档"，那种东西不写代码的人不会写完。
+    states: [drafting, confirmed, superseded]
+    transitions:
+      drafting: [confirmed, superseded]
+      confirmed: [superseded]
+      superseded: []
+    stage: design
+    rule: "四块齐了才能 confirmed；被推翻时进 superseded，不要改原件。"
+
   artifact:
     dir: artifacts
     prefix: ART
@@ -73,7 +87,7 @@ append_only:
 # 阶段到实体的映射。网站的每个阶段页会引用这一段。
 stage_entities:
   need: [requirement]
-  design: []   # ADR 是永久记录，归 docs/adr/，不在 work/ 里
+  design: [design]   # 设计与 ADR 分家：设计会变（drafting→confirmed→superseded），ADR 不会
   build: [ticket]
   verify: [ticket, evidence]
   ship: [receipt]

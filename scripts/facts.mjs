@@ -106,6 +106,9 @@ async function collectFacts() {
         // Counted from the atlas itself: one section per class.
     'atlas classes': await atlasClasses(),
     'stages': await stagePages(),
+    // Registers = entities with a lifecycle + the append-only ones + ADRs, which
+    // live outside work/ but are listed in the same table.
+    'registers': Object.keys(schema.entities).length + schema.appendOnly.length + 1,
     'prompts': await promptCount(),
   };
 }
@@ -123,7 +126,9 @@ const CLAIMS = [
   // The atlas states its own size in the title; if a class is added and the title
   // is not updated, the page argues against itself.
   { file: 'docs/site/failure-atlas.html', pattern: /<h1>七种误判/, fact: 'atlas classes', what: 'atlas classes', literal: 7 },
-  { file: 'docs/site/manage.html', pattern: /七个寄存器/, fact: 'stages', what: 'stages', literal: 7 },
+  // Seven stages, but eight registers — the management layer's entities are not
+  // one per stage. Quoting `stages` here was wrong the moment designs joined.
+  { file: 'docs/site/manage.html', pattern: /八个寄存器/, fact: 'registers', what: 'registers', literal: 8 },
 ];
 
 const facts = await collectFacts();

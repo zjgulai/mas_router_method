@@ -167,3 +167,134 @@ test('facts: --check fails when a document quotes a wrong number', async () => {
     await writeFile(target, original, 'utf8');
   }
 });
+
+test('live schema: design records are a state machine, not a flat doc', async () => {
+  const schema = await loadSchema();
+  const d = schema.entities.design;
+  assert.equal(d.dir, 'designs');
+  assert.equal(d.prefix, 'D');
+  assert.deepEqual(d.states, ['drafting', 'confirmed', 'superseded']);
+  // An ADR is permanent and lives in docs/adr/. A design record changes, so it
+  // belongs in work/ — and `stage_entities.design` must name it, or the site's
+  // design page will claim the stage owns no records.
+  assert.deepEqual(schema.stageEntities.design, ['design']);
+});
+
+test('design check: a record whose block is filled parses as filled', async () => {
+  // The first version truncated every block at the first blank line because the
+  // pattern ended with `\s*$` under the `m` flag. Four correct records reported
+  // as empty. A checker that cries wolf gets switched off, so this asserts the
+  // parsing rule directly rather than trusting a green run.
+  const text = [
+    '---',
+    'id: D-900',
+    '---',
+    '## 一、流程形状',
+    '',
+    '固定两步。',
+    '',
+    '## 二、拒绝清单',
+    '',
+    '- 要 X → 改为 Y',
+    '',
+    '## 三、动作权限',
+    '',
+    '（跳过：只读，没有动作）',
+    '',
+  ].join('\n');
+
+  const sections = (t) => {
+    const parts = t.split(/^## /m).slice(1);
+    return parts.map((p) => {
+      const nl = p.indexOf('\n');
+      return nl < 0 ? { head: p.trim(), body: '' } : { head: p.slice(0, nl).trim(), body: p.slice(nl + 1).trim() };
+    });
+  };
+  const secs = sections(text);
+  const flow = secs.find((s) => s.head.includes('流程形状'));
+  assert.ok(flow !== undefined);
+  assert.match(flow.body, /固定两步/, 'a filled block must not be truncated at its first blank line');
+  const perms = secs.find((s) => s.head.includes('动作权限'));
+  assert.match(perms.body, /跳过[：:]\s*\S/, 'an explicit skip carries a reason and is not "empty"');
+});
+
+test('design check: a confirmed record with no re-open condition fails', async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { writeFile, unlink } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const probe = join(WORK, 'designs/confirmed/D-998-no-reopen.md');
+
+  const body = [
+    '---', 'id: D-998', 'title: probe', 'status: confirmed', '---',
+    '## 一、流程形状', '', '固定。', '',
+    '## 二、拒绝清单', '', '- 输入 X → 返回 Y', '',
+    '## 三、动作权限', '', '（跳过：只读）', '',
+    '## 四、交接契约', '', '（跳过：单一调用）', '',
+  ].join('\n');
+
+  try {
+    await writeFile(probe, body, 'utf8');
+    let code = 0, stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      stdout = r.stdout;
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    assert.equal(code, 1, 'a confirmed design with no re-open condition must fail');
+    assert.match(stdout, /no condition that would make this design wrong/);
+  } finally {
+    await unlink(probe).catch(() => {});
+  }
+});
+
+test('--only design: scope is real, and 0 designs is a pass not a skip', async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+  const out = await promisify(execFile)(process.execPath,
+    [resolve(root, 'scripts/work.mjs'), 'check', '--only', 'design'])
+    .then((r) => r.stdout).catch((e) => e.stdout);
+
+  // It must actually have run, and said what it covered. A scoped check that
+  // silently reports "ok" for scope it never applied is the failure mode CI
+  // would inherit — it has to name the count it looked at.
+  assert.match(out, /--only design/, 'the scoped check must say it is scoped');
+  assert.match(out, /(\d+) design/, 'the scoped check must report how many designs it looked at');
+  const n = Number(/(\d+) design/.exec(out)[1]);
+  assert.ok(n >= 1, 'there must be at least one design record for this to mean anything');
+});
+
+test('--only design: a value masquerading as a refusal fails in scope too', async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { writeFile, unlink } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const probe = join(WORK, 'designs/drafting/D-996-probe.md');
+
+  const body = [
+    '---', 'id: D-996', 'title: probe', 'status: drafting', '---',
+    '## 一、流程形状', '', '固定两步。', '',
+    '## 二、拒绝清单', '', '- 要诚实', '- 不要有害', '',
+    '## 三、动作权限', '', '（跳过：只读，没有动作）', '',
+    '## 四、交接契约', '', '（跳过：单一调用）', '',
+  ].join('\n');
+
+  try {
+    await writeFile(probe, body, 'utf8');
+    let code = 0, stdout = '';
+    try {
+      await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check', '--only', 'design']);
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    assert.equal(code, 1, 'a refusal list with no concrete input must fail the scoped check');
+    assert.match(stdout, /no concrete input/);
+  } finally {
+    await unlink(probe).catch(() => {});
+  }
+});

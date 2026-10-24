@@ -27,6 +27,13 @@ jobs:
       - name: Records are valid
         run: node scripts/work.mjs check
 
+      # Separate from the step above on purpose: a design with a block missing is
+      # a different failure from a malformed record, and it is the one the site
+      # used to have to say was uncovered. Naming it here means the gap cannot
+      # come back quietly.
+      - name: Design records answer all four questions
+        run: node scripts/work.mjs check --only design
+
       - name: Files are where LAYOUT.md says
         run: node scripts/layout.mjs
 

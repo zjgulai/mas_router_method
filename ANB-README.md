@@ -1,6 +1,6 @@
 # Agent Native Builder
 
-一套给**不会写代码的产品开发者**用的方法。六步闭环、五个检查、四页文档。
+一套给**不会写代码的产品开发者**用的方法。七阶段闭环、七个检查、四页文档。
 
 ## 这是什么，不是什么
 
@@ -18,19 +18,24 @@
 | `terms.html` | 报告里出现看不懂的词时 |
 | `atlas-test-report.html` | 想知道这套方法自己的证据时 |
 
-## 六步
+## 七阶段
 
-想法 → 能跑 → **能判断** → 能交付 → 能观测 → 能复用
+需求 → 设计 → 能跑 → **能判断** → 能交付 → 运营 → 迭代
 
-第三步是唯一的硬门：判断标准建不起来，不要往下做。其余都可以回头。
+「能判断」是唯一的硬门：判断标准建不起来，不要往下做。其余都可以回头。
+
+**设计阶段从来没有方法论**，ANB 原来从「想法」直接跳到「能跑」。现在补上了 `anb-design` 的四问：
+流程形状（固定 / 需临场判断，判断点几处）、拒绝清单（具体输入 → 必须改做什么）、
+动作权限（按能不能撤销分三档）、交接契约（每个工具三行，第二行「什么时候别用」）。
+答案落成 `work/designs/D-xxx`，`work check` 会校验四块是否齐全。
 
 ## Skill 包
 
-`.claude/skills/anb*` 共 13 个：
+`.claude/skills/anb*` 共 16 个：
 
 - **`anb`** — 路由。你说「不知道下一步做什么」或「感觉不对」，它定位到一步或一个检查。
-- **六个阶段** — `anb-idea`、`anb-runnable`、`anb-judgeable`、`anb-shipable`、`anb-observable`、`anb-reusable`。每个以「这一步的验收是什么」开场，答不出来不许往下。
-- **六个检查** — `anb-check-break`（故意弄坏）、`anb-check-offline`（断网）、`anb-check-readback`（逐条念）、`anb-check-otherdevice`（换设备）、`anb-check-output`（看三个真实输出）、`anb-check-reconcile`（把总数拆开加一遍）。
+- **七个阶段** — `anb-idea`、`anb-design`、`anb-runnable`、`anb-judgeable`、`anb-shipable`、`anb-observable`、`anb-reusable`。每个以「这一步的验收是什么」开场，答不出来不许往下。
+- **七个检查** — `anb-check-break`（故意弄坏）、`anb-check-offline`（断网）、`anb-check-readback`（逐条念）、`anb-check-otherdevice`（换设备）、`anb-check-output`（看三个真实输出）、`anb-check-reconcile`（把总数拆开加一遍）。
 
 ## 证据
 

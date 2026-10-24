@@ -7,7 +7,7 @@ argument-hint: "What are you trying to do, or what feels wrong?"
 
 # Agent Native Builder
 
-A router over six stages and five checks, for someone who does not read code.
+A router over seven stages and seven checks, for someone who does not read code.
 
 **The premise this whole thing rests on:** writing code is not the bottleneck —
 the agent does that. The bottleneck is **judgement**. They cannot tell whether
@@ -35,6 +35,7 @@ Two things are never allowed:
 | They say | Go to |
 | --- | --- |
 | "I don't know what to build" / "I have an idea" | `anb-idea` |
+| "I know what to build — what has to be true before I start?" | `anb-design` |
 | "It should work but nothing comes out" / "where do I start building" | `anb-runnable` |
 | "I don't know if what it makes is any good" | `anb-judgeable` |
 | "How do I show this to someone" | `anb-shipable` |
@@ -42,6 +43,12 @@ Two things are never allowed:
 | "I'm starting the next one" | `anb-reusable` |
 
 If they say "all of it", go to `anb-idea` first. Always.
+
+**Do not skip design because it feels like paperwork.** Two questions decide
+whether it is needed, and neither is about how big the product is: is there an
+action that cannot be undone, and will someone other than you use it. If the
+answer to either is yes, `anb-design` is not optional. If both are no, skipping it
+is correct — write one line saying why, then go to `anb-runnable`.
 
 If they say something *feels* wrong but cannot name it, that is a check, not a
 stage — go to the checks below. That instinct is usually correct and worth more
