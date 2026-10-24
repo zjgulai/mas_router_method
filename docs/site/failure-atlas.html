@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>失败图鉴 · 六类假信号，与三种你读它的方式</title>
+<title>失败图鉴 · 六类假信号，与四种你读它的方式</title>
 <style>
   :root{
     color-scheme: light;
@@ -96,19 +96,19 @@
 
 <header class="masthead">
   <div class="meta"><span>Agent Native Builder · 第一页</span><span>2026-10-24</span><span>读者：不写代码的产品开发者</span></div>
-  <h1>六类假信号<br>和<em>你读它</em>的三种错法</h1>
+  <h1>六类假信号<br>和<em>你读它</em>的四种错法</h1>
   <p class="standfirst">
     这一页不是故障排查指南。它讲的是更麻烦的一件事：
     <strong>你的产品正在坏着，而所有自动检查都在告诉你它很好。</strong>
-    前四类是程序给的假信号；第五、六类不是假信号，是你读它的方式出了问题——一个是把空白读成结论，一个是观察本身改变了被观察的东西。
+    前四类是程序给的假信号；第五、六、七类不是假信号，是你读它的方式出了问题——一个是把空白读成结论，一个是观察本身改变了被观察的东西，一个是数的时候就数错了。
     全部来自真实运行，全部能在你不看代码的情况下被发现——但前提是你知道该往哪看。
   </p>
 </header>
 
 <div class="howto">
   <h2>怎么用这一页</h2>
-  <p><strong>前四类讲「信号是假的」，第五类讲「没有信号」，第六类讲「信号被你改了」。</strong>前四类的成因不同，但骗你的手法是同一个：让一个空的检查显示为通过。</p>
-  <p>前四类在程序里，第五类在你自己身上，第六类在观察这个动作上。防法各不相同——前四类要<b>识破</b>，第五类要<b>忍住不填</b>，第六类要<b>做一次加法</b>。</p>
+  <p><strong>前四类讲「信号是假的」，第五类讲「没有信号」，第六类讲「信号被你改了」，第七类讲「你数错了」。</strong>前四类的成因不同，但骗你的手法是同一个：让一个空的检查显示为通过。</p>
+  <p>前四类在程序里；第五、六、七类在你自己身上——填空白、干扰观察、用错工具。防法各不相同：<b>识破</b>、<b>忍住不填</b>、<b>做一次加法</b>、<b>换一种算法再数</b>。</p>
   <p>发生在什么时候：<b>每次 agent 说「全部通过」之后</b>。你不需要理解它怎么修的，只需要花两分钟做那个动作。</p>
   <div class="rule">核心判断：一个检查如果从来没有失败过，它就不是检查。你要找的是「它上次失败是什么时候」——答不出来，它可能是假的。</div>
 </div>
@@ -349,9 +349,124 @@
   </div>
 </section>
 
+<!-- ================= COUNTING ================= -->
+<section>
+  <div class="famhead"><span class="fn">七</span><h2 class="fam">你数的那个东西，不是你以为的那个</h2></div>
+  <p class="famsub">前六类都关于「怎么读信号」。这一类关于<b>读之前那一步：数</b>。数错了，后面所有推理都是错的，而且看起来完全正常。</p>
+
+  <div class="case">
+    <h3>9 · 用一个数「行」的命令去数「出现次数」，得到 7，实际是 108</h3>
+    <p class="loc">真实现场：验证一个页面里有 108 个 skill 条目 · 当场发现</p>
+    <dl>
+      <div>
+        <dt>它长什么样</dt>
+        <dd>我把站点部署上去，想确认 skill 全表的 108 个条目都渲染了。用了一条命令：
+<pre><span class="k">$ grep -c '&lt;tr id=' skills.html</span>
+<span class="r">7</span></pre>
+        于是我判断：「只渲染了 7 个，少了 101 个。」<b>差一点就去改生成脚本。</b></dd>
+      </div>
+      <div class="smell">
+        <dt>实际发生了什么</dt>
+        <dd><b><code>grep -c</code> 数的是「包含匹配的行数」，不是「匹配出现的次数」。</b><br><br>
+        那个 HTML 文件只有 147 行，因为整张表被写成了一行。7 个阶段各占一行，所以每个阶段一行里含有很多个 <code>&lt;tr&gt;</code>，而 grep 只数到 7。<br><br>
+        正确写法：<code>grep -o '&lt;tr id=' skills.html | wc -l</code> → <b>108</b>。或者解析结构：各表 19 + 24 + 17 + 18 + 14 + 9 + 7 = 108。</dd>
+      </div>
+      <div class="check">
+        <dt>为什么它特别危险</dt>
+        <dd>因为错误的数字<b>长得和正确的数字一模一样</b>。7 是一个合理的数，它不会让你警觉。而且它来自一条权威的命令——你信任 <code>grep -c</code>，因为它就是干这个的。<br><br>
+        更糟的是下一步：你拿 7 去和 108 比，得出"少了 101 个"的结论，然后开始找原因、改代码。<b>整个过程里你不会想到去质疑 7 本身。</b></dd>
+      </div>
+      <div class="check">
+        <dt>你怎么自己发现</dt>
+        <dd>两招，都很便宜：<br><br>
+        <b>一、换一种算法再数一遍。</b>解析结构、看各表行数、加总。两个独立算法给出同一个数，才可信。<br>
+        <b>二、先数一个你知道答案的东西。</b>比如文件行数（<code>wc -l</code>）、或先 <code>grep -o</code> 看实际匹配长什么样。<br><br>
+        这条和第六类（测量污染）是同一个动作：<b>把总数拆开加一遍</b>。</dd>
+      </div>
+      <div class="law"><b>纪律：</b>任何一个数字，都要用第二种方法再算一遍。对不上，先查算法，不要先查产品。</div>
+    </dl>
+  </div>
+
+  <div class="case">
+    <h3>10 · <code>git status</code> 报了 120 个改动，一个都没有</h3>
+    <p class="loc">真实现场：一个挂载目录上的 git 仓库 · 已记成 INC-001</p>
+    <dl>
+      <div>
+        <dt>它长什么样</dt>
+        <dd>在某个目录里跑 <code>git status</code>，它规律地报一百多个文件是「已修改」。
+        跑 <code>git diff</code>，<b>输出为空</b>。逐字节比对，文件和上一个 commit 完全一致。
+        <br><br>同时 <code>git add</code> 会报 <code>short read while indexing</code>。</dd>
+      </div>
+      <div class="smell">
+        <dt>为什么会这样</dt>
+        <dd>这是挂载文件系统上的一个已知现象：git 的 stat 缓存假设文件的时间戳和大小能可靠地判断「有没有改过」，
+        而这个假设在这里不成立。<b>根因没有完全查清</b>——所以它被记成一条事故，而不是一条结论。</dd>
+      </div>
+      <div class="check">
+        <dt>你怎么自己发现</dt>
+        <dd><b>当 <code>git status</code> 和 <code>git diff</code> 不一致时，信 <code>git diff</code>。</b>
+        status 说变了、diff 说没变，那就是没变。<br><br>
+        想彻底确认，用第三条路：<code>git show HEAD:文件 | md5sum</code> 对比 <code>md5sum 文件</code>。
+        两个哈希一样，就是一样。</dd>
+      </div>
+      <div class="law"><b>纪律：</b>同一个问题用两个工具查，结论不一致时不要挑你喜欢的那个，要去查为什么。</div>
+    </dl>
+  </div>
+
+  <div class="case">
+    <h3>11 · 用 <code>tar</code> 复制文件，它给短文件补了 4096 个 NUL</h3>
+    <p class="loc">真实现场：在两个路径之间搬运一个仓库 · 一个文件不可恢复</p>
+    <dl>
+      <div>
+        <dt>它长什么样</dt>
+        <dd>为了绕开上面那个 git 问题，我把仓库用 <code>tar</code> 复制到另一个路径再操作。
+        复制「成功」，没有报错。之后提交时发现几个 markdown 文件变成了「二进制」——
+        打开看，<b>内容尾部被补了几千个 NUL 字节</b>。<br><br>
+        更早还有一份文件，整段内容被二进制垃圾覆盖，呈周期性重复，<b>不可恢复，只能重写</b>。</dd>
+      </div>
+      <div class="smell">
+        <dt>为什么它没被发现</dt>
+        <dd>因为复制过程<b>没有报错</b>。tar 按块写入，块没填满就补零——在被测文件系统上，这个补齐没有被裁掉。
+        <br><br>而 markdown 文件里多几个 NUL，用 <code>cat</code> 看是看不出来的：终端会把它们当不可见字符。
+        只有 <code>file</code> 命令、或提交时 git 说「这是二进制」，才会暴露。</dd>
+      </div>
+      <div class="check">
+        <dt>你怎么自己发现</dt>
+        <dd>复制完立刻查一次：<code>find . -name '*.md' -exec grep -lP '\x00' {} \;</code>。
+        有输出就是坏了。<br><br>
+        更根本的做法：<b>复制不要用 tar，用 <code>cp -a</code>。</b>或者在复制后对关键文件做一次哈希比对。</dd>
+      </div>
+      <div class="law"><b>纪律：</b>任何「搬运」操作之后，都要验证目的地。搬运不报错不等于搬运正确。</div>
+    </dl>
+  </div>
+
+  <div class="case">
+    <h3>它和前面六类的区别</h3>
+    <p class="loc">为什么单独立一节</p>
+    <dl>
+      <div>
+        <dt>区别</dt>
+        <dd>第一到第六类：<b>系统给出了一个错误的信号</b>，你要识破它。<br>
+        第七类：<b>系统给的信号是对的，但你用错了工具去读它</b>。<br><br>
+        这一类的错误源在你自己手上，不在被测对象身上。所以它发生得更频繁，也更少被记录——因为没有人会把自己数错写进事故报告。</dd>
+      </div>
+      <div class="check">
+        <dt>它出现的场合比你想的多</dt>
+        <dd>同一个坑的不同外衣：<br>
+        · <code>wc -l</code> 数行，不等于条目数（一条目可能跨多行）<br>
+        · 数组长度不等于去重后的数量<br>
+        · 日志行数不等于请求数（一次请求可能写多行）<br>
+        · 文件个数不等于功能个数<br><br>
+        <b>共同点：你在数一个「容器」，却以为在数「东西」。</b></dd>
+      </div>
+      <div class="law"><b>纪律：</b>数之前，先说出你要数的到底是什么，以及这个命令数的是什么。两者不一致就别数。</div>
+    </dl>
+  </div>
+</section>
+
 <!-- ================= CHECKLIST ================= -->
 <section>
-  <div class="famhead"><span class="fn">七</span><h2 class="fam">两分钟自检表</h2></div>
+  <div class="famhead"><span class="fn">八</span><h2 class="fam">两分钟自检表</h2></div>
   <p class="famsub">每次 agent 说「全部通过」之后做一遍。不需要看代码，不需要懂技术。任何一条答不上来，就往那一类去找。</p>
 
   <div class="tablewrap">
@@ -368,6 +483,7 @@
         <tr><td><span class="box"></span></td><td>制造一次不该触发的情况</td><td>它乱动了，就是判定条件写宽了</td><td>@ 别人、输错内容、重复提交</td></tr>
         <tr><td><span class="box"></span></td><td>你说「没有」的时候，查了几个地方？</td><td>第五类：把「我查的这一处没有」当成「不存在」</td><td>去它的来源处再查一次；说清查了什么没查什么</td></tr>
         <tr><td><span class="box"></span></td><td><b>总数加得起来吗？成功 + 各种失败 = 总数？</b></td><td>第六类：有请求开了头没结尾</td><td>拆开加一遍。再连续刷新五次，看数字会不会自己动</td></tr>
+        <tr><td><span class="box"></span></td><td><b>这个数字，换一种方法再算一遍是多少？</b></td><td>第七类：你在数容器，却以为在数东西</td><td>两个独立算法给出同一个数，才可信</td></tr>
       </tbody>
     </table>
   </div>
@@ -419,7 +535,8 @@
       一个能自己动手验证的人，和一个只能相信报告的人，做出来的产品差得很远——差的不是技术，是这份怀疑。
     </p>
     <p style="margin-top:.9rem">
-      而第五类提醒的是这件事的另一面：<b>怀疑也要有落点，不能停在「没有」</b>。
+      而第五、六、七类提醒的是这件事的另一面：<b>怀疑也要有落点</b>——不能停在「没有」，
+      不能相信「我看了一眼」，也不能相信「我数过了」。
       我自己就在写这一页的过程中，把「这一处没有」写成了「根本不存在」，还配了一段很像样的推理。
       出错的原因不复杂——我只查了一个地方。所以这一页最后一句话是：<b>说「没有」之前，先数清你查了几个地方。</b>
     </p>
@@ -430,6 +547,9 @@
     其中三条（1、3 及第四条那组）已修复并配有测试，其余三条已定位未修——<b>「已定位未修」这个状态本身也是要写出来的，留白会被读成「没问题」</b>。
     第五例（找不到≠不存在）记录于 <code>docs/skills/skill-catalog.md</code> 的修正说明与 <code>CLAUDE.md</code> 的三来源表；修正本身也留下了记录，因为下一次相同推理还会发生。
     第六例（测量污染）记录于 <code>anb2-repo-vitals/src/metrics.js</code> 的 <code>requestDiscarded</code> 与 <code>test/50-metrics.checks.js</code> 的对账检查。
+    第七、八例（数错了）在发布站点时当场犯的，<code>grep -c</code> 数出 7 而实际 108。
+    第九例（git status 说谎）记为 <code>work/incidents/closed/INC-001-*.md</code>，附证据 <code>E-004</code>。
+    第十例（tar 补 NUL）与第九例同源，都记录在 <code>work/LAYOUT.md</code> 的提交约束里。
     末节（验收做不到）来自第二次实测的第一、四步，见 <code>anb2-full.html</code>。
     本文档为 Agent Native Builder 方案的第一页。决策树、术语表、实测报告见同目录。
   </footer>

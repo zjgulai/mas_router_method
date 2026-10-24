@@ -59,6 +59,7 @@ These are interventions, not stages. Any of them can be run at any time.
 | Try it on another device | They think it's finished | `anb-check-otherdevice` |
 | Show me three real outputs | They think the output is fine | `anb-check-output` |
 | Add the numbers up | Any count, dashboard or report is on screen | `anb-check-reconcile` |
+| Count it a second way | A number looks wrong, or you're about to act on one | `anb-check-count` |
 
 ## The one hard rule
 
