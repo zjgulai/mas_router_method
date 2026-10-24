@@ -17,6 +17,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { loadSchema, stateDir, flatDir, WORK } from './schema.mjs';
+import { sections } from './markdown.mjs';
 
 const DIM = '\x1b[2m', BOLD = '\x1b[1m', RED = '\x1b[31m',
       GREEN = '\x1b[32m', YELLOW = '\x1b[33m', CYAN = '\x1b[36m', RESET = '\x1b[0m';
@@ -341,14 +342,8 @@ async function cmdCheck() {
     { key: '交接契约', what: 'what the model sees when it acts' },
   ];
 
-  /** Split markdown into `## heading -> body` sections. */
-  const sections = (text) => {
-    const parts = text.split(/^## /m).slice(1);
-    return parts.map((p) => {
-      const nl = p.indexOf('\n');
-      return nl < 0 ? { head: p.trim(), body: '' } : { head: p.slice(0, nl).trim(), body: p.slice(nl + 1).trim() };
-    });
-  };
+  // 解析器在 scripts/markdown.mjs —— design.mjs 也要用它，而且它第一版的 bug
+  // 值得只修一次（见那个文件顶部的说明）。
 
   for (const bucket of ['drafting', 'confirmed', 'superseded']) {
     for (const r of found.design?.[bucket] ?? []) {
