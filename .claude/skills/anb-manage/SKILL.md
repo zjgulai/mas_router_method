@@ -27,7 +27,15 @@ line: **if it changes state it goes in `work/`, if it does not it goes in `docs/
 
 ## The four things you will be asked to do
 
-### "What should I do next?"
+### "The docs say N of something and I think it changed"
+
+Run `node scripts/facts.mjs`. It prints every number the project quotes about itself,
+computed from disk. Then `--check` compares the documents against those values.
+
+Do not update the document first. The document might be right and the disk might be
+surprising — `facts` tells you which. And if a number has genuinely changed, `facts` is
+where the new one is derived, so the doc and the script agree by construction rather than
+by remembering.
 
 Run `node scripts/work.mjs status`. Answer from its output, not from memory.
 
@@ -84,10 +92,19 @@ Incidents are how a project remembers its own scars.
 ```bash
 node scripts/work.mjs check    # records are valid
 node scripts/layout.mjs        # files are where LAYOUT.md says
+node scripts/facts.mjs --check # numbers quoted in docs match what is on disk
 ```
 
-Both must pass. `layout` failing means a file is in the wrong home, which is the beginning of
-the duplicate problem this whole structure exists to prevent.
+All three must pass.
+
+`layout` failing means a file is in the wrong home — the beginning of the duplicate problem
+this structure exists to prevent.
+
+`facts` failing means a document is quoting a number that has changed. This happens every
+time something is added: the page says "15 skills", you add one, and now the page is wrong.
+Nobody notices, because a stale number looks exactly like a fresh one. When `facts` reports a
+mismatch, do not adjust the number until you have recounted with a second method —
+`node scripts/facts.mjs` prints the values it derived from disk.
 
 ## Things you must not do
 

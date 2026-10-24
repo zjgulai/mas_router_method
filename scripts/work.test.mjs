@@ -127,3 +127,43 @@ test('check counts append-only records — the bug that hid three evidence files
   assert.equal(counted, onDisk,
     `check counted ${counted} records but ${onDisk} exist on disk — a wrong count is worse than none`);
 });
+
+test('facts: every quoted number matches disk', async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const out = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/facts.mjs'), '--check'])
+    .then((r) => r.stdout)
+    .catch((e) => e.stdout);
+  assert.match(out, /ok/, `stale numbers:\n${out}`);
+});
+
+test('facts: --check fails when a document quotes a wrong number', async () => {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname, join } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { readFile, writeFile } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const target = join(root, 'docs/site/skills.html');
+
+  const original = await readFile(target, 'utf8');
+  try {
+    await writeFile(target, original.replace(/全部 \d+ 个/, '全部 3 个'), 'utf8');
+    let code = 0;
+    let stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/facts.mjs'), '--check']);
+      stdout = r.stdout;
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
+    assert.equal(code, 1, 'a stale number must fail the check, not warn');
+    assert.match(stdout, /says 3/, `the failure should name the claimed value:\n${stdout}`);
+  } finally {
+    await writeFile(target, original, 'utf8');
+  }
+});

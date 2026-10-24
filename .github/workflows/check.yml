@@ -1,0 +1,37 @@
+# The three checks that can tell you the project's record is broken.
+#
+# Deliberately not a test suite: the product tests need dependencies and a package
+# manager. These three need only node and read from disk, so they run in seconds
+# and give a signal that is about the project's own consistency rather than its
+# code.
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Each step is separate so a failure names which class of problem it is:
+      # a broken record, a misplaced file, or a stale number in a document.
+      - name: Records are valid
+        run: node scripts/work.mjs check
+
+      - name: Files are where LAYOUT.md says
+        run: node scripts/layout.mjs
+
+      - name: Quoted numbers match disk
+        run: node scripts/facts.mjs --check
+
+      - name: The work tooling's own tests
+        run: node --test scripts/work.test.mjs
