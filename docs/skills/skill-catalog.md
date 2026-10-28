@@ -13,13 +13,13 @@
 | **这个清单里列出的** | 63 | —— | 见下表逐个标注 |
 | **仓库自带（git 跟踪）** | 34 | `.claude/skills/`，随仓库走 | `ls .claude/skills/` |
 | **随客户端提供的插件** | 38 | 不在仓库里，由客户端提供 | 调用需带前缀，如 `anthropic-skills:agent-browser` |
-| **本方法新增** | 18 | `.claude/skills/anb*` | `ls -d .claude/skills/anb*` |
+| **本方法新增** | 19 | `.claude/skills/anb*` | `ls -d .claude/skills/anb*` |
 
-仓库实际共 52 个 skill 目录 = 34 个自带 + 18 个新增。
+仓库实际共 53 个 skill 目录 = 34 个自带 + 19 个新增。
 
 **仓库自带的 34 个**：`ask-matt`、`code-review`、`codebase-design`、`diagnosing-bugs`、`domain-modeling`、`grill-me`、`grill-with-docs`、`grilling`、`handoff`、`implement`、`implement-spec`、`improve-codebase-architecture`、`native-agent-dev`（含 6 个阶段 skill）、`pr`、`prototype`、`research`、`retro`、`setup-matt-pocock-skills`、`tdd`、`teach`、`to-questionnaire`、`to-spec`、`to-tickets`、`triage`、`wait-what`、`wayfinder`、`wizard`、`writing-for-agents`。
 
-**新增的 18 个**（Agent Native Builder，见 `ANB-README.md`）：`anb`、`anb-idea`、`anb-design`、`anb-runnable`、`anb-judgeable`、`anb-shipable`、`anb-observable`、`anb-reusable`、`anb-manage`，以及七个检查 `anb-check-break`、`anb-check-offline`、`anb-check-readback`、`anb-check-otherdevice`、`anb-check-output`、`anb-check-reconcile`、`anb-check-count`，以及数据产品侧的 `anb-data-metric`、`anb-data-label`。
+**新增的 19 个**（Agent Native Builder，见 `ANB-README.md`）：`anb`、`anb-idea`、`anb-design`、`anb-runnable`、`anb-judgeable`、`anb-shipable`、`anb-observable`、`anb-reusable`、`anb-manage`，以及七个检查 `anb-check-break`、`anb-check-offline`、`anb-check-readback`、`anb-check-otherdevice`、`anb-check-output`、`anb-check-reconcile`、`anb-check-count`，以及数据产品侧的 `anb-data-metric`、`anb-data-label`、`anb-data-conclude`。
 
 **数据产品的 skill 为什么单独一类**：数据产品（8 层 + 3 柱）与七阶段是**并行**的两套流程，不是一个阶段。按 `docs/product/data-product-sop.md` §零，只有「决策类」的格子做成 skill，工程类做成检查器，运行类做成定时脚本——所以数据产品侧的 skill 是一层一个，不是一个阶段一个。
 

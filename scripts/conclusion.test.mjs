@@ -144,3 +144,47 @@ test('the demo produces all three verdicts at once, which is what makes it a use
   assert.equal(code, 1);
   assert.match(out, /1 active · 1 falsified · 1 unmeasurable/);
 });
+
+test('lag-has-peak: a curve that peaks and falls holds', () => {
+  assert.equal(v('lag-has-peak', { lag_curve: [0.2, 0.5, 0.8, 0.4, 0.1], lag_noise: 0.05 }).verdict, 'holds');
+});
+
+test('lag-has-peak: highest at lag 0 means no lag structure to report', () => {
+  const r = v('lag-has-peak', { lag_curve: [0.9, 0.6, 0.3, 0.1] });
+  assert.equal(r.verdict, 'falsified');
+  assert.match(r.detail, /contemporaneous/);
+});
+
+test('lag-has-peak: a bump within the noise is not a peak', () => {
+  const r = v('lag-has-peak', { lag_curve: [0.50, 0.52, 0.51], lag_noise: 0.05 });
+  assert.equal(r.verdict, 'falsified');
+  assert.match(r.detail, /bump, not a peak/);
+});
+
+test('lag-has-peak: a maximum at the last lag is 无法判断, not 成立 and not 触发', () => {
+  // The curve may not have turned yet. Calling that a peak is the optimistic reading;
+  // calling it a failure is the pessimistic one; both are guesses.
+  const r = v('lag-has-peak', { lag_curve: [0.1, 0.2, 0.3, 0.4] });
+  assert.equal(r.verdict, 'unmeasurable');
+  assert.match(r.detail, /extend the window/);
+});
+
+test('no-uncontrolled-events: an absent event list is unmeasurable, not clean', () => {
+  const r = v('no-uncontrolled-events', {});
+  assert.equal(r.verdict, 'unmeasurable');
+  assert.match(r.detail, /has to be supplied/);
+});
+
+test('no-uncontrolled-events: an uncontrolled event in the window falsifies', () => {
+  const r = v('no-uncontrolled-events', {
+    known_events: ['US 劳动节大促', { name: 'DE 竞品降价' }],
+    controlled: ['US 劳动节大促'],
+  });
+  assert.equal(r.verdict, 'falsified');
+  assert.match(r.detail, /DE 竞品降价/);
+});
+
+test('no-uncontrolled-events: all events controlled holds', () => {
+  assert.equal(v('no-uncontrolled-events', { known_events: ['A', 'B'], controlled: ['A', 'B'] }).verdict, 'holds');
+  assert.equal(v('no-uncontrolled-events', { known_events: [], controlled: [] }).verdict, 'holds');
+});

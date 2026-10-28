@@ -58,6 +58,81 @@ export const CONDITIONS = {
     },
   },
 
+
+  /**
+   * C2's condition, and it was missing.
+   *
+   * The design states it plainly: 滞后曲线无峰（单调下降或噪声）→ 说明没有可识别的传导，
+   * 这条结论不成立. The condition list had seven entries and none of them could test a
+   * lag curve, so C2 could only be "checked" with conditions written for C1 — which
+   * silently pass. Found by running the new conclusion-card checker on a realistic C2.
+   *
+   * A peak means: the curve rises to a maximum and then falls. Two ways to have no peak —
+   * monotone decrease (the effect is strongest at lag 0, so the "lag" story is wrong) and
+   * noise (the maximum is within the noise of its neighbours). Both mean the same thing:
+   * there is no transmission to identify.
+   */
+  'lag-has-peak': {
+    what: '滞后曲线有峰',
+    why: '无峰（单调下降或噪声）说明没有可识别的传导，滞后结构这条结论不成立',
+    check: ({ lag_curve, lag_noise }) => {
+      if (!Array.isArray(lag_curve) || lag_curve.length < 3) {
+        return unknown('need at least three lags to talk about a peak');
+      }
+      if (!lag_curve.every((x) => Number.isFinite(x))) return unknown('lag curve has non-finite values');
+
+      const maxAt = lag_curve.indexOf(Math.max(...lag_curve));
+      // A peak at the last lag is not a peak — the curve may still be rising, or the
+      // window is too short to see the fall. Both are 无法判断 about the peak, not断 about it.
+      if (maxAt === lag_curve.length - 1) {
+        return unknown(`the maximum is at the last lag (k=${maxAt}); the curve may not have turned yet — `
+          + 'extend the window before concluding anything about a peak');
+      }
+      if (maxAt === 0) {
+        return fire(`the curve is highest at lag 0 (${fmt(lag_curve[0])}) — the effect is contemporaneous, `
+          + 'so there is no lag structure to report');
+      }
+      // Is the peak distinguishable from its neighbours? Without a noise scale, no.
+      if (Number.isFinite(lag_noise) && lag_noise > 0) {
+        const top = lag_curve[maxAt];
+        const neighbour = Math.max(lag_curve[maxAt - 1], lag_curve[maxAt + 1] ?? -Infinity);
+        if (top - neighbour <= lag_noise) {
+          return fire(`the peak at k=${maxAt} (${fmt(top)}) is within the noise scale (${fmt(lag_noise)}) `
+            + 'of its neighbours — that is a bump, not a peak');
+        }
+      }
+      return ok(`peak at k=${maxAt} (${fmt(lag_curve[maxAt])}), falling on both sides`);
+    },
+  },
+
+  /**
+   * The shared confounder condition: C1 and C3 both die on an uncontrolled local event.
+   *
+   * The design puts it in C1's 证伪 as 存在未控制的本地事件（本地大促、本地竞品价格战）and
+   * in C3's as 同期存在其他未控制事件（新品上市、平台活动）. It could not be a check until
+   * there was somewhere to record those events — hence 已知事件 as input rather than a
+   * judgement call by the model, which would always find a reason to say the window is clean.
+   */
+  'no-uncontrolled-events': {
+    what: '窗口内没有未控制的本地事件',
+    why: '本地大促、竞品价格战、新品上市会同时抬高声量与 GMV，效应被错误归给声量',
+    check: ({ known_events, controlled }) => {
+      if (!Array.isArray(known_events)) {
+        return unknown('no event list in the input — an empty list is a claim that you looked, and that has to be supplied');
+      }
+      const controlledSet = new Set(Array.isArray(controlled) ? controlled : []);
+      const loose = known_events.filter((e) => {
+        const name = typeof e === 'string' ? e : (e && e.name) || '';
+        return !controlledSet.has(name);
+      });
+      if (loose.length > 0) {
+        return fire(`${loose.length} event(s) in the window are not in the control set: `
+          + loose.slice(0, 3).map((e) => (typeof e === 'string' ? e : e.name)).join(', '));
+      }
+      return ok(`${known_events.length} event(s) in the window, all controlled`);
+    },
+  },
+
   /** §8.5 第 5 条 — below 0.7 the sentiment dimension is unusable and A2+/A2− collapse to A1. */
   'labelling-accurate': {
     what: '打标准确率 ≥ 0.7',
