@@ -48,6 +48,28 @@ One page, five sentences, each one line:
 
 The fifth is the one that saves money, and the one they will want to skip.
 
+**And it has a trap that cost a real product its existence.** The rule is that it must
+be measurable — a date, a count, a comparison. But measurable is not enough. Ask
+**whose ability the signal is measuring**: a person's, or the product's. They are
+different, and the first one sounds like the second.
+
+In the second real run the signal was "if the cause cannot be determined, do not build
+it", and the first answer was *"the platform data does not have it, but operations can
+tell anyway."* That reads as reassurance. It is not: the judgement rested on experience,
+a product cannot inherit experience, and experience cannot be written as a rule. The
+signal had fired and the answer hid it.
+
+So after they name the signal, ask **what information the judgement rests on** — and make
+them point at a source:
+
+- **A different system** (a warehouse record, the carrier's site, an email thread) —
+  the signal has not fired. The first work is changing the input, not building.
+- **A conversation they would have to have** — the product can do half. Say which half.
+- **Experience** ("you just know") — the signal has fired. Stop.
+
+Write the answer as *"if a person cannot point at a source, a product cannot either"*.
+That sentence is the whole check, and it is cheap.
+
 Then **two** more lines. They are answers rather than sentences, and both get left out.
 
 **Does this need an agent at all** — `pipeline` or `agent`. One word is enough here;

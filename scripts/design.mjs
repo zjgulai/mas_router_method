@@ -28,7 +28,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { WORK } from './schema.mjs';
-import { sections, section, skipReason } from './markdown.mjs';
+import { sections, section, skipReason, tablesIn } from './markdown.mjs';
 
 const RED = '\x1b[31m', YELLOW = '\x1b[33m', GREEN = '\x1b[32m',
       DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
@@ -155,14 +155,18 @@ if (!isMain) {
       // 两块都读。实测之前它们是一块，而十一行里只有三行是禁令、八行是「该怎么答」。
       // 验证阶段要把两者都变成检查，所以两者都要交出去。
       const rules = section(text, '应答规则');
+      let ruleCount = 0;
       if (rules !== undefined) {
         console.log(`${BOLD}${record.id}${RESET} ${DIM}应答规则 / how each case is answered${RESET}\n`);
         const skipRules = skipReason(rules.body);
         if (skipRules !== null) console.log(`${YELLOW}跳过：${skipRules}${RESET}`);
         else {
-          const rows = rules.body.split('\n').map((l) => l.trim())
-            .filter((l) => l.startsWith('|')).slice(2); // 表头 + 分隔行
-          for (const row of rows) console.log(row);
+          // 用表格解析器，不用「按 | 切行」——后者遇到容器块里的说明文字会错位。
+          for (const t of tablesIn(rules.body)) {
+            for (const row of t.rows) console.log('| ' + row.join(' | ') + ' |');
+            ruleCount += t.rows.length;
+          }
+          console.log(`\n${DIM}${ruleCount} 行规则；每一行都要在验收阶段变成一条检查。${RESET}`);
         }
         console.log();
       }
@@ -182,8 +186,10 @@ if (!isMain) {
             .map((l) => l.trim())
             .filter((l) => l.startsWith('-') || l.startsWith('|'));
           for (const row of rows) console.log(row);
-          console.log(`\n${DIM}${rows.filter((r) => /→|->/.test(r)).length} of ${rows.length} rows name a concrete input; `);
-          console.log(`each of those becomes one check in the verify stage.${RESET}`);
+          const concrete = rows.filter((r) => /→|->/.test(r)).length;
+          console.log(`\n${DIM}拒绝清单：${concrete} of ${rows.length} 行写出了具体输入 → 行为。`);
+          console.log(`（这条计数只覆盖禁令，不含上面的应答规则——两者加起来才是验收阶段的工作量。）`);
+          console.log(`禁令 ${concrete} 条 + 规则 ${ruleCount} 行 = ${concrete + ruleCount} 条检查。${RESET}`);
         }
       }
     } else {

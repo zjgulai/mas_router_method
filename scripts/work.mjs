@@ -17,7 +17,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { loadSchema, stateDir, flatDir, WORK } from './schema.mjs';
-import { sections } from './markdown.mjs';
+import { sections, findTable } from './markdown.mjs';
 
 const DIM = '\x1b[2m', BOLD = '\x1b[1m', RED = '\x1b[31m',
       GREEN = '\x1b[32m', YELLOW = '\x1b[33m', CYAN = '\x1b[36m', RESET = '\x1b[0m';
@@ -397,6 +397,136 @@ async function cmdCheck() {
           out.push(`${r.id}: 「${block.key}」 is empty — say what it is, or mark it 跳过 with a reason`);
         } else if (/跳过/.test(sec.body) && !/跳过[：:]\s*\S/.test(sec.body)) {
           out.push(`${r.id}: 「${block.key}」 is marked skipped without a reason`);
+        }
+      }
+
+      // ── 应答规则：一张决策表，必须有它自己的规则 ──────────────────────────
+      //
+      // 六块里原来只有「拒绝清单」有专项校验（每行要写出具体输入 → 行为）。
+      // 后来从它里面拆出来的「应答规则」只受「块不是空的」这一条约束，于是
+      // 一张写满「按情况处理」「妥善处理」的表能通过 check —— 正是这套方法
+      // 反复在治的那种「检查不到的地方」。这是补上的那一层。
+      const rules = secs.find((x) => x.head.includes('应答规则'));
+      if (rules !== undefined && rules.body !== '' && !/跳过[：:]/.test(rules.body)) {
+        const t = findTable(rules.body, ['具体输入', '该怎么答']);
+        if (t === null) {
+          out.push(`${r.id}: 「应答规则」 has no decision table — a list of intentions is not a rule`);
+        } else {
+          const REQUIRED = ['具体输入', '该怎么答', '升级档次', '依据'];
+          const missingCols = REQUIRED.filter((c) => !t.header.some((h) => h.includes(c)));
+          if (missingCols.length > 0) {
+            out.push(`${r.id}: 「应答规则」 missing column(s): ${missingCols.join(', ')}`);
+          }
+          const idx = (name) => t.header.findIndex((h) => h.includes(name));
+          const iIn = idx('具体输入'), iAns = idx('该怎么答'), iTier = idx('升级档次');
+          const TIERS = ['不升级', '软升级', '硬升级'];
+          // 价值观画上了表格：这些词看起来是一行，测不了。
+          const VAGUE = ['妥善', '酌情', '视情况', '看情况', '按需', '适当', '视具体', '灵活处理'];
+
+          t.rows.forEach((row, n) => {
+            const no = n + 1;
+            const input = (row[iIn] ?? '').trim();
+            const answer = (row[iAns] ?? '').trim();
+            const tier = (row[iTier] ?? '').trim();
+
+            if (input === '' || /^[-—–]+$/.test(input)) {
+              out.push(`${r.id}: 应答规则 row ${no} has no concrete input — it cannot become a check`);
+            }
+            if (answer === '') {
+              out.push(`${r.id}: 应答规则 row ${no} says nothing about how to answer`);
+            } else if (VAGUE.some((v) => answer.includes(v))) {
+              out.push(`${r.id}: 应答规则 row ${no}: 「该怎么答」 is a value, not an instruction ("${answer}")`);
+            }
+            if (!TIERS.includes(tier)) {
+              out.push(`${r.id}: 应答规则 row ${no}: 升级档次 must be one of ${TIERS.join(' / ')}, got "${tier}"`);
+            }
+          });
+
+        // ── 跨块约束：应答规则要的东西，动作权限表里得给 ──────────────────────
+        //
+        // 三轮实测里每一处硬矛盾都是跨块的：表格要求了权限表里不存在的动作，而六块是
+        // 各自独立回答的六个问题。这条原本只写在 skill 里，靠人工逐行核对——那时就
+        // 发现过两行要「读商品事实」而权限表里没有。现在是检查。
+        //
+        // 判定规则是有意保守的，而且**只认能机械判断的部分**：
+        //   · 答案以动词开头（读 / 查 / 取 / 拉 / 调用 / 发 / 提交 / 删除 …）就要求权限表
+        //     里有一行，其「动作」列包含那个宾语的核心词。
+        //   · 权限表被显式跳过（写成理由）时，任何需要动作的行都算矛盾——空表不能
+        //     变成免费的通行证，那正是最容易被骗过的形状。
+        // 猜不出来的时候**不报错**：宁可漏也不误报，因为一条会乱叫的检查会被关掉。
+        const perm = secs.find((x) => x.head.includes('动作权限'));
+        const permSkipped = perm !== undefined && /跳过[：:]/.test(perm.body ?? '');
+        const permTable = perm === undefined ? null : findTable(perm.body, ['动作', '档']);
+        const permitted = permTable === null ? [] : permTable.rows.map((r) => (r[0] ?? '').trim());
+
+        /**
+         * 一句答案要求的动作里，能机械认出来的那些（动词 + 宾语）。
+         *
+         * 第一版写成「动词后面跟任意 1–10 个字」，于是「说明这个 id 查不到」里的
+         * 「查不到」被当成一个动作，真实记录立刻被误报。**一条会乱叫的检查会被关掉**，
+         * 所以这里收紧了三条：
+         *   · 动词前允许有修饰语（「直接发放优惠券」的动词前是「直接」）——
+         *     第一版要求动词前必须是句首或标点，于是所有带修饰语的句子全被漏掉，
+         *     「直接发放优惠券」这个本该报出来的矛盾就静默通过了；
+         *   · 宾语不能以「不 / 没 / 无」开头（那是结果，不是对象）；
+         *   · 宾语不能是「不到 / 不了 / 完」这类补语。
+         * 收得更紧意味着漏看得更多——那是这个方向上有意的取舍。
+         */
+        const requires = (answer) => {
+          const NEEDS = /(读|查|取|拉取|调用|访问|发送|提交|删除|扣款|发放|创建|更新|打开|下载)([^，。；、,;\s→]{1,14})/g;
+          const NOT_AN_OBJECT = /^(不|没|无|不到|不了|完|过)/;
+          // 宾语后面常粘着后续动作（「商品适用月龄后陈述」）。按这些词切开，只留前半。
+          const TRAILING = /(?:后|之后|以后|然后|再|并|且|同时|完|了|，|,).*$/;
+          const found = [];
+          let m;
+          while ((m = NEEDS.exec(answer)) !== null) {
+            if (NOT_AN_OBJECT.test(m[2])) continue;
+            const object = m[2].replace(TRAILING, '').trim();
+            if (object === '') continue;
+            found.push({ verb: m[1], object });
+          }
+          return found;
+        };
+
+        /**
+         * 宾语和权限行之间算不算对得上。
+         *
+         * 这是启发式，不可能完美——所以判据写成「明显对不上才报」：
+         * 两边只要有任何 2 个字以上的公共片段就算对得上，否则报。
+         * 一条会乱叫的检查会被关掉，宁可漏看。
+         */
+        const sharesWords = (a, b) => {
+          const strip = (x) => x.replace(/（.*?）/g, '').replace(/[、，,·\s]/g, '');
+          const x = strip(a), y = strip(b);
+          if (x === '' || y === '') return false;
+          if (x.includes(y) || y.includes(x)) return true;
+          for (let i = 0; i + 2 <= x.length; i++) {
+            if (y.includes(x.slice(i, i + 2))) return true;
+          }
+          return false;
+        };
+
+        t.rows.forEach((row, n) => {
+          const answer = (row[iAns] ?? '').trim();
+          if (answer === '') return;
+          for (const need of requires(answer)) {
+            if (permSkipped) {
+              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
+                + `but 「动作权限」 is marked skipped — an answer that acts needs a permission`);
+              continue;
+            }
+            if (permitted.length === 0) {
+              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
+                + `but 「动作权限」 has no table to grant it`);
+              continue;
+            }
+            const ok = permitted.some((p) => sharesWords(need.object, p));
+            if (!ok) {
+              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
+                + `which 「动作权限」 does not grant (cross-block contradiction)`);
+            }
+          }
+        });
         }
       }
 

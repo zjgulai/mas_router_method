@@ -498,3 +498,233 @@ test('live schema: a requirement can say "settled, verification not run"', async
   assert.ok(schema.entities.ticket.states.includes('awaiting-verification'),
     'the two registers should use the same word for the same situation');
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 应答规则专项校验
+//
+// 六块里只有「拒绝清单」有专项规则（每行要写出具体输入 → 行为）。新加的
+// 「应答规则」是一张决策表，却一直只受「块不是空的」这一条约束——写满
+// 「尽最大努力」「按情况处理」也能过 check。这正是方法反复在治的那种
+// 「检查不到的地方」。
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RULE_HEADER = '| 具体输入 | 该怎么答 | 升级档次 | 依据 |\n|---|---|---|---|\n';
+
+async function withDesignProbe(name, blocks, fn) {
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { unlink } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const probe = join(WORK, 'designs/confirmed', name);
+  const body = ['---', `id: ${name.slice(0, 5)}`, 'title: probe', 'status: confirmed', '---', ...blocks,
+    '## 七、什么情况说明这个设计错了', '', '拿不到真实输入时。', ''].join('\n');
+  await writeAndConfirm(probe, body);
+  try {
+    let code = 0, stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      stdout = r.stdout;
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    await fn({ code, stdout });
+  } finally {
+    await unlink(probe).catch(() => {});
+  }
+}
+
+const SIX_BLOCKS_OK = [
+  '## 一、流程形状', '', '固定。', '',
+  '## 二、拒绝清单', '', '- 某个具体输入 → 必须改做什么', '',
+];
+
+test('rules: a well-formed answer table passes', async () => {
+  await withDesignProbe('D-980-ok.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家问关税 | 答买家承担 | 不升级 | 政策 8 |' + '\n' +
+      '| 买家问能不能治湿疹 | 不答，转人 | 硬升级 | 政策 2 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
+    '## 五、交接契约', '', '（跳过：本轮不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 0, `a good record must pass:\n${stdout}`);
+  });
+});
+
+test('rules: a row with no concrete input fails', async () => {
+  await withDesignProbe('D-979-noinput.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '|  | 按情况处理 | 不升级 | 无 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 1, 'a row naming no input cannot become a check');
+    assert.match(stdout, /应答规则 row \d+ has no concrete input/);
+  });
+});
+
+test('rules: an invalid escalation tier fails', async () => {
+  // 档次只有三个值。第四种写法（「看情况」）会让实现者自己发明语义。
+  await withDesignProbe('D-978-badtier.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家问关税 | 看情况答 | 视情况而定 | 政策 8 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 1, 'the escalation tier has exactly three legal values');
+    assert.match(stdout, /升级档次/);
+  });
+});
+
+test('rules: an answer of "handle it appropriately" fails', async () => {
+  // 这就是「价值观画上了表格」——看起来是一行，测不了。
+  await withDesignProbe('D-977-vague.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家问关税 | 妥善处理 | 不升级 | 政策 8 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 1);
+    assert.match(stdout, /该怎么答/);
+  });
+});
+
+test('rules: the table must carry all four columns', async () => {
+  await withDesignProbe('D-976-cols.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', '| 具体输入 | 该怎么答 |', '|---|---|', '| 买家问关税 | 答买家承担 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 1, '升级档次 and 依据 are not optional');
+    assert.match(stdout, /应答规则.*missing column/);
+  });
+});
+
+test('rules: a skipped answer table with a reason passes', async () => {
+  // 只有一条路径的产品可以没有决策表，但必须写清为什么。
+  await withDesignProbe('D-975-skip.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', '（跳过：整个产品只有一条路径，见流程形状）', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 0, `an explicit skip is not an omission:\n${stdout}`);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 跨块约束：应答规则要求的动作，必须能在动作权限表里找到
+//
+// 三轮实测里，每一处硬矛盾都是跨块的：表格要求了权限表里不存在的动作，而五块
+// 是各自独立回答的五个问题，唯一会比较它们的只有 exit test——而它只给一个数字。
+// 这条在 skill 里写下来过，当时是靠人工逐行核对发现的。现在是检查。
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('cross-block: a read the answer table requires must exist in the permission table', async () => {
+  // 「陈述适用月龄」需要一个读商品事实的动作。权限表里没有它，就是硬矛盾——
+  // 实测里正是这一处，靠人工发现的。
+  await withDesignProbe('D-974-noread.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家问宝宝多大能用 | 查商品适用月龄后陈述 | 不升级 | 政策 3 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
+    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 1, 'a row that reads something the permission table does not grant is a cross-block contradiction');
+    assert.match(stdout, /应答规则 row 1/);
+    assert.match(stdout, /商品适用月龄|适用月龄/);
+  });
+});
+
+test('cross-block: the same row passes once the permission exists', async () => {
+  await withDesignProbe('D-973-withread.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家问宝宝多大能用 | 查商品适用月龄后陈述 | 不升级 | 政策 3 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
+    '| 读买家消息 | 可撤销 | 只读 |', '| 读商品信息（成分、适用月龄） | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 0, `the permission is there, so there is no contradiction:\n${stdout}`);
+  });
+});
+
+test('cross-block: an action the answer claims to perform must be permitted or absent', async () => {
+  // 「按政策给补偿」是一个动作。权限表里没有它 → 矛盾。
+  // 正确写法是「说明符合哪条政策、由人执行」——草稿不冒充自己做了一个动作。
+  await withDesignProbe('D-972-act.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家要求补偿 | 直接发放优惠券 | 不升级 | 政策 6 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
+    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '| 发送给买家 | 不在范围 | 由人做 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 1, 'the answer performs an action nobody granted');
+    assert.match(stdout, /应答规则 row 1/);
+  });
+});
+
+test('cross-block: a page with no permission table fails rather than passing vacuously', async () => {
+  // 空表是最容易骗过跨块检查的形状：没有任何动作，于是没有任何矛盾。
+  await withDesignProbe('D-971-noperm.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家问关税 | 查订单后陈述 | 不升级 | 政策 8 |', '',
+    '## 四、动作权限', '', '（跳过：只读，没有动作）', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 1, 'an answer that reads something needs a permission for it; a skipped table is not a free pass');
+    assert.match(stdout, /动作权限/);
+  });
+});
+
+test('cross-block: its deliberate blind spot, written down rather than discovered later', async () => {
+  // 这个检查是启发式的，而启发式会有方向。这里把已知的漏报方向钉成一条测试，
+  // 免得以后有人以为它覆盖得比实际多。
+  //
+  // 漏报：答案描述的是一个**过程**而不是一个动作（「按月龄告知家长」）时，
+  // 认不出动词，于是不报。这个方向是有意选的——宁可漏，也不乱叫。
+  await withDesignProbe('D-969-blind.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', RULE_HEADER +
+      '| 买家问宝宝多大能用 | 按月龄告知家长 | 不升级 | 政策 3 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
+    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    // 它没有「读/查/取」这类动词，所以这条**不报**。这就是它覆盖不到的地方。
+    assert.equal(code, 0, `this is the known blind spot: a described process is not an action.\n${stdout}`);
+  });
+});
+
+test('cross-block: the check is scoped — prose outside the table is not scanned', async () => {
+  // 只查表格的「该怎么答」列。块里的说明文字不参与，否则一段解释会被当成要求。
+  await withDesignProbe('D-968-prose.md', [
+    ...SIX_BLOCKS_OK,
+    '## 三、应答规则', '', '这一段说明里提到了「查订单」这件事，但它在表格外面。', '',
+    RULE_HEADER + '| 买家问关税 | 答买家承担 | 不升级 | 政策 8 |', '',
+    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
+    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
+    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
+    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
+  ], async ({ code, stdout }) => {
+    assert.equal(code, 0, `prose is not a rule:\n${stdout}`);
+  });
+});

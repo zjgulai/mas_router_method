@@ -99,3 +99,25 @@ test('latest picks the real record when several are confirmed', async () => {
     await unlink(b).catch(() => {});
   }
 });
+
+test('refusals counts the answer table too, not only the refusal list', async () => {
+  // 验收阶段要把两块都变成检查。只数拒绝清单会低估工作量——
+  // 而 D-002 的真实形态是 3 条禁令 + 8 行规则：只报 3 会让人以为快做完了。
+  const { code, out } = await run(['refusals', 'D-002']);
+  assert.equal(code, 0, out);
+  // 断言它同时报出两块的规模，而不是一个笼统的总数。
+  assert.match(out, /3 .*禁令|禁令.*3/);
+  assert.match(out, /9 .*规则|规则.*9/);
+});
+
+test('refusals does not count table rows with an arrow-based heuristic', async () => {
+  // 第一版数的是「含 → 的行」。表格行用 | 分隔，箭头不一定出现，
+  // 于是这个数字对表格是失效的——而它会以「N of M」的样子看起来很正常。
+  const { code, out } = await run(['refusals', 'D-002']);
+  assert.equal(code, 0, out);
+  const m = /(\d+) of (\d+) rows name a concrete input/.exec(out);
+  if (m !== null) {
+    // 若还保留这句，它必须只针对拒绝清单，不能声称覆盖全部。
+    assert.match(out, /拒绝清单/, 'a count that only covers the refusal list must say so');
+  }
+});
