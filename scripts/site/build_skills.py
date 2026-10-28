@@ -8,7 +8,11 @@ N_ROWS = len(MAP)
 
 # 八个模块：七个阶段，加上管理。管理不是阶段（它横跨全部七个），但它是一个归属单位，
 # 而技能表按归属单位分组——不这样做，anb-manage 在技能目录页上就不存在。
-MODULES = list(STAGES) + [('manage', '管理', '横跨七阶段')]
+# 数据产品是第二套流程（8 层 + 3 柱），不是第 8 个阶段。它有自己的 skill 归属单位，
+# 否则 anb-data-metric 这一类的 skill 在技能表上就没有位置，只能被硬塞进「设计」——
+# 而它的判据（换一个人能不能算出同一个数）与设计阶段的判据不是同一件事。
+MODULES = list(STAGES) + [('manage', '管理', '横跨七阶段'),
+                          ('data', '数据产品', '8 层 + 3 柱，与七阶段并行')]
 
 # map.py 用中文名给每个 skill 标归属。它不再自己列举这份清单（那是第二份会过时的声明），
 # 改为在这里校验：标了一个不存在的模块就报错，而不是安静地不显示。
@@ -48,9 +52,12 @@ def skills_page():
     b.append('<h2>按阶段分布</h2>')
     b.append('<div class="grid three">')
     for slug, sname, one in MODULES:
-        # 管理没有阶段页，它的落点是 manage.html。
-        href = ('/mas_router_method/site/manage.html' if slug == 'manage'
-                else f'/mas_router_method/site/{slug}.html#skills')
+        # 管理没有阶段页，它的落点是 manage.html；数据产品的落点是矩阵页——
+        # 它是唯一一张按层而不是按阶段组织的视图，也正是这批 skill 的归属单位。
+        # 第一版直接拼了 data.html，而那个页面不存在，links.mjs 当场抓出来了。
+        LANDING = {'manage': '/mas_router_method/site/manage.html',
+                   'data': '/mas_router_method/site/matrix.html'}
+        href = LANDING.get(slug, f'/mas_router_method/site/{slug}.html#skills')
         b.append(f'<a class="card" href="{href}" style="display:block;text-decoration:none;color:inherit">'
                  f'<div style="font-family:var(--serif);color:var(--accent);font-size:1.3rem">{per_stage[sname]}</div>'
                  f'<div style="font-size:.9rem">{sname}</div></a>')
@@ -62,7 +69,10 @@ def skills_page():
     for slug, sname, one in MODULES:
         items = sorted([(k, v) for k, v in MAP.items() if v[0] == sname])
         if not items: continue
-        b.append(f'<h3>{sname} <span style="color:var(--faint);font-weight:400;font-size:.85rem">（{len(items)}）</span></h3>')
+        head = f'{sname}'
+        if slug == 'data':
+            head = f'<a href="/mas_router_method/site/matrix.html" style="text-decoration:none">{sname}</a>'
+        b.append(f'<h3>{head} <span style="color:var(--faint);font-weight:400;font-size:.85rem">（{len(items)}）</span></h3>')
         rows = []
         for name, (stage, tags, note) in items:
             src, label = source_of(name)
