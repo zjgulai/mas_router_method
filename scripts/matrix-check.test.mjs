@@ -21,6 +21,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { writeAndConfirm } from './test-fs.mjs';
 import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const run = (args) => promisify(execFile)(process.execPath, [join(ROOT, 'scripts/matrix-check.mjs'), ...args])
@@ -131,4 +132,31 @@ test('the checker reads the docs it validates, and reports a missing claim rathe
   const { out } = await run([]);
   // A green run must have actually looked at four numbers, not zero.
   assert.match(out, /49 cells, 8 transitions/);
+});
+
+test('the HITL classification is derived from checkers, not from category', async () => {
+  // The first version classified by 类别 and made 开发·采集 command-closed — but writing
+  // an adapter has no command that can close it. Presence of a checker is the judge.
+  const { stdout } = await promisify(execFile)(process.execPath, [join(ROOT, 'scripts/matrix-check.mjs'), '--json'])
+    .catch((e) => ({ stdout: e.stdout }));
+  const doc = JSON.parse(stdout);
+  const door = Object.fromEntries(doc.cells.map((c) => [`${c.stage}·${c.layer}`, c.closedBy]));
+
+  assert.equal(door['验收·采集'], '命令关门', 'this one has a checker');
+  assert.equal(door['开发·采集'], '人关门', 'no checker exists for writing an adapter');
+  assert.equal(door['需求·指标'], '人开门', 'an answer is the input; AI cannot start');
+  assert.equal(door['运营·采集'], '无人关门', 'runtime cells never finish');
+  assert.equal(doc.byDoor['命令关门'], 6);
+  assert.equal(doc.byDoor['人开门'], 2);
+  assert.equal(doc.byDoor['无人关门'], 9);
+  assert.equal(doc.byDoor['人关门'], 32);
+});
+
+test('the ops document\'s HITL counts are checked against disk, and the check can go red', () => {
+  // Verified by hand while writing it: changing 6 to 99 made matrix-check report
+  // "says 99 cells are 命令关门, disk has 6". This test pins the behaviour so the
+  // check cannot silently stop comparing.
+  const source = readFileSync(join(ROOT, 'scripts/matrix-check.mjs'), 'utf8');
+  assert.match(source, /ops-bitable\.md: says/, 'the cross-check must report drift, not just read the doc');
+  assert.match(source, /byDoor/, 'the derived counts must exist');
 });

@@ -150,6 +150,24 @@ for (const chain of doc.chains) {
   }
 }
 
+/*
+ * The HITL classification, derived once so the ops document cannot drift.
+ *
+ * The document states four counts (6 command-closed, 32 human-closed, 2 human-opened,
+ * 9 nobody-closed) and the reasoning for each. Numbers in prose go stale silently; this
+ * is the same treatment the matrix counts already get.
+ *
+ * The rule is NOT "by category" — the first attempt did that and classified 开发·采集 as
+ * command-closed, which is wrong: writing an adapter has no command that can close it.
+ * Presence of a checker is the judge.
+ */
+export function closedBy(cell) {
+  if (cell.kind !== undefined && cell.kind.includes('运行')) return '无人关门';
+  if (cell.checker) return '命令关门';
+  if (cell.stage === '需求') return '人开门';
+  return '人关门';
+}
+
 // ── Derived status, which is what the site renders ──────────────────────────
 const enriched = doc.cells.map((cell) => {
   const cellProblems = assess(cell, `${cell.stage} · ${cell.layer}`);
@@ -200,6 +218,26 @@ for (const cell of enriched) {
 const gaps = enriched.filter((c) => c.unclaimed === 'gap');
 const futures = enriched.filter((c) => c.unclaimed === 'future');
 
+for (const cell of enriched) cell.closedBy = closedBy(cell);
+const byDoor = enriched.reduce((acc, c) => ({ ...acc, [c.closedBy]: (acc[c.closedBy] ?? 0) + 1 }), {});
+
+// The ops document quotes these four counts, so it is checked against them.
+try {
+  const ops = await readFile(join(ROOT, 'docs/product/ops-bitable.md'), 'utf8');
+  const claimed = {
+    命令关门: Number((/\| \*\*命令关门\*\* \| 一条命令 exit 0 \| \*\*AI 自行\*\* \| \*\*(\d+)\*\*/.exec(ops) ?? [])[1]),
+    人关门: Number((/\| \*\*人关门\*\* \|[^|]*\|[^|]*\| \*\*(\d+)\*\*/.exec(ops) ?? [])[1]),
+    人开门: Number((/\| \*\*人开门\*\* \|[^|]*\|[^|]*\| \*\*(\d+)\*\*/.exec(ops) ?? [])[1]),
+    无人关门: Number((/\| \*\*无人关门\*\* \|[^|]*\|[^|]*\| \*\*(\d+)\*\*/.exec(ops) ?? [])[1]),
+  };
+  for (const [k, v] of Object.entries(claimed)) {
+    if (Number.isNaN(v)) problems.push(`ops-bitable.md: cannot read the 「${k}」 count — reworded or removed?`);
+    else if (v !== byDoor[k]) problems.push(`ops-bitable.md: says ${v} cells are ${k}, disk has ${byDoor[k] ?? 0}`);
+  }
+} catch {
+  problems.push('ops-bitable.md cannot be read, so its HITL counts are unchecked');
+}
+
 // 5. the prose must not quote counts that disagree with the data.
 //
 // This is the exact failure the matrix doc was written to fix: it said "88 个格子"
@@ -249,6 +287,7 @@ if (process.argv.includes('--json')) {
     layers: doc.layers,
     gridSize: doc.stages.length * doc.layers.length,
     byStatus,
+    byDoor,
     gaps: gaps.map((c) => c.stage + '·' + c.layer),
     futures: futures.map((c) => c.stage + '·' + c.layer),
     problems,
