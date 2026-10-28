@@ -64,6 +64,29 @@ jobs:
       - name: The site's internal links resolve
         run: node scripts/site/links.mjs
 
+      # The data product's three gates. Each has its own exit code because the
+      # difference between "failed" and "cannot be determined" is the whole point:
+      # a gate that only knows pass and fail reports one of them on malformed input,
+      # and both are wrong.
+      #
+      # `|| [ $? -eq 2 ]` is not "ignore failure". Exit 2 means the input cannot
+      # answer the question — a real state that must be visible but must not fail
+      # the build, because the demo fixtures are shaped to exercise all three.
+      - name: §七 the kill switch still fails when regions move together
+        run: node scripts/region-corr.mjs --demo; test $? -eq 1
+
+      - name: The panel fit recovers its planted β
+        run: node scripts/panel-fit.mjs --demo
+
+      - name: The collection audit still catches all three silent failures
+        run: node scripts/collect-audit.mjs --demo; test $? -eq 1
+
+      - name: The falsification checks fire on a dead interval
+        run: node scripts/verify-conclusion.mjs --demo; test $? -eq 1
+
+      - name: Every metric card answers all eight fields
+        run: node scripts/metric-card.mjs check
+
       # Quoted so Node expands the glob itself. An explicit file list would make a
       # new test file easy to add and easy to never run — a silently skipped test
       # is the exact failure this repo keeps finding.

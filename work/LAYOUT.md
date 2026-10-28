@@ -28,6 +28,7 @@
 |---|---|---|---|---|---|
 | `work/requirements/` | 需求：一句话承诺 | drafting → awaiting-verification → confirmed → dropped | `R-` | 需求 | 被废后留 30 天 |
 | `work/designs/` | 设计记录：四问的答案 | drafting → confirmed → superseded | `D-` | 设计 | 保留；被推翻进 superseded，不改原件 |
+| `work/metrics/` | 指标卡：八项必有字段 | **无状态机，版本号即生命周期** | 无 | 设计–开发 | 永不删；改口径 = 加版本，不改旧卡 |
 | `work/tickets/` | 执行票：跨会话的工作单元 | open → in-progress → awaiting-verification → done | `T-` | 开发–交付 | 永不删（历史） |
 | `work/incidents/` | 事故：计划外发生的事 | open → contained → closed | `INC-` | 任何阶段 | 关闭后留 90 天 |
 | `work/artifacts/` | 有持续成本的东西：脚本、开关、面板、定时任务 | active → expired | `ART-` | 运营 | 到过期日即删 |
@@ -109,6 +110,8 @@ ADR 接受后不改，所以没有状态。设计记录会变——起草、确�
 | `scripts/` | 本仓库自己的工具链 | 属于仓库的脚手架，不登记（见下） |
 | 其它有持续成本的脚本 | 服务、定时任务、探针、开关 | **必须有 `work/artifacts/` 登记**，否则会累积 |
 | `scripts/site/` | 站点生成器（Python）+ 重建入口 `build.mjs` | 登记为 `ART-001`；改站点内容改这里，不改 `docs/site` 的生成页 |
+| `scripts/collect-*.mjs` `scripts/region-corr.mjs` `scripts/panel-fit.mjs` `scripts/verify-conclusion.mjs` | 数据产品的层契约与检查器 | **脚手架**：删掉任何一个，对应的层就没有可执行的验收了。它们随仓库存在，不单独登记 |
+| `scripts/stats.mjs` `scripts/conclusion-conditions.mjs` | 被上面四个共用的计算与条件库 | 同上。统计与证伪条件是**唯一实现**，不许在别处再写一份 |
 | `anb-*/` | 方法论的实验样本 | 可运行，能复现 |
 
 ---
@@ -133,6 +136,19 @@ node scripts/layout.mjs         # 校验目录归属：文件放错地方会报�
 ```
 
 `work check` 管记录内容，`layout` 管文件位置，`facts --check` 管文档里引用的数字。三个都要过。
+
+数据产品的四条链路各有自己的门禁，也都要过：
+
+```bash
+node scripts/collect-audit.mjs --demo ; test $? -eq 1     # 采集：三个静默错误都被抓到
+node scripts/region-corr.mjs --demo   ; test $? -eq 1     # §七：识别不成立时说停
+node scripts/panel-fit.mjs --demo                          # 分析：能产出一个带区间的数
+node scripts/verify-conclusion.mjs --demo ; test $? -eq 1  # 报告：造了触发必须报
+node scripts/metric-card.mjs check                         # 指标：八项缺一项就失败
+```
+
+这些命令在 `.github/workflows/check.yml` 里各是一步，所以「某一层没有检查器」和
+「某一层的检查器坏了」在 CI 输出里长得不一样。详见 `docs/product/data-product-layers.md`。
 
 **`facts` 存在的理由**：文档里每写一次「109 个 skill」，就是一次会过时的声明。
 而它不会报错——过时的数字和新鲜的数字长得一模一样。这已经发生过：站点首页一度写着
