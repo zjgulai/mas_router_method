@@ -281,6 +281,7 @@ def index_page():
 
     b.append('<h2>从这里进</h2>')
     b.append('<div class="grid two">')
+    b.append('<a class="card" href="/mas_router_method/site/matrix.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品的 8 × 8 矩阵</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">7 阶段 + 管理 × 8 层。每格写输入契约、输出契约、失败模式；状态由脚本算出，不手填——<b>验</b> 有检查器，<b>约</b> 只有契约。</p></a>')
     b.append('<a class="card" href="/mas_router_method/site/branches.html" style="display:block;text-decoration:none;color:inherit"><h3>分支总表</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">所有 if/else 集中一页，按代价排序。不知道自己在哪一步时，先看这里。</p></a>')
     b.append(f'<a class="card" href="/mas_router_method/site/skills.html" style="display:block;text-decoration:none;color:inherit"><h3>Skill 全表 · {N_ROWS} 个</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">三层来源、七阶段归属、每个都要说清「它坏了会怎样」。</p></a>')
     b.append('<a class="card" href="/mas_router_method/site/prompts.html" style="display:block;text-decoration:none;color:inherit"><h3>提示词库</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">可直接复制的会话提示词，按阶段和用途分类。</p></a>')

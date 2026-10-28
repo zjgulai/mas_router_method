@@ -1,0 +1,665 @@
+{
+ "_comment": [
+  "8+3 矩阵的单一来源。docs/product/data-product-matrix.md 与 docs/site/matrix.html",
+  "都从这里生成，SOP §二 也由它校验——三处不许各写一份。",
+  "",
+  "每个原子（三件事的每一条）自带一个可判定的判据，这是二级矩阵的粒度。",
+  "checker 为 null 表示「还没有可执行的验收」，不是「不需要」——见 docs/product/data-product-layers.md §五。"
+ ],
+ "version": 1,
+ "layers": [
+  "采集",
+  "存储",
+  "打标",
+  "指标",
+  "分析",
+  "呈现",
+  "结论",
+  "报告"
+ ],
+ "stages": [
+  "需求",
+  "设计",
+  "开发",
+  "验收",
+  "交付",
+  "运营",
+  "迭代",
+  "管理"
+ ],
+ "pillars": [
+  "口径",
+  "质量",
+  "血缘"
+ ],
+ "chains": [
+  {
+   "id": "A",
+   "layers": [
+    "采集",
+    "存储"
+   ],
+   "why": "地基。时滞与历史改写是静默错误，最晚发现代价最大"
+  },
+  {
+   "id": "B",
+   "layers": [
+    "指标",
+    "分析"
+   ],
+   "why": "§七 与 区间跨 0 是产品的生死线，越早知道越好"
+  },
+  {
+   "id": "C",
+   "layers": [
+    "结论",
+    "报告"
+   ],
+   "why": "决定产品是 dashboard 还是报告"
+  }
+ ],
+ "cells": [
+  {
+   "stage": "需求",
+   "layer": "指标",
+   "kind": "决策类",
+   "input": "决策者要做的决定（从结论层 C1–C4 来）",
+   "output": "这个决定需要哪几个数字，各自容许的误差量级；不需要的数字明确列出",
+   "failure": "把「能算的所有数字」当成需求清单；或某个数字写不出「错了会怎样」",
+   "checker": null
+  },
+  {
+   "stage": "需求",
+   "layer": "结论",
+   "kind": "决策类",
+   "input": "一句话想改变的动作",
+   "output": "★C1–C4 四条结论的骨架 + 决策 + 停止信号（什么情况下不投）",
+   "failure": "只有「想了解」没有「会改变哪个动作」；停止信号写不出来",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "采集",
+   "kind": "决策类",
+   "input": "需求阶段的「声量由哪些源合成」",
+   "output": "源清单（源 × 用途 × 可回溯深度 × 成本）、抓取节奏表、去重指纹方案、首次见到字段定义",
+   "failure": "源清单里出现「为了以后可能有用」的源；或某源的可回溯深度写不出来",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "存储",
+   "kind": "决策类",
+   "input": "四类归属命名空间决定（见 design §三·五）",
+   "output": "schema（含 schema_version / taxonomy_version / 口径版本 三列）、增量/全量分区策略、保留原始载荷的存储位置",
+   "failure": "schema 里有一列解释不出它属于哪一类命名空间",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "打标",
+   "kind": "决策类",
+   "input": "指标层要求的标签清单",
+   "output": "标签体系（层级 + 定义 + 版本策略）、置信度口径、金标准集抽样方案、Kappa 阈值",
+   "failure": "某个标签写不出「什么情况算不适用」",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "指标",
+   "kind": "决策类",
+   "input": "需求阶段的「决策需要哪些数字」",
+   "output": "指标卡（八项必有字段），三族清单，**A2+/A2− 拆分**",
+   "failure": "任一指标卡缺「已知偏差」或「什么时候不可用」",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "分析",
+   "kind": "决策类",
+   "input": "C1–C4 要证伪什么",
+   "output": "模型设定（面板、固定效应、控制变量清单、滞后范围）+ **§七 kill switch**",
+   "failure": "控制变量清单里没有缺货率",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "呈现",
+   "kind": "决策类",
+   "input": "分析输出的形状",
+   "output": "下钻路径、口径版本显示位置、三态可见性方案",
+   "failure": "某个聚合数找不到下钻路径",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "结论",
+   "kind": "决策类",
+   "input": "C1–C4 + 决策 + 停止信号",
+   "output": "结论卡六项模板 + 证伪条件**可执行化**",
+   "failure": "证伪条件写成「如果结论错了」",
+   "checker": null
+  },
+  {
+   "stage": "设计",
+   "layer": "报告",
+   "kind": "决策类",
+   "input": "证伪条件清单",
+   "output": "证伪检查的跑批频率 + 失败通知路径 + 报告节奏",
+   "failure": "证伪检查只在「有人想看」时跑",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "采集",
+   "kind": "工程类",
+   "input": "需求阶段定下的源清单，每源带可回溯深度与成本上限",
+   "output": "每个源一个 adapter，统一输出 {raw, first_seen_at, fetched_at, source_task_id}；原始载荷原样存",
+   "failure": "同一批数据跑两次得到不同 `first_seen_at`；或抓到的东西缺 `fetched_at`",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "存储",
+   "kind": "工程类",
+   "input": "adapter 输出的观察记录流，含 raw 与两个时点",
+   "output": "建表 + 迁移脚本；原始载荷压缩存；**重跑不重写历史**",
+   "failure": "重跑一次把 `first_seen_at` 覆盖了",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "打标",
+   "kind": "工程类 + 决策类",
+   "input": "标签体系",
+   "output": "标注流水线（打标 + 置信度 + 版本写入）、金标准集 runner",
+   "failure": "标注结果没有 `taxonomy_version`",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "指标",
+   "kind": "工程类",
+   "input": "指标卡",
+   "output": "计算逻辑，每个数字带 口径版本",
+   "failure": "同一个指标在两处实现有不同定义",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "分析",
+   "kind": "工程类",
+   "input": "模型设定",
+   "output": "最小版（2 区域 × 12 周）→ 加控制变量版",
+   "failure": "跑出来没有区间，只有点估计",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "呈现",
+   "kind": "工程类",
+   "input": "带区间的分析结果，每个数字附口径版本",
+   "output": "下钻 UI",
+   "failure": "数字旁边不显示口径版本",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "结论",
+   "kind": "工程类",
+   "input": "卡模板",
+   "output": "结论卡存储（含状态：active / superseded）",
+   "failure": "状态只有「已发布」，没有「被推翻」",
+   "checker": null
+  },
+  {
+   "stage": "开发",
+   "layer": "报告",
+   "kind": "工程类",
+   "input": "结论卡：主张、范围、区间、依据、证伪条件、决策含义",
+   "output": "证伪检查脚本 + 推送通道",
+   "failure": "检查失败时不通知",
+   "checker": null
+  },
+  {
+   "stage": "验收",
+   "layer": "采集",
+   "kind": "工程类",
+   "input": "两天同批抓取的数据",
+   "output": "时滞检查报告（同一帖子两次抓取的互动量差）、去重率、缺抓率",
+   "failure": "去重率异常低（说明跨源重复没处理）或时滞方差大（说明抓取节奏不稳）",
+   "checker": {
+    "cmd": "node scripts/collect-audit.mjs <ledger.jsonl>",
+    "exit": "0 通过 / 1 失败 / 2 无法判断",
+    "note": "时滞跨区域离散、指纹召回率、按源四态计数"
+   }
+  },
+  {
+   "stage": "验收",
+   "layer": "存储",
+   "kind": "工程类",
+   "input": "两次全量重跑",
+   "output": "一致性报告（第二次是否改写了历史记录）",
+   "failure": "任何历史字段被改写 → 直接不通过",
+   "checker": {
+    "cmd": "node scripts/collect-store.mjs verify <ledger.jsonl>",
+    "exit": "0 不变量成立 / 1 有结构性错误",
+    "note": "first_seen_at 不被重写、空抓留记录、迁移是读侧透镜"
+   }
+  },
+  {
+   "stage": "验收",
+   "layer": "打标",
+   "kind": "决策类",
+   "input": "金标准集（人工标）",
+   "output": "准确率、Kappa、按置信度分层的准确率",
+   "failure": "准确率 < 0.7 → 该维度不可用，A2+/A2− 退化为 A1；Kappa < 0.6 → 标签定义有歧义",
+   "checker": null
+  },
+  {
+   "stage": "验收",
+   "layer": "指标",
+   "kind": "工程类",
+   "input": "两处独立实现的同一指标",
+   "output": "对账报告",
+   "failure": "两处数字不一致 → 直接不通过。另：分母异常检测（某周分母骤降）",
+   "checker": {
+    "cmd": "node scripts/metric-card.mjs check",
+    "exit": "0 八项齐 / 1 有缺项或空话",
+    "note": "模板本身会被判失败——八个小标题什么也没证明"
+   }
+  },
+  {
+   "stage": "验收",
+   "layer": "分析",
+   "kind": "工程类",
+   "input": "真实数据",
+   "output": "§七 相关性报告、区间是否跨 0、稳健性（分置信度分层）",
+   "failure": "相关性 > 0.8 → 停；区间跨 0 → 标「无结论」而不是「效应弱」",
+   "checker": {
+    "cmd": "node scripts/region-corr.mjs <data.csv>; node scripts/panel-fit.mjs <panel.csv>",
+    "exit": "0 成立 / 1 识别不成立 / 2 无法判断 / 3 无结论",
+    "note": "§七 是前置门禁；区间跨 0 是「无结论」不是「效应弱」"
+   }
+  },
+  {
+   "stage": "验收",
+   "layer": "呈现",
+   "kind": "工程类",
+   "input": "上线后的界面",
+   "output": "逐个数点一遍，确认每个能下钻到明细",
+   "failure": "任何一个数字点不下去 → 不通过",
+   "checker": null
+  },
+  {
+   "stage": "验收",
+   "layer": "结论",
+   "kind": "决策类",
+   "input": "每条结论卡",
+   "output": "逐条确认证伪条件能被一条命令执行",
+   "failure": "任一条执行不了",
+   "checker": {
+    "cmd": "node scripts/verify-conclusion.mjs <conclusions.json>",
+    "exit": "0 全成立 / 1 有结论被证伪 / 2 有检查无法判断",
+    "note": "每条证伪条件是一个纯函数，能被触发"
+   }
+  },
+  {
+   "stage": "验收",
+   "layer": "报告",
+   "kind": "工程类",
+   "input": "人为造一次证伪触发",
+   "output": "看它报不报",
+   "failure": "造了触发不报 → 不通过。这是整个报告层的唯一实质验收",
+   "checker": {
+    "cmd": "node scripts/verify-conclusion.mjs <conclusions.json>",
+    "exit": "0 全成立 / 1 有结论被证伪 / 2 有检查无法判断",
+    "note": "报告层唯一的实质验收：造一次触发，看它报不报"
+   }
+  },
+  {
+   "stage": "交付",
+   "layer": "呈现",
+   "kind": "工程类",
+   "input": "可运行的界面",
+   "output": "别人能打开的地址",
+   "failure": "只有本机能开",
+   "checker": null
+  },
+  {
+   "stage": "交付",
+   "layer": "报告",
+   "kind": "工程类",
+   "input": "推送通道",
+   "output": "飞书 / 邮件可达",
+   "failure": "需要人手动转发",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "采集",
+   "kind": "运行类",
+   "input": "每日抓取结果",
+   "output": "三态计数（抓到了 / 抓错了 / 无法判断）+ 今天各源成功率",
+   "failure": "连续两天某源成功率 0 而无告警",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "存储",
+   "kind": "运行类",
+   "input": "库的实际状态",
+   "output": "增长速率、存储成本、重复率",
+   "failure": "增长速率异常（说明去重失效或重复抓取）",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "打标",
+   "kind": "运行类",
+   "input": "持续标注结果",
+   "output": "准确率漂移监控（按周）、置信度分布",
+   "failure": "准确率连续两周下降而无告警",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "指标",
+   "kind": "运行类",
+   "input": "每日计算",
+   "output": "三态（算出来了 / 算错了 / 无法判断）+ 分母规模监控",
+   "failure": "某天指标缺失而无告警",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "分析",
+   "kind": "运行类",
+   "input": "每周重估",
+   "output": "收敛性、系数稳定性",
+   "failure": "系数符号在两周之间翻转而无告警",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "呈现",
+   "kind": "运行类",
+   "input": "访问日志",
+   "output": "有人看吗（访问量、下钻深度）",
+   "failure": "上线两月零访问而无告警",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "结论",
+   "kind": "运行类",
+   "input": "决策者的实际使用",
+   "output": "被使用次数、被反驳次数、被推翻次数",
+   "failure": "只统计「看了」，不统计「据此做了什么」",
+   "checker": null
+  },
+  {
+   "stage": "运营",
+   "layer": "报告",
+   "kind": "运行类",
+   "input": "发送记录",
+   "output": "发了多少、有没有回应、有没有人因为某条报告改了做法",
+   "failure": "只统计发送量",
+   "checker": null
+  },
+  {
+   "stage": "迭代",
+   "layer": "采集",
+   "kind": "决策类",
+   "input": "运营期的源表现（成本、覆盖率、可回溯深度）",
+   "output": "新增/停用源的 ADR",
+   "failure": "加了源但没写「它替代了谁的什么职责」",
+   "checker": null
+  },
+  {
+   "stage": "迭代",
+   "layer": "存储",
+   "kind": "决策类",
+   "input": "schema 变更需求",
+   "output": "迁移 ADR + 旧数据保留策略",
+   "failure": "迁移 ADR 没写「旧版本数据还能不能查」",
+   "checker": null
+  },
+  {
+   "stage": "迭代",
+   "layer": "打标",
+   "kind": "决策类",
+   "input": "标签需要改版",
+   "output": "新版本 + 显式映射表（不静默合并）+ ADR",
+   "failure": "旧数据被重写，或跨版本查询没有分组",
+   "checker": null
+  },
+  {
+   "stage": "迭代",
+   "layer": "指标",
+   "kind": "决策类",
+   "input": "口径需要变更",
+   "output": "新版本号 + 新旧对应说明；**旧数据不重算**",
+   "failure": "变更后跨期比较没有标注版本差异",
+   "checker": null
+  },
+  {
+   "stage": "迭代",
+   "layer": "分析",
+   "kind": "决策类",
+   "input": "新一年数据 / 新源",
+   "output": "重估 + 与旧结论对比",
+   "failure": "重估后没说明旧结论是维持、修正还是推翻",
+   "checker": null
+  },
+  {
+   "stage": "迭代",
+   "layer": "结论",
+   "kind": "决策类",
+   "input": "被推翻的结论",
+   "output": "superseded + 新结论 + 为什么推翻",
+   "failure": "直接删掉旧结论（那就失去了「我们错过什么」的记录）",
+   "checker": null
+  },
+  {
+   "stage": "管理",
+   "layer": "采集",
+   "kind": "运行类",
+   "input": "源故障",
+   "output": "INC- 记录（严重性、影响哪些结论、恢复时间）",
+   "failure": "事故记成票（票是打算做的事，事故是发生了的事）",
+   "checker": null
+  },
+  {
+   "stage": "管理",
+   "layer": "存储",
+   "kind": "决策类",
+   "input": "迁移",
+   "output": "ADR（永久记录）",
+   "failure": "迁移写进票而不是 ADR（ADR 是历史，票是工作）",
+   "checker": null
+  },
+  {
+   "stage": "管理",
+   "layer": "打标",
+   "kind": "决策类",
+   "input": "标签改版",
+   "output": "ADR + 设计记录更新",
+   "failure": "改版只改了代码，没留下为什么",
+   "checker": null
+  },
+  {
+   "stage": "管理",
+   "layer": "指标",
+   "kind": "决策类",
+   "input": "口径变更",
+   "output": "ADR + 设计记录",
+   "failure": "变更没留下为什么",
+   "checker": null
+  },
+  {
+   "stage": "管理",
+   "layer": "分析",
+   "kind": "决策类",
+   "input": "模型设定变更",
+   "output": "设计记录（不是 ADR——它会变，会被 superseded）",
+   "failure": "写进 ADR（ADR 不该再改）",
+   "checker": null
+  },
+  {
+   "stage": "管理",
+   "layer": "结论",
+   "kind": "决策类",
+   "input": "结论卡",
+   "output": "设计记录；被推翻走 superseded 状态迁移",
+   "failure": "改写原件而不是新增",
+   "checker": null
+  },
+  {
+   "stage": "管理",
+   "layer": "报告",
+   "kind": "决策类",
+   "input": "证伪检查的触发",
+   "output": "INC 记录（触发了哪一条、影响哪些结论、谁被通知）",
+   "failure": "证伪触发记成票（票是打算做的事，事故是发生了的事）",
+   "checker": null
+  }
+ ],
+ "transitions": [
+  {
+   "from": [
+    "开发",
+    "采集"
+   ],
+   "to": [
+    "开发",
+    "存储"
+   ],
+   "carries": "观察记录：raw + first_seen_at + fetched_at + source_task_id",
+   "versioned": [
+    "schema_version",
+    "fetched_at"
+   ],
+   "downstreamChecks": "source_task_id 在账本里有对应的 run；first_seen_at ≤ fetched_at",
+   "breaks": "没有 first_seen_at → 时间序列锚在抓取时刻，「抓得晚」被读成「更热」"
+  },
+  {
+   "from": [
+    "开发",
+    "存储"
+   ],
+   "to": [
+    "开发",
+    "打标"
+   ],
+   "carries": "去重后的条目 + 四类归属命名空间 + 原始载荷",
+   "versioned": [
+    "schema_version",
+    "taxonomy_version"
+   ],
+   "downstreamChecks": "region 落在四值命名空间内；unattributable 至少两个冲突依据",
+   "breaks": "归属摊派给 unknown → 分母完整但错，且看起来没有任何问题"
+  },
+  {
+   "from": [
+    "开发",
+    "打标"
+   ],
+   "to": [
+    "开发",
+    "指标"
+   ],
+   "carries": "标签 + 置信度 + taxonomy_version",
+   "versioned": [
+    "taxonomy_version",
+    "metric_version"
+   ],
+   "downstreamChecks": "读到的 taxonomy_version 不等于指标卡声明的版本时报警，不许猜",
+   "breaks": "标签改版后静默合并 → 去年的数和今年的数不是一个体系，而台阶看不见"
+  },
+  {
+   "from": [
+    "开发",
+    "指标"
+   ],
+   "to": [
+    "开发",
+    "分析"
+   ],
+   "carries": "数值 + 口径版本 + 分母规模",
+   "versioned": [
+    "metric_version",
+    "produced_at"
+   ],
+   "downstreamChecks": "分母骤降时拒绝出结论；口径版本不同的两期不许直接相减",
+   "breaks": "口径变更被读成业务变化——最贵的一种错误"
+  },
+  {
+   "from": [
+    "开发",
+    "分析"
+   ],
+   "to": [
+    "开发",
+    "呈现"
+   ],
+   "carries": "β + 95% 区间 + 吸收了什么的说明",
+   "versioned": [
+    "模型设定版本",
+    "produced_at"
+   ],
+   "downstreamChecks": "区间跨 0 的数字不进聚合视图；「关联不是因果」的标签必须跟着数走",
+   "breaks": "交付一个识别不成立的看板，而它看起来完全正常"
+  },
+  {
+   "from": [
+    "开发",
+    "分析"
+   ],
+   "to": [
+    "开发",
+    "结论"
+   ],
+   "carries": "C1–C4 + 区间 + 有效样本量",
+   "versioned": [
+    "模型设定版本",
+    "upstream_versions"
+   ],
+   "downstreamChecks": "区间跨 0 → 该条结论不许落卡；样本不足 → 降级为描述性",
+   "breaks": "结论卡带着一个什么都没有的区间发布"
+  },
+  {
+   "from": [
+    "开发",
+    "结论"
+   ],
+   "to": [
+    "开发",
+    "报告"
+   ],
+   "carries": "结论卡 + 证伪条件（可执行）+ status",
+   "versioned": [
+    "口径版本",
+    "taxonomy_version"
+   ],
+   "downstreamChecks": "证伪条件必须是已注册的函数名；未注册的名字算「无法判断」不算通过",
+   "breaks": "证伪条件写成「如果结论错了」→ 无法被触发，报告退化成 dashboard"
+  },
+  {
+   "from": [
+    "开发",
+    "报告"
+   ],
+   "to": [
+    "迭代",
+    "结论"
+   ],
+   "carries": "证伪触发 → 旧结论转 superseded + 新结论 + 为什么推翻",
+   "versioned": [
+    "produced_at"
+   ],
+   "downstreamChecks": "旧结论原件保留不删；新结论指回旧结论；superseded 不被再次告警",
+   "breaks": "直接删掉旧结论 → 失去「我们错过什么」的记录"
+  }
+ ]
+}

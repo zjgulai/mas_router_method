@@ -39,6 +39,7 @@ const GENERATORS = [
   'build_skills.py',
   'build_docs.py',
   'build_manage.py',
+  'build_matrix.py',
 ];
 
 function runGenerator(file, stage) {

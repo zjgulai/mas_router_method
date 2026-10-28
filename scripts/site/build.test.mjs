@@ -31,14 +31,25 @@ const build = (siteDir) => promisify(execFile)(process.execPath, [BUILD], {
   .then((r) => ({ code: 0, out: r.stdout + r.stderr }))
   .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
-test('build: succeeds and reports its page count', async () => {
+test('build: succeeds, and the committed site holds exactly what it generated', async () => {
+  /*
+   * The page count used to be written here as 13, and went red the day a fourteenth
+   * page was added — a test failing because the site grew, which is the definition of
+   * a check that measures itself rather than the product. There is no number to state:
+   * the staged directory *is* the answer, and docs/site must equal it.
+   */
   const site = await mkdtemp(join(tmpdir(), 'site-'));
   try {
     const { code, out } = await build(site);
     assert.equal(code, 0, `build failed:\n${out}`);
     assert.match(out, /pages generated into docs\/site/);
-    const pages = (await readdir(site)).filter((f) => f.endsWith('.html'));
-    assert.equal(pages.length, 13, `expected 13 generated pages, got ${pages.length}`);
+    const generated = (await readdir(site)).filter((f) => f.endsWith('.html')).sort();
+
+    const committed = (await readdir(join(ROOT, 'docs', 'site'), { withFileTypes: true }))
+      .filter((e) => e.isFile() && e.name.endsWith('.html')).map((e) => e.name).sort();
+
+    assert.deepEqual(committed, generated,
+      'docs/site must hold exactly the pages the generators produce — run `node scripts/site/build.mjs`');
   } finally {
     await rm(site, { recursive: true, force: true });
   }
@@ -66,9 +77,9 @@ test('build: the eight hand-written originals are present and untouched', async 
   const html = originals.filter((f) => f.endsWith('.html'));
   assert.equal(html.length, 8, `expected 8 originals, found ${html.length}: ${html.join(', ')}`);
 
-  const root = await readdir(join(ROOT, 'docs', 'site'), { withFileTypes: true });
-  const rootHtml = root.filter((e) => e.isFile() && e.name.endsWith('.html')).map((e) => e.name);
-  assert.equal(rootHtml.length, 13, `docs/site root must hold only generated pages, found ${rootHtml.length}`);
+  // No count here either: the previous assertion ("root must hold only generated
+  // pages, 13 of them") mixed two questions. Whether the root holds only generated
+  // pages is answered by comparing it against a fresh build, which the first test does.
 });
 
 test('build: goes red on a directory named like a page', async () => {

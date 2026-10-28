@@ -87,6 +87,16 @@ jobs:
       - name: Every metric card answers all eight fields
         run: node scripts/metric-card.mjs check
 
+      # The matrix is a promise about what is enforced, so it gets its own step:
+      # "a cell claims three things and one is empty", "a checker names a script that
+      # was deleted", and "a prose count drifted from the data" are three different
+      # failures and should not arrive as one line under "tests failed".
+      - name: The 8×8 matrix holds together
+        run: node scripts/matrix-check.mjs
+
+      - name: The SOP's cell section matches the matrix
+        run: node scripts/sop-render.mjs --check
+
       # Quoted so Node expands the glob itself. An explicit file list would make a
       # new test file easy to add and easy to never run — a silently skipped test
       # is the exact failure this repo keeps finding.

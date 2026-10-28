@@ -101,7 +101,7 @@ CSS = """
 def nav(current_slug):
     items = [('index','总览')] + [(s, n) for s, n, _ in STAGES] + [
         ('manage','管理'), ('branches','分支'), ('skills','Skill 全表'),
-        ('prompts','提示词'), ('docs','原始文档'),
+        ('prompts','提示词'), ('matrix','数据矩阵'), ('docs','原始文档'),
     ]
     out = []
     for slug, label in items:

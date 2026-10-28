@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 × 8 矩阵 · Agent Native Builder</title>
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .shell{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+  .top{position:sticky;top:0;z-index:20;background:var(--ink);color:#e9e7e0;padding:.55rem 0}
+  .top .shell{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .top a{color:#e9e7e0;text-decoration:none;font-size:.84rem;opacity:.78}
+  .top a:hover{opacity:1}
+  .top a.home{font-weight:650;opacity:1;font-family:var(--serif);font-size:.92rem}
+  .top nav{display:flex;gap:.2rem;flex-wrap:wrap;margin-left:auto}
+  .top nav a{padding:.2rem .5rem}
+  .top nav a.on{background:#e9e7e0;color:var(--ink);opacity:1}
+  main{padding:clamp(2rem,4.5vw,3.4rem) 0 4rem}
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<header class="top"><div class="shell">
+  <a class="home" href="/mas_router_method/site/">ANB</a>
+  <nav>
+      <a href="/mas_router_method/site/">总览</a>
+      <a href="/mas_router_method/site/need.html">需求</a>
+      <a href="/mas_router_method/site/design.html">设计</a>
+      <a href="/mas_router_method/site/build.html">开发</a>
+      <a href="/mas_router_method/site/verify.html">验收</a>
+      <a href="/mas_router_method/site/ship.html">交付</a>
+      <a href="/mas_router_method/site/operate.html">运营</a>
+      <a href="/mas_router_method/site/iterate.html">迭代</a>
+      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="/mas_router_method/site/branches.html">分支</a>
+      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/site/prompts.html">提示词</a>
+      <a href="/mas_router_method/site/matrix.html" class="on">数据矩阵</a>
+      <a href="/mas_router_method/site/docs.html">原始文档</a>
+  </nav>
+</div></header>
+<main class="shell">
+  <div class="crumb">数据产品 · 阶段 × 层</div>
+  <style>
+.mt-wrap{display:grid;gap:1px;background:var(--deep);grid-template-columns:minmax(0,1fr) minmax(300px,.72fr);margin:1rem 0 0}
+@media(max-width:900px){.mt-wrap{grid-template-columns:1fr}}
+.mt-grid{background:var(--surface);overflow-x:auto}
+.mt-grid table{min-width:660px;margin:0}
+.mt-grid thead th{position:sticky;top:0;background:var(--surface);z-index:2;text-align:center;font-size:.74rem}
+.mt-grid tbody th{text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--sunk);vertical-align:top;width:9.5rem}
+.mt-stage{display:block;font-family:var(--serif);font-size:.95rem;color:var(--ink);font-weight:600}
+.mt-snote{display:block;font-size:.68rem;font-weight:400;color:var(--faint);line-height:1.35;margin-top:.15rem}
+.mt-grid tbody td{padding:0;border-bottom:1px solid var(--sunk);border-left:1px solid var(--sunk)}
+.mt-cell{cursor:pointer;position:relative;min-width:54px;height:54px;text-align:center;transition:opacity .1s}
+.mt-cell:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.mt-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.64rem;color:var(--faint)}
+.mt-dot{position:absolute;right:.24rem;bottom:.06rem;font-size:.74rem;font-weight:700;line-height:1}
+.mt-verified{background:var(--accent2)}.mt-verified .mt-dot{color:var(--accent)}
+.mt-contract{background:#f7f3e3}.mt-contract .mt-dot{color:var(--warn)}
+.mt-hole{background:var(--alert2)}.mt-hole .mt-dot{color:var(--alert)}
+.mt-none{background:var(--sunk)}.mt-none .mt-dot{color:var(--deep)}
+.mt-cell.mt-dim{opacity:.18}
+.mt-cell.mt-sel{box-shadow:inset 0 0 0 2px var(--ink)}
+.mt-panel{background:var(--surface);padding:1.1rem 1.2rem}
+.mt-panel h3{margin:0 0 .2rem;font-size:1rem}
+.mt-meta{font-size:.76rem;color:var(--faint);margin:0 0 .8rem}
+.mt-field{margin:0 0 .7rem}
+.mt-field .k{font-size:.72rem;font-weight:700;color:var(--faint);letter-spacing:.03em;display:block;margin-bottom:.15rem}
+.mt-field .v{font-size:.88rem;color:var(--ink);line-height:1.5}
+.mt-check{background:var(--sunk);padding:.6rem .7rem;margin-top:.7rem;font-size:.8rem;line-height:1.55}
+.mt-check code{background:transparent;padding:0;font-size:.95em;word-break:break-all}
+.mt-chips{display:flex;gap:.3rem;flex-wrap:wrap;margin:.8rem 0 .2rem}
+.mt-chip{font:inherit;font-size:.8rem;padding:.3rem .6rem;background:var(--surface);color:var(--muted);border:1px solid var(--deep);cursor:pointer}
+.mt-chip:hover{border-color:var(--accent);color:var(--ink)}
+.mt-chip.on{background:var(--ink);color:#e9e7e0;border-color:var(--ink)}
+.mt-n{display:block;font-size:.66rem;opacity:.72;font-weight:400}
+.mt-legend{font-size:.8rem;color:var(--faint);margin:.5rem 0 0}
+.mt-trans td{font-size:.8rem}
+.mt-breaks{color:var(--alert);font-size:.78rem}
+</style><h1>8 × 8 矩阵</h1><p class="lede">7 阶段 + 管理，横切 8 层数据流水线。<b>49 格有内容</b>，64 个位置里剩下的 15 格是<b>本来就该空的</b>——需求阶段不选数据源，呈现层没有交付就没有运营。每一格的状态由脚本算出来，不手填。</p><div class="note"><b>看这张图最该做的一件事：比较两行。</b>验收行 8 格里有 6 格是 <b>验</b>，而开发行 8 格全是 <b>约</b>。意思是「知道怎么检查」比「真的建出来了」进展更快——这是三条链先做验收、后补实现的顺序造成的，也是它值得先做的理由。</div><div class="mt-chips"><button class="mt-chip on" data-filter="all" type="button">全部<span class="mt-n">49 格</span></button><button class="mt-chip" data-filter="verified" type="button">验<span class="mt-n">6 格有检查器</span></button><button class="mt-chip" data-filter="contract" type="button">约<span class="mt-n">43 格只有契约</span></button><button class="mt-chip" data-filter="hole" type="button">空<span class="mt-n">0 格有缺</span></button></div><div class="mt-chips"><button class="mt-chip" data-chain="A" type="button" title="地基。时滞与历史改写是静默错误，最晚发现代价最大">链 A：采集 + 存储</button><button class="mt-chip" data-chain="B" type="button" title="§七 与 区间跨 0 是产品的生死线，越早知道越好">链 B：指标 + 分析</button><button class="mt-chip" data-chain="C" type="button" title="决定产品是 dashboard 还是报告">链 C：结论 + 报告</button></div><p class="mt-legend">点一格看它的三件事与检查器，再点一次取消。<span class="tag t-must">验</span> 有检查器，且命令指向的脚本存在&nbsp;&nbsp;<span class="tag t-branch">约</span> 三件事齐，没有检查器——契约在，执行不在&nbsp;&nbsp;<span class="tag t-gap">空</span> 三件事有缺，或写了「同上」&nbsp;&nbsp;</p><div class="mt-wrap"><div class="mt-grid"><table><thead><tr><th scope="col"></th><th scope="col">指标</th><th scope="col">结论</th><th scope="col">采集</th><th scope="col">存储</th><th scope="col">打标</th><th scope="col">分析</th><th scope="col">呈现</th><th scope="col">报告</th></tr></thead><tbody><tr><th scope="row"><span class="mt-stage">需求</span><span class="mt-snote">只问要改变什么动作，不问数据怎么采</span></th><td class="mt-cell mt-contract" data-stage="需求" data-layer="指标" data-status="contract" tabindex="0" role="button" aria-label="需求 指标"><span class="mt-label">指标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="需求" data-layer="结论" data-status="contract" tabindex="0" role="button" aria-label="需求 结论"><span class="mt-label">结论</span><span class="mt-dot">约</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td></tr><tr><th scope="row"><span class="mt-stage">设计</span><span class="mt-snote">满行。每层都要在这里定下样子</span></th><td class="mt-cell mt-contract" data-stage="设计" data-layer="指标" data-status="contract" tabindex="0" role="button" aria-label="设计 指标"><span class="mt-label">指标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="设计" data-layer="结论" data-status="contract" tabindex="0" role="button" aria-label="设计 结论"><span class="mt-label">结论</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="设计" data-layer="采集" data-status="contract" tabindex="0" role="button" aria-label="设计 采集"><span class="mt-label">采集</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="设计" data-layer="存储" data-status="contract" tabindex="0" role="button" aria-label="设计 存储"><span class="mt-label">存储</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="设计" data-layer="打标" data-status="contract" tabindex="0" role="button" aria-label="设计 打标"><span class="mt-label">打标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="设计" data-layer="分析" data-status="contract" tabindex="0" role="button" aria-label="设计 分析"><span class="mt-label">分析</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="设计" data-layer="呈现" data-status="contract" tabindex="0" role="button" aria-label="设计 呈现"><span class="mt-label">呈现</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="设计" data-layer="报告" data-status="contract" tabindex="0" role="button" aria-label="设计 报告"><span class="mt-label">报告</span><span class="mt-dot">约</span></td></tr><tr><th scope="row"><span class="mt-stage">开发</span><span class="mt-snote">满行。真正的交接几乎全落在这一行内部</span></th><td class="mt-cell mt-contract" data-stage="开发" data-layer="指标" data-status="contract" tabindex="0" role="button" aria-label="开发 指标"><span class="mt-label">指标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="开发" data-layer="结论" data-status="contract" tabindex="0" role="button" aria-label="开发 结论"><span class="mt-label">结论</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="开发" data-layer="采集" data-status="contract" tabindex="0" role="button" aria-label="开发 采集"><span class="mt-label">采集</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="开发" data-layer="存储" data-status="contract" tabindex="0" role="button" aria-label="开发 存储"><span class="mt-label">存储</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="开发" data-layer="打标" data-status="contract" tabindex="0" role="button" aria-label="开发 打标"><span class="mt-label">打标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="开发" data-layer="分析" data-status="contract" tabindex="0" role="button" aria-label="开发 分析"><span class="mt-label">分析</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="开发" data-layer="呈现" data-status="contract" tabindex="0" role="button" aria-label="开发 呈现"><span class="mt-label">呈现</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="开发" data-layer="报告" data-status="contract" tabindex="0" role="button" aria-label="开发 报告"><span class="mt-label">报告</span><span class="mt-dot">约</span></td></tr><tr><th scope="row"><span class="mt-stage">验收</span><span class="mt-snote">满行。有格子不等于有检查器——这一行 6/8 有</span></th><td class="mt-cell mt-verified" data-stage="验收" data-layer="指标" data-status="verified" tabindex="0" role="button" aria-label="验收 指标"><span class="mt-label">指标</span><span class="mt-dot">验</span></td><td class="mt-cell mt-verified" data-stage="验收" data-layer="结论" data-status="verified" tabindex="0" role="button" aria-label="验收 结论"><span class="mt-label">结论</span><span class="mt-dot">验</span></td><td class="mt-cell mt-verified" data-stage="验收" data-layer="采集" data-status="verified" tabindex="0" role="button" aria-label="验收 采集"><span class="mt-label">采集</span><span class="mt-dot">验</span></td><td class="mt-cell mt-verified" data-stage="验收" data-layer="存储" data-status="verified" tabindex="0" role="button" aria-label="验收 存储"><span class="mt-label">存储</span><span class="mt-dot">验</span></td><td class="mt-cell mt-contract" data-stage="验收" data-layer="打标" data-status="contract" tabindex="0" role="button" aria-label="验收 打标"><span class="mt-label">打标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-verified" data-stage="验收" data-layer="分析" data-status="verified" tabindex="0" role="button" aria-label="验收 分析"><span class="mt-label">分析</span><span class="mt-dot">验</span></td><td class="mt-cell mt-contract" data-stage="验收" data-layer="呈现" data-status="contract" tabindex="0" role="button" aria-label="验收 呈现"><span class="mt-label">呈现</span><span class="mt-dot">约</span></td><td class="mt-cell mt-verified" data-stage="验收" data-layer="报告" data-status="verified" tabindex="0" role="button" aria-label="验收 报告"><span class="mt-label">报告</span><span class="mt-dot">验</span></td></tr><tr><th scope="row"><span class="mt-stage">交付</span><span class="mt-snote">只有面向用户的两层要交付</span></th><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-cell mt-contract" data-stage="交付" data-layer="呈现" data-status="contract" tabindex="0" role="button" aria-label="交付 呈现"><span class="mt-label">呈现</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="交付" data-layer="报告" data-status="contract" tabindex="0" role="button" aria-label="交付 报告"><span class="mt-label">报告</span><span class="mt-dot">约</span></td></tr><tr><th scope="row"><span class="mt-stage">运营</span><span class="mt-snote">唯一 8/8 满行的阶段。数据产品没有终点</span></th><td class="mt-cell mt-contract" data-stage="运营" data-layer="指标" data-status="contract" tabindex="0" role="button" aria-label="运营 指标"><span class="mt-label">指标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="运营" data-layer="结论" data-status="contract" tabindex="0" role="button" aria-label="运营 结论"><span class="mt-label">结论</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="运营" data-layer="采集" data-status="contract" tabindex="0" role="button" aria-label="运营 采集"><span class="mt-label">采集</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="运营" data-layer="存储" data-status="contract" tabindex="0" role="button" aria-label="运营 存储"><span class="mt-label">存储</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="运营" data-layer="打标" data-status="contract" tabindex="0" role="button" aria-label="运营 打标"><span class="mt-label">打标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="运营" data-layer="分析" data-status="contract" tabindex="0" role="button" aria-label="运营 分析"><span class="mt-label">分析</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="运营" data-layer="呈现" data-status="contract" tabindex="0" role="button" aria-label="运营 呈现"><span class="mt-label">呈现</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="运营" data-layer="报告" data-status="contract" tabindex="0" role="button" aria-label="运营 报告"><span class="mt-label">报告</span><span class="mt-dot">约</span></td></tr><tr><th scope="row"><span class="mt-stage">迭代</span><span class="mt-snote">呈现与报告在迭代行是空的，这是已知洞</span></th><td class="mt-cell mt-contract" data-stage="迭代" data-layer="指标" data-status="contract" tabindex="0" role="button" aria-label="迭代 指标"><span class="mt-label">指标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="迭代" data-layer="结论" data-status="contract" tabindex="0" role="button" aria-label="迭代 结论"><span class="mt-label">结论</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="迭代" data-layer="采集" data-status="contract" tabindex="0" role="button" aria-label="迭代 采集"><span class="mt-label">采集</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="迭代" data-layer="存储" data-status="contract" tabindex="0" role="button" aria-label="迭代 存储"><span class="mt-label">存储</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="迭代" data-layer="打标" data-status="contract" tabindex="0" role="button" aria-label="迭代 打标"><span class="mt-label">打标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="迭代" data-layer="分析" data-status="contract" tabindex="0" role="button" aria-label="迭代 分析"><span class="mt-label">分析</span><span class="mt-dot">约</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td></tr><tr><th scope="row"><span class="mt-stage">管理</span><span class="mt-snote">横跨七个阶段的记录层</span></th><td class="mt-cell mt-contract" data-stage="管理" data-layer="指标" data-status="contract" tabindex="0" role="button" aria-label="管理 指标"><span class="mt-label">指标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="管理" data-layer="结论" data-status="contract" tabindex="0" role="button" aria-label="管理 结论"><span class="mt-label">结论</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="管理" data-layer="采集" data-status="contract" tabindex="0" role="button" aria-label="管理 采集"><span class="mt-label">采集</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="管理" data-layer="存储" data-status="contract" tabindex="0" role="button" aria-label="管理 存储"><span class="mt-label">存储</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="管理" data-layer="打标" data-status="contract" tabindex="0" role="button" aria-label="管理 打标"><span class="mt-label">打标</span><span class="mt-dot">约</span></td><td class="mt-cell mt-contract" data-stage="管理" data-layer="分析" data-status="contract" tabindex="0" role="button" aria-label="管理 分析"><span class="mt-label">分析</span><span class="mt-dot">约</span></td><td class="mt-none" data-status="none"><span class="mt-dot">·</span></td><td class="mt-cell mt-contract" data-stage="管理" data-layer="报告" data-status="contract" tabindex="0" role="button" aria-label="管理 报告"><span class="mt-label">报告</span><span class="mt-dot">约</span></td></tr></tbody></table></div><aside class="mt-panel" id="mt-panel"><h3>选一格</h3><p class="mt-meta">左侧任何一格都能点开。</p><div class="mt-field"><span class="k">这一页在说什么</span><span class="v">每格必须写三件事：<b>输入契约</b>、<b>输出契约</b>、<b>失败模式</b>。三件事都必须可判定——「输出质量要高」不是契约，「输出带 schema_version」是。</span></div><div class="mt-field"><span class="k">三个状态从哪来</span><span class="v">运行 <code>node scripts/matrix-check.mjs</code>。它检查三件事齐不齐、检查器指向的脚本在不在、散文里的数字和它是否一致。页面只渲染它算出来的结果。</span></div></aside></div><h2>八跳衔接</h2><p class="h2sub">格子之间的一致性原来没人管。现在它是一张有校验的表：每一跳都要写清交的是什么、带哪些版本、下游怎么校验、断了会怎样；缺任何一项 <code>matrix-check</code> 就报错。</p><table class="mt-trans"><thead><tr><th>从</th><th>到</th><th>交的是什么</th><th>带哪些版本</th><th>下游怎么校验</th><th>断了会怎样</th></tr></thead><tbody><tr><td>开发·采集</td><td>开发·存储</td><td>观察记录：raw + first_seen_at + fetched_at + source_task_id</td><td>schema_version + fetched_at</td><td>source_task_id 在账本里有对应的 run；first_seen_at ≤ fetched_at</td><td class="mt-breaks">没有 first_seen_at → 时间序列锚在抓取时刻，「抓得晚」被读成「更热」</td></tr><tr><td>开发·存储</td><td>开发·打标</td><td>去重后的条目 + 四类归属命名空间 + 原始载荷</td><td>schema_version + taxonomy_version</td><td>region 落在四值命名空间内；unattributable 至少两个冲突依据</td><td class="mt-breaks">归属摊派给 unknown → 分母完整但错，且看起来没有任何问题</td></tr><tr><td>开发·打标</td><td>开发·指标</td><td>标签 + 置信度 + taxonomy_version</td><td>taxonomy_version + metric_version</td><td>读到的 taxonomy_version 不等于指标卡声明的版本时报警，不许猜</td><td class="mt-breaks">标签改版后静默合并 → 去年的数和今年的数不是一个体系，而台阶看不见</td></tr><tr><td>开发·指标</td><td>开发·分析</td><td>数值 + 口径版本 + 分母规模</td><td>metric_version + produced_at</td><td>分母骤降时拒绝出结论；口径版本不同的两期不许直接相减</td><td class="mt-breaks">口径变更被读成业务变化——最贵的一种错误</td></tr><tr><td>开发·分析</td><td>开发·呈现</td><td>β + 95% 区间 + 吸收了什么的说明</td><td>模型设定版本 + produced_at</td><td>区间跨 0 的数字不进聚合视图；「关联不是因果」的标签必须跟着数走</td><td class="mt-breaks">交付一个识别不成立的看板，而它看起来完全正常</td></tr><tr><td>开发·分析</td><td>开发·结论</td><td>C1–C4 + 区间 + 有效样本量</td><td>模型设定版本 + upstream_versions</td><td>区间跨 0 → 该条结论不许落卡；样本不足 → 降级为描述性</td><td class="mt-breaks">结论卡带着一个什么都没有的区间发布</td></tr><tr><td>开发·结论</td><td>开发·报告</td><td>结论卡 + 证伪条件（可执行）+ status</td><td>口径版本 + taxonomy_version</td><td>证伪条件必须是已注册的函数名；未注册的名字算「无法判断」不算通过</td><td class="mt-breaks">证伪条件写成「如果结论错了」→ 无法被触发，报告退化成 dashboard</td></tr><tr><td>开发·报告</td><td>迭代·结论</td><td>证伪触发 → 旧结论转 superseded + 新结论 + 为什么推翻</td><td>produced_at</td><td>旧结论原件保留不删；新结论指回旧结论；superseded 不被再次告警</td><td class="mt-breaks">直接删掉旧结论 → 失去「我们错过什么」的记录</td></tr></tbody></table>
+<script>
+(function () {
+  var DATA = {"cells": [{"stage": "需求", "layer": "指标", "kind": "决策类", "status": "contract", "input": "决策者要做的决定（从结论层 C1–C4 来）", "output": "这个决定需要哪几个数字，各自容许的误差量级；不需要的数字明确列出", "failure": "把「能算的所有数字」当成需求清单；或某个数字写不出「错了会怎样」", "checker": null}, {"stage": "需求", "layer": "结论", "kind": "决策类", "status": "contract", "input": "一句话想改变的动作", "output": "★C1–C4 四条结论的骨架 + 决策 + 停止信号（什么情况下不投）", "failure": "只有「想了解」没有「会改变哪个动作」；停止信号写不出来", "checker": null}, {"stage": "设计", "layer": "采集", "kind": "决策类", "status": "contract", "input": "需求阶段的「声量由哪些源合成」", "output": "源清单（源 × 用途 × 可回溯深度 × 成本）、抓取节奏表、去重指纹方案、首次见到字段定义", "failure": "源清单里出现「为了以后可能有用」的源；或某源的可回溯深度写不出来", "checker": null}, {"stage": "设计", "layer": "存储", "kind": "决策类", "status": "contract", "input": "四类归属命名空间决定（见 design §三·五）", "output": "schema（含 schema_version / taxonomy_version / 口径版本 三列）、增量/全量分区策略、保留原始载荷的存储位置", "failure": "schema 里有一列解释不出它属于哪一类命名空间", "checker": null}, {"stage": "设计", "layer": "打标", "kind": "决策类", "status": "contract", "input": "指标层要求的标签清单", "output": "标签体系（层级 + 定义 + 版本策略）、置信度口径、金标准集抽样方案、Kappa 阈值", "failure": "某个标签写不出「什么情况算不适用」", "checker": null}, {"stage": "设计", "layer": "指标", "kind": "决策类", "status": "contract", "input": "需求阶段的「决策需要哪些数字」", "output": "指标卡（八项必有字段），三族清单，**A2+/A2− 拆分**", "failure": "任一指标卡缺「已知偏差」或「什么时候不可用」", "checker": null}, {"stage": "设计", "layer": "分析", "kind": "决策类", "status": "contract", "input": "C1–C4 要证伪什么", "output": "模型设定（面板、固定效应、控制变量清单、滞后范围）+ **§七 kill switch**", "failure": "控制变量清单里没有缺货率", "checker": null}, {"stage": "设计", "layer": "呈现", "kind": "决策类", "status": "contract", "input": "分析输出的形状", "output": "下钻路径、口径版本显示位置、三态可见性方案", "failure": "某个聚合数找不到下钻路径", "checker": null}, {"stage": "设计", "layer": "结论", "kind": "决策类", "status": "contract", "input": "C1–C4 + 决策 + 停止信号", "output": "结论卡六项模板 + 证伪条件**可执行化**", "failure": "证伪条件写成「如果结论错了」", "checker": null}, {"stage": "设计", "layer": "报告", "kind": "决策类", "status": "contract", "input": "证伪条件清单", "output": "证伪检查的跑批频率 + 失败通知路径 + 报告节奏", "failure": "证伪检查只在「有人想看」时跑", "checker": null}, {"stage": "开发", "layer": "采集", "kind": "工程类", "status": "contract", "input": "需求阶段定下的源清单，每源带可回溯深度与成本上限", "output": "每个源一个 adapter，统一输出 {raw, first_seen_at, fetched_at, source_task_id}；原始载荷原样存", "failure": "同一批数据跑两次得到不同 `first_seen_at`；或抓到的东西缺 `fetched_at`", "checker": null}, {"stage": "开发", "layer": "存储", "kind": "工程类", "status": "contract", "input": "adapter 输出的观察记录流，含 raw 与两个时点", "output": "建表 + 迁移脚本；原始载荷压缩存；**重跑不重写历史**", "failure": "重跑一次把 `first_seen_at` 覆盖了", "checker": null}, {"stage": "开发", "layer": "打标", "kind": "工程类 + 决策类", "status": "contract", "input": "标签体系", "output": "标注流水线（打标 + 置信度 + 版本写入）、金标准集 runner", "failure": "标注结果没有 `taxonomy_version`", "checker": null}, {"stage": "开发", "layer": "指标", "kind": "工程类", "status": "contract", "input": "指标卡", "output": "计算逻辑，每个数字带 口径版本", "failure": "同一个指标在两处实现有不同定义", "checker": null}, {"stage": "开发", "layer": "分析", "kind": "工程类", "status": "contract", "input": "模型设定", "output": "最小版（2 区域 × 12 周）→ 加控制变量版", "failure": "跑出来没有区间，只有点估计", "checker": null}, {"stage": "开发", "layer": "呈现", "kind": "工程类", "status": "contract", "input": "带区间的分析结果，每个数字附口径版本", "output": "下钻 UI", "failure": "数字旁边不显示口径版本", "checker": null}, {"stage": "开发", "layer": "结论", "kind": "工程类", "status": "contract", "input": "卡模板", "output": "结论卡存储（含状态：active / superseded）", "failure": "状态只有「已发布」，没有「被推翻」", "checker": null}, {"stage": "开发", "layer": "报告", "kind": "工程类", "status": "contract", "input": "结论卡：主张、范围、区间、依据、证伪条件、决策含义", "output": "证伪检查脚本 + 推送通道", "failure": "检查失败时不通知", "checker": null}, {"stage": "验收", "layer": "采集", "kind": "工程类", "status": "verified", "input": "两天同批抓取的数据", "output": "时滞检查报告（同一帖子两次抓取的互动量差）、去重率、缺抓率", "failure": "去重率异常低（说明跨源重复没处理）或时滞方差大（说明抓取节奏不稳）", "checker": {"cmd": "node scripts/collect-audit.mjs <ledger.jsonl>", "exit": "0 通过 / 1 失败 / 2 无法判断", "note": "时滞跨区域离散、指纹召回率、按源四态计数"}}, {"stage": "验收", "layer": "存储", "kind": "工程类", "status": "verified", "input": "两次全量重跑", "output": "一致性报告（第二次是否改写了历史记录）", "failure": "任何历史字段被改写 → 直接不通过", "checker": {"cmd": "node scripts/collect-store.mjs verify <ledger.jsonl>", "exit": "0 不变量成立 / 1 有结构性错误", "note": "first_seen_at 不被重写、空抓留记录、迁移是读侧透镜"}}, {"stage": "验收", "layer": "打标", "kind": "决策类", "status": "contract", "input": "金标准集（人工标）", "output": "准确率、Kappa、按置信度分层的准确率", "failure": "准确率 < 0.7 → 该维度不可用，A2+/A2− 退化为 A1；Kappa < 0.6 → 标签定义有歧义", "checker": null}, {"stage": "验收", "layer": "指标", "kind": "工程类", "status": "verified", "input": "两处独立实现的同一指标", "output": "对账报告", "failure": "两处数字不一致 → 直接不通过。另：分母异常检测（某周分母骤降）", "checker": {"cmd": "node scripts/metric-card.mjs check", "exit": "0 八项齐 / 1 有缺项或空话", "note": "模板本身会被判失败——八个小标题什么也没证明"}}, {"stage": "验收", "layer": "分析", "kind": "工程类", "status": "verified", "input": "真实数据", "output": "§七 相关性报告、区间是否跨 0、稳健性（分置信度分层）", "failure": "相关性 > 0.8 → 停；区间跨 0 → 标「无结论」而不是「效应弱」", "checker": {"cmd": "node scripts/region-corr.mjs <data.csv>; node scripts/panel-fit.mjs <panel.csv>", "exit": "0 成立 / 1 识别不成立 / 2 无法判断 / 3 无结论", "note": "§七 是前置门禁；区间跨 0 是「无结论」不是「效应弱」"}}, {"stage": "验收", "layer": "呈现", "kind": "工程类", "status": "contract", "input": "上线后的界面", "output": "逐个数点一遍，确认每个能下钻到明细", "failure": "任何一个数字点不下去 → 不通过", "checker": null}, {"stage": "验收", "layer": "结论", "kind": "决策类", "status": "verified", "input": "每条结论卡", "output": "逐条确认证伪条件能被一条命令执行", "failure": "任一条执行不了", "checker": {"cmd": "node scripts/verify-conclusion.mjs <conclusions.json>", "exit": "0 全成立 / 1 有结论被证伪 / 2 有检查无法判断", "note": "每条证伪条件是一个纯函数，能被触发"}}, {"stage": "验收", "layer": "报告", "kind": "工程类", "status": "verified", "input": "人为造一次证伪触发", "output": "看它报不报", "failure": "造了触发不报 → 不通过。这是整个报告层的唯一实质验收", "checker": {"cmd": "node scripts/verify-conclusion.mjs <conclusions.json>", "exit": "0 全成立 / 1 有结论被证伪 / 2 有检查无法判断", "note": "报告层唯一的实质验收：造一次触发，看它报不报"}}, {"stage": "交付", "layer": "呈现", "kind": "工程类", "status": "contract", "input": "可运行的界面", "output": "别人能打开的地址", "failure": "只有本机能开", "checker": null}, {"stage": "交付", "layer": "报告", "kind": "工程类", "status": "contract", "input": "推送通道", "output": "飞书 / 邮件可达", "failure": "需要人手动转发", "checker": null}, {"stage": "运营", "layer": "采集", "kind": "运行类", "status": "contract", "input": "每日抓取结果", "output": "三态计数（抓到了 / 抓错了 / 无法判断）+ 今天各源成功率", "failure": "连续两天某源成功率 0 而无告警", "checker": null}, {"stage": "运营", "layer": "存储", "kind": "运行类", "status": "contract", "input": "库的实际状态", "output": "增长速率、存储成本、重复率", "failure": "增长速率异常（说明去重失效或重复抓取）", "checker": null}, {"stage": "运营", "layer": "打标", "kind": "运行类", "status": "contract", "input": "持续标注结果", "output": "准确率漂移监控（按周）、置信度分布", "failure": "准确率连续两周下降而无告警", "checker": null}, {"stage": "运营", "layer": "指标", "kind": "运行类", "status": "contract", "input": "每日计算", "output": "三态（算出来了 / 算错了 / 无法判断）+ 分母规模监控", "failure": "某天指标缺失而无告警", "checker": null}, {"stage": "运营", "layer": "分析", "kind": "运行类", "status": "contract", "input": "每周重估", "output": "收敛性、系数稳定性", "failure": "系数符号在两周之间翻转而无告警", "checker": null}, {"stage": "运营", "layer": "呈现", "kind": "运行类", "status": "contract", "input": "访问日志", "output": "有人看吗（访问量、下钻深度）", "failure": "上线两月零访问而无告警", "checker": null}, {"stage": "运营", "layer": "结论", "kind": "运行类", "status": "contract", "input": "决策者的实际使用", "output": "被使用次数、被反驳次数、被推翻次数", "failure": "只统计「看了」，不统计「据此做了什么」", "checker": null}, {"stage": "运营", "layer": "报告", "kind": "运行类", "status": "contract", "input": "发送记录", "output": "发了多少、有没有回应、有没有人因为某条报告改了做法", "failure": "只统计发送量", "checker": null}, {"stage": "迭代", "layer": "采集", "kind": "决策类", "status": "contract", "input": "运营期的源表现（成本、覆盖率、可回溯深度）", "output": "新增/停用源的 ADR", "failure": "加了源但没写「它替代了谁的什么职责」", "checker": null}, {"stage": "迭代", "layer": "存储", "kind": "决策类", "status": "contract", "input": "schema 变更需求", "output": "迁移 ADR + 旧数据保留策略", "failure": "迁移 ADR 没写「旧版本数据还能不能查」", "checker": null}, {"stage": "迭代", "layer": "打标", "kind": "决策类", "status": "contract", "input": "标签需要改版", "output": "新版本 + 显式映射表（不静默合并）+ ADR", "failure": "旧数据被重写，或跨版本查询没有分组", "checker": null}, {"stage": "迭代", "layer": "指标", "kind": "决策类", "status": "contract", "input": "口径需要变更", "output": "新版本号 + 新旧对应说明；**旧数据不重算**", "failure": "变更后跨期比较没有标注版本差异", "checker": null}, {"stage": "迭代", "layer": "分析", "kind": "决策类", "status": "contract", "input": "新一年数据 / 新源", "output": "重估 + 与旧结论对比", "failure": "重估后没说明旧结论是维持、修正还是推翻", "checker": null}, {"stage": "迭代", "layer": "结论", "kind": "决策类", "status": "contract", "input": "被推翻的结论", "output": "superseded + 新结论 + 为什么推翻", "failure": "直接删掉旧结论（那就失去了「我们错过什么」的记录）", "checker": null}, {"stage": "管理", "layer": "采集", "kind": "运行类", "status": "contract", "input": "源故障", "output": "INC- 记录（严重性、影响哪些结论、恢复时间）", "failure": "事故记成票（票是打算做的事，事故是发生了的事）", "checker": null}, {"stage": "管理", "layer": "存储", "kind": "决策类", "status": "contract", "input": "迁移", "output": "ADR（永久记录）", "failure": "迁移写进票而不是 ADR（ADR 是历史，票是工作）", "checker": null}, {"stage": "管理", "layer": "打标", "kind": "决策类", "status": "contract", "input": "标签改版", "output": "ADR + 设计记录更新", "failure": "改版只改了代码，没留下为什么", "checker": null}, {"stage": "管理", "layer": "指标", "kind": "决策类", "status": "contract", "input": "口径变更", "output": "ADR + 设计记录", "failure": "变更没留下为什么", "checker": null}, {"stage": "管理", "layer": "分析", "kind": "决策类", "status": "contract", "input": "模型设定变更", "output": "设计记录（不是 ADR——它会变，会被 superseded）", "failure": "写进 ADR（ADR 不该再改）", "checker": null}, {"stage": "管理", "layer": "结论", "kind": "决策类", "status": "contract", "input": "结论卡", "output": "设计记录；被推翻走 superseded 状态迁移", "failure": "改写原件而不是新增", "checker": null}, {"stage": "管理", "layer": "报告", "kind": "决策类", "status": "contract", "input": "证伪检查的触发", "output": "INC 记录（触发了哪一条、影响哪些结论、谁被通知）", "failure": "证伪触发记成票（票是打算做的事，事故是发生了的事）", "checker": null}], "transitions": [{"from": ["开发", "采集"], "to": ["开发", "存储"], "carries": "观察记录：raw + first_seen_at + fetched_at + source_task_id", "versioned": ["schema_version", "fetched_at"], "downstreamChecks": "source_task_id 在账本里有对应的 run；first_seen_at ≤ fetched_at", "breaks": "没有 first_seen_at → 时间序列锚在抓取时刻，「抓得晚」被读成「更热」"}, {"from": ["开发", "存储"], "to": ["开发", "打标"], "carries": "去重后的条目 + 四类归属命名空间 + 原始载荷", "versioned": ["schema_version", "taxonomy_version"], "downstreamChecks": "region 落在四值命名空间内；unattributable 至少两个冲突依据", "breaks": "归属摊派给 unknown → 分母完整但错，且看起来没有任何问题"}, {"from": ["开发", "打标"], "to": ["开发", "指标"], "carries": "标签 + 置信度 + taxonomy_version", "versioned": ["taxonomy_version", "metric_version"], "downstreamChecks": "读到的 taxonomy_version 不等于指标卡声明的版本时报警，不许猜", "breaks": "标签改版后静默合并 → 去年的数和今年的数不是一个体系，而台阶看不见"}, {"from": ["开发", "指标"], "to": ["开发", "分析"], "carries": "数值 + 口径版本 + 分母规模", "versioned": ["metric_version", "produced_at"], "downstreamChecks": "分母骤降时拒绝出结论；口径版本不同的两期不许直接相减", "breaks": "口径变更被读成业务变化——最贵的一种错误"}, {"from": ["开发", "分析"], "to": ["开发", "呈现"], "carries": "β + 95% 区间 + 吸收了什么的说明", "versioned": ["模型设定版本", "produced_at"], "downstreamChecks": "区间跨 0 的数字不进聚合视图；「关联不是因果」的标签必须跟着数走", "breaks": "交付一个识别不成立的看板，而它看起来完全正常"}, {"from": ["开发", "分析"], "to": ["开发", "结论"], "carries": "C1–C4 + 区间 + 有效样本量", "versioned": ["模型设定版本", "upstream_versions"], "downstreamChecks": "区间跨 0 → 该条结论不许落卡；样本不足 → 降级为描述性", "breaks": "结论卡带着一个什么都没有的区间发布"}, {"from": ["开发", "结论"], "to": ["开发", "报告"], "carries": "结论卡 + 证伪条件（可执行）+ status", "versioned": ["口径版本", "taxonomy_version"], "downstreamChecks": "证伪条件必须是已注册的函数名；未注册的名字算「无法判断」不算通过", "breaks": "证伪条件写成「如果结论错了」→ 无法被触发，报告退化成 dashboard"}, {"from": ["开发", "报告"], "to": ["迭代", "结论"], "carries": "证伪触发 → 旧结论转 superseded + 新结论 + 为什么推翻", "versioned": ["produced_at"], "downstreamChecks": "旧结论原件保留不删；新结论指回旧结论；superseded 不被再次告警", "breaks": "直接删掉旧结论 → 失去「我们错过什么」的记录"}], "chains": [{"id": "A", "layers": ["采集", "存储"], "why": "地基。时滞与历史改写是静默错误，最晚发现代价最大"}, {"id": "B", "layers": ["指标", "分析"], "why": "§七 与 区间跨 0 是产品的生死线，越早知道越好"}, {"id": "C", "layers": ["结论", "报告"], "why": "决定产品是 dashboard 还是报告"}]};
+  var STATUS = {verified: '验', contract: '约', hole: '空'};
+  var cells = document.querySelectorAll('.mt-cell');
+  var panel = document.getElementById('mt-panel');
+  var selected = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>]/g, function (c) {
+      return {'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c];
+    });
+  }
+
+  function find(stage, layer) {
+    for (var i = 0; i < DATA.cells.length; i++) {
+      if (DATA.cells[i].stage === stage && DATA.cells[i].layer === layer) return DATA.cells[i];
+    }
+    return null;
+  }
+
+  function show(cell) {
+    var h = find(cell.dataset.stage, cell.dataset.layer);
+    if (!h) return;
+    var out = '<h3>' + esc(h.stage) + ' · ' + esc(h.layer) + '</h3>';
+    out += '<p class="mt-meta">' + esc(h.kind) + ' · 状态 <b>' + STATUS[h.status] + '</b>';
+    if (h.status === 'contract') out += ' — 契约在，执行不在';
+    if (h.status === 'hole') out += ' — 这一格是洞';
+    out += '</p>';
+    out += '<div class="mt-field"><span class="k">输入契约</span><span class="v">' + esc(h.input) + '</span></div>';
+    out += '<div class="mt-field"><span class="k">输出契约</span><span class="v">' + esc(h.output) + '</span></div>';
+    out += '<div class="mt-field"><span class="k">失败模式</span><span class="v">' + esc(h.failure) + '</span></div>';
+    if (h.checker) {
+      out += '<div class="mt-check"><b>检查器</b><br><code>' + esc(h.checker.cmd) + '</code><br>'
+           + '<b>退出码</b> ' + esc(h.checker.exit) + '<br>'
+           + '<span style="color:var(--faint)">' + esc(h.checker.note) + '</span></div>';
+    } else {
+      out += '<div class="mt-check">没有检查器。这一格的契约写下来了，但<b>没有任何东西会让它失败</b>'
+           + '——按这个仓库自己的判据，它和一条永远不会失败的检查是同一种东西。</div>';
+    }
+    var me = h.stage + '·' + h.layer;
+    var hops = [];
+    DATA.transitions.forEach(function (t) {
+      if (t.from.join('·') === me) hops.push('出 → ' + t.to.join('·'));
+      if (t.to.join('·') === me) hops.push('入 ← ' + t.from.join('·'));
+    });
+    if (hops.length) {
+      out += '<div class="mt-field" style="margin-top:.7rem"><span class="k">衔接</span>'
+           + '<span class="v">' + esc(hops.join('；')) + '</span></div>';
+    }
+    panel.innerHTML = out;
+  }
+
+  Array.prototype.forEach.call(cells, function (cell) {
+    cell.addEventListener('click', function () {
+      if (selected) selected.classList.remove('mt-sel');
+      selected = (selected === cell) ? null : cell;
+      if (selected) { selected.classList.add('mt-sel'); show(cell); }
+    });
+    cell.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cell.click(); }
+    });
+  });
+
+  var chips = document.querySelectorAll('[data-filter]');
+  Array.prototype.forEach.call(chips, function (chip) {
+    chip.addEventListener('click', function () {
+      Array.prototype.forEach.call(chips, function (c) { c.classList.remove('on'); });
+      chip.classList.add('on');
+      var want = chip.dataset.filter;
+      Array.prototype.forEach.call(cells, function (cell) {
+        cell.classList.toggle('mt-dim', want !== 'all' && cell.dataset.status !== want);
+      });
+    });
+  });
+
+  var chainChips = document.querySelectorAll('[data-chain]');
+  var active = null;
+  Array.prototype.forEach.call(chainChips, function (chip) {
+    chip.addEventListener('click', function () {
+      var was = chip.classList.contains('on');
+      Array.prototype.forEach.call(chainChips, function (c) { c.classList.remove('on'); });
+      active = was ? null : chip.dataset.chain;
+      if (!was) chip.classList.add('on');
+      var chain = null;
+      DATA.chains.forEach(function (c) { if (c.id === active) chain = c; });
+      Array.prototype.forEach.call(cells, function (cell) {
+        var dim = chain !== null && chain.layers.indexOf(cell.dataset.layer) === -1;
+        cell.classList.toggle('mt-dim', dim);
+      });
+    });
+  });
+})();
+</script>
+
+  
+</main>
+<div class="shell"><footer>
+  Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+  这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+</footer></div>
+</body>
+</html>
