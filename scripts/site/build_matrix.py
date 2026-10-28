@@ -189,8 +189,14 @@ def load():
 
 def grid(doc):
     cells = doc['cells']
-    stages = list(dict.fromkeys(c['stage'] for c in cells))
-    layers = list(dict.fromkeys(c['layer'] for c in cells))
+    # Order comes from the declared arrays, NOT from the cells' own iteration order.
+    # Deriving it here was a real defect caught by a screenshot: `dict.fromkeys` over
+    # cells sorted by stage puts 需求's two layers (指标, 结论) first, so the columns
+    # came out as 指标·结论·采集·存储… — the grid read as if the pipeline started at
+    # the metric layer. The order is a fact about the layers, so it comes from the
+    # place that declares them.
+    stages = doc['stages']
+    layers = doc['layers']
     by = {(c['stage'], c['layer']): c for c in cells}
 
     head = '<tr><th scope="col"></th>' + ''.join('<th scope="col">' + l + '</th>' for l in layers) + '</tr>'
