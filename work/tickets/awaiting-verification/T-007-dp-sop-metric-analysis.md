@@ -3,6 +3,7 @@ id: T-007
 title: 链 B：指标→分析（含 §七 kill switch）
 kind: ticket
 stage: build
+cells: [需求·指标, 设计·指标, 开发·指标, 验收·指标, 设计·分析, 开发·分析, 验收·分析]
 created: 2026-10-28
 needs: []
 evidence: [E-006]

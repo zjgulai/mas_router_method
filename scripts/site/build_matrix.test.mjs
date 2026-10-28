@@ -130,3 +130,23 @@ test('the column order is the declared layer order, not the order cells happen t
   const shown = [...head.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map((m) => m[1]).filter((h) => h !== '');
   assert.deepEqual(shown, doc.layers, "column order must equal matrix.json's layers");
 });
+
+test('unclaimed cells are split into gaps and not-yet, and the page shows both counts', async () => {
+  /*
+   * "No ticket" is two different things and conflating them hides the one that
+   * matters. 运营 / 迭代 / 管理 cannot have tickets before the product runs; 打标
+   * today has none because nobody planned it. The page must not paint them the same.
+   */
+  const html = await built();
+  const doc = await data();
+  assert.ok(Array.isArray(doc.gaps) && Array.isArray(doc.futures));
+  assert.ok(doc.gaps.length > 0, 'there are real gaps right now — this fixture would be lying if it said otherwise');
+  for (const g of doc.gaps) {
+    const stage = g.split('·')[0];
+    assert.ok(!['运营', '迭代', '管理'].includes(stage),
+      `${g} is in a future stage, so it is not a gap`);
+  }
+  assert.ok(html.includes(doc.gaps.length + ' 格该有票却没有'));
+  assert.ok(html.includes(doc.futures.length + ' 格还没到时候'));
+  assert.equal((html.match(/mt-cell mt-\w+ mt-gap/g) ?? []).length, doc.gaps.length);
+});

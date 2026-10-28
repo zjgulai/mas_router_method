@@ -3,6 +3,7 @@ id: T-008
 title: 链 C：结论→报告（证伪条件可执行化）
 kind: ticket
 stage: build
+cells: [需求·结论, 设计·结论, 开发·结论, 验收·结论, 设计·报告, 开发·报告, 验收·报告]
 created: 2026-10-28
 needs: [T-007]
 evidence: [E-007]

@@ -3,6 +3,7 @@ id: T-006
 title: 链 A：采集→存储契约与检查器
 kind: ticket
 stage: build
+cells: [设计·采集, 开发·采集, 验收·采集, 设计·存储, 开发·存储, 验收·存储]
 created: 2026-10-28
 needs: []
 evidence: [E-005]

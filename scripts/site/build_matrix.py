@@ -58,6 +58,8 @@ CSS = """
 .mt-none{background:var(--sunk)}.mt-none .mt-dot{color:var(--deep)}
 .mt-cell.mt-dim{opacity:.18}
 .mt-cell.mt-sel{box-shadow:inset 0 0 0 2px var(--ink)}
+.mt-cell.mt-gap{box-shadow:inset 0 0 0 2px var(--alert)}
+.mt-cell.mt-gap .mt-label{color:var(--alert);font-weight:650}
 .mt-panel{background:var(--surface);padding:1.1rem 1.2rem}
 .mt-panel h3{margin:0 0 .2rem;font-size:1rem}
 .mt-meta{font-size:.76rem;color:var(--faint);margin:0 0 .8rem}
@@ -117,6 +119,15 @@ JS = """
       out += '<div class="mt-check">没有检查器。这一格的契约写下来了，但<b>没有任何东西会让它失败</b>'
            + '——按这个仓库自己的判据，它和一条永远不会失败的检查是同一种东西。</div>';
     }
+    if (h.tickets && h.tickets.length) {
+      var rows = h.tickets.map(function (t) {
+        return '<b>' + esc(t.id) + '</b> ' + esc(t.title) + ' <span style="color:var(--faint)">(' + esc(t.state) + ')</span>';
+      }).join('<br>');
+      out += '<div class="mt-check"><b>认领它的票</b><br>' + rows + '</div>';
+    } else {
+      out += '<div class="mt-check">没有任何票认领这一格。'
+           + '契约写下来了，但没有人负责把它做出来，也没有东西会让它失败。</div>';
+    }
     var me = h.stage + '·' + h.layer;
     var hops = [];
     DATA.transitions.forEach(function (t) {
@@ -148,7 +159,11 @@ JS = """
       chip.classList.add('on');
       var want = chip.dataset.filter;
       Array.prototype.forEach.call(cells, function (cell) {
-        cell.classList.toggle('mt-dim', want !== 'all' && cell.dataset.status !== want);
+        var dim;
+        if (want === 'all') dim = false;
+        else if (want === 'gap' || want === 'future') dim = cell.dataset.unclaimed !== want;
+        else dim = cell.dataset.status !== want;
+        cell.classList.toggle('mt-dim', dim);
       });
     });
   });
@@ -208,9 +223,13 @@ def grid(doc):
             if c is None:
                 tds.append('<td class="mt-none" data-status="none"><span class="mt-dot">·</span></td>')
                 continue
+            claimed = '1' if c.get('ticketState') else '0'
+            kind = c.get('unclaimed') or ''
             tds.append(
-                '<td class="mt-cell mt-' + c['status'] + '" data-stage="' + s + '" data-layer="' + l
-                + '" data-status="' + c['status'] + '" tabindex="0" role="button" aria-label="'
+                '<td class="mt-cell mt-' + c['status'] + (' mt-gap' if kind == 'gap' else '')
+                + '" data-stage="' + s + '" data-layer="' + l + '" data-status="' + c['status']
+                + '" data-claimed="' + claimed + '" data-unclaimed="' + kind
+                + '" tabindex="0" role="button" aria-label="'
                 + s + ' ' + l + '">'
                 + '<span class="mt-label">' + l + '</span>'
                 + '<span class="mt-dot">' + STATUS_LABEL[c['status']] + '</span></td>')
@@ -230,6 +249,8 @@ def body_html(doc):
         ('verified', '验', str(counts.get('verified', 0)) + ' 格有检查器'),
         ('contract', '约', str(counts.get('contract', 0)) + ' 格只有契约'),
         ('hole', '空', str(counts.get('hole', 0)) + ' 格有缺'),
+        ('gap', '缺口', str(sum(1 for c in cells if c.get('unclaimed') == 'gap')) + ' 格该有票却没有'),
+        ('future', '未到', str(sum(1 for c in cells if c.get('unclaimed') == 'future')) + ' 格还没到时候'),
     ]
     chips = ''.join(
         '<button class="mt-chip' + (' on' if k == 'all' else '') + '" data-filter="' + k
@@ -243,6 +264,8 @@ def body_html(doc):
     legend = ''.join(
         '<span class="tag ' + STATUS_TAG[k] + '">' + STATUS_LABEL[k] + '</span> ' + STATUS_NOTE[k]
         + '&nbsp;&nbsp;' for k in ('verified', 'contract', 'hole'))
+    legend += ('<br><b>红框</b>＝缺口：这个阶段正在进行，却没有票认领这一格。'
+               '运营 / 迭代 / 管理不标红框——产品还没上线，那三层的票要等前面走完。')
 
     trans_rows = ''.join(
         '<tr><td>' + '·'.join(t['from']) + '</td><td>' + '·'.join(t['to']) + '</td><td>'
@@ -299,6 +322,8 @@ def body_html(doc):
             'stage': c['stage'], 'layer': c['layer'], 'kind': c['kind'],
             'status': c['status'], 'input': c['input'], 'output': c['output'],
             'failure': c['failure'], 'checker': c.get('checker'),
+            'ticketState': c.get('ticketState'), 'tickets': c.get('tickets', []),
+            'unclaimed': c.get('unclaimed'),
         } for c in cells],
         'transitions': doc['transitions'],
         'chains': doc['chains'],

@@ -29,7 +29,8 @@
  */
 import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ROOT } from './schema.mjs';
+import { ROOT, loadSchema } from './schema.mjs';
+import { readTickets, attach, expandCells, unclaimedKind } from './ticket-cells.mjs';
 
 const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
       DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
@@ -158,6 +159,47 @@ const enriched = doc.cells.map((cell) => {
   return { ...cell, status, problems: cellProblems };
 });
 
+// ── Tickets, joined on the cells they claim ─────────────────────────────────
+//
+// The join is the point of this whole exercise: a cell can say "contract written"
+// and still be nobody's work. Attaching the tickets makes that visible — a row of
+// cells with no ticket and no checker is the place the product would quietly stall.
+//
+// A ticket claiming a cell that does not exist is an error, not a detail: either it
+// is working on something nobody planned, or the matrix lost a row.
+const { tickets } = await readTickets(await loadSchema());
+const { byCell } = attach(tickets, doc.stages, doc.layers);
+
+// An explicit claim must name a real cell; a wildcard expands only onto real cells.
+for (const t of tickets) {
+  if (!t.linked) continue;
+  for (const c of t.cells) {
+    if (c.stage === '*' || c.layer === '*') continue;
+    if (!at.has(`${c.stage}\u0000${c.layer}`)) {
+      problems.push(`ticket ${t.id} claims ${c.stage} · ${c.layer}, which is not a cell in the matrix`);
+    }
+  }
+}
+
+// A cell whose only ticket is `landed` but which has no checker is worth naming: the
+// work was accepted somewhere and nothing in this repo can re-check it. Not an error
+// — plenty of acceptance is a human reading a file — but it is the shape that rots.
+for (const cell of enriched) {
+  const claim = byCell.get(`${cell.stage}\u0000${cell.layer}`);
+  if (claim === undefined) continue;
+  cell.ticketState = claim.state;
+  cell.tickets = claim.tickets;
+}
+
+// Every cell either has a ticket or does not, and "does not" has two meanings.
+for (const cell of enriched) {
+  const kind = unclaimedKind(cell.stage, cell);
+  if (kind !== null) cell.unclaimed = kind;
+}
+
+const gaps = enriched.filter((c) => c.unclaimed === 'gap');
+const futures = enriched.filter((c) => c.unclaimed === 'future');
+
 // 5. the prose must not quote counts that disagree with the data.
 //
 // This is the exact failure the matrix doc was written to fix: it said "88 个格子"
@@ -207,6 +249,8 @@ if (process.argv.includes('--json')) {
     layers: doc.layers,
     gridSize: doc.stages.length * doc.layers.length,
     byStatus,
+    gaps: gaps.map((c) => c.stage + '·' + c.layer),
+    futures: futures.map((c) => c.stage + '·' + c.layer),
     problems,
   }, null, 2));
   process.exitCode = problems.length > 0 ? 1 : 0;
@@ -230,7 +274,10 @@ if (process.argv.includes('--json')) {
   }
   console.log(`\n  ${GREEN}验${RESET} 有检查器且脚本存在 · ${YELLOW}约${RESET} 三件事齐但没有可执行验收 · ${RED}空${RESET} 三件事有缺`);
   console.log(`  ${DIM}${byStatus.verified ?? 0} verified · ${byStatus.contract ?? 0} contract · ${byStatus.hole ?? 0} hole`
-    + ` · ${doc.transitions.length} 跳衔接${RESET}\n`);
+    + ` · ${doc.transitions.length} 跳衔接${RESET}`);
+  console.log(`  ${DIM}票据 ${tickets.filter((t) => t.linked).length} 张认领了 `
+    + `${enriched.filter((c) => c.ticketState).length} 格 · `
+    + `${RED}${gaps.length} 格缺口${RESET}${DIM}（该有票却没有） · ${futures.length} 格未到（还没到时候）${RESET}\n`);
 
   if (problems.length === 0) {
     console.log(`${GREEN}ok${RESET} — ${total} cells, ${doc.transitions.length} transitions, every checker resolves`);

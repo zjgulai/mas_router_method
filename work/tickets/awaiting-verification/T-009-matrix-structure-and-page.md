@@ -3,6 +3,7 @@ id: T-009
 title: 一级矩阵结构化 + 二级矩阵（按三件事切）+ 交互页
 kind: ticket
 stage: build
+cells: [开发·呈现, 验收·呈现]
 created: 2026-10-28
 needs: []
 evidence: [E-008]
