@@ -40,6 +40,9 @@ coverage/
 # read them. Only throwaway experiments stay local.
 .scratch/local/
 
+# --- local Claude session settings (NMEM_SPACE 等环境固化，不进仓) ---
+.claude/settings.local.json
+
 # --- eval runs (transient); baselines are committed ---
 packages/evals/runs/
 

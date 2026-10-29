@@ -1,0 +1,23 @@
+{
+  "objectTypes": [
+    { "key": "Agent", "displayName": "产品 Agent", "description": "本仓库承载的产品智能体：Recipe Agent（爆款视频→品牌 Recipe）与 Main Agent（consult 能力图 + Feishu 问答）" },
+    { "key": "Surface", "displayName": "产品面", "description": "用户到达产品的界面：apps/workbench（operator 审查面板）与 apps/bot-gateway（Feishu 机器人网关）" },
+    { "key": "Package", "displayName": "工作区包", "description": "pnpm workspace 中的包：@mas/shared、@mas/core、@mas/feishu、@mas/consult、@mas/evals 及 apps/*" },
+    { "key": "Tool", "displayName": "Agent 工具", "description": "MCP 工具（brand/reference/recipe/vision 等），定义走 ports，白名单在 brandToolNames()" },
+    { "key": "Store", "displayName": "存储端口", "description": "ports 接口及其实现：BrandStore、ReferenceStore、RecipeStore、VisionAnalyzer" },
+    { "key": "Brand", "displayName": "品牌档案", "description": "packages/core/src/seed/brands.ts 中的四个种子品牌，guardrails 的载体" },
+    { "key": "Recipe", "displayName": "Recipe", "description": "核心领域对象：爆款参考视频的可克隆抽象，按品牌换皮，shooter 可执行；经 Zod schema 校验" },
+    { "key": "EvalCase", "displayName": "Eval 案例", "description": "eval 集中的单个案例（should_pass / should_fail / rubric），150 案例主集 + packages/evals 14 案例" },
+    { "key": "Decision", "displayName": "架构决议", "description": "docs/adr/ 中的 ADR 记录（0001-0010），架构铁律的真源" },
+    { "key": "EvalSuite", "displayName": "Eval 套件", "description": "eval 集与判分体系：deterministic rubric、LLM judge、harness（packages/evals）" }
+  ],
+  "linkTypes": [
+    { "key": "DEPENDS_ON", "displayName": "依赖", "inverseDisplayName": "被依赖" },
+    { "key": "IMPLEMENTS", "displayName": "实现", "inverseDisplayName": "被实现" },
+    { "key": "OWNS", "displayName": "拥有", "inverseDisplayName": "属于" },
+    { "key": "VALIDATES", "displayName": "验证", "inverseDisplayName": "被验证" },
+    { "key": "DECIDES", "displayName": "决议", "inverseDisplayName": "由...决议" },
+    { "key": "REFERENCES", "displayName": "引用", "inverseDisplayName": "被引用" },
+    { "key": "EVOLVES", "displayName": "演进", "inverseDisplayName": "演化自" }
+  ]
+}
