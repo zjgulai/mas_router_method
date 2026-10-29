@@ -1,40 +1,43 @@
 #!/usr/bin/env bash
-# 服务器侧：加载镜像并启动 mas-router-site。只动这个项目，不碰其他容器。
+# 服务器侧：从构建上下文原生构建镜像，并启动 mas-router-site。
+# 只动这个项目，不碰其他容器。
 #
-# 用法（在服务器上，镜像 tar 已上传到 /tmp）：
-#   sudo bash deploy-release.sh <IMAGE_TAG> /tmp/mas-router-site-<tag>-linux-amd64.tar.gz
+# 用法（在服务器上；上下文 tar 已上传到 /tmp）：
+#   sudo bash deploy-release.sh <IMAGE_TAG> /tmp/mas-router-site-<tag>-context.tar.gz
 #
-# 目录：/opt/mas-router-site/releases/<tag>/
+# 目录：/opt/mas-router-site/releases/<tag>/{src,compose.yaml,.env}
 set -euo pipefail
 
 TAG="${1:?IMAGE_TAG}"
-TARBALL="${2:?镜像 tar 路径}"
+CONTEXT_TAR="${2:?构建上下文 tar 路径}"
 ROOT=/opt/mas-router-site
 RELEASE="${ROOT}/releases/${TAG}"
+SRC="${RELEASE}/src"
 IMAGE="mas-router-site:${TAG}"
 
-if [ ! -f "${TARBALL}" ]; then echo "找不到 ${TARBALL}" >&2; exit 1; fi
+[ -f "${CONTEXT_TAR}" ] || { echo "找不到 ${CONTEXT_TAR}" >&2; exit 1; }
 
-# 校验上传时的 sha256（如果同名 .sha256 也上传了）
-if [ -f "${TARBALL}.sha256" ]; then
-  echo "== 校验 tar 的 sha256"
-  ( cd "$(dirname "${TARBALL}")" && shasum -a 256 -c "$(basename "${TARBALL}").sha256" )
+if [ -f "${CONTEXT_TAR}.sha256" ]; then
+  echo "== 校验上下文 sha256"
+  ( cd "$(dirname "${CONTEXT_TAR}")" && sha256sum -c "$(basename "${CONTEXT_TAR}").sha256" )
 fi
 
-echo "== 载入镜像 ${IMAGE}"
-docker load -i "${TARBALL}"
+echo "== 解包到 ${SRC}"
+install -d -m 0755 "${SRC}"
+tar -xzf "${CONTEXT_TAR}" -C "${SRC}" --strip-components=1
+[ -f "${SRC}/docs/site/index.html" ] || { echo "上下文里没有 docs/site/index.html" >&2; exit 1; }
 
-echo "== 落盘到 ${RELEASE}"
-install -d "${RELEASE}"
-install -m 0644 "${TARBALL}" "${RELEASE}/$(basename "${TARBALL}")"
-if [ -f "${TARBALL}.sha256" ]; then
-  install -m 0644 "${TARBALL}.sha256" "${RELEASE}/$(basename "${TARBALL}").sha256"
-fi
-install -m 0644 "$(dirname "$0")/compose.yaml" "${RELEASE}/compose.yaml"
+echo "== 服务器原生构建 amd64 镜像 ${IMAGE}"
+cd "${SRC}"
+docker build --platform linux/amd64 -f deploy/Dockerfile -t "${IMAGE}" .
+
+echo "== 容器内 nginx -t"
+docker run --rm --entrypoint nginx "${IMAGE}" -t
+
+echo "== 落盘 compose 并启动"
+install -m 0644 "${SRC}/deploy/compose.yaml" "${RELEASE}/compose.yaml"
 printf 'IMAGE_TAG=%s\n' "${TAG}" > "${RELEASE}/.env"
 ln -sfn "${RELEASE}" "${ROOT}/current"
-
-echo "== 启动（独立 compose 项目 mas-router-site）"
 cd "${RELEASE}"
 docker compose -f compose.yaml --env-file .env up -d
 
@@ -44,7 +47,7 @@ for _ in $(seq 1 40); do
   [ "${STATE}" = "healthy" ] && break
   sleep 0.5
 done
-STATE="$(docker inspect --format '{{.State.Health.Status}}' mas-router-site-web)"
+STATE="$(docker inspect --format '{{.State.Health.Status}}' mas-router-site-web 2>/dev/null || echo missing)"
 if [ "${STATE}" != "healthy" ]; then
   echo "容器未进入 healthy：${STATE}" >&2
   docker logs --tail 50 mas-router-site-web >&2 || true

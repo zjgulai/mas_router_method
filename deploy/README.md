@@ -32,8 +32,9 @@ Internet :443
 | `main.luteos.com.conf` | 插入共享网关的 server block 片段 |
 | `patch-ingress.py` | 生成候选配置；只生成，不写回 |
 | `patch-ingress.sh` | 服务器侧：备份 → 容器内 `nginx -t` → 替换 → reload → 失败回滚 |
-| `build-image.sh` | 本地：从 `git archive HEAD` 构建 amd64 镜像并导出 tar + sha256 |
-| `deploy-release.sh` | 服务器侧：`docker load` + 独立 compose 起容器 + 健康检查 |
+| `build-image.sh` | 本地：原生构建并在容器内验 `nginx -t`/healthz/首页 |
+| `pack-context.sh` | 本地：从 `git archive HEAD` 打包构建上下文（+ sha256） |
+| `deploy-release.sh` | 服务器侧：解包 → 原生构建 amd64 镜像 → 独立 compose 起容器 → 健康检查 |
 | `accept.sh` | 本地：全量页面、404、响应头、TLS、其他站点回归 |
 
 ## 发布流程
@@ -41,19 +42,22 @@ Internet :443
 以下命令都在仓库根目录执行。
 
 ```bash
-# 1. 本地：构建并导出（会验证镜像架构、nginx -t、healthz、首页）
+# 1. 本地：构建并冒烟（原生架构；功能与生产镜像一致，Dockerfile 无架构相关步骤）
 deploy/build-image.sh
-# 输出 dist/mas-router-site-<tag>-linux-amd64.tar.gz（+ .sha256）
 
-# 2. 上传（用你连服务器的那把 key）
-scp -i <key> -P 22222 dist/mas-router-site-<tag>-linux-amd64.* ubuntu@43.163.92.244:/tmp/
+# 2. 本地：打包构建上下文（对应 HEAD 的提交）
+deploy/pack-context.sh
+# 输出 dist/mas-router-site-<tag>-context.tar.gz（+ .sha256）
 
-# 3. 服务器：起容器（独立项目；先不碰网关）
+# 3. 上传
+scp -i <key> -P 22222 dist/mas-router-site-<tag>-context.tar.gz* ubuntu@43.163.92.244:/tmp/
+
+# 4. 服务器：原生构建 amd64 镜像并起容器（独立项目；先不碰网关）
 scp -i <key> -P 22222 deploy/deploy-release.sh ubuntu@43.163.92.244:/tmp/
 ssh -i <key> -p 22222 ubuntu@43.163.92.244 \
-  "sudo bash /tmp/deploy-release.sh <tag> /tmp/mas-router-site-<tag>-linux-amd64.tar.gz"
+  "sudo bash /tmp/deploy-release.sh <tag> /tmp/mas-router-site-<tag>-context.tar.gz"
 
-# 4. 服务器：接入共享网关（幂等保护；域名已存在会拒绝执行）
+# 5. 服务器：接入共享网关（幂等保护；域名已存在会拒绝执行）
 scp -i <key> -P 22222 deploy/patch-ingress.py deploy/main.luteos.com.conf deploy/patch-ingress.sh \
   ubuntu@43.163.92.244:/tmp/
 ssh -i <key> -p 22222 ubuntu@43.163.92.244 \
@@ -61,9 +65,13 @@ ssh -i <key> -p 22222 ubuntu@43.163.92.244 \
    sudo install -m 0644 /tmp/patch-ingress.py /tmp/main.luteos.com.conf /opt/mas-router-site/tools/ && \
    sudo bash /tmp/patch-ingress.sh"
 
-# 5. 本地：生产验收
+# 6. 本地：生产验收
 deploy/accept.sh
 ```
+
+> 生产镜像在服务器上构建（服务器是 amd64）。本机若支持交叉构建，也可以先
+> `docker build --platform linux/amd64`，但当前这台机器的 Docker 是
+> aarch64 + legacy builder，交叉构建会在导出层时报 content digest not found。
 
 ## 滚动更新与回滚
 

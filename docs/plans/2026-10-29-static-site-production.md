@@ -47,7 +47,8 @@
 1. `node scripts/site/build.mjs && git diff --exit-code docs/site/`
 2. `node scripts/site/links.mjs`（32 页 0 断链）
 3. `node --test scripts/site/*.test.mjs`（19 项，含 4 个“必须变红”的反例）
-4. `deploy/build-image.sh`：镜像架构 amd64、`nginx -t`、healthz、首页
+4. `deploy/build-image.sh`：容器内 `nginx -t`、healthz、首页；生产镜像由
+   `deploy-release.sh` 在服务器上原生构建（amd64）
 5. Lighthouse 桌面与移动：四个类别全 100；390px 全页无横向溢出
 
 部署后（生产，`deploy/accept.sh`）：

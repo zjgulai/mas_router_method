@@ -1,66 +1,45 @@
 #!/usr/bin/env bash
-# 构建 mas-router-site 镜像，并产出一个带 sha256 的 tar 包用于上传。
+# 本地构建并验收镜像（原生架构）。
 #
-# 从 git archive 构建，不从工作区构建：这样进镜像的每个字节都能对应到一个提交，
-# 也避免把本机的 .env / 未跟踪文件带进去。
+# 这台机器上的 Docker 是 aarch64，不能交叉构建 amd64（legacy builder 会报
+# content digest not found）。功能验证用原生构建完全等价：Dockerfile 没有
+# 架构相关步骤，生产镜像由服务器原生构建（见 pack-context.sh / deploy-release.sh）。
 #
-#   deploy/build-image.sh                 # tag = 日期-短 SHA
-#   deploy/build-image.sh 20261029-abc123
+#   deploy/build-image.sh [tag]
 #
-# 产物：dist/mas-router-site-<tag>-linux-amd64.tar.gz 与同名 .sha256
+# 做四件事：构建 -> 容器内 nginx -t -> healthz -> 首页内容。
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 REPO="$PWD"
 TAG="${1:-$(date +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD)}"
-IMAGE="mas-router-site:${TAG}"
-DIST="${REPO}/dist"
+IMAGE="mas-router-site:${TAG}-local"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/mas-router-site-build.XXXXXX")"
-trap 'rm -rf "${WORK}"' EXIT
+CID=""
+cleanup() { [ -n "${CID}" ] && docker rm -f "${CID}" >/dev/null 2>&1 || true; rm -rf "${WORK}"; }
+trap cleanup EXIT
 
-mkdir -p "${DIST}"
-
-# 只导出被提交的内容。--prefix 让解包后就是仓库根。
 git archive --format=tar --prefix=release/ HEAD -o "${WORK}/release.tar"
 tar -xf "${WORK}/release.tar" -C "${WORK}"
 RELEASE_DIR="${WORK}/release"
+[ -f "${RELEASE_DIR}/docs/site/index.html" ] || { echo "docs/site/index.html 不在提交里" >&2; exit 1; }
 
-if [ ! -f "${RELEASE_DIR}/docs/site/index.html" ]; then
-  echo "docs/site/index.html 不在提交里；站点还没生成或还没提交" >&2
-  exit 1
-fi
+echo "== 构建 ${IMAGE}（原生架构，上下文来自 HEAD=$(git rev-parse --short HEAD)）"
+docker build -f deploy/Dockerfile -t "${IMAGE}" "${RELEASE_DIR}"
 
-echo "== 构建 ${IMAGE}（linux/amd64，上下文来自 HEAD=$(git rev-parse --short HEAD)）"
-docker build --platform linux/amd64 -f deploy/Dockerfile -t "${IMAGE}" "${RELEASE_DIR}"
-
-ARCH="$(docker image inspect "${IMAGE}" --format '{{.Architecture}}')"
-if [ "${ARCH}" != "amd64" ]; then
-  echo "镜像架构是 ${ARCH}，服务器是 amd64；构建参数没有生效" >&2
-  exit 1
-fi
-
-echo "== 校验容器内 nginx 配置"
+echo "== 容器内 nginx -t"
 docker run --rm --entrypoint nginx "${IMAGE}" -t
 
 echo "== 冒烟：healthz + 首页"
 CID="$(docker run -d --rm -p 127.0.0.1:0:8080 "${IMAGE}")"
-trap 'docker rm -f "${CID}" >/dev/null 2>&1 || true; rm -rf "${WORK}"' EXIT
 PORT="$(docker port "${CID}" 8080/tcp | awk -F: '{print $NF}')"
 for _ in $(seq 1 30); do
-  if curl -fsS "http://127.0.0.1:${PORT}/healthz" >/dev/null 2>&1; then break; fi
+  curl -fsS "http://127.0.0.1:${PORT}/healthz" >/dev/null 2>&1 && break
   sleep 0.2
 done
 curl -fsS "http://127.0.0.1:${PORT}/healthz" | grep -q '^ok' || { echo "healthz 失败" >&2; exit 1; }
 curl -fsS "http://127.0.0.1:${PORT}/" | grep -q 'Agent Native Builder' || { echo "首页内容不对" >&2; exit 1; }
-docker rm -f "${CID}" >/dev/null
-
-TAR="${DIST}/mas-router-site-${TAG}-linux-amd64.tar.gz"
-echo "== 导出镜像 ${TAR}"
-docker save "${IMAGE}" | gzip -9 > "${TAR}"
-( cd "${DIST}" && shasum -a 256 "$(basename "${TAR}")" > "$(basename "${TAR}").sha256" )
+curl -s -o /dev/null -w '404 路径: %{http_code}\n' "http://127.0.0.1:${PORT}/no-such-page"
 
 echo
-echo "tag:    ${TAG}"
-echo "image:  ${IMAGE}"
-echo "tar:    ${TAR}"
-echo "sha256: $(cut -d' ' -f1 < "${TAR}.sha256")"
+echo "ok — 本地镜像 ${IMAGE} 可用（${PORT} 已回收）"
