@@ -247,7 +247,10 @@ export function createBrandTools(deps: ToolDeps) {
             translation: z
               .string()
               .optional()
-              .describe('Translation, only when the spoken language differs from the primary market locale.'),
+              .describe(
+                'The market-locale line for this beat. Required whenever the reference (or the request) ' +
+                  'involves another language — e.g. a zh reference for a US launch needs a translation on every spoken beat.',
+              ),
             visual: z
               .string()
               .min(1)
@@ -257,7 +260,11 @@ export function createBrandTools(deps: ToolDeps) {
           }),
         )
         .min(2)
-        .describe('Ordered beats. Together with the hook they should land in the 15-45s window.'),
+        .describe(
+            'Ordered beats. Together with the hook they should land in the 15-45s window. ' +
+              'For a silent reference (analysis has no voiceover), every beat is on-screen text: ' +
+              'set onScreenText and make script the exact same string — no invented spoken lines.',
+          ),
       caption: z.string().min(1).max(2200),
       hashtags: z.array(z.string()).default([]),
       audio: z.object({

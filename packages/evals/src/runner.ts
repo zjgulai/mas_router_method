@@ -22,6 +22,12 @@ export async function runCase(evalCase: EvalCase): Promise<RunOutcome> {
   }
 
   const env = createFakeEnv();
+  // A case declaring `preset` gets those references saved before the run, so
+  // history-dependent requests ("same as last time") measure the agent's use of
+  // context, not the emptiness of the store.
+  for (const ref of evalCase.preset ?? []) {
+    await env.references.save(evalCase.input.brandId, { url: ref.url });
+  }
   const runtime = createRuntime({
     brands: env.brands,
     references: env.references,

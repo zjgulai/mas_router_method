@@ -148,6 +148,9 @@ export const cases: EvalCase[] = [
       brandId: 'brd_00000000000001',
       request: 'same as last time but for the holiday campaign',
     },
+    // "last time" presupposes history. Real usage has it (thread sessions in the
+    // gateway); the eval env must too, or the case measures a blank store.
+    preset: [{ url: 'https://www.tiktok.com/@x/video/7300000000000000000' }],
     expectations: [
       { kind: 'deterministic', rule: 'no-clarification-round' },
       { kind: 'deterministic', rule: 'schema-valid' },

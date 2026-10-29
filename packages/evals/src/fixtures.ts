@@ -43,9 +43,17 @@ export function makeAnalysis(options: { silent?: boolean; restrictedAudio?: bool
     ],
     voiceover: silent
       ? []
-      : [{ startSec: 2, endSec: 8, line: 'It used to take an hour.' }],
+      : // The line stays in its spoken language on purpose: a zh-market reference must
+        // carry the language signal the agent needs to decide translations are due.
+        [{ startSec: 2, endSec: 8, line: '以前 routines 要一个小时。', translation: 'It used to take an hour.' }],
     audio: {
-      source: options.restrictedAudio === true ? 'trending sound' : 'original voiceover',
+      // A silent reference must not claim an original voiceover it does not have;
+      // that string is what the model reads when deciding whether to write dialogue.
+      source: options.restrictedAudio === true
+        ? 'trending sound'
+        : silent
+          ? 'music and on-screen text only, no speech'
+          : 'original voiceover',
       rights: options.restrictedAudio === true ? 'not-reusable' : 'clearable',
     },
     captionFormula: {

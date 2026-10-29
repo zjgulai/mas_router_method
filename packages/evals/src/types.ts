@@ -17,6 +17,13 @@ export interface EvalCase {
   /** One sentence: which real-world failure this case prevents. */
   why: string;
   input: { brandId: string; request: string };
+  /**
+   * References pre-saved for this brand before the run, simulating what a real
+   * user's history provides. "Same as last time" is only answerable when there
+   * was a last time; a blank eval env makes the case measure the fixture, not
+   * the agent.
+   */
+  preset?: { url: string }[];
   expectations: Expectation[];
 }
 
