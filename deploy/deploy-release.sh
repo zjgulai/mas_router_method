@@ -42,7 +42,7 @@ cd "${RELEASE}"
 docker compose -f compose.yaml --env-file .env up -d
 
 echo "== 等待 healthy"
-for _ in $(seq 1 120); do
+for _ in $(seq 1 240); do
   STATE="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' mas-router-site-web 2>/dev/null || echo missing)"
   [ "${STATE}" = "healthy" ] && break
   sleep 0.5
