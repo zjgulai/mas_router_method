@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { MainConsultAgent } from '@mas/consult';
 import type { ConsultAnswer } from '@mas/consult';
-import { findRepoRoot } from '@mas/consult';
+import { findRepoRoot, tokenize } from '@mas/consult';
 
 type Expected = 'in_scope' | 'out_of_scope' | 'needs_context';
 
@@ -37,8 +37,17 @@ interface CaseResult {
   outOfScope: boolean;
   passed: boolean;
   checks: Check[];
+  rubric?: Rubric;
   answer: string;
   sources: string[];
+}
+
+interface Rubric {
+  directAnswer: number;
+  actionable: number;
+  evidence: number;
+  score: number;
+  notes: string[];
 }
 
 const root = findRepoRoot();
@@ -66,6 +75,14 @@ const results: CaseResult[] = [];
 for (const testCase of parsed.cases) {
   const answer = await agent.answer(testCase.text);
   const checks = evaluate(testCase, answer);
+  const rubric = testCase.expected === 'in_scope' ? evaluateRubric(testCase, answer) : undefined;
+  if (rubric !== undefined) {
+    checks.push({
+      name: 'rubric_score',
+      pass: rubric.score >= 0.66,
+      detail: `direct=${rubric.directAnswer} actionable=${rubric.actionable} evidence=${rubric.evidence} score=${rubric.score.toFixed(2)}`,
+    });
+  }
   results.push({
     id: testCase.id,
     text: testCase.text,
@@ -80,6 +97,7 @@ for (const testCase of parsed.cases) {
     outOfScope: answer.outOfScope,
     passed: checks.every((check) => check.pass),
     checks,
+    ...(rubric !== undefined ? { rubric } : {}),
     answer: answer.text,
     sources: answer.sources.map((source) => source.path),
   });
@@ -100,6 +118,12 @@ const manual = {
   needsImprovement: results.filter((result) => result.verdict === 'needs_improvement').length,
   unreviewed: results.filter((result) => result.verdict === 'unreviewed').length,
 };
+const rubricResults = results.filter((result) => result.rubric !== undefined);
+const rubricAverage =
+  rubricResults.length === 0
+    ? 0
+    : rubricResults.reduce((sum, result) => sum + (result.rubric?.score ?? 0), 0) /
+      rubricResults.length;
 
 mkdirSync(outDir, { recursive: true });
 writeFileSync(resultsPath, `${results.map((result) => JSON.stringify(result)).join('\n')}\n`, 'utf8');
@@ -115,6 +139,7 @@ writeFileSync(
       passRate: total === 0 ? 0 : passed / total,
       byExpected,
       manual,
+      rubric: { average: rubricAverage, cases: rubricResults.length },
     },
     null,
     2,
@@ -122,7 +147,11 @@ writeFileSync(
   'utf8',
 );
 
-writeFileSync(reportPath, buildReport(parsed, results, passed, total, byExpected, manual), 'utf8');
+writeFileSync(
+  reportPath,
+  buildReport(parsed, results, passed, total, byExpected, manual, rubricAverage),
+  'utf8',
+);
 
 console.log(`real-question eval: ${passed}/${total} passed`);
 for (const group of byExpected) {
@@ -131,6 +160,7 @@ for (const group of byExpected) {
 console.log(
   `  manual: usable=${manual.usable}, needs_improvement=${manual.needsImprovement}, unreviewed=${manual.unreviewed}`,
 );
+console.log(`  rubric: average=${rubricAverage.toFixed(2)} over ${rubricResults.length} in-scope cases`);
 for (const failure of results.filter((result) => !result.passed)) {
   console.log(`\nFAIL ${failure.id} [${failure.expected}] ${failure.text.slice(0, 80)}`);
   for (const check of failure.checks.filter((item) => !item.pass)) {
@@ -142,6 +172,41 @@ const threshold = 0.75;
 if (passed / total < threshold) {
   console.error(`\npass rate ${(passed / total).toFixed(2)} is below threshold ${threshold}`);
   process.exit(1);
+}
+
+function evaluateRubric(testCase: EvalCase, answer: ConsultAnswer): Rubric {
+  const questionTerms = [...new Set(tokenize(testCase.text))].filter((term) => term.length >= 2);
+  const head = answer.text.slice(0, 700);
+  const hits = questionTerms.filter((term) => head.includes(term)).length;
+  const directAnswer = hits >= Math.min(2, questionTerms.length) ? 1 : 0;
+
+  const actionSection = answer.text.split('【下一步】')[1]?.split('【')[0] ?? '';
+  const actionLines = actionSection
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^\d+\./.test(line));
+  const concrete = actionLines.filter((line) =>
+    /node scripts\/|pnpm |跑|确认|写|建|记录|检查|先|不要|回执|task_id|落库|版本|核对|标/.test(line),
+  ).length;
+  const actionable = actionLines.length >= 2 && concrete >= 2 ? 1 : 0;
+  const evidence =
+    answer.sources.length > 0 &&
+    answer.sources.every((source) => existsSync(join(root, source.path)))
+      ? 1
+      : 0;
+
+  const notes: string[] = [];
+  if (directAnswer === 0) notes.push(`结论未覆盖问题关键词（命中 ${hits}/${questionTerms.length}）`);
+  if (actionable === 0) notes.push(`可执行动作不足（${concrete}/${actionLines.length}）`);
+  if (evidence === 0) notes.push('缺少可解析证据路径');
+
+  return {
+    directAnswer,
+    actionable,
+    evidence,
+    score: (directAnswer + actionable + evidence) / 3,
+    notes,
+  };
 }
 
 function evaluate(testCase: EvalCase, answer: ConsultAnswer): Check[] {
@@ -211,6 +276,7 @@ function buildReport(
   total: number,
   byExpected: { expected: string; total: number; passed: number }[],
   manual: { usable: number; needsImprovement: number; unreviewed: number },
+  rubricAverage: number,
 ): string {
   const lines: string[] = [
     '# Main Agent 真实群问题 Eval',
@@ -225,6 +291,7 @@ function buildReport(
     `- 自动化通过：${passed}`,
     `- 通过率：${(passed / total).toFixed(2)}`,
     `- 人工判定：可用 ${manual.usable} / 需改进 ${manual.needsImprovement} / 未审 ${manual.unreviewed}`,
+    `- Rubric 均分（in-scope）：${rubricAverage.toFixed(2)}（直接回答 / 可执行动作 / 证据，各 0–1）`,
     '',
     '| 类别 | 自动化通过 / 总数 |',
     '|---|---|',
@@ -232,11 +299,11 @@ function buildReport(
     '',
     '## 逐条结果',
     '',
-    '| ID | 问题 | 期望 | 实际节点 | 置信度 | 自动 | 人工 |',
-    '|---|---|---|---|---|---|---|',
+    '| ID | 问题 | 期望 | 实际节点 | 置信度 | 自动 | Rubric | 人工 |',
+    '|---|---|---|---|---|---|---|---|',
     ...results.map(
       (result) =>
-        `| ${result.id} | ${escapeCell(result.text)} | ${result.expected} | ${result.actualNode ?? '—'} | ${result.confidence} | ${result.passed ? '✅' : '❌'} | ${result.verdict === 'usable' ? '可用' : result.verdict === 'needs_improvement' ? '需改进' : '未审'} |`,
+        `| ${result.id} | ${escapeCell(result.text)} | ${result.expected} | ${result.actualNode ?? '—'} | ${result.confidence} | ${result.passed ? '✅' : '❌'} | ${result.rubric === undefined ? '—' : result.rubric.score.toFixed(2)} | ${result.verdict === 'usable' ? '可用' : result.verdict === 'needs_improvement' ? '需改进' : '未审'} |`,
     ),
     '',
   ];

@@ -27,8 +27,8 @@
       ],
       "why": "Agent 长任务/超时与异步交付：应给出回执 + task_id + 后台队列，而不是只讲事件订阅",
       "source": "om_x100b628581733cb0cfbda28ea3",
-      "verdict": "needs_improvement",
-      "reviewNote": "回答落到飞书事件链路，没有正面回答采集超时与「不适合机器人问答」的工具/异步策略；路由可接受，动作不对题。"
+      "verdict": "usable",
+      "reviewNote": "已改路由到 long-running-tasks；结论直接给回执 + task_id + 后台队列。"
     },
     {
       "id": "rg-003",
@@ -77,8 +77,8 @@
       ],
       "why": "真实群反馈：需要 should_fail / 样例留存 / 统一诊断，而不是只保证 happy path",
       "source": "om_x100b612ab56074a8c1e087c8b6",
-      "verdict": "needs_improvement",
-      "reviewNote": "回答是 eval 原则，未直接给「样例留存 + 分类 + 统一诊断」的动作；缺少样本库落点。"
+      "verdict": "usable",
+      "reviewNote": "摘要与动作已把「真实失败样例落库」放在第一位。"
     },
     {
       "id": "rg-007",
@@ -107,8 +107,8 @@
       "expected": "needs_context",
       "why": "项目运营事实问题；网关没有表格访问上下文，应问清或明确无数据",
       "source": "om_x100b612aaa3894a4c0e3babef3",
-      "verdict": "needs_improvement",
-      "reviewNote": "回答是存储/血缘原则，没有回答 Bitable 是否落表；应先要表格/记录上下文。"
+      "verdict": "usable",
+      "reviewNote": "上下文优先；明确说无法判断落表，并要求表/记录。"
     },
     {
       "id": "rg-010",
@@ -161,8 +161,8 @@
       "expected": "needs_context",
       "why": "具体项目范围/历史决策；需要项目上下文，不应猜",
       "source": "om_x100b6246d800a8a8ce1b38373a",
-      "verdict": "needs_improvement",
-      "reviewNote": "回答是 Playbook，未回答 PR agent 的全渠道范围与 meltwater 迁移历史；应先要项目范围与既有决策。"
+      "verdict": "usable",
+      "reviewNote": "上下文优先；不再硬答 PR 范围。"
     },
     {
       "id": "rg-016",
@@ -170,8 +170,8 @@
       "expected": "needs_context",
       "why": "项目进度判断；缺少项目记录，应要求上下文",
       "source": "om_x100b62a900e1c4a8cfbb893865",
-      "verdict": "needs_improvement",
-      "reviewNote": "回答是全栈流程，未回答 PR 进度判断；应先要项目记录与阶段定义。"
+      "verdict": "usable",
+      "reviewNote": "上下文优先；不再硬答 PR 进度。"
     },
     {
       "id": "rg-017",
@@ -219,8 +219,8 @@
       ],
       "why": "数据产品范围/看板边界问题；需要项目决策上下文",
       "source": "om_x100b62877883a8b8cf524a49f1",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "usable",
+      "reviewNote": "上下文优先；要求文档/表/环境，边界正确。"
     },
     {
       "id": "rg-022",
@@ -232,8 +232,8 @@
       ],
       "why": "路线图/范围问题；需要项目目标与优先级",
       "source": "om_x100b62a91d5a20a4cf940445fa",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "needs_improvement",
+      "reviewNote": "上下文优先正确，但框架落到采集时点，不是路线图/优先级；应给范围取舍框架。"
     },
     {
       "id": "rg-023",
@@ -244,8 +244,8 @@
       ],
       "why": "小样本稳定性/基线问题；应说明样本量与判定标准",
       "source": "om_x100b613d647bb8b8cffa8432c1",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "usable",
+      "reviewNote": "摘要与动作直接回应 10 条小样本与 70% 稳定性。"
     },
     {
       "id": "rg-024",
@@ -256,8 +256,8 @@
       ],
       "why": "人工对比 + 问题分类，应落到打标版本与金标准",
       "source": "om_x100b628170fb48a4ce38932933",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "usable",
+      "reviewNote": "摘要与首动作直接指出「状态更新不是验收」。"
     },
     {
       "id": "rg-025",
@@ -268,8 +268,8 @@
       ],
       "why": "测试流程变化的项目上下文；不应硬答",
       "source": "om_x100b611f18c658b8dd11287d0d",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "needs_improvement",
+      "reviewNote": "上下文优先正确，但框架是全栈流程，不是测试流程变化；应问哪个流程/哪个节点。"
     },
     {
       "id": "rg-026",
@@ -281,8 +281,8 @@
       ],
       "why": "文档范围/看板/目标复核；需要项目上下文",
       "source": "om_x100b62877883a8b8cf524a49f1",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "usable",
+      "reviewNote": "上下文优先；要求文档/目标复核上下文，边界正确。"
     },
     {
       "id": "rg-027",
@@ -293,8 +293,8 @@
       ],
       "why": "项目进度汇报；需要项目记录，不应编造判断",
       "source": "om_x100b6285dd8fb488cf340fc48e",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "needs_improvement",
+      "reviewNote": "上下文优先正确，但框架是 Playbook，不是进度/验收判断；应给进度度量框架。"
     },
     {
       "id": "rg-028",
@@ -305,8 +305,8 @@
       ],
       "why": "内容生成的行为边界/claims 风险；应讲 guardrail 与工具层",
       "source": "om_x100b62a91d5a20a4cf940445fa",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "usable",
+      "reviewNote": "摘要与动作直接给内容生成 guardrail（claims/风险点/禁用表达）。"
     },
     {
       "id": "rg-029",
@@ -317,8 +317,8 @@
       ],
       "why": "打标体系/资产库；应讲标签版本与金标准",
       "source": "om_x100b62a91d5a20a4cf940445fa",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "usable",
+      "reviewNote": "命中打标/资产库，给出版本与金标准动作。"
     },
     {
       "id": "rg-030",
@@ -330,8 +330,8 @@
       ],
       "why": "VOC 采集与洞察；应讲采集口径与分析方法",
       "source": "om_x100b62a91d5a20a4cf940445fa",
-      "verdict": "unreviewed",
-      "reviewNote": ""
+      "verdict": "usable",
+      "reviewNote": "摘要与首动作直接给 VOC 接入顺序（源/去重/归属→洞察→选题）。"
     }
   ]
 }
