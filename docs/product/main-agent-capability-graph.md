@@ -301,13 +301,16 @@ pnpm --filter @mas/bot-gateway check
 - `packages/consult/data/sources.json`：111 个源文件的便携快照（Markdown 在本机被压缩存储，Node 读不到原文；Python 物化后由 TS 分块）
 - `apps/bot-gateway`：WS + HTTP、幂等、队列、回复/降级、doctor、授权/配置脚本
 - `packages/feishu`：post 消息、mention open_id
-- 飞书侧：`im:message` / `im:message:send_as_bot` / `im:message.group_msg` / `im:message.p2p_msg` / `im:chat:readonly` 已授权；`im.message.receive_v1` 已设为长连接；已发布 v1.0.2（events: 接收消息）；长连接在线数 1
+- 飞书侧：`im:message` / `im:message:send_as_bot` / `im:message.group_msg` / `im:message.p2p_msg` / `im:chat:readonly` 已授权；`im.message.receive_v1` 已设为长连接；已发布 v1.0.3（events: 接收消息）；长连接在线数 1
+- 活体验收：群内 @Main 的真实事件已走通 `ws event received → ws event normalised → question received → answer delivered`，回复落在原消息线程
+- 事件解析已兼容飞书返回的 `user_id: null`、mention id 的字符串/对象两种形状；此前 `z.string().optional()` 会把整条事件判为非法并静默丢弃
 - 已向目标群 “ABI智能应用与算法组” 发送上线通知
-- 测试：94 个（34 + 39 + 21），工作区 typecheck/test/build 全过
+- 真实群问题 eval：20 条，自动检查 20/20；人工判定 15 可用 / 5 需改进；报告 `docs/evals/main-agent-real-qa.md`
+- 测试：103 个（39 + 41 + 23），工作区 typecheck/test/build 全过
 
 ### 还没做
 
-1. **群内实测**：scope 与事件订阅已配置，下一步是在目标群 @Main 发一条真实问题，确认端到端回复。
+1. **更多真实问题覆盖**：首条群内问答已跑通；下一步是积累 20 条真实问题，观察路由与回答质量。
 2. **生产部署**：长连接是单实例；多实例要换 webhook + 共享幂等存储。
 3. **持久化幂等**：当前是进程内 TTL；重启后 Feishu 重试可能重复回复。
 4. **多轮对话**：当前每条消息独立；需要 thread 级 session。

@@ -13,6 +13,7 @@
     "configure": "tsx --env-file-if-exists=../../.env src/cli/configure.ts",
     "simulate": "tsx --env-file-if-exists=../../.env src/cli/simulate.ts",
     "replay": "tsx --env-file-if-exists=../../.env src/cli/replay.ts",
+    "eval:real": "tsx --env-file-if-exists=../../.env src/cli/eval-real.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist .turbo *.tsbuildinfo"

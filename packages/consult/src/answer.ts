@@ -21,8 +21,49 @@ export interface Classification {
   confidence: Confidence;
   meta: boolean;
   outOfScope: boolean;
+  /** Domain-adjacent, but needs project-specific context the agent does not have. */
+  needsContext: boolean;
   reason: string;
 }
+
+const PROJECT_OPS_PATTERNS = [
+  '周报',
+  '日报',
+  '工作日总结',
+  '会议室',
+  '拉的会',
+  '谁拉的',
+  '谁跟进',
+  '任务是需要我跟进',
+  '陈小花',
+  'OGSM',
+  'meltwater',
+  'Nowledge Mem',
+  '工具怎么选',
+  '预期什么时候',
+  '二期优化 todo',
+  '社媒的二期优化',
+];
+
+const CONTEXTUAL_PATTERNS = [
+  '文档在哪里看',
+  '表格存',
+  '落多维表格',
+  '关注的趋势',
+  '无法点击',
+  '全渠道舆情',
+  'PR 这个 agent',
+  '之前不是做',
+  '项目进度',
+  '红人还要写入',
+  '更像个看板',
+  '目标我大概写',
+  '复核下',
+  '本周进度',
+  '总体进度',
+  '拓展到欧洲',
+  'AI 视频生成',
+];
 
 const META_PATTERNS = [
   '你能做什么',
@@ -96,12 +137,16 @@ export function classifyQuestion(
   }
 
   const domainHits = countDomainHits(q, graph);
+  const strongDomainHits = countStrongDomainHits(q, graph);
   const topRetrieval = retrieved[0];
+  const projectOps = matchesPatterns(q, PROJECT_OPS_PATTERNS);
+  const contextual = matchesPatterns(q, CONTEXTUAL_PATTERNS);
   const meta =
     domainHits === 0 &&
     isMeta(q) &&
     (best === undefined || best.node.family === 'navigation' || best.score < 8);
-  const outOfScope = !meta && domainHits === 0;
+  const outOfScope = !meta && (domainHits === 0 || (projectOps && strongDomainHits === 0));
+  const needsContext = !meta && !outOfScope && contextual;
 
   let confidence: Confidence = 'low';
   if (best !== undefined) {
@@ -111,11 +156,12 @@ export function classifyQuestion(
       confidence = 'medium';
     }
   }
+  if (needsContext) confidence = 'low';
 
   const reason =
     best === undefined
       ? 'no node matched'
-      : `node=${best.node.id} score=${best.score.toFixed(2)} domainHits=${domainHits} top=${topRetrieval?.chunk.path ?? 'none'}`;
+      : `node=${best.node.id} score=${best.score.toFixed(2)} domainHits=${domainHits} strongHits=${strongDomainHits} projectOps=${projectOps} needsContext=${needsContext} top=${topRetrieval?.chunk.path ?? 'none'}`;
 
   return {
     ...(best !== undefined ? { node: best.node } : {}),
@@ -123,8 +169,26 @@ export function classifyQuestion(
     confidence,
     meta,
     outOfScope,
+    needsContext,
     reason,
   };
+}
+
+function matchesPatterns(question: string, patterns: string[]): boolean {
+  return patterns.some((pattern) => question.includes(pattern.toLowerCase()));
+}
+
+function countStrongDomainHits(question: string, graph: CapabilityGraph): number {
+  let hits = 0;
+  for (const node of graph.nodes) {
+    if (node.family === 'navigation') continue;
+    for (const term of [...node.keywords, ...node.aliases]) {
+      // Two-character terms are too generic to override a project-ops guard.
+      if (term.length < 3) continue;
+      if (question.includes(term.toLowerCase())) hits += 1;
+    }
+  }
+  return hits;
 }
 
 function countDomainHits(question: string, graph: CapabilityGraph): number {
@@ -190,8 +254,19 @@ export function composeAnswer(
   const sourceRefs = mergeSources(node.sources, retrieved);
 
   const sections: string[] = [];
-  sections.push(`【结论】\n${node.summary}`);
-  sections.push(`【定位】\n${node.title}（${FAMILY_LABEL[node.family]}）`);
+  if (classification.needsContext) {
+    sections.push(
+      '【结论】\n这需要你们项目里的具体记录；我无法仅凭这句话判断。先确认：是哪份文档、哪张表、哪个环境，以及你已经看到的现象。',
+    );
+    sections.push(`【定位】\n${node.title}（${FAMILY_LABEL[node.family]}）`);
+    sections.push(
+      '【需要你补充】\n我这边没有你们的文档、表格、代码或决策历史。请补充上面三项；没有记录时，正确状态是「未运行/无法判断」，不是「通过」。',
+    );
+    sections.push(`【可用的判断框架】\n${node.summary}`);
+  } else {
+    sections.push(`【结论】\n${node.summary}`);
+    sections.push(`【定位】\n${node.title}（${FAMILY_LABEL[node.family]}）`);
+  }
 
   if (snippets.length > 0) {
     sections.push(

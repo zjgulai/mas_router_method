@@ -1,0 +1,337 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-29",
+  "source": "ABI智能应用与算法组（真实群消息摘录）",
+  "note": "真实问题用于测量路由、边界与拒答；不是合成 benchmark。文本做了去链接/去 @ 的轻度清理。",
+  "cases": [
+    {
+      "id": "rg-001",
+      "text": "全栈 Agent Native builder 的开发流程是？",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "delivery-lanes"
+      ],
+      "why": "核心流程问题：应给出 7 阶段 + 四车道 + G1–G5",
+      "source": "om_x100b611919fd68a4cf4a9e1eb2cb92f",
+      "verdict": "usable",
+      "reviewNote": "命中 delivery-lanes，给出 7 阶段 + 四车道 + G1–G5，动作可执行。"
+    },
+    {
+      "id": "rg-002",
+      "text": "数据采集很容易超时，机器人回答不出来，感觉不太适合通过机器人来问答",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "long-running-tasks",
+        "agent-playbook",
+        "feishu-surface"
+      ],
+      "why": "Agent 长任务/超时与异步交付：应给出回执 + task_id + 后台队列，而不是只讲事件订阅",
+      "source": "om_x100b628581733cb0cfbda28ea3",
+      "verdict": "needs_improvement",
+      "reviewNote": "回答落到飞书事件链路，没有正面回答采集超时与「不适合机器人问答」的工具/异步策略；路由可接受，动作不对题。"
+    },
+    {
+      "id": "rg-003",
+      "text": "BGM 趋势需要优化趋势口径",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "metric-contract"
+      ],
+      "why": "口径变更/指标定义问题，应给出口径版本化与对账动作",
+      "source": "om_x100b62468aa41cbccefcd7a7ca",
+      "verdict": "usable",
+      "reviewNote": "命中 metric-contract；口径版本化与对账动作对题，但问题很短，置信度低是合理的。"
+    },
+    {
+      "id": "rg-004",
+      "text": "评论区的解析比较重要，因为有些争议点非本土人无法理解；趋势详情/爆款/互动率等口径需要优化",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "metric-contract",
+        "labeling-taxonomy"
+      ],
+      "why": "打标置信度 + 指标口径的复合问题，应拆层回答",
+      "source": "om_x100b62468aa41cbccefcd7a7ca",
+      "verdict": "usable",
+      "reviewNote": "命中 metric-contract；口径与打标被合并回答，动作可用，打标层可再展开。"
+    },
+    {
+      "id": "rg-005",
+      "text": "我听不懂啥是回归测试，我只是要今天测的这几个的结果，有没有在表格存",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "eval-quality"
+      ],
+      "why": "回归测试/证据存储的真实困惑；应解释 eval 与证据落盘，而不是讲抽象测试理论",
+      "source": "om_x100b612abb9044a4de8bdcdbf0",
+      "verdict": "usable",
+      "reviewNote": "命中 eval-quality，并明确要求补充「哪份文档/哪张表」；对非技术用户仍偏抽象。"
+    },
+    {
+      "id": "rg-006",
+      "text": "你的机器人在大群里随时会面临被爆破诟病的风险，把测试出来的样例都存在下来，统一去识别问题",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "eval-quality",
+        "agent-playbook"
+      ],
+      "why": "真实群反馈：需要 should_fail / 样例留存 / 统一诊断，而不是只保证 happy path",
+      "source": "om_x100b612ab56074a8c1e087c8b6",
+      "verdict": "needs_improvement",
+      "reviewNote": "回答是 eval 原则，未直接给「样例留存 + 分类 + 统一诊断」的动作；缺少样本库落点。"
+    },
+    {
+      "id": "rg-007",
+      "text": "雨宁，数据采集的这就是需求 PRD 吧？",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "intent-and-decision"
+      ],
+      "why": "PRD/需求阶段的判断标准；应说明需求阶段要写决策动作和停止信号",
+      "source": "om_x100b62df47356d00b01a5b6a91",
+      "verdict": "usable",
+      "reviewNote": "命中 intent-and-decision；把「是不是 PRD」转成需求阶段判据，方向正确。"
+    },
+    {
+      "id": "rg-008",
+      "text": "关注的趋势还是无法点击进入详情，今天看下能不能解决",
+      "expected": "needs_context",
+      "why": "具体项目 bug，缺少代码/环境上下文；不应编造修复方案",
+      "source": "om_x100b62b6188010a8b4bb7a2e47",
+      "verdict": "usable",
+      "reviewNote": "具体项目 bug，拒答并要求补充环境/现象，边界正确。"
+    },
+    {
+      "id": "rg-009",
+      "text": "几天群里的测试，是不是没有落多维表格？",
+      "expected": "needs_context",
+      "why": "项目运营事实问题；网关没有表格访问上下文，应问清或明确无数据",
+      "source": "om_x100b612aaa3894a4c0e3babef3",
+      "verdict": "needs_improvement",
+      "reviewNote": "回答是存储/血缘原则，没有回答 Bitable 是否落表；应先要表格/记录上下文。"
+    },
+    {
+      "id": "rg-010",
+      "text": "今天测试的文档在哪里看？",
+      "expected": "needs_context",
+      "why": "项目文档位置；能力图谱没有该群的文件系统上下文，应要求补充或明确无数据",
+      "source": "om_x100b612a93fa24a0c0bfb2433c",
+      "verdict": "usable",
+      "reviewNote": "方法回答 + 要求补充文档位置；没有假装知道项目文档在哪。"
+    },
+    {
+      "id": "rg-011",
+      "text": "社媒的二期优化 todo 文档，整理好了吗？预期什么时候？",
+      "expected": "out_of_scope",
+      "why": "项目排期/交付物状态，不是方法咨询",
+      "source": "om_x100b612a85e204a8c0b39fdd6a",
+      "verdict": "usable",
+      "reviewNote": "项目排期问题，拒答正确。"
+    },
+    {
+      "id": "rg-012",
+      "text": "今天的工作日总结发给我，解决了什么问题",
+      "expected": "out_of_scope",
+      "why": "个人工作汇报，不是能力图谱问题",
+      "source": "om_x100b612a12e64880cf009f7eaf",
+      "verdict": "usable",
+      "reviewNote": "个人工作汇报，拒答正确。"
+    },
+    {
+      "id": "rg-013",
+      "text": "周报里面不是写了上周完成的部分以及本周要做的 todo 事项？还是说要把所有事项按照表格列出来？",
+      "expected": "out_of_scope",
+      "why": "团队周报格式/管理动作，不属于数据产品 8 层或 Agent 交付链",
+      "source": "om_x100b62d89ed5f0a0cf936e5932",
+      "verdict": "usable",
+      "reviewNote": "团队周报格式，拒答正确。"
+    },
+    {
+      "id": "rg-014",
+      "text": "你会 OGSM 吗？帮我写几行字",
+      "expected": "out_of_scope",
+      "why": "通用管理写作，不是本平台的能力边界",
+      "source": "om_x100b6286c4f99cbccffdc2e7ea",
+      "verdict": "usable",
+      "reviewNote": "OGSM 通用写作，拒答正确。"
+    },
+    {
+      "id": "rg-015",
+      "text": "PR 这个 agent 不是全渠道舆情监控？她之前不是做 meltwater 的迁移？",
+      "expected": "needs_context",
+      "why": "具体项目范围/历史决策；需要项目上下文，不应猜",
+      "source": "om_x100b6246d800a8a8ce1b38373a",
+      "verdict": "needs_improvement",
+      "reviewNote": "回答是 Playbook，未回答 PR agent 的全渠道范围与 meltwater 迁移历史；应先要项目范围与既有决策。"
+    },
+    {
+      "id": "rg-016",
+      "text": "如果按照之前的记录来看，PR 的部分分为全网洞察和内容产出，洞察这部分已经做完了，那就还差内容产出？",
+      "expected": "needs_context",
+      "why": "项目进度判断；缺少项目记录，应要求上下文",
+      "source": "om_x100b62a900e1c4a8cfbb893865",
+      "verdict": "needs_improvement",
+      "reviewNote": "回答是全栈流程，未回答 PR 进度判断；应先要项目记录与阶段定义。"
+    },
+    {
+      "id": "rg-017",
+      "text": "这个任务是需要我跟进的吗？",
+      "expected": "out_of_scope",
+      "why": "任务归属，不是方法问题",
+      "source": "om_x100b62deb021b0a4cf0b6281e5",
+      "verdict": "usable",
+      "reviewNote": "任务归属，拒答正确。"
+    },
+    {
+      "id": "rg-018",
+      "text": "陈小花是谁？",
+      "expected": "out_of_scope",
+      "why": "人员识别，超出能力图谱",
+      "source": "om_x100b62b699c350b0b0954dd3c7",
+      "verdict": "usable",
+      "reviewNote": "人员识别，拒答正确。"
+    },
+    {
+      "id": "rg-019",
+      "text": "这是谁拉的会？",
+      "expected": "out_of_scope",
+      "why": "会议信息，超出能力图谱",
+      "source": "om_x100b62b69b4b68a0ce91ad8ceb",
+      "verdict": "usable",
+      "reviewNote": "会议信息，拒答正确。"
+    },
+    {
+      "id": "rg-020",
+      "text": "Nowledge Mem 工具，这里怎么选呀？",
+      "expected": "out_of_scope",
+      "why": "第三方工具选型，不在当前能力图谱的证据范围内",
+      "source": "om_x100b613358f340a8cd0b65e287",
+      "verdict": "usable",
+      "reviewNote": "第三方工具选型，拒答正确。"
+    },
+    {
+      "id": "rg-021",
+      "text": "红人还要写入进来么？品牌项目 agent 那个更像个看板，也要写进来么？",
+      "expected": "needs_context",
+      "expectedNodes": [
+        "intent-and-decision",
+        "presentation-drilldown"
+      ],
+      "why": "数据产品范围/看板边界问题；需要项目决策上下文",
+      "source": "om_x100b62877883a8b8cf524a49f1",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-022",
+      "text": "社媒：1.爆款内容打标，沉淀资产库 2.用户 VOC 接入和洞察 3.内容策略和脚本生成 4.agent 内容拓展到欧洲等其他区域 5. AI 视频生成",
+      "expected": "needs_context",
+      "expectedNodes": [
+        "intent-and-decision",
+        "delivery-lanes"
+      ],
+      "why": "路线图/范围问题；需要项目目标与优先级",
+      "source": "om_x100b62a91d5a20a4cf940445fa",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-023",
+      "text": "图片输出不稳定，对标 Codex，10 条数据，结论 70% 稳定",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "eval-quality"
+      ],
+      "why": "小样本稳定性/基线问题；应说明样本量与判定标准",
+      "source": "om_x100b613d647bb8b8cffa8432c1",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-024",
+      "text": "数据采集跑完了，人工对比了，按照一个问题一行的要求已拆分，补充了问题分类",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "labeling-taxonomy"
+      ],
+      "why": "人工对比 + 问题分类，应落到打标版本与金标准",
+      "source": "om_x100b628170fb48a4ce38932933",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-025",
+      "text": "多一个流程，你的测试就要多关注一个节点",
+      "expected": "needs_context",
+      "expectedNodes": [
+        "eval-quality"
+      ],
+      "why": "测试流程变化的项目上下文；不应硬答",
+      "source": "om_x100b611f18c658b8dd11287d0d",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-026",
+      "text": "最终版更新好了，有几个点：红人还要写入进来么？品牌项目 agent 那个更像个看板，也要写进来么？目标我大概写，你复核下？",
+      "expected": "needs_context",
+      "expectedNodes": [
+        "intent-and-decision",
+        "presentation-drilldown"
+      ],
+      "why": "文档范围/看板/目标复核；需要项目上下文",
+      "source": "om_x100b62877883a8b8cf524a49f1",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-027",
+      "text": "本周进度：社媒 agent 总体进度 80%，内容治理 agent 50%，数据采集 agent 60%",
+      "expected": "needs_context",
+      "expectedNodes": [
+        "delivery-lanes"
+      ],
+      "why": "项目进度汇报；需要项目记录，不应编造判断",
+      "source": "om_x100b6285dd8fb488cf340fc48e",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-028",
+      "text": "PR 文章生成，结合话题点/风险点生成文章",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "agent-playbook"
+      ],
+      "why": "内容生成的行为边界/claims 风险；应讲 guardrail 与工具层",
+      "source": "om_x100b62a91d5a20a4cf940445fa",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-029",
+      "text": "社媒的爆款内容打标，沉淀资产库",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "labeling-taxonomy"
+      ],
+      "why": "打标体系/资产库；应讲标签版本与金标准",
+      "source": "om_x100b62a91d5a20a4cf940445fa",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    },
+    {
+      "id": "rg-030",
+      "text": "用户 VOC 接入和洞察，辅助社媒选题",
+      "expected": "in_scope",
+      "expectedNodes": [
+        "collection-time",
+        "analysis-identification"
+      ],
+      "why": "VOC 采集与洞察；应讲采集口径与分析方法",
+      "source": "om_x100b62a91d5a20a4cf940445fa",
+      "verdict": "unreviewed",
+      "reviewNote": ""
+    }
+  ]
+}
