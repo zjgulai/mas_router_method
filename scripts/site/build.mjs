@@ -45,6 +45,7 @@ const GENERATORS = [
   'build_data_design.py',
   'build_data_layers.py',
   'build_cheatsheet.py',
+  'build_meta.py',
 ];
 
 function runGenerator(file, stage) {
@@ -78,15 +79,19 @@ function runGenerator(file, stage) {
 async function rootHtml(dir) {
   const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
   const pages = [];
+  const files = [];
   const odd = [];
   for (const e of entries) {
+    // 点文件（.nojekyll）是手工维护的宿主约定，不参与生成物比对。
+    if (e.name.startsWith('.')) continue;
+    if (e.isFile()) files.push(e.name);
     if (!/\.html$/i.test(e.name)) continue;
     if (e.isFile()) pages.push(e.name);
     else if (e.isDirectory()) odd.push(`${e.name} — a directory named like a page`);
     else if (e.isSymbolicLink()) odd.push(`${e.name} — a symlink`);
     else odd.push(`${e.name} — not a regular file`);
   }
-  return { pages: pages.sort(), odd };
+  return { pages: pages.sort(), files: files.sort(), odd };
 }
 
 const stage = await mkdtemp(join(tmpdir(), 'site-build-'));
@@ -96,11 +101,12 @@ try {
     if (out !== '') console.log(`  ${g}: ${out.replace(/\n/g, ' ')}`);
   }
 
-  const { pages: generated } = await rootHtml(stage);
-  const { pages: present, odd } = await rootHtml(SITE);
+  const { pages: generatedPages, files: generated, odd: stagedOdd } = await rootHtml(stage);
+  const { files: present, odd } = await rootHtml(SITE);
   const orphans = present.filter((f) => !generated.includes(f));
 
-  if (odd.length > 0) {
+  const odd_all = odd.concat(stagedOdd);
+  if (odd_all.length > 0) {
     console.error(`\n${odd.length} entry in docs/site is named like a page but is not one:\n`);
     for (const o of odd) console.error(`  docs/site/${o}`);
     console.error('\n  Remove it, or move it to docs/site/originals/.');
@@ -114,7 +120,9 @@ try {
   } else {
     await mkdir(SITE, { recursive: true });
     for (const f of generated) await copyFile(join(stage, f), join(SITE, f));
-    console.log(`\nok — ${generated.length} pages generated into docs/site/`);
+    const nonHtml = generated.length - generatedPages.length;
+    console.log(`\nok — ${generatedPages.length} pages generated into docs/site/` +
+      (nonHtml > 0 ? ` (+${nonHtml} non-page files)` : ''));
   }
 } catch (cause) {
   console.error(cause.message);

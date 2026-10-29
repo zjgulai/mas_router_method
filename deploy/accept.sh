@@ -39,6 +39,19 @@ while IFS= read -r rel; do
 done < <(cd docs/site && find . -name '*.html' | sed 's#^\./##' | sort)
 
 echo
+echo "-- 2b. 搜索引擎门牌（robots / sitemap）"
+c="$(code "${BASE}/robots.txt")"
+[ "$c" = "200" ] && ok "GET /robots.txt -> 200" || bad "GET /robots.txt -> $c"
+curl -sS --max-time 15 "${BASE}/robots.txt" | grep -q '^Sitemap: https://main.luteos.com/sitemap.xml$' \
+  && ok "robots 指向 sitemap" || bad "robots 未指向 sitemap"
+c="$(code "${BASE}/sitemap.xml")"
+[ "$c" = "200" ] && ok "GET /sitemap.xml -> 200" || bad "GET /sitemap.xml -> $c"
+SM="$(curl -sS --max-time 15 "${BASE}/sitemap.xml")"
+printf '%s' "$SM" | grep -q '<urlset' && ok "sitemap XML 有效" || bad "sitemap XML 无效"
+SM_N=$(printf '%s' "$SM" | grep -oc '<loc>' || true)
+[ "${SM_N:-0}" -ge 30 ] && ok "sitemap 含 $SM_N 个 URL" || bad "sitemap 只有 ${SM_N:-0} 个 URL"
+
+echo
 echo "-- 3. 404 行为"
 c="$(code "${BASE}/${RANDOM_PATH}")"
 [ "${c}" = "404" ] && ok "不存在的路径 -> 404" || bad "不存在路径 -> ${c}（期望 404）"
