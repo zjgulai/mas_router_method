@@ -1,11 +1,11 @@
 ---
 name: anb-reusable
-description: Stage 6. Take only the parts you actually used more than once and make them the starting point for the next product. Use when starting a second similar product, or when deciding what to keep.
+description: The iterate stage (迭代). Take only the parts you actually used more than once and make them the starting point for the next product. Use when starting a second similar product, or when deciding what to keep.
 disable-model-invocation: true
 argument-hint: "What are you starting next?"
 ---
 
-# Stage 6 — The next one starts ahead
+# The next one starts ahead
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -13,13 +13,36 @@ The answer must be: *"The second product reaches a real result faster than the
 first one did."* Not "I made a template". A template that does not make the second
 one faster is a cost, not an asset.
 
+## What to change
+
+Before deciding what to keep, decide what to change. This is the half of the stage
+that closes the loop, and the half that gets skipped — carrying reusable parts
+forward is satisfying, while acting on what the numbers actually said is not.
+
+Start from the three numbers the operate stage produces: how many times it ran, what
+it cost, and why the failures failed. Each implies a different kind of change, and
+two of them are commonly misread:
+
+- **It barely ran.** Not a product defect — a reach problem. No amount of building
+  fixes it. Say so rather than adding features.
+- **It ran and cost more than it was worth.** The fix is usually a narrower path, not
+  a cheaper model.
+- **It failed for one reason, repeatedly.** That reason is the next piece of work,
+  and it is the only one of the three with an obvious answer.
+
+Each decision goes back into a register, not into a summary: a requirement in
+`work/requirements/` if the need itself moved, a ticket in `work/tickets/` if it is
+work you are now committing to. That is what closes the loop. Without it the
+observation stays in this conversation and the next round starts from memory, which
+is how a project relearns the same thing every few months.
+
 ## What to keep
 
 Only what passed all three:
 
 1. You used it in **this** product, not in a previous one.
 2. You used it **more than once**, not once with a plan to reuse.
-3. It has a **check that has failed at least once** (stage 3's rule).
+3. It has a **check that has failed at least once** (the verify stage's rule).
 
 Everything else is deleted. Not archived — deleted. An archive is where good
 intentions go to become maintenance.
@@ -66,6 +89,16 @@ generalisation of one case, which is a guess dressed as architecture.
    broke.
 4. Start the second product from what remains, and time how long until its first
    real result.
+
+## What you record
+
+What you decide to change goes back into the registers, not into a summary. A
+requirement in `work/requirements/` if the need itself moved; a ticket in
+`work/tickets/` if it is work you are now committing to.
+
+That is what closes the loop. Without it the observation stays in this
+conversation, and the next round starts from memory — which is how a project
+relearns the same thing every few months.
 
 ## Exit test
 

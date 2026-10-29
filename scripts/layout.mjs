@@ -50,16 +50,18 @@ const RULES = [
     hint: '证据只住 work/evidence/E-NNN-*.md，只增不改',
   },
   {
+    // Pages only publishes the repo root or /docs, so the site lives at docs/site/.
+    // That is an external constraint, not a preference - recorded in LAYOUT.md.
     what: '站点页面',
-    match: (p) => /^site\/[^/]+\.html$/.test(p),
-    forbid: (p) => /\.html$/.test(p) && /^docs\//.test(p),
-    hint: '站点 html 只住 site/；docs/ 放方法论文档，不放成品',
-  },
-  {
-    what: '原始文档',
-    match: (p) => /^site\/docs\/[^/]+\.html$/.test(p),
-    forbid: () => false,
-    hint: '',
+    // docs/site/ 根放生成物，originals/ 放手写原件。这层区别必须在路径上：
+    // 八份原件是站点自己声明「未改一字」的历史文档，与生成物混在一起，
+    // 孤儿检测就分不清「构建残留」和「不许动的东西」。
+    match: (p) => /^docs\/site\/(originals\/)?[^/]+\.html$/.test(p),
+    // docs/index.html is the entry point Pages serves at /, and it redirects into
+    // docs/site/. It is the one page allowed outside the site directory.
+    forbid: (p) => /\.html$/.test(p) && /^docs\//.test(p)
+      && !/^docs\/site\//.test(p) && p !== 'docs/index.html',
+    hint: '站点 html 只住 docs/site/（Pages 限制）：生成物在根，手写原件在 originals/',
   },
 ];
 
@@ -118,7 +120,7 @@ for (const f of files) {
 
 // 3. top-level directories that are not declared anywhere
 const declared = new Set([
-  'work', 'docs', 'site', 'packages', 'apps', 'scripts', 'node_modules', '.git', '.turbo',
+  'work', 'docs', 'packages', 'apps', 'scripts', 'node_modules', '.git', '.turbo', '.github',
   'anb-experiment-linkdigest', 'anb2-repo-vitals', '.agent-runs', '.claude', '.scratch', 'outputs',
 ]);
 const top = await readdir(ROOT, { withFileTypes: true });

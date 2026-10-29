@@ -55,3 +55,25 @@ stage. Provenance and upgrade steps for the vendored skills are in
 
 The one rule worth repeating: **the eval set is the spec.** A spec without eval
 cases is a wish, and every later argument about quality becomes an opinion.
+
+## Main agent (capability-graph consultant)
+
+`apps/bot-gateway` now hosts **Main**, a capability-graph consultant for data-product
+and Agent Native builder questions. It answers in Feishu groups with a grounded
+answer contract: conclusion, location, evidence, next actions, boundaries.
+
+- Engine: `packages/consult` — 16 capability nodes, 13 problem routes, BM25 retrieval,
+  grounded answers, optional model synthesis.
+- Surface: `apps/bot-gateway` — Feishu long connection (default) or webhook.
+- Graph and acceptance criteria: `docs/product/main-agent-capability-graph.md`.
+- Knowledge snapshot: `packages/consult/data/sources.json`, produced by
+  `python3 scripts/materialize-main-knowledge.py`.
+
+```bash
+pnpm --filter @mas/bot-gateway check   # read-only doctor: token, bot, scopes, sample answer
+pnpm --filter @mas/bot-gateway dev     # long-connection gateway
+```
+
+For first-time Feishu setup, run `python3 scripts/feishu-onboard.py`, open the
+printed link in Feishu, and confirm. The script then sets the event subscription
+to long-connection mode and adds `im.message.receive_v1`.

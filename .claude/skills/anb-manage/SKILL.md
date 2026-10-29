@@ -18,6 +18,8 @@ anything: it becomes half plan, half postmortem, and neither.
 Read `work/LAYOUT.md` before answering anything about where a file goes. The rule is one
 line: **if it changes state it goes in `work/`, if it does not it goes in `docs/`.**
 
+- `work/designs/` — the four-question records from the design stage; once confirmed they
+  are a spec the build and verify stages read, not a document
 - `work/tickets/` — planned work, cross-session only
 - `work/incidents/` — unplanned, with its own entry point
 - `work/requirements/` — one sentence each, can be dropped
@@ -25,9 +27,17 @@ line: **if it changes state it goes in `work/`, if it does not it goes in `docs/
 - `work/receipts/` — who received what, and how they confirmed. Append-only.
 - `work/artifacts/` — anything with ongoing cost: scripts, flags, dashboards, cron jobs
 
-## The four things you will be asked to do
+## The things you will be asked to do
 
-### "What should I do next?"
+### "The docs say N of something and I think it changed"
+
+Run `node scripts/facts.mjs`. It prints every number the project quotes about itself,
+computed from disk. Then `--check` compares the documents against those values.
+
+Do not update the document first. The document might be right and the disk might be
+surprising — `facts` tells you which. And if a number has genuinely changed, `facts` is
+where the new one is derived, so the doc and the script agree by construction rather than
+by remembering.
 
 Run `node scripts/work.mjs status`. Answer from its output, not from memory.
 
@@ -71,6 +81,14 @@ still open if it is.
 conversation does not need a ticket, and creating one makes the register a diary — diaries are
 not read.
 
+### "Is this design still current?"
+
+Read `work/designs/confirmed/`. A record that has been overtaken moves to
+`superseded` with `work-move.mjs` — never edited in place, because the record of
+what you decided last time is the only evidence about whether the decision was
+right. `node scripts/design.mjs refusals` prints what the newest one currently says,
+which is the quickest way to see whether a stage is reading a stale one.
+
 ### "Something went wrong"
 
 That is an incident, not a ticket. `INC-` prefix, `work/incidents/open/`.
@@ -84,10 +102,19 @@ Incidents are how a project remembers its own scars.
 ```bash
 node scripts/work.mjs check    # records are valid
 node scripts/layout.mjs        # files are where LAYOUT.md says
+node scripts/facts.mjs --check # numbers quoted in docs match what is on disk
 ```
 
-Both must pass. `layout` failing means a file is in the wrong home, which is the beginning of
-the duplicate problem this whole structure exists to prevent.
+All three must pass.
+
+`layout` failing means a file is in the wrong home — the beginning of the duplicate problem
+this structure exists to prevent.
+
+`facts` failing means a document is quoting a number that has changed. This happens every
+time something is added: the page says "15 skills", you add one, and now the page is wrong.
+Nobody notices, because a stale number looks exactly like a fresh one. When `facts` reports a
+mismatch, do not adjust the number until you have recounted with a second method —
+`node scripts/facts.mjs` prints the values it derived from disk.
 
 ## Things you must not do
 

@@ -7,7 +7,7 @@ argument-hint: "What are you trying to do, or what feels wrong?"
 
 # Agent Native Builder
 
-A router over six stages and five checks, for someone who does not read code.
+A router over seven stages and seven checks, for someone who does not read code.
 
 **The premise this whole thing rests on:** writing code is not the bottleneck —
 the agent does that. The bottleneck is **judgement**. They cannot tell whether
@@ -27,7 +27,7 @@ Two things are never allowed:
    whether code does what it was told. They do not measure whether the product is
    usable. These are different questions and conflating them is the single most
    expensive mistake in this domain.
-2. **Never proceed past stage 3 without evidence that a check has actually
+2. **Never proceed past the verify stage without evidence that a check has actually
    failed at least once.** A check that has never failed is not a check.
 
 ## Route
@@ -35,13 +35,30 @@ Two things are never allowed:
 | They say | Go to |
 | --- | --- |
 | "I don't know what to build" / "I have an idea" | `anb-idea` |
+| "I know what to build — what has to be true before I start?" | `anb-design` |
 | "It should work but nothing comes out" / "where do I start building" | `anb-runnable` |
 | "I don't know if what it makes is any good" | `anb-judgeable` |
 | "How do I show this to someone" | `anb-shipable` |
 | "Something went wrong and I can't tell where" | `anb-observable` |
 | "I'm starting the next one" | `anb-reusable` |
+| "How do I manage this" / "can I close this ticket" / "record this" | `anb-manage` |
+
+**Management is not an eighth stage.** It runs underneath all seven: a ticket is
+opened in the need stage, evidence lands in the verify stage, and an incident can
+happen at any moment. Filing it as a step after the others would mean the first
+seven run with nothing written down.
+
+Reach for it whenever the question is about the project's own record rather than
+about the product — what is waiting, whether something can be closed, what has
+already happened.
 
 If they say "all of it", go to `anb-idea` first. Always.
+
+**Do not skip design because it feels like paperwork.** Two questions decide
+whether it is needed, and neither is about how big the product is: is there an
+action that cannot be undone, and will someone other than you use it. If the
+answer to either is yes, `anb-design` is not optional. If both are no, skipping it
+is correct — write one line saying why, then go to `anb-runnable`.
 
 If they say something *feels* wrong but cannot name it, that is a check, not a
 stage — go to the checks below. That instinct is usually correct and worth more
@@ -59,11 +76,12 @@ These are interventions, not stages. Any of them can be run at any time.
 | Try it on another device | They think it's finished | `anb-check-otherdevice` |
 | Show me three real outputs | They think the output is fine | `anb-check-output` |
 | Add the numbers up | Any count, dashboard or report is on screen | `anb-check-reconcile` |
+| Count it a second way | A number looks wrong, or you're about to act on one | `anb-check-count` |
 
 ## The one hard rule
 
-Stage 3 is the only gate that stops work outright. If the checks at stage 3 cannot
-be made to fail on purpose, **do not build stage 4**. A product that ships on an
+The verify stage is the only gate that stops work outright. If the checks at the
+verify stage cannot be made to fail on purpose, **do not start the ship stage**. A product that ships on an
 unverified quality claim is not further along; it is in debt.
 
 Every other stage can be revisited. This one cannot be skipped.
@@ -100,6 +118,6 @@ an agent guesses intelligently where a person stops. Label it "partially verifie
 
 ## What this does not do
 
-It does not decide whether the product is worth building. That is stage 1 and only
+It does not decide whether the product is worth building. That is the need stage and only
 they can answer it — and they may be wrong. Say so when it is relevant; do not
 pretend the process covers it.

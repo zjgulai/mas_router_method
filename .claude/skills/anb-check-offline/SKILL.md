@@ -56,4 +56,4 @@ Three specific wrong outcomes:
 ## What this does not prove
 
 That the dependency works when it is up. This check only confirms honest failure.
-For the other direction, you need a real run — which is stage 2's exit test.
+For the other direction, you need a real run — which is the build stage's exit test.

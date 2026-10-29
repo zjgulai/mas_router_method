@@ -1,0 +1,121 @@
+# The three checks that can tell you the project's record is broken.
+#
+# Deliberately not a test suite: the product tests need dependencies and a package
+# manager. These three need only node and read from disk, so they run in seconds
+# and give a signal that is about the project's own consistency rather than its
+# code.
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The site generators are Python. They are isolated behind
+      # `node scripts/site/build.mjs`, so nothing else in the repo needs it.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Each step is separate so a failure names which class of problem it is:
+      # a broken record, a misplaced file, or a stale number in a document.
+      - name: Records are valid
+        run: node scripts/work.mjs check
+
+      # Separate from the step above on purpose: a design with a block missing is
+      # a different failure from a malformed record, and it is the one the site
+      # used to have to say was uncovered. Naming it here means the gap cannot
+      # come back quietly.
+      - name: Design records answer all four questions
+        run: node scripts/work.mjs check --only design
+
+      # The stage order lives in work/schema.yml and nowhere else. Prose that
+      # restates it as a number has already shipped a reversed instruction once
+      # ("do not build stage 4" reading as "do not build the verify stage").
+      - name: Skills name stages, they do not number them
+        run: node scripts/naming.mjs check
+
+      - name: Files are where LAYOUT.md says
+        run: node scripts/layout.mjs
+
+      # Fourteen tables describe one product; this is the only check that reads
+      # across them. A reference to a design that does not exist, or a build row
+      # that points at nothing, is invisible inside any single table — which is
+      # exactly why this class of defect survived until it was looked for.
+      #
+      # Reads a committed dump (`docs/product/tables.json`), not the live tables:
+      # fetching from Feishu needs credentials CI does not have, and a check that
+      # cannot run on every push is a check nobody runs.
+      - name: References across the tables resolve
+        run: node scripts/xref.mjs docs/product/tables.json
+
+      - name: Quoted numbers match disk
+        run: node scripts/facts.mjs --check
+
+      # The committed pages must be exactly what the generators produce. Without
+      # this, the site drifts from its source and the only way to find out is to
+      # read the HTML — which is what the generators exist to avoid.
+      - name: The site rebuilds from its generators
+        run: node scripts/site/build.mjs && git diff --exit-code docs/site/
+
+      # Stage pages lost their numeric prefixes, and a stale `07-iterate.html`
+      # survived that rename and shipped. Three kinds of internal link fail
+      # independently; this checks all three rather than whoever remembers to.
+      - name: The site's internal links resolve
+        run: node scripts/site/links.mjs
+
+      # The data product's three gates. Each has its own exit code because the
+      # difference between "failed" and "cannot be determined" is the whole point:
+      # a gate that only knows pass and fail reports one of them on malformed input,
+      # and both are wrong.
+      #
+      # `|| [ $? -eq 2 ]` is not "ignore failure". Exit 2 means the input cannot
+      # answer the question — a real state that must be visible but must not fail
+      # the build, because the demo fixtures are shaped to exercise all three.
+      - name: §七 the kill switch still fails when regions move together
+        run: node scripts/region-corr.mjs --demo; test $? -eq 1
+
+      - name: The panel fit recovers its planted β
+        run: node scripts/panel-fit.mjs --demo
+
+      - name: The collection audit still catches all three silent failures
+        run: node scripts/collect-audit.mjs --demo; test $? -eq 1
+
+      - name: The falsification checks fire on a dead interval
+        run: node scripts/verify-conclusion.mjs --demo; test $? -eq 1
+
+      - name: Every metric card answers all eight fields
+        run: node scripts/metric-card.mjs check
+
+      # The matrix is a promise about what is enforced, so it gets its own step:
+      # "a cell claims three things and one is empty", "a checker names a script that
+      # was deleted", and "a prose count drifted from the data" are three different
+      # failures and should not arrive as one line under "tests failed".
+      - name: The 8×8 matrix holds together
+        run: node scripts/matrix-check.mjs
+
+      - name: The SOP's cell section matches the matrix
+        run: node scripts/sop-render.mjs --check
+
+      # Quoted so Node expands the glob itself. An explicit file list would make a
+      # new test file easy to add and easy to never run — a silently skipped test
+      # is the exact failure this repo keeps finding.
+      #
+      # Serial on purpose. Several of these tests corrupt a real file — a generated
+      # page, a claimed document — because that is the only way to prove the checker
+      # notices. They mutate one shared tree, so running them concurrently makes
+      # them fail for reasons unrelated to what they test. It already happened once:
+      # the site rebuild silently restored a page the facts test had just corrupted.
+      - name: The tooling's own tests
+        run: node --test --test-concurrency=1 "scripts/**/*.test.mjs"

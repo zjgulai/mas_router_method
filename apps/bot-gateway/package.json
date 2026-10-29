@@ -4,21 +4,30 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx --env-file-if-exists=../../.env watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
+    "start": "tsx --env-file-if-exists=../../.env src/index.ts",
+    "check": "tsx --env-file-if-exists=../../.env src/cli/check.ts",
+    "authorize": "python3 ../../scripts/feishu-authorize-link.py",
+    "onboard": "python3 ../../scripts/feishu-onboard.py",
+    "configure": "tsx --env-file-if-exists=../../.env src/cli/configure.ts",
+    "simulate": "tsx --env-file-if-exists=../../.env src/cli/simulate.ts",
+    "replay": "tsx --env-file-if-exists=../../.env src/cli/replay.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@larksuiteoapi/node-sdk": "1.76.0",
+    "@mas/consult": "workspace:*",
     "@mas/core": "workspace:*",
+    "@mas/feishu": "workspace:*",
     "@mas/shared": "workspace:*",
+    "tsx": "4.23.15",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
-    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vitest": "5.0.5"
   }

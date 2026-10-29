@@ -203,3 +203,17 @@ Honest status, so the next session does not over-estimate what exists:
   reached a real model** (the one attempt had no API key).
 - `apps/workbench`, `apps/bot-gateway` — placeholder surfaces. Their designs are
   specified; only session resolution and a placeholder page exist.
+
+## Main agent (2026-10-29)
+
+- `packages/consult` — capability graph (16 nodes, 13 routes), portable knowledge
+  bundle, BM25 retrieval, grounded answer composer, optional Anthropic / OpenAI
+  synthesis. 33 tests.
+- `apps/bot-gateway` — Feishu gateway in two modes: WebSocket long connection
+  (default, no public URL) and HTTP webhook (`POST /events`). Idempotency, per-chat
+  queue, mention matching by bot open_id, reply fallback, doctor/configure/authorize
+  CLIs. 39 tests.
+- `packages/feishu` — added Feishu `post` rich-text extraction and mention open ids.
+- Knowledge is materialised by `scripts/materialize-main-knowledge.py` because some
+  Markdown files in this workspace are stored in a form Node reads as binary.
+- Acceptance and limits: `docs/product/main-agent-capability-graph.md`.

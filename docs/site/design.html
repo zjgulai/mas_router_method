@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设计 · Agent Native Builder</title>
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--ink);color:#e9e7e0;position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.1rem 0 2rem}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
+  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
+               letter-spacing:-.02em}
+  .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
+  .nav{padding:0 .5rem}
+  .nav-g{margin-bottom:.9rem}
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+         text-transform:uppercase}
+  .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
+         border-radius:2px;line-height:1.35}
+  .nav a:hover{background:#2a2c26;color:#fff}
+  .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
+  .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
+            border-left:1px solid #3d3f38;line-height:1.35}
+  .subnav a:hover{color:#fff;border-left-color:#8d8f86}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2rem,4vw,3.2rem) clamp(16px,4vw,52px) 4rem;
+                max-width:min(56rem,100%)}
+  .content footer{margin:0 clamp(16px,4vw,52px) 0;padding:1.1rem 1.3rem;background:var(--sunk);
+                  font-size:.8rem;color:var(--muted);line-height:1.7;max-width:min(56rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。禁用 JS 时它默认展开，
+     退化成一张普通的纵向导航列表——内容一个不少。 */
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.6rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem}
+    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.4rem}
+  }
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。 */
+  .tb-index{background:var(--surface);padding:.75rem .9rem;margin:1rem 0 1.2rem;font-size:.86rem}
+  .tb-index a{display:flex;gap:.7rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.22rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent)}
+  .tb-index code{background:transparent;padding:0;color:var(--accent);font-weight:650;
+    flex:0 0 4.6rem;border-bottom:1px solid var(--deep)}
+  .tb-row{margin:1.6rem 0 2rem}
+  .tb-row h3{margin:0 0 .5rem;font-family:var(--mono);font-size:.92rem}
+  .tb-row h3 code{background:var(--ink);color:var(--surface);padding:.1rem .45rem;font-size:.86rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:9.5rem;color:var(--faint);font-weight:600;font-size:.8rem}
+  table.tb-fields td:last-child{font-size:.89rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--deep)}
+  .tb-no{color:var(--deep);font-style:italic}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:6.5rem;font-size:.76rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <details open>
+      <summary class="brand">
+        <a class="home" href="/mas_router_method/site/">ANB</a>
+        <span class="brand-sub">Agent Native Builder</span>
+      </summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="/mas_router_method/site/">总览</a>
+      <a href="/mas_router_method/site/need.html">需求</a>
+      <a href="/mas_router_method/site/design.html" class="on">设计</a>
+      <a href="/mas_router_method/site/build.html">开发</a>
+      <a href="/mas_router_method/site/verify.html">验收</a>
+      <a href="/mas_router_method/site/ship.html">交付</a>
+      <a href="/mas_router_method/site/operate.html">运营</a>
+      <a href="/mas_router_method/site/iterate.html">迭代</a>
+      <a href="/mas_router_method/site/manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="/mas_router_method/site/branches.html">分支总表</a>
+      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/site/prompts.html">提示词</a>
+      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
+      <a href="/mas_router_method/site/tables.html">十三个表</a>
+      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      </div>
+      </nav>
+      <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#branches">走哪条路</a>
+      <a href="#verify">谁来验怎么验</a>
+      <a href="#skills">用到哪些 skill</a>
+      <a href="#docs">原文与依据</a>
+      </div>
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 设计</div>
+      <h1><span class="num">02</span>设计</h1>
+<p class="lede">把"以后改起来很痛"的六件事先定下来：流程里哪些步骤固定、哪些要临场判断；它必须拒绝什么；每一种情况该怎么答；它能不打招呼就做什么；模型动手时看到什么；每种结局下人拿到手的是什么。</p>
+<div class="note"><span class="tag t-must">方法论已覆盖</span>　这里曾经是空的：ANB 从"想法"直接跳到"能跑"。现在补上了六问方法论（<code>anb-design</code>），答案落成 <code>work/designs/D-xxx</code>，可以被 <code>work check</code> 校验。<br><br><b>最后两块是实测加上的</b>：把前四块交给一个 agent 去实现最窄的路，它的猜测集中在"产出到底长什么样"，而四块里没有一块回答它；而原来的"拒绝清单"一块装了两样东西——实测十一行里只有三行是禁令，其余八行是"这种情况该怎么答"。<br><br><b>为什么这一步重要：</b>设计阶段的错误不会当场报错。它会以"后面每改一次都很痛"的形式慢慢出现，而那时已经没人记得当初为什么这么定。四问的作用不是把设计做全，是把最贵的四个决定逼出来。</div>
+<h2 id="branches">什么情况走哪条路</h2>
+<p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
+<table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你要判断这东西到底该不该用 agent</td><td><a href="#b-agent">该不该用 agent，一个测试</a></td><td>一个测试：能不能把决策树画出来。能画就是管线，画不出来才需要 agent。</td></tr><tr><td>你说的是功能和技术选型，说不清它必须拒绝什么</td><td><a href="#b-refuse">拒绝清单写成了价值观</a></td><td>拒绝清单写不出具体输入的，是价值观，不是设计。它在验收时会被悄悄丢掉。</td></tr><tr><td>它能发消息、删东西、付款或发布</td><td><a href="#b-perm">按重要性排权限，排错了</a></td><td>按能不能撤销分三档，不按重要性。重要性你会排错，能不能撤销是事实。</td></tr><tr><td>模型要自己决定调哪个工具</td><td><a href="#b-contract">交接契约只写了"它做什么"</a></td><td>每个工具三行，第二行「什么时候别用」是重点，也是最常被省掉的。</td></tr><tr><td>四问答完了，要动手了</td><td><a href="#b-done">四问答完，用数问题来验收</a></td><td>把四块交给一个 agent，数它不得不猜了几处。每一处都是一个洞。</td></tr><tr><td>你的"拒绝清单"越写越长，而且大部分是"该怎么答"</td><td><a href="#b-prohibitions">「拒绝清单」越写越长</a></td><td>禁令是清单，应答规则是表格——形状不同。实测里有十一行，只有三行是真正的禁令。</td></tr><tr><td>拒绝清单要对照的政策，散在好几处</td><td><a href="#b-scattered">输入存在，但散在好几处</a></td><td>最常见也最麻烦的形态：既不是"有"，也不是"没有"。中间那件「拢成一份」的工作没人负责，而它跨会话。</td></tr><tr><td>只有一个用户、只跑一次、只读不写</td><td><a href="#b-skip">可以跳过，但要写下来</a></td><td>可以跳过，但写下"我跳过了，因为…"。</td></tr></tbody></table>
+<div class="card" id="b-agent"><h3>该不该用 agent，一个测试</h3><p>这个问题现在归需求阶段问（<code>anb-idea</code>），因为它是"你在做什么"的决定，不是"怎么实现"。<br><br><b>测试只有一个：你能不能把决策树画出来？</b>能写出步骤顺序和分支条件，它就是固定流程，应该做成管线——顺序确定、一次模型调用嵌在脚本里，更便宜、更快、更好查。只有当下一步取决于上一步返回什么、你列不出分支时，才需要 agent。<br><br>设计阶段会把这个数重新数一遍：判断点零到一处，就该退回管线。两个阶段问同一个问题不是重复——一个是决定，一个是复核，而复核经常推翻决定。</p></div>
+<div class="card" id="b-refuse"><h3>拒绝清单写成了价值观</h3><p>「要诚实」「不要有害」「保持品牌调性」——都对，但一条都测不了。<br><br><b>改法</b>：每条按「一个具体输入 → 它必须改做什么」重写。写不出具体输入，就先问一句：这个产品最容易被误用成什么样？<br><br>为什么这一步值钱：拒绝清单是设计阶段唯一能直接变成验收检查的东西。写成价值观的那些，会在验收阶段写检查时被安静地删掉——因为没人知道怎么测，于是不测。</p></div>
+<div class="card" id="b-perm"><h3>按重要性排权限，排错了</h3><p>「付款重要，所以付款要确认；读文件不重要，所以放行。」结果是：一条读文件的动作把全部客户记录导了出去，而 2 美元的扣款被拦住了。<br><br><b>按能不能撤销排，只有这一个标准</b>：<br>· 可撤销 → 放行<br>· 会被看见或花钱 → 放行，但记账并设额度<br>· 不可撤销 → 先问人<br><br>中间那档最容易被跳过，而真正的损失都在那：不是答错一次，是在有人看之前错了五十次。额度要写数字，「合理使用」不是额度。</p></div>
+<div class="card" id="b-contract"><h3>交接契约只写了"它做什么"</h3><p>只写"这个工具用来读品牌画像"，等于授权它在任何场景下用。<br><br><b>每个工具三行</b>：做什么 / <b>什么时候别用</b> / 失败时返回什么。<br><br>第二行是重点。agent 产品最常见的失败不是工具坏了，是一个正确的工具被用在了不该用的地方——而日志里每一行都正常，没有报错，没有异常，只是结果微妙地错了。<br><br>第三行决定一次失败是一个回合还是整轮运行：说清"这个 id 不存在，不要用同一个 id 重试"的工具，能把循环自己结束掉。</p></div>
+<div class="card" id="b-done"><h3>四问答完，用数问题来验收</h3><p>把四块交给一个 agent，不给任何别的上下文，让它实现最窄的那条路。<b>然后数它不得不自己猜的有几处。</b><br><br>零处：设计完成。每一处：都是一个洞，补上，再交一次，再数。<br><br>两轮是正常的。超过三轮说明不是写得不细，是缺了一整块。<br><br>这个验收的好处是它不靠感觉——「设计得清不清楚」是个意见，「它问了三个问题」是个数。</p></div>
+<div class="card" id="b-prohibitions"><h3>「拒绝清单」越写越长</h3><p>禁令是<b>清单</b>：短，每条是一个「不要做」。应答规则是<b>表格</b>：每个具体输入一行，写它该怎么答。<br><br>这两样东西形状不同，装进同一个标题里就会被名字带偏。<b>实测过一次</b>：十一行里只有三行是真正的禁令，其余八行是「这种情况该怎么答」——而按标题去实现，会把「3 个月不能用、且不要给建议」那一行做成<b>升级</b>，可它明写不升级。<br><br><b>怎么改</b>：分两块。「拒绝清单」收尾时应该很短；如果它有十行，回去看一遍。</p></div>
+<div class="card" id="b-scattered"><h3>输入存在，但散在好几处</h3><p>这是最常见的真实形态，而方法原本没有它的位置。<br><br>需求阶段只问「政策完全不存在吗」——不存在就停机；设计阶段这一问则默认输入已经可用。<b>中间那种「存在、但散在平台后台模板 + 几封内部消息 + 主管的口头补充里」的形态，两边都不管。</b><br><br><b>怎么改</b>：先承认它，别跳过。「把它们拢成一份可对照的清单」是一件跨会话的工作，所以它是一张票，而这一块<b>在票做完之前是阻塞的</b>。<br><br><b>不要凭记忆写拒绝清单。</b>凭大家记得的东西拼出来的清单，是价值观画上了箭头——每一行都像真的，而且没人能指出哪一行是猜的。</p></div>
+<div class="card" id="b-skip"><h3>可以跳过，但要写下来</h3><p>一次性脚本、只给自己用的工具、只读不写的工具，不需要完整设计。<br><br>判据不是"东西小"，是两个事实：<b>有没有不可撤销的动作</b>、<b>除你之外会不会有人用</b>。两个都没有，可以跳过；有一个，第二问就不能跳。<br><br>但必须写下"我跳过了设计，因为 X"。因为三个月后你会把它当正式项目维护，那时候没人知道当初为什么没有这份记录——而沉默和"想过但决定不问"在记录里长得一模一样。</p></div>
+<h2 id="verify">谁来验，怎么验</h2>
+<p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
+<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>四块都写了，跳过的块写明理由</td><td>「跳过：只读，没有动作」算写完；空白不算</td></tr><tr><td>判断点写下来并命名了，不是只有一个数</td><td>"三处"必须能指出是哪三处。只有一个数字时，两个人可以都同意"三"而指的是不同的三</td></tr><tr><td>应答规则每一行的"该怎么答"，都落在动作权限表允许的动作里</td><td>三轮实测里，三处硬矛盾全是跨块的：表格要求了权限表里不存在的动作，而没有任何东西会比较这两块</td></tr><tr><td>把记录交给一个 agent 之后，它报的"哪几块互相冲突"是空的</td><td>光是猜测量降到零不算完。跨块冲突不是零就等于没做完——它只会安静地传下去</td></tr><tr><td>拒绝清单每一条都有具体输入和一个改做什么</td><td>拿得出"输入 X → 必须改成 Y"，才可能在验收时变成一条检查</td></tr><tr><td>动作清单按"能不能撤销"排，不按重要性</td><td>中间那档写了数字额度，不是"合理范围内"</td></tr><tr><td>把四块交给 agent，它问你的问题在三个以内</td><td>它猜的每一处都是洞，补完再数一次</td></tr></tbody></table>
+<h2 id="skills">这一步用到哪些 skill</h2>
+<ul><li><a href="/mas_router_method/site/skills.html#anb-design"><code>anb-design</code></a> — 四问：流程形状、拒绝清单、动作权限、交接契约。设计阶段的方法本身。</li><li><a href="/mas_router_method/site/skills.html#architecture-decision-records"><code>architecture-decision-records</code></a> — 难回退的选择写成 ADR，含放弃的选项和代价。</li><li><a href="/mas_router_method/site/skills.html#domain-modeling"><code>domain-modeling</code></a> — 术语定死，写进 GLOSSARY。</li><li><a href="/mas_router_method/site/skills.html#codebase-design"><code>codebase-design</code></a> — 模块边界、接口深浅、seam 位置。</li><li><a href="/mas_router_method/site/skills.html#spec-driven-development"><code>spec-driven-development</code></a> — 把共识固化成可验收的规格。</li><li><a href="/mas_router_method/site/skills.html#to-spec"><code>to-spec</code></a> — 对话已透时直接固化，不再采访。</li><li><a href="/mas_router_method/site/skills.html#writing-plans"><code>writing-plans</code></a> — 把 spec 变成别人能执行的步骤。</li><li><a href="/mas_router_method/site/skills.html#to-tickets"><code>to-tickets</code></a> — 拆成 tracer-bullet 纵向切片，标阻塞关系。</li><li><a href="/mas_router_method/site/skills.html#api-and-interface-design"><code>api-and-interface-design</code></a> — 契约先行、错误语义、分页、幂等。</li><li><a href="/mas_router_method/site/skills.html#database-schema-designer"><code>database-schema-designer</code></a> — 表结构、约束、索引、可回滚迁移。</li><li><a href="/mas_router_method/site/skills.html#auth-implementation-patterns"><code>auth-implementation-patterns</code></a> — session/JWT/OAuth 选型、租户隔离。</li></ul>
+<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="/mas_router_method/site/tables-design.html">看 设计 的表 →</a></div>
+<h2 id="docs">原文与依据</h2>
+<ul><li><a href="/mas_router_method/site/docs.html#terms.html">术语表：每个词配「坏了会怎样」</a></li><li><a href="/mas_router_method/site/docs.html#capability-map.html">能力图谱 A 域：领域建模与契约</a></li></ul>
+      <div class="nextprev">
+<a href="/mas_router_method/site/need.html"><span class="lbl">上一步</span>需求</a>
+<a href="/mas_router_method/site/build.html" style="text-align:right"><span class="lbl">下一步</span>开发</a>
+</div>
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+</body>
+</html>

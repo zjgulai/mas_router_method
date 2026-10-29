@@ -51,5 +51,5 @@ tell them, and the fix belongs in the product.
 
 ## What this does not cover
 
-Whether the thing is *useful*. That was stage 3's job, and this check cannot
+Whether the thing is *useful*. That was the verify stage's job, and this check cannot
 substitute for it. A product can be easy to open and still be pointless.

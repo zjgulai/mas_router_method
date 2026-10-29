@@ -1,0 +1,333 @@
+---
+name: anb-design
+description: The design stage (设计). Decide the four things that are expensive to change later — the shape of the flow, what it must refuse, what it may do without asking, and what the model sees when it acts. Use after the idea is confirmed and before anything is built, especially when the product can send, pay, delete or publish.
+disable-model-invocation: true
+argument-hint: "What does it have to get right that you cannot fix later?"
+---
+
+# Design
+
+**Open by asking: "how will we know this stage is finished?"**
+
+The answer must be an action: *"I handed the four answers to an agent and it
+built the narrow path without asking me anything."* Not "the design is clear".
+Not "I wrote it down".
+
+Every question the implementer has to ask is a hole in the design. Counting the
+questions is the only measurement this stage has. Take it.
+
+## This stage is four conversations, not four documents
+
+One question per turn. State your recommended answer first, so they can agree or
+correct instead of composing prose. Each answer becomes **one block in one file**.
+If the whole thing takes more than twenty minutes, it is being over-built.
+
+Ask by trigger, not by product size. "It's small" is not a reason to skip
+anything — a small tool that sends one email has the same irreversible action as
+a large one.
+
+| Question | Ask it when | Skip it and say so when |
+| --- | --- | --- |
+| 1. What is the shape of the flow? | Always | Never |
+| 2. What must it refuse? | Always | Never |
+| 3. What may it do without asking? | It can send, write, delete, pay, or publish | It only reads and shows |
+| 4. What does the model see when it acts? | The model chooses at runtime which tool to call | The flow is fixed and calls one thing |
+
+Two never-skipped, two by trigger. Write the skipped ones down with the reason —
+in three months "I skipped it" and "I never considered it" are the same memory.
+
+## Question 1 — the shape of the flow
+
+Not an architecture diagram. A numbered list with one split in it: which steps are
+**fixed, same every time**, and which steps need **judgement at runtime**.
+
+The count of judgement points is the number to watch. Zero or one: this is a
+pipeline and it will be cheap, fast and easy to check. Three or more: either the
+product genuinely needs to improvise, or the thinking is not finished and the
+model is being asked to do it for you.
+
+**Write each judgement point down and name it. The number is the length of that
+list, not a separate answer.** The first version asked only for a count, and a count
+cannot be argued with: in the first real run the two people disagreed about whether a
+case was a judgement call or a rule, and there was nothing to point at, because no list
+had ever been produced. Two people can agree on "three" while meaning different threes.
+
+The list is also what settles the disagreement. A judgement point earns its place by
+having no rule. Write the rule you think covers it, then try to break it with a real
+case: if the rule holds, it is a fixed step; if you can construct a case that beats the
+rule, that case is the judgement point — and now you can name it.
+
+Retype, summarise, extract, format, route by a rule — all fixed. Decide which of
+five sources is authoritative, judge whether a claim is substantiated, choose
+which of three tactics fits this customer — these are judgement. If they cannot
+tell which side a step is on, it is judgement wearing a fixed step's clothes, and
+it will behave differently every run.
+
+That count is also the honest answer to "should this be an agent at all". A flow
+with no judgement points does not need a model choosing its own steps; it needs a
+script with one model call inside it — cheaper, faster, and far easier to check.
+Say so when it is true. The need stage already asked whether a person would pay for this;
+this question asks whether the model needs to be in charge of the order.
+
+## Question 2 — what it must refuse
+
+Two kinds of row, and both are needed:
+
+- **Out of scope.** This product is not for that. "Someone asks it to write the
+  final legal wording — it points to a person instead."
+- **Would cause harm.** Doing it breaks something: a claim the brand cannot
+  prove, a person's data leaving, an action with no undo.
+
+Each row has a fixed shape: **a concrete input → what it must do instead.**
+
+> "Asks whether the serum cures acne → must say it cannot make medical claims,
+> and offer the appearance-wording alternative."
+
+If they cannot name a concrete input, it is a value, not a refusal. "Be honest",
+"don't be harmful", "stay on brand" are values. Values cannot be tested at the verify stage
+and will be quietly dropped when the checks get written. Ask for the input.
+
+**Then ask where the list comes from.** Three answers, and only two are simple:
+
+- **It exists in one place.** Use it.
+- **It does not exist at all.** Stop — that is the disconfirming condition from the
+  need stage, and the first work is writing the policy, not building the product.
+- **It exists, scattered across several places** — a template in the platform's back
+  office, three internal threads, and what the supervisor says out loud. This is the
+  common case, and the method had no room for it: the need stage only asks whether the
+  policy exists, and this question assumes the answer is usable. The missing work is
+  *consolidating it*, nobody owns that, and it spans sessions — so it is a ticket, and
+  **this block is blocked until it is done.** Say that plainly rather than writing the
+  list from memory: a refusal list assembled from what everyone remembers is values with
+  arrows drawn on.
+
+The exit condition for this question: **each row can become a check.** If a row
+cannot be written as "given this input, that output must not appear", it is not a
+refusal yet.
+
+**Most of what they want to write here is not a refusal, and it belongs in the next
+question.** A refusal is a prohibition: something the product does not do. A row that says
+*how it answers* is a rule, not a refusal. Say so and move the row.
+
+In the first real run, ten of the eleven rows were answer instructions filed under a heading
+that said "what it must refuse". Implemented to the name, the row saying "a three-month-old
+cannot use this, and do not advise" would have become an escalation — when it explicitly
+says not to escalate. This question should end up short. If it has ten rows, look again.
+
+This is also the one place where the design and verify stages overlap on purpose.
+Design writes the list; verify turns it into checks. That is not duplication — it is the
+list being born with somewhere to go.
+
+## Question 3 — how is each case answered
+
+A different artifact from the last one, and the difference is the shape: question two is a
+list of prohibitions, this is a **table**, one row per case the product will actually meet.
+
+| 具体输入 | 该怎么答 | 升级档次 | 依据 |
+| --- | --- | --- | --- |
+| the buyer's words | what it does, in as many steps as it needs | 不升级 / 软升级 / 硬升级 | which policy clause |
+
+**升级档次 has three values, and one rule:** `不升级` produces the answer; `软升级` produces it
+and marks it for a person; `硬升级` does not produce it at all. Name them once, at the top of
+the record, and do not let a second word for the same state creep in — the first real run used
+five words for these three values, in a document that contained a section about not confusing
+two of them.
+
+**Separate the mechanism from the result.** Escalation is what happens to *this case*; the
+record's overall state is what the whole thing ends up as, and it is the heaviest case that
+decides it. A hard escalation on one case does **not** suppress the others — treating it that
+way is how a message asking for a refund *and* reporting a rash ends up with no reply to the
+refund, which is the part the person most needed.
+
+**The test for this table: can you write a real buyer message for every row?** A row you
+cannot instantiate is a value with columns drawn around it.
+
+**And one constraint no other question has: every row's 该怎么答 must be something the action
+permissions allow.** Check the table against question four, row by row. Three rounds of the
+first real run kept finding the same defect — a row demanding an action the permission table
+did not contain, with nothing to catch it, because the questions are answered separately and
+only the exit test ever compares them.
+
+## Question 4 — what it may do without asking
+
+Sort by **whether it can be undone**, never by how important it feels. Importance
+is a judgement they will get wrong; reversibility is a fact they can look up.
+
+| Tier | Test | Rule |
+| --- | --- | --- |
+| Reversible | If it is wrong, you undo it in one step and nobody saw | Let it act |
+| Costly but bounded | Undoable, but it costs money, reaches a person, or is visible for a while | Let it act, record it, cap it |
+| Irreversible | Cannot be undone, or was seen by an audience | **Ask a human first** |
+
+The middle tier is the one that gets skipped, and it is where the real damage
+lives: not a wrong answer, but fifty wrong answers sent before anyone looked. Put
+a number on it — how many, how much, per what period — because "reasonable use"
+is not a limit.
+
+Then the sentence that goes in the prompt, in their words: *"Anything in the third
+tier stops and asks. Anything in the middle tier does it and tells me after."*
+
+## Question 5 — what the model sees when it acts
+
+For each thing the model can do, three lines:
+
+1. **What it does** — one sentence, in the user's terms.
+2. **When not to use it** — mandatory, even if it reads "no exception yet".
+3. **What it returns when it fails** — so the model can tell "retry" from "stop".
+
+The second line is the one everyone omits and the one that causes the misuse.
+A description that only says what a tool does is permission to use it everywhere.
+The most common failure in agent products is not a broken tool; it is a correct
+tool used in the wrong situation, and it looks completely normal in the logs.
+
+The third line decides whether a failure costs one step or the whole run. A tool
+that fails with an unreadable error teaches the model nothing; a tool that says
+"this id does not exist, do not retry with the same id" ends the loop by itself.
+
+Frame it for them: this text is not documentation, it is the model's only view of
+the world. Whatever is not written there does not exist for it.
+
+## Question 6 — what the person receives, in each outcome
+
+**This one was missing, and the design exit test found it.** Four blocks were handed to
+an agent with instructions to implement the narrowest path; its guesses clustered on one
+question — what does the output actually look like. Not what the product does; what the
+person is holding when it stops.
+
+Write one line per way the flow can end. For most products that is three or four:
+
+- **It goes through** — what they get, and what makes it usable as-is.
+- **Something in it crossed a line** — what they get, and how the crossed part is marked.
+- **A piece has no basis** — what happens to that piece, and whether the rest survives.
+- **It refuses, or hands off** — what they get *instead*, and what a person needs in order
+  to take over. "It refuses" without an artifact is where products quietly become useless:
+  the work disappears and nobody can tell what happened.
+
+The test is blunt: point at any outcome and ask **"and what do I get?"** If the answer is
+"it just doesn't do it", that outcome produces nothing a person can act on.
+
+If this feels like it belongs to the build stage, note what actually happened: the first
+real run produced twelve separate guesses here, and half of them were about the shape of
+the output rather than the shape of the logic. The design stage is where that gets
+decided, because everything downstream reads it.
+
+## What this stage produces
+
+One file, six blocks, whether or not a block is used:
+
+```
+## 一、流程形状      固定步骤 / 需要临场判断的步骤 / 判断点共几处
+## 二、拒绝清单      only prohibitions. Short — if it has ten rows, look again
+## 三、应答规则      一张决策表：每个具体输入 → 该怎么答 / 升级档次 / 依据
+## 四、动作权限      每条动作标一档：可撤销 / 有额度 / 必须问人
+## 五、交接契约      每个工具三行：做什么 / 什么时候别用 / 失败返回什么
+## 六、产出形态      这条流程有几种结局，每种结局下人拿到手的是什么
+```
+
+Plus two lines that cost nothing and save a rewrite:
+
+- **What would make this design wrong** — one observable event, not "if it
+  doesn't work". A design with no re-open condition becomes untouchable in three
+  months because nobody remembers what it assumed.
+- **Which ADRs this produced** — a pointer, not a copy. Hard-to-reverse choices go
+  to `docs/adr/`; this record just says which ones.
+
+## Paying for the decision
+
+Two questions separate a choice worth twenty minutes from one worth none:
+
+- **How much does changing it later cost?** If the answer is "an afternoon", decide
+  now and move on. Do not design it twice.
+- **Can I tell which is better before building?** If no, pick the one that is
+  easier to undo and write down what you expect to see.
+
+For a choice that is expensive and genuinely undecidable, describe two shapes and
+write, for each, the situation in which it wins. Then pick the one that is cheaper
+to back out of. Never pick the more familiar one — familiarity is not evidence.
+
+## How this stage fakes success
+
+**The design becomes a specification.** Forty pages, every edge case, reads
+impressively. Test: can you point at one sentence and say "I cannot do that"? If
+every line is agreeable, it is a document, not a design.
+
+**The refusal list becomes values.** "Honest", "harmless", "on brand". All true,
+none testable. Test: name one input that would trigger each row. No input, no row.
+
+**Permission is sorted by importance.** "Payments are important, so ask before
+paying. Reading files is minor, so allow it." Now a read that dumps every customer
+record is allowed and a $2 charge is blocked. Test: sort by undo, nothing else.
+
+**The handover contract only says what the tool does.** The model then calls it in
+situations it was never meant for, and every log line looks correct.
+
+**The design freezes too early.** It was written before any code existed, so it is
+a guess. That is fine — but only if the file says which assumption would break it.
+Without that line, the guess becomes a constraint, and later evidence loses to it.
+
+## The thing that goes wrong here
+
+**They will want to skip it**, and the reason will sound reasonable: "this one is
+small". The size of the product is not the test. Two facts are:
+
+- Is there any action that cannot be undone?
+- Will someone other than the author use it?
+
+Neither: skip the whole stage, write one line saying why. Either one: it is not
+small in the way that matters, and question 2 is not optional.
+
+**Do not write this file for them.** Same trap as the need stage, higher cost: a design
+you wrote reads better than one they wrote, so they will approve it, and then at
+the verify stage there is no standard they can judge against — because the standard is
+yours and they cannot see its edges.
+
+Your job is to ask, and to notice when an answer is a value pretending to be a
+refusal. Say so, give two concrete options, make them pick.
+
+## What you record
+
+The four blocks go in `work/designs/drafting/D-NNN-slug.md`. When all four are
+answered, move it to `confirmed` — that is what turns it from a document into a
+spec the verify stage can read.
+
+Four sections, skips marked with a reason, and the condition that would make this
+design wrong. `work check` fails a record missing any of them, and fails a confirmed
+one that cannot say what would overturn it.
+
+**While the record is in `drafting`, a missing block is fine.** This stage is answered
+one question at a time, so a block you have not reached yet is not an omission. But a
+block that *exists* is held to the rules from the moment you write it, `drafting`
+included: an empty block, or a refusal list whose rows name no concrete input, fails
+immediately. Only the four-blocks-present requirement waits for `confirmed`.
+
+## Exit test
+
+They hand the blocks to an agent — **one that can see nothing else**. If that cannot be
+arranged, the run is **partially verified**: write down what could not be excluded, and count
+the result as evidence about the material rather than about the design. The router already
+uses this rule when an exit test needs someone the person does not have; this is the same
+situation. In the first real run the agent had tools, read the repository, and reported that
+it had — which made the round's numbers mean something different from the next round's.
+
+Then ask it for **two** things, and the second is the one that matters:
+
+1. **How many things did you have to guess?**
+2. **Which blocks contradict each other?** Name the pairs.
+
+**Both must be empty.** A design with zero guesses and one cross-block contradiction is not
+nearly done — it is a design whose parts do not fit, and everything downstream inherits the
+seam. Three rounds of the first real run gave 12/6, 8/9 and 7/7; every hard contradiction was
+cross-block, and a count alone would have shown the third round as progress.
+
+Two rounds is normal; more than three means the blocks are wrong, not underspecified.
+
+Then the second half, and it is the one that makes this stage worth anything:
+**every row in the refusal list can be written as a check that would go red.** A
+row that cannot becomes a value again, and gets deleted now rather than silently
+at the verify stage.
+
+That promise has a receiving end now. The verify stage runs
+`node scripts/design.mjs refusals` and turns each row into a check; the build stage
+runs `node scripts/design.mjs constraints` before writing any code. Move the record
+to `confirmed` once every block is answered — that is what makes it readable to them.
+A record left in `drafting` is invisible to both.

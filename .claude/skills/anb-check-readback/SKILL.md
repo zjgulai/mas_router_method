@@ -60,6 +60,6 @@ That last line is the entire point of the check.
 ## When to use it
 
 - After any "all passed" that you did not watch happen.
-- Before stage 4 (shipping), always.
+- Before the ship stage, always.
 - Whenever a number feels too good — a cost of zero, a hundred percent pass rate,
   no failures this week.

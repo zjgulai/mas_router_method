@@ -15,6 +15,10 @@
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "main:check": "pnpm --filter @mas/bot-gateway check",
+    "main:dev": "pnpm --filter @mas/bot-gateway dev",
+    "main:simulate": "pnpm --filter @mas/bot-gateway simulate",
+    "main:knowledge": "pnpm --filter @mas/consult materialize",
     "clean": "turbo run clean && rm -rf node_modules .turbo"
   },
   "devDependencies": {

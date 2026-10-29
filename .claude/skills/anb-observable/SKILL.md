@@ -1,11 +1,11 @@
 ---
 name: anb-observable
-description: Stage 5. Make it possible to tell what went wrong without asking anyone — how many times it ran, what it cost, and why it failed. Use when something broke and you can't tell where, or before building more on top.
+description: The operate stage (运营). Make it possible to tell what went wrong without asking anyone — how many times it ran, what it cost, and why it failed. Use when something broke and you can't tell where, or before building more on top.
 disable-model-invocation: true
 argument-hint: "What do you need to be able to see?"
 ---
 
-# Stage 5 — You can see what happened
+# You can see what happened
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -52,6 +52,17 @@ accurate or absent.
 2. Record both outcomes — success and failure — in the same place, in the same
    shape. A separate error log is a log nobody reads.
 3. Record the cost of every run, even when it is zero — an explicit zero and a missing value must look different in the record.
+
+## What you record
+
+Anything with an ongoing cost gets an artifact record first:
+`work/artifacts/active/ART-NNN-slug.md`, with an owner and a condition for
+deleting it. A script, a flag, a dashboard, a scheduled job. Without the delete
+condition it stays forever, and nobody later dares remove it.
+
+Something that broke goes in `work/incidents/open/INC-NNN-slug.md`, not in a
+ticket. A ticket is work you intended; an incident is something that happened. An
+incident does not disappear when it is fixed — it closes, with what you learned.
 
 ## Exit test
 

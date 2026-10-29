@@ -1,15 +1,15 @@
 ---
 name: anb-judgeable
-description: Stage 3. Define what "good" means and make it testable, then prove the tests can fail. This is the only hard gate in the whole method. Use when the output exists but nobody can say whether it is acceptable, or before shipping anything.
+description: The verify stage (验收). Define what "good" means and make it testable, then prove the tests can fail. This is the only hard gate in the whole method. Use when the output exists but nobody can say whether it is acceptable, or before shipping anything.
 disable-model-invocation: true
 argument-hint: "What does a good result look like?"
 ---
 
-# Stage 3 — It can be judged
+# It can be judged
 
 **This is the only stage that stops work outright.** Everything else can be
 revisited. This one cannot be skipped, and if it cannot be completed, the honest
-move is to go back to stage 1 rather than forward to stage 4.
+move is to go back to the need stage rather than forward to the ship stage.
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -34,7 +34,7 @@ Countable first. Judgemental only where a countable check would be a lie.
 
 ## The five ways this stage fakes success
 
-All four were observed in one project, all four produce a green report.
+The first four were observed in one project; the fifth turned up in a second. All five produce a green report.
 
 **1. A crash counts as a pass.** The check for "this must be refused" was written
 as "no output was produced and the run did not succeed". A provider outage
@@ -76,6 +76,30 @@ total, exactly. Then load the page five times doing nothing and check that no
 counter moves. Run `anb-check-reconcile`; it takes two minutes and needs nothing
 but a calculator.
 
+## Read the design record first
+
+Before writing any check:
+
+```bash
+node scripts/design.mjs refusals
+```
+
+Each row is a concrete input and the behaviour that must replace it. Those rows are
+your guardrail checks — the ones that catch a product breaking a promise to a person
+rather than a function breaking its contract. They are also the easiest to leave out,
+because nothing crashes when they are missing.
+
+Three outcomes. They are not the same thing, and treating them as one is how this
+stage fakes success:
+
+- **Rows printed.** Turn each into a check. Pass an id to pin the record if more
+  than one is confirmed.
+- **`跳过：<reason>`.** This layer is empty by decision. Report it with the reason.
+  Never report it as "nothing to refuse" — those are opposite claims.
+- **Exit code 3.** No confirmed design record exists. Say so plainly, then carry on
+  with the other checks. **Do not skip silently:** a guardrail layer that was never
+  built must not look like one that passed.
+
 ## How to run it
 
 1. Ask them what good looks like, in their own words. Take the first three things
@@ -92,12 +116,24 @@ but a calculator.
 
 ## The thing that goes wrong here
 
-**They will want to skip to stage 4.** The product runs, it looks fine, and this
+**They will want to skip to the ship stage.** The product runs, it looks fine, and this
 stage produces no visible artifact — just checks.
 
 Say what it buys, concretely: without it, every later change is unmeasurable, and
 "is this better than last week" becomes an opinion. That is the stage where products
 quietly get worse for months while everyone believes they are improving.
+
+## What you record
+
+Every check that proves something gets an evidence file:
+`work/evidence/E-NNN-slug.md` — the command, its raw output, what it proves, and
+what it does not.
+
+The last section is the one that matters. "The parser handles this shape" and "the
+provider is reachable" are different claims, and a unit test only shows the first.
+Leaving that section out is how a green suite comes to mean less than it looks.
+
+Evidence is append-only. Never edit one — add another.
 
 ## Exit test
 

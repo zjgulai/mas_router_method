@@ -1,11 +1,11 @@
 ---
 name: anb-runnable
-description: Stage 2. Build the narrowest path that takes one real input and produces one real result, with no fake data anywhere. Use when starting to build, when nothing comes out, or when the thing only works on prepared samples.
+description: The build stage (开发). Build the narrowest path that takes one real input and produces one real result, with no fake data anywhere. Use when starting to build, when nothing comes out, or when the thing only works on prepared samples.
 disable-model-invocation: true
 argument-hint: "What should go in, and what should come out?"
 ---
 
-# Stage 2 — It runs
+# It runs
 
 **Open by asking: "how will we know this stage is finished?"**
 
@@ -23,6 +23,25 @@ result — a one-shot demo is not a path.
 Deliberately excluded at this stage: login, multiple users, settings, a nice
 interface, error messages for cases you haven't hit. Each of them is a way to spend
 a week without learning whether the idea works.
+
+## Read the constraints first
+
+```bash
+node scripts/design.mjs constraints
+```
+
+Two things to respect while building, both easy to break by accident:
+
+**Judgement points stay judgement.** If the design counts three places that need a
+decision at runtime, do not hard-code the common case into a special branch. That is
+exactly the "works for one case" failure this stage exists to prevent, wearing the
+design's authority.
+
+**Action permissions are implementation boundaries.** Anything the design puts in the
+ask-a-human tier must not be reachable without that gate. The build stage is where a
+missing gate becomes invisible: nothing errors, the action simply happens.
+
+Exit code 3 means no confirmed design. Carry on, but say so once.
 
 ## The failure this stage exists to prevent
 
@@ -60,6 +79,15 @@ of the thing is the most expensive kind of rework — it is designed to accommod
 guesses, and it will need to be torn out when the guesses are wrong.
 
 Build the smallest thing that produces a real result. If it is one file, one file.
+
+## What you record
+
+Work that spans more than this conversation gets a ticket:
+`work/tickets/open/T-NNN-slug.md`, saying what to do and how you will know it is
+done.
+
+Work that finishes and is verified inside one conversation does not. Opening a
+ticket for it is how the register becomes a diary.
 
 ## Exit test
 

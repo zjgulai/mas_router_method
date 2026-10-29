@@ -17,6 +17,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { loadSchema, stateDir, flatDir, WORK } from './schema.mjs';
+import { sections, findTable } from './markdown.mjs';
 
 const DIM = '\x1b[2m', BOLD = '\x1b[1m', RED = '\x1b[31m',
       GREEN = '\x1b[32m', YELLOW = '\x1b[33m', CYAN = '\x1b[36m', RESET = '\x1b[0m';
@@ -27,6 +28,7 @@ const GROUP_LABEL = {
   incident: '事故 incident',
   decision: '决策 decision',
   artifact: '产物 artifact',
+  design: '设计记录 design',
 };
 
 /** Frontmatter: `---` fenced, `key: value`, `key: [a, b]`. */
@@ -142,6 +144,22 @@ async function collect(schema) {
   return { found, missingDirs, problems };
 }
 
+/**
+ * 取某一类实体在任意形态下的全部记录。
+ *
+ * artifacts 原本是扁平实体，后来改成了状态目录，而有两条规则仍然在念
+ * `found[kind].list` —— 那个字段只有扁平实体才有。于是「没有 delete_when 的
+ * artifact 必须失败」这条规则悄悄地不再运行了：一个永远不会变红的检查。
+ * 没人发现，是因为从来没有任何 artifact 被登记过。这就是那个 bug 的修复。
+ */
+function recordsOf(bucket) {
+  if (bucket === undefined) return [];
+  if (Array.isArray(bucket.list)) return bucket.list;
+  const out = [];
+  for (const v of Object.values(bucket)) if (Array.isArray(v)) out.push(...v);
+  return out;
+}
+
 const fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const daysSince = (d) => Math.floor((Date.now() - d.getTime()) / 86_400_000);
 
@@ -149,6 +167,7 @@ const STATE_COLOUR = {
   open: YELLOW, 'in-progress': CYAN, 'awaiting-verification': YELLOW,
   done: GREEN, abandoned: DIM, drafting: YELLOW, confirmed: GREEN,
   dropped: DIM, contained: YELLOW, closed: GREEN, active: GREEN, expired: DIM,
+  drafting: YELLOW, confirmed: GREEN, superseded: DIM,
 };
 
 async function cmdStatus() {
@@ -158,7 +177,7 @@ async function cmdStatus() {
 
   console.log(`\n${BOLD}work${RESET}  ${fmtDate(today)}  ${DIM}${WORK.replace(process.cwd() + '/', '')}${RESET}\n`);
 
-  const order = ['requirement', 'ticket', 'incident', 'artifact', 'decision'];
+  const order = ['requirement', 'design', 'ticket', 'incident', 'artifact', 'decision'];
   for (const kind of order) {
     const def = schema.entities[kind];
     if (def === undefined) continue;
@@ -202,7 +221,7 @@ async function cmdStatus() {
     if (daysSince(r.mtime) > 14) attention.push(`${r.id} in progress, untouched ${daysSince(r.mtime)} days`);
   }
   for (const r of found.incident?.open ?? []) attention.push(`${r.id} incident open — ${r.title}`);
-  for (const r of found.artifact?.list ?? []) {
+  for (const r of recordsOf(found.artifact)) {
     if (r.expires !== '' && r.expires < fmtDate(today)) attention.push(`${r.id} expired ${r.expires} — ${r.title}`);
     if (r.owner === '') attention.push(`${r.id} has no owner — ${r.title}`);
   }
@@ -228,20 +247,31 @@ async function cmdStatus() {
     for (const p of problems.slice(0, 5)) console.log(`  ${RED}•${RESET} ${p}`);
   }
   if (missingDirs.length > 0) {
-    const known = missingDirs.filter((m) => {
-      const others = Object.entries(schema.entities).length;
-      return others > 0;
-    });
-    console.log(`\n${DIM}${known.length} state directories do not exist yet (normal until something is filed there)${RESET}`);
+    // 这里原本是一个恒真的 filter（谓词里算了 others 却没用它），所以它只是把
+    // missingDirs 原样复制了一遍。删掉，直接数。
+    console.log(`\n${DIM}${missingDirs.length} state directories do not exist yet (normal until something is filed there)${RESET}`);
   }
   console.log();
   return problems.length === 0 ? 0 : 1;
 }
 
 async function cmdCheck() {
+  // `--only design` runs just the design-record rules. CI calls it as its own
+  // step so that "a design question was never asked" names itself instead of
+  // arriving as one more line under "records are invalid".
+  const only = process.argv.includes('--only')
+    ? process.argv[process.argv.indexOf('--only') + 1]
+    : null;
+
   const schema = await loadSchema();
   const { found, missingDirs, problems } = await collect(schema);
+
+  // collect() 的问题**始终**保留，即使带了 --only。
+  // 那些问题说的是树的形状本身：id 与文件名不符、目录读不出来。树坏了的时候，
+  // 一个局部的 "ok" 是假的——而这正是 --only design 要拿去当 CI 门禁的那条输出。
   const out = [...problems];
+
+  const runAll = only === null;
 
   // 1. ids unique across all records
   const seen = new Map();
@@ -256,24 +286,24 @@ async function cmdCheck() {
     for (const r of found[name]?.list ?? []) all.push(r);
   }
   for (const r of all) {
-    if (seen.has(r.id)) out.push(`duplicate id ${r.id}: ${seen.get(r.id)} and ${r.path}`);
+    if (seen.has(r.id) && runAll) out.push(`duplicate id ${r.id}: ${seen.get(r.id)} and ${r.path}`);
     else seen.set(r.id, r.path);
   }
 
   // 2. a ticket marked done must carry evidence — "done" without a re-runnable
   //    command is a claim, and this is the rule the migration kept tripping on.
-  for (const r of found.ticket?.done ?? []) {
+  if (runAll) for (const r of found.ticket?.done ?? []) {
     if (r.evidence.length === 0) out.push(`${r.id} is done but records no evidence`);
   }
 
   // 3. artifacts need an owner and a delete condition, or they live forever
-  for (const r of found.artifact?.list ?? []) {
+  if (runAll) for (const r of recordsOf(found.artifact)) {
     if (r.owner === '') out.push(`${r.id} artifact has no owner`);
     if (r.deleteWhen === '') out.push(`${r.id} artifact has no delete_when`);
   }
 
   // 4. every `needs:` target must exist as a record
-  for (const r of all) {
+  if (runAll) for (const r of all) {
     for (const n of r.needs) {
       if (![...seen.keys()].includes(n) && !/^ADR-/.test(n) && !/^R-/.test(n)) {
         out.push(`${r.id} needs ${n}, which does not exist`);
@@ -288,15 +318,241 @@ async function cmdCheck() {
       if (f.endsWith('.md')) evidenceFiles.add(f.split('-').slice(0, 2).join('-'));
     }
   } catch { /* no evidence dir yet */ }
-  for (const r of all) {
+  if (runAll) for (const r of all) {
     for (const e of r.evidence) {
       if (!evidenceFiles.has(e)) out.push(`${r.id} cites evidence ${e}, which is not in work/evidence/`);
     }
   }
 
+  // 6. a design record must carry its four blocks. The blocks are the four
+  //    questions from anb-design; a design missing one was never asked, and
+  //    stage 3 will then have nothing to turn into checks.
+  //
+  //    A block may be skipped, but only explicitly: `（跳过：<reason>）`. Silence
+  //    and a decision not to ask are different things, and in three months they
+  //    read identically — which is why the skip has to carry a reason.
+  //
+  //    Parsing note: the first version matched a block with
+  //    `/^##[^\n]*KEY([\s\S]*?)(?=^## |\s*$)/m`. The `\s*$` alternative matches
+  //    at the end of *any* line under `m`, so every block was truncated to the
+  //    blank line after its heading and four correct records reported as empty.
+  //    A checker that cries wolf gets switched off, so this splits instead.
+  // 第五块是实测加上的。把前四块交给一个 agent 去实现最窄的路，它的猜测集中在同一个
+  // 问题上：**产出到底长什么样**。四块里没有一块回答它。而这不是设计阶段独有的疏漏——
+  // 需求阶段的产出模板缺的是同一个槽位（「它给你什么」）。所以在两个阶段里，
+  // 「产出物」这个概念都没有位置。
+  // 六块，两块是实测加上的。
+  //
+  // 「产出形态」：前四块交给一个 agent 去实现最窄的路，它的猜测集中在「产出到底长什么样」，
+  // 而四块里没有一块回答它。
+  //
+  // 「应答规则」：原来的「拒绝清单」一块装了两样东西。实测十一行里只有一行是真正的拒绝，
+  // 其余十行是「这种情况该怎么答」——而按名字实现，会把「3 个月不能用、且不要给建议」
+  // 那一行做成升级。禁令是清单，应答规则是表格，形状不同。
+  const DESIGN_BLOCKS = [
+    { key: '流程形状', what: 'the shape of the flow' },
+    { key: '拒绝清单', what: 'what it must refuse' },
+    { key: '应答规则', what: 'how each case is answered' },
+    { key: '动作权限', what: 'what it may do without asking' },
+    { key: '交接契约', what: 'what the model sees when it acts' },
+    { key: '产出形态', what: 'what the person receives, in each outcome' },
+  ];
+
+  // 解析器在 scripts/markdown.mjs —— design.mjs 也要用它，而且它第一版的 bug
+  // 值得只修一次（见那个文件顶部的说明）。
+
+  // 状态从 schema 读，不写死。
+  //
+  // 这份列表原本硬编码成三个状态。给 design 加第四个状态之后，落在新状态里的记录
+  // 四块全缺也照样通过 check —— 同一个 bug 在同一个文件里已经犯过三次：
+  // 先是 ticket 的目录名（复数）、再是 artifact 的读取方式，现在是这个。
+  // 每一次的形式都一样：某处抄了一份本该只有一份的东西。
+  const designStates = schema.entities.design.states;
+  for (const bucket of designStates) {
+    // `drafting` 是唯一一个「还没答完」的状态，所以它的块可以是空的。
+    //
+    // 不豁免它，方法就自相矛盾了：anb-design 明说「每答完一问就落一行，不是写完再落」，
+    // 而这条检查会在四块齐之前一律判失败——照方法说的做，通不过方法自己的检查。
+    // 实测中撞到：写完第一块（流程形状）跑 check，报出「拒绝清单 was never asked」，
+    // 而那一块是还没问到，不是从没问过。
+    //
+    // 其余状态（confirmed、superseded，以及将来新增的）都表示「已经答过」，
+    // 一律要求四块齐全。
+    const answering = bucket === 'drafting';
+    for (const r of found.design?.[bucket] ?? []) {
+      const text = await readFile(r.path, 'utf8');
+      const secs = sections(text);
+
+      for (const block of DESIGN_BLOCKS) {
+        const sec = secs.find((x) => x.head.includes(block.key));
+        // 草稿阶段允许「还没问到」——但只允许这一种缺失。
+        // 已经写出来的块一律受规则约束，否则草稿就成了规则管不着的角落：
+        // 第一版豁免写成了整条 `continue`，于是「拒绝清单写成价值观」在草稿阶段
+        // 也能蒙过去——被现有测试当场抓出，说明豁免的粒度写粗了。
+        if (sec === undefined) {
+          if (!answering) out.push(`${r.id}: no 「${block.key}」 block — ${block.what} was never asked`);
+          continue;
+        }
+        if (sec.body === '') {
+          out.push(`${r.id}: 「${block.key}」 is empty — say what it is, or mark it 跳过 with a reason`);
+        } else if (/跳过/.test(sec.body) && !/跳过[：:]\s*\S/.test(sec.body)) {
+          out.push(`${r.id}: 「${block.key}」 is marked skipped without a reason`);
+        }
+      }
+
+      // ── 应答规则：一张决策表，必须有它自己的规则 ──────────────────────────
+      //
+      // 六块里原来只有「拒绝清单」有专项校验（每行要写出具体输入 → 行为）。
+      // 后来从它里面拆出来的「应答规则」只受「块不是空的」这一条约束，于是
+      // 一张写满「按情况处理」「妥善处理」的表能通过 check —— 正是这套方法
+      // 反复在治的那种「检查不到的地方」。这是补上的那一层。
+      const rules = secs.find((x) => x.head.includes('应答规则'));
+      if (rules !== undefined && rules.body !== '' && !/跳过[：:]/.test(rules.body)) {
+        const t = findTable(rules.body, ['具体输入', '该怎么答']);
+        if (t === null) {
+          out.push(`${r.id}: 「应答规则」 has no decision table — a list of intentions is not a rule`);
+        } else {
+          const REQUIRED = ['具体输入', '该怎么答', '升级档次', '依据'];
+          const missingCols = REQUIRED.filter((c) => !t.header.some((h) => h.includes(c)));
+          if (missingCols.length > 0) {
+            out.push(`${r.id}: 「应答规则」 missing column(s): ${missingCols.join(', ')}`);
+          }
+          const idx = (name) => t.header.findIndex((h) => h.includes(name));
+          const iIn = idx('具体输入'), iAns = idx('该怎么答'), iTier = idx('升级档次');
+          const TIERS = ['不升级', '软升级', '硬升级'];
+          // 价值观画上了表格：这些词看起来是一行，测不了。
+          const VAGUE = ['妥善', '酌情', '视情况', '看情况', '按需', '适当', '视具体', '灵活处理'];
+
+          t.rows.forEach((row, n) => {
+            const no = n + 1;
+            const input = (row[iIn] ?? '').trim();
+            const answer = (row[iAns] ?? '').trim();
+            const tier = (row[iTier] ?? '').trim();
+
+            if (input === '' || /^[-—–]+$/.test(input)) {
+              out.push(`${r.id}: 应答规则 row ${no} has no concrete input — it cannot become a check`);
+            }
+            if (answer === '') {
+              out.push(`${r.id}: 应答规则 row ${no} says nothing about how to answer`);
+            } else if (VAGUE.some((v) => answer.includes(v))) {
+              out.push(`${r.id}: 应答规则 row ${no}: 「该怎么答」 is a value, not an instruction ("${answer}")`);
+            }
+            if (!TIERS.includes(tier)) {
+              out.push(`${r.id}: 应答规则 row ${no}: 升级档次 must be one of ${TIERS.join(' / ')}, got "${tier}"`);
+            }
+          });
+
+        // ── 跨块约束：应答规则要的东西，动作权限表里得给 ──────────────────────
+        //
+        // 三轮实测里每一处硬矛盾都是跨块的：表格要求了权限表里不存在的动作，而六块是
+        // 各自独立回答的六个问题。这条原本只写在 skill 里，靠人工逐行核对——那时就
+        // 发现过两行要「读商品事实」而权限表里没有。现在是检查。
+        //
+        // 判定规则是有意保守的，而且**只认能机械判断的部分**：
+        //   · 答案以动词开头（读 / 查 / 取 / 拉 / 调用 / 发 / 提交 / 删除 …）就要求权限表
+        //     里有一行，其「动作」列包含那个宾语的核心词。
+        //   · 权限表被显式跳过（写成理由）时，任何需要动作的行都算矛盾——空表不能
+        //     变成免费的通行证，那正是最容易被骗过的形状。
+        // 猜不出来的时候**不报错**：宁可漏也不误报，因为一条会乱叫的检查会被关掉。
+        const perm = secs.find((x) => x.head.includes('动作权限'));
+        const permSkipped = perm !== undefined && /跳过[：:]/.test(perm.body ?? '');
+        const permTable = perm === undefined ? null : findTable(perm.body, ['动作', '档']);
+        const permitted = permTable === null ? [] : permTable.rows.map((r) => (r[0] ?? '').trim());
+
+        /**
+         * 一句答案要求的动作里，能机械认出来的那些（动词 + 宾语）。
+         *
+         * 第一版写成「动词后面跟任意 1–10 个字」，于是「说明这个 id 查不到」里的
+         * 「查不到」被当成一个动作，真实记录立刻被误报。**一条会乱叫的检查会被关掉**，
+         * 所以这里收紧了三条：
+         *   · 动词前允许有修饰语（「直接发放优惠券」的动词前是「直接」）——
+         *     第一版要求动词前必须是句首或标点，于是所有带修饰语的句子全被漏掉，
+         *     「直接发放优惠券」这个本该报出来的矛盾就静默通过了；
+         *   · 宾语不能以「不 / 没 / 无」开头（那是结果，不是对象）；
+         *   · 宾语不能是「不到 / 不了 / 完」这类补语。
+         * 收得更紧意味着漏看得更多——那是这个方向上有意的取舍。
+         */
+        const requires = (answer) => {
+          const NEEDS = /(读|查|取|拉取|调用|访问|发送|提交|删除|扣款|发放|创建|更新|打开|下载)([^，。；、,;\s→]{1,14})/g;
+          const NOT_AN_OBJECT = /^(不|没|无|不到|不了|完|过)/;
+          // 宾语后面常粘着后续动作（「商品适用月龄后陈述」）。按这些词切开，只留前半。
+          const TRAILING = /(?:后|之后|以后|然后|再|并|且|同时|完|了|，|,).*$/;
+          const found = [];
+          let m;
+          while ((m = NEEDS.exec(answer)) !== null) {
+            if (NOT_AN_OBJECT.test(m[2])) continue;
+            const object = m[2].replace(TRAILING, '').trim();
+            if (object === '') continue;
+            found.push({ verb: m[1], object });
+          }
+          return found;
+        };
+
+        /**
+         * 宾语和权限行之间算不算对得上。
+         *
+         * 这是启发式，不可能完美——所以判据写成「明显对不上才报」：
+         * 两边只要有任何 2 个字以上的公共片段就算对得上，否则报。
+         * 一条会乱叫的检查会被关掉，宁可漏看。
+         */
+        const sharesWords = (a, b) => {
+          const strip = (x) => x.replace(/（.*?）/g, '').replace(/[、，,·\s]/g, '');
+          const x = strip(a), y = strip(b);
+          if (x === '' || y === '') return false;
+          if (x.includes(y) || y.includes(x)) return true;
+          for (let i = 0; i + 2 <= x.length; i++) {
+            if (y.includes(x.slice(i, i + 2))) return true;
+          }
+          return false;
+        };
+
+        t.rows.forEach((row, n) => {
+          const answer = (row[iAns] ?? '').trim();
+          if (answer === '') return;
+          for (const need of requires(answer)) {
+            if (permSkipped) {
+              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
+                + `but 「动作权限」 is marked skipped — an answer that acts needs a permission`);
+              continue;
+            }
+            if (permitted.length === 0) {
+              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
+                + `but 「动作权限」 has no table to grant it`);
+              continue;
+            }
+            const ok = permitted.some((p) => sharesWords(need.object, p));
+            if (!ok) {
+              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
+                + `which 「动作权限」 does not grant (cross-block contradiction)`);
+            }
+          }
+        });
+        }
+      }
+
+      // A refusal row that names no concrete input cannot become a check at
+      // stage 3 — and becoming a check is the only reason to write it here.
+      const refusal = secs.find((x) => x.head.includes('拒绝清单'));
+      if (refusal !== undefined && !/跳过[：:]/.test(refusal.body)) {
+        const rows = refusal.body.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('-') || l.startsWith('|'));
+        const concrete = rows.filter((l) => /→|->/.test(l));
+        if (rows.length > 0 && concrete.length === 0) {
+          out.push(`${r.id}: refusal list names no concrete input → behaviour, so none of it can become a check`);
+        }
+      }
+
+      if (bucket === 'confirmed' && !/被推翻|重议|什么情况.{0,8}错/.test(text)) {
+        out.push(`${r.id}: confirmed but records no condition that would make this design wrong`);
+      }
+    }
+  }
+
   const total = all.length;
+  const scope = only === null ? '' : ` (--only ${only})`;
   if (out.length === 0) {
-    console.log(`${GREEN}ok${RESET} — ${total} records, ${missingDirs.length} empty state dirs, no problems`);
+    const designs = schema.entities.design.states
+      .reduce((n, s2) => n + (found.design?.[s2]?.length ?? 0), 0);
+    console.log(`${GREEN}ok${RESET} — ${total} records${only === 'design' ? `, ${designs} design` : ''}, ${missingDirs.length} empty state dirs, no problems${scope}`);
     return 0;
   }
   console.log(`${RED}${out.length} problem(s)${RESET} across ${total} records\n`);

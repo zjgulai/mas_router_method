@@ -29,9 +29,12 @@ export const FeishuMessageEvent = z.object({
     sender: z.object({
       sender_id: z
         .object({
-          open_id: z.string().optional(),
-          user_id: z.string().optional(),
-          union_id: z.string().optional(),
+          // Feishu sends `null` for ids that do not apply (e.g. `user_id` on a
+          // tenant-level event). `optional()` alone rejects null and silently
+          // drops the whole message.
+          open_id: z.string().nullish(),
+          user_id: z.string().nullish(),
+          union_id: z.string().nullish(),
         })
         .optional(),
       sender_type: z.string().optional(),
@@ -41,14 +44,25 @@ export const FeishuMessageEvent = z.object({
       chat_id: z.string(),
       chat_type: z.enum(['p2p', 'group']),
       message_type: z.string(),
-      /** JSON-encoded string for text messages: `{"text":"..."}`. */
-      content: z.string(),
+      /**
+       * JSON-encoded string for text messages: `{"text":"..."}`. Some SDK
+       * transports hand the already-parsed object instead, so accept both.
+       */
+      content: z.union([z.string(), z.record(z.string(), z.unknown())]),
       mentions: z
         .array(
           z.object({
             key: z.string(),
             name: z.string().optional(),
-            id: z.object({ open_id: z.string().optional() }).optional(),
+            /**
+             * The event payload uses `{ open_id }`; the message-detail API uses a
+             * bare open_id string. Accept both — rejecting one silently drops
+             * every group message, which is exactly the bug this product exists
+             * to make visible.
+             */
+            id: z
+              .union([z.string(), z.object({ open_id: z.string().nullish() })])
+              .optional(),
           }),
         )
         .optional(),
@@ -68,6 +82,10 @@ export interface NormalisedMessage {
   text: string;
   /** True when the message addresses the bot. In a group, ignore everything else. */
   addressedToBot: boolean;
+  /** Open ids of everyone mentioned. The gateway compares these to its own bot id. */
+  mentionedOpenIds: string[];
+  /** Display names of everyone mentioned, for tenants that do not expose open ids. */
+  mentionedNames: string[];
 }
 
 /**
@@ -87,18 +105,14 @@ export function normaliseMessageEvent(payload: unknown): NormalisedMessage | nul
 
   // A bot replying to itself is the classic infinite loop in a group chat.
   if (event.sender.sender_type === 'app') return null;
-  if (event.message.message_type !== 'text') return null;
+  if (event.message.message_type !== 'text' && event.message.message_type !== 'post') return null;
 
   const senderOpenId = event.sender.sender_id?.open_id;
   if (senderOpenId === undefined) return null;
 
-  let text = '';
-  try {
-    const content = JSON.parse(event.message.content) as { text?: unknown };
-    if (typeof content.text === 'string') text = content.text;
-  } catch {
-    return null;
-  }
+  const parsedText = extractText(event.message.content, event.message.message_type);
+  if (parsedText === null) return null;
+  let text = parsedText;
 
   // Mention placeholders look like `@_user_1`. Strip them, but remember whether
   // there were any: in a group, an unaddressed message is not ours to answer.
@@ -110,6 +124,15 @@ export function normaliseMessageEvent(payload: unknown): NormalisedMessage | nul
   text = text.replace(/\s+/g, ' ').trim();
   if (text.length === 0) return null;
 
+  const mentionedOpenIds = mentions
+    .map((mention) =>
+      typeof mention.id === 'string' ? mention.id : mention.id?.open_id,
+    )
+    .filter((id): id is string => typeof id === 'string' && id.length > 0);
+  const mentionedNames = mentions
+    .map((mention) => mention.name)
+    .filter((name): name is string => typeof name === 'string' && name.length > 0);
+
   return {
     eventId: header?.event_id ?? event.message.message_id,
     messageId: event.message.message_id,
@@ -119,7 +142,55 @@ export function normaliseMessageEvent(payload: unknown): NormalisedMessage | nul
     text,
     // In a 1:1 chat every message is addressed to the bot.
     addressedToBot: event.message.chat_type === 'p2p' || hadMention,
+    mentionedOpenIds,
+    mentionedNames,
   };
+}
+
+function extractText(
+  content: string | Record<string, unknown>,
+  messageType: string,
+): string | null {
+  let parsed: unknown;
+  if (typeof content === 'string') {
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      return null;
+    }
+  } else {
+    parsed = content;
+  }
+
+  if (messageType === 'text') {
+    if (typeof parsed === 'object' && parsed !== null) {
+      const text = (parsed as { text?: unknown }).text;
+      if (typeof text === 'string') return text;
+    }
+    return null;
+  }
+
+  if (messageType === 'post') {
+    // Feishu rich text: { title, content: [[{tag:'text', text:'...'}, {tag:'at', user_id:'...'}]] }
+    const out: string[] = [];
+    const visit = (value: unknown): void => {
+      if (typeof value === 'string') return;
+      if (Array.isArray(value)) {
+        for (const item of value) visit(item);
+        return;
+      }
+      if (typeof value !== 'object' || value === null) return;
+      const record = value as Record<string, unknown>;
+      if (typeof record['title'] === 'string') out.push(record['title']);
+      if (typeof record['text'] === 'string') out.push(record['text']);
+      if (Array.isArray(record['content'])) visit(record['content']);
+    };
+    visit(parsed);
+    const text = out.join(' ').replace(/\s+/g, ' ').trim();
+    return text.length > 0 ? text : null;
+  }
+
+  return null;
 }
 
 function payloadType(payload: unknown): string | undefined {

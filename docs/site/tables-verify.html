@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>验收 · 表 · Agent Native Builder</title>
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--ink);color:#e9e7e0;position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.1rem 0 2rem}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
+  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
+               letter-spacing:-.02em}
+  .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
+  .nav{padding:0 .5rem}
+  .nav-g{margin-bottom:.9rem}
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+         text-transform:uppercase}
+  .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
+         border-radius:2px;line-height:1.35}
+  .nav a:hover{background:#2a2c26;color:#fff}
+  .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
+  .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
+            border-left:1px solid #3d3f38;line-height:1.35}
+  .subnav a:hover{color:#fff;border-left-color:#8d8f86}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2rem,4vw,3.2rem) clamp(16px,4vw,52px) 4rem;
+                max-width:min(56rem,100%)}
+  .content footer{margin:0 clamp(16px,4vw,52px) 0;padding:1.1rem 1.3rem;background:var(--sunk);
+                  font-size:.8rem;color:var(--muted);line-height:1.7;max-width:min(56rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。禁用 JS 时它默认展开，
+     退化成一张普通的纵向导航列表——内容一个不少。 */
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.6rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem}
+    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.4rem}
+  }
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。 */
+  .tb-index{background:var(--surface);padding:.75rem .9rem;margin:1rem 0 1.2rem;font-size:.86rem}
+  .tb-index a{display:flex;gap:.7rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.22rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent)}
+  .tb-index code{background:transparent;padding:0;color:var(--accent);font-weight:650;
+    flex:0 0 4.6rem;border-bottom:1px solid var(--deep)}
+  .tb-row{margin:1.6rem 0 2rem}
+  .tb-row h3{margin:0 0 .5rem;font-family:var(--mono);font-size:.92rem}
+  .tb-row h3 code{background:var(--ink);color:var(--surface);padding:.1rem .45rem;font-size:.86rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:9.5rem;color:var(--faint);font-weight:600;font-size:.8rem}
+  table.tb-fields td:last-child{font-size:.89rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--deep)}
+  .tb-no{color:var(--deep);font-style:italic}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:6.5rem;font-size:.76rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <details open>
+      <summary class="brand">
+        <a class="home" href="/mas_router_method/site/">ANB</a>
+        <span class="brand-sub">Agent Native Builder</span>
+      </summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="/mas_router_method/site/">总览</a>
+      <a href="/mas_router_method/site/need.html">需求</a>
+      <a href="/mas_router_method/site/design.html">设计</a>
+      <a href="/mas_router_method/site/build.html">开发</a>
+      <a href="/mas_router_method/site/verify.html">验收</a>
+      <a href="/mas_router_method/site/ship.html">交付</a>
+      <a href="/mas_router_method/site/operate.html">运营</a>
+      <a href="/mas_router_method/site/iterate.html">迭代</a>
+      <a href="/mas_router_method/site/manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="/mas_router_method/site/branches.html">分支总表</a>
+      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
+      <a href="/mas_router_method/site/prompts.html">提示词</a>
+      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
+      <a href="/mas_router_method/site/tables.html">十三个表</a>
+      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      </div>
+      </nav>
+      <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#verify-05-验收">05 验收</a>
+      </div>
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb">表格 · <a href="/mas_router_method/site/tables.html">全部</a></div>
+      <h1>验收 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">1 张表</span></h1><p class="lede">什么算好，而且检查必须能失败</p><p style="font-size:.9rem;color:var(--faint)">这一页是<b>表的样张</b>，不是方法论。方法在<a href="/mas_router_method/site/verify.html">验收</a>那一页。两页读的是同一件事：一页讲这一步要问什么，一页讲答案记在哪一列。</p><h2 id="verify-05-验收">05 验收</h2><p class="lede" style="margin-bottom:1rem">这一条现在能不能被证明——一行是一次检查，不是一项能力。</p><div class="tb-index"><a href="#verify-acc-01"><code>acc-01</code> 一句自然语言能不能拿到指定账号、指定时间窗的条数，且数字对得…</a><a href="#verify-acc-02"><code>acc-02</code> 问一个库里没有的账号，Agent 说没有，而不是编一个数</a><a href="#verify-acc-03"><code>acc-03</code> 同一个问题问 5 次，5 次答案是否一致</a><a href="#verify-acc-04"><code>acc-04</code> 三个团队问同一个问题，Agent 是否引用同一份结论、同一个…</a><a href="#verify-acc-05"><code>acc-05</code> 采集健康看板上的每一个数字都能点下去看到明细</a><a href="#verify-acc-06"><code>acc-06</code> 分析师能不能只靠自己加一个新平台，不改代码</a><a href="#verify-acc-07"><code>acc-07</code> Agent 判定需要客服介入的事件，工作台里的人能不能看到、…</a><a href="#verify-acc-08"><code>acc-08</code> 同一帖子两次抓取，first_seen_at 会不会被重跑改…</a><a href="#verify-acc-09"><code>acc-09</code> 跨区域抓取时滞是否一致、跨源重复有没有处理</a><a href="#verify-acc-10"><code>acc-10</code> 五个 adapter 的输出字段是否真的统一，还是各留各的</a><a href="#verify-acc-11"><code>acc-11</code> 账本里 empty 状态的 run 有没有留下记录——「这周…</a></div><p class="h2sub">11 条记录、24 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="verify-acc-01"><h3><code>acc-01</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-01</td></tr><tr><td>通过门槛</td><td>同一问题问 3 次，条数完全一致，且与库里直接 count 相等</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>用例和判据都写好了，但金标准是示例值（provenance=illustrative），且仓库里没有采集 Agent 可跑。judgeSuite 在这种情况下拒绝报 passed，只报 unverified——这是刻意的：对着一份编的 412 报「通过」等于什么都没证明。</td></tr><tr><td>只有这种算通过</td><td>3 次全一致 + 与库里 count 相等。差一条也不算。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-01</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>确定性命令</td></tr><tr><td>成本与步数上限</td><td>单次 ≤ 6 步工具调用，≤ $0.05</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr><td>检查方式</td><td>自动化脚本</td></tr><tr><td>用例从哪来</td><td>packages/evals/src/collect-cases.ts → count-us-account</td></tr><tr><td>结果</td><td>未运行</td></tr><tr><td>跑的哪个版本</td><td>packages/evals/src/collect-suite.ts</td></tr><tr><td>这一项验什么</td><td>一句自然语言能不能拿到指定账号、指定时间窗的条数，且数字对得上</td></tr><tr><td>重复次数</td><td>3</td></tr><tr><td>防止什么真实失败</td><td>分析师问「德国上周多少条」，Agent 回一个看起来合理的数，实际少抓了半周</td></tr><tr><td>验收对象</td><td>Agent 对话机器人</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-02"><h3><code>acc-02</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-02</td></tr><tr><td>通过门槛</td><td>必须回「查不到」并说明查了哪个源；出现任何一个具体数字即判不通过</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>同上。这一条的四条判据里没有 no-extra-sources——Agent 可以先去别的源确认账号存不存在，禁掉那是测服从不是测判断。</td></tr><tr><td>只有这种算通过</td><td>回答里不含数字。含数字就是编的。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-01</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>确定性命令</td></tr><tr><td>成本与步数上限</td><td>单次 ≤ 4 步，≤ $0.02</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr class="tb-empty"><td>检查方式</td><td><span class="tb-no">（空）</span></td></tr><tr><td>用例从哪来</td><td>packages/evals/src/collect-cases.ts → unknown-account</td></tr><tr><td>结果</td><td>未运行</td></tr><tr><td>跑的哪个版本</td><td>packages/evals/src/collect-suite.ts</td></tr><tr><td>这一项验什么</td><td>问一个库里没有的账号，Agent 说没有，而不是编一个数</td></tr><tr><td>重复次数</td><td>3</td></tr><tr><td>防止什么真实失败</td><td>Agent 为了「帮上忙」编造一个条数。这类错误下游没有任何检查能发现</td></tr><tr><td>验收对象</td><td>Agent 对话机器人</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-03"><h3><code>acc-03</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-03</td></tr><tr><td>通过门槛</td><td>5 次里至少 4 次给出同一数字，且差异的那次能说清为什么（如新数据入库）</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>重复一致性聚合层已实现并测过：3/5 对上 4/5 的门槛判不通过，4/5 通过但仍报出 dissent。缺的还是真实金标准与可跑的 Agent。</td></tr><tr><td>只有这种算通过</td><td>4/5 一致 + 差异可解释。3/5 不算，那说明它本质上不稳定。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-01</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>重复一致性</td></tr><tr><td>成本与步数上限</td><td>5 次合计 ≤ $0.25</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr class="tb-empty"><td>检查方式</td><td><span class="tb-no">（空）</span></td></tr><tr><td>用例从哪来</td><td>packages/evals/src/collect-cases.ts → repeat-five-times</td></tr><tr><td>结果</td><td>未运行</td></tr><tr><td>跑的哪个版本</td><td>packages/evals/src/repeat.ts</td></tr><tr><td>这一项验什么</td><td>同一个问题问 5 次，5 次答案是否一致</td></tr><tr><td>重复次数</td><td>5</td></tr><tr><td>防止什么真实失败</td><td>模型每次给的数不一样，用户第二次问就发现对不上，从此不信这个 Agent</td></tr><tr><td>验收对象</td><td>Agent 对话机器人</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-04"><h3><code>acc-04</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-04</td></tr><tr><td>通过门槛</td><td>3 次回答的「口径版本」字段完全相同，且指向同一个结论卡编号</td></tr><tr><td>产品</td><td>洞察分析</td></tr><tr><td>卡在哪</td><td>判据写好了，但结论卡 C1 是假设的，且 dem-02 尚未开工。这一条验的不是「数字对不对」而是「三个团队有没有被送到同一张卡、同一个口径版本」——所以它的 comparand 比的是 C1@2026.10，不是 412。同一张卡两个版本也算不一致。</td></tr><tr><td>只有这种算通过</td><td>版本号逐字相同。指向不同结论卡即不通过。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>—</td></tr><tr><td>对应需求</td><td>dem-02</td></tr><tr><td>怎么判</td><td>确定性命令</td></tr><tr><td>成本与步数上限</td><td>单次 ≤ 8 步，≤ $0.10</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr><td>检查方式</td><td>自动化脚本</td></tr><tr><td>用例从哪来</td><td>packages/evals/src/collect-cases.ts → three-teams-one-source</td></tr><tr><td>结果</td><td>未运行</td></tr><tr><td>跑的哪个版本</td><td>packages/evals/src/collect-rules.ts → cites-source</td></tr><tr><td>这一项验什么</td><td>三个团队问同一个问题，Agent 是否引用同一份结论、同一个口径版本</td></tr><tr><td>重复次数</td><td>3</td></tr><tr><td>防止什么真实失败</td><td>品牌、市场、商分拿到三个不同数——这正是 dem-02 现在最大的痛点，做完了还在</td></tr><tr><td>验收对象</td><td>Agent 对话机器人</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-05"><h3><code>acc-05</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-05</td></tr><tr class="tb-empty"><td>通过门槛</td><td><span class="tb-no">（空）</span></td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>工作台还没建。这是 8+3 矩阵里的「呈现·验收」，矩阵记录它没有检查器——正确，因为可达性只能点。</td></tr><tr class="tb-empty"><td>只有这种算通过</td><td><span class="tb-no">（空）</span></td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-01</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>人工判断</td></tr><tr class="tb-empty"><td>成本与步数上限</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>护栏级别</td><td><span class="tb-no">（空）</span></td></tr><tr><td>检查方式</td><td>点一遍</td></tr><tr class="tb-empty"><td>用例从哪来</td><td><span class="tb-no">（空）</span></td></tr><tr><td>结果</td><td>无检查器</td></tr><tr><td>跑的哪个版本</td><td>—</td></tr><tr><td>这一项验什么</td><td>采集健康看板上的每一个数字都能点下去看到明细</td></tr><tr class="tb-empty"><td>重复次数</td><td><span class="tb-no">（空）</span></td></tr><tr><td>防止什么真实失败</td><td>看板显示「今日 412 条」，点不动，出问题时没人知道是哪 412 条</td></tr><tr><td>验收对象</td><td>工作台</td></tr><tr><td>从哪个入口进</td><td>采集健康看板 → 今日条数</td></tr><tr><td>点下去该到哪</td><td>该账号当日的原始载荷列表，条数与看板数字相等，每条带 first_seen_at</td></tr><tr><td>用哪个角色登录</td><td>社媒分析师</td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-06"><h3><code>acc-06</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-06</td></tr><tr class="tb-empty"><td>通过门槛</td><td><span class="tb-no">（空）</span></td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>同上。这一项要专门用「非管理员」账号点——用管理员点会掩盖权限问题，是这类验收最常见的假通过。</td></tr><tr class="tb-empty"><td>只有这种算通过</td><td><span class="tb-no">（空）</span></td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-01</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>人工判断</td></tr><tr class="tb-empty"><td>成本与步数上限</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>护栏级别</td><td><span class="tb-no">（空）</span></td></tr><tr><td>检查方式</td><td>点一遍</td></tr><tr class="tb-empty"><td>用例从哪来</td><td><span class="tb-no">（空）</span></td></tr><tr><td>结果</td><td>无检查器</td></tr><tr class="tb-empty"><td>跑的哪个版本</td><td><span class="tb-no">（空）</span></td></tr><tr><td>这一项验什么</td><td>分析师能不能只靠自己加一个新平台，不改代码</td></tr><tr class="tb-empty"><td>重复次数</td><td><span class="tb-no">（空）</span></td></tr><tr><td>防止什么真实失败</td><td>号称「支持多平台」，实际每加一个平台都要找工程师，痛点原样保留</td></tr><tr><td>验收对象</td><td>工作台</td></tr><tr><td>从哪个入口进</td><td>工作台 → 数据源 → 新增</td></tr><tr><td>点下去该到哪</td><td>3 分钟内新增成功并能抓到数据；若必须管理员或改代码，判不通过</td></tr><tr><td>用哪个角色登录</td><td>社媒分析师（非管理员）</td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-07"><h3><code>acc-07</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-07</td></tr><tr class="tb-empty"><td>通过门槛</td><td><span class="tb-no">（空）</span></td></tr><tr><td>产品</td><td>舆情监控</td></tr><tr><td>卡在哪</td><td>dem-03 尚未开工。注意这一项验的是「闭环」，不是「分类准不准」——分类准不准属于 Agent 侧，见 acc-08。</td></tr><tr class="tb-empty"><td>只有这种算通过</td><td><span class="tb-no">（空）</span></td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>—</td></tr><tr><td>对应需求</td><td>dem-03</td></tr><tr><td>怎么判</td><td>人工判断</td></tr><tr class="tb-empty"><td>成本与步数上限</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>护栏级别</td><td><span class="tb-no">（空）</span></td></tr><tr><td>检查方式</td><td>点一遍</td></tr><tr class="tb-empty"><td>用例从哪来</td><td><span class="tb-no">（空）</span></td></tr><tr><td>结果</td><td>无检查器</td></tr><tr class="tb-empty"><td>跑的哪个版本</td><td><span class="tb-no">（空）</span></td></tr><tr><td>这一项验什么</td><td>Agent 判定需要客服介入的事件，工作台里的人能不能看到、认领、关闭</td></tr><tr class="tb-empty"><td>重复次数</td><td><span class="tb-no">（空）</span></td></tr><tr><td>防止什么真实失败</td><td>Agent 分类对了，但没有交接路径，事件在系统里悬着没人处理</td></tr><tr><td>验收对象</td><td>工作台</td></tr><tr><td>从哪个入口进</td><td>舆情监控 → 待处理</td></tr><tr><td>点下去该到哪</td><td>认领后状态变为「处理中」，关闭后 Agent 不再重复推送同一条</td></tr><tr><td>用哪个角色登录</td><td>客服</td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-08"><h3><code>acc-08</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-08</td></tr><tr><td>通过门槛</td><td>两次全量重跑后 first_seen_at 逐条不变</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>检查器本身跑通了：我在一份两批次合成账本上验过，first_seen_at 停在 2026-10-01，最后一次抓取的 likes=99 进 raw，两条不变量都成立。但那是合成账本，不是 dev-01 的真实账本——仓库里一个 .jsonl 都没有。检查器可用 ≠ 产品已验证。</td></tr><tr><td>只有这种算通过</td><td>任何一条被改写即不通过，没有「大部分没变」这一档。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-01</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>确定性命令</td></tr><tr><td>成本与步数上限</td><td>—</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr><td>检查方式</td><td>自动化脚本</td></tr><tr class="tb-empty"><td>用例从哪来</td><td><span class="tb-no">（空）</span></td></tr><tr><td>结果</td><td>未运行</td></tr><tr><td>跑的哪个版本</td><td>scripts/collect-store.mjs verify</td></tr><tr><td>这一项验什么</td><td>同一帖子两次抓取，first_seen_at 会不会被重跑改写</td></tr><tr><td>重复次数</td><td>2</td></tr><tr><td>防止什么真实失败</td><td>回补一次数据，整个时间序列锚点变成抓取时间，互动量随帖子年龄增长会被读成「更热」</td></tr><tr><td>验收对象</td><td>数据管道</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr><td>最近一次跑</td><td>1793232000000</td></tr></tbody></table></div><div class="tb-row" id="verify-acc-09"><h3><code>acc-09</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-09</td></tr><tr><td>通过门槛</td><td>时滞跨区域极差 ≤ 3 天，且指纹召回率 ≥ 10%</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>demo fixture 故意造的坏数据，退出码 1（时滞 4.0 天、召回率 0%），这证明检查器能变红，不证明 dev-01 有问题——真实账本还没跑过。一条只会在 fixture 上变红的检查，和一条不会变红的检查，对产品是一回事。</td></tr><tr><td>只有这种算通过</td><td>两项都过。任一项不过即不通过，没有加权。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-01</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>确定性命令</td></tr><tr><td>成本与步数上限</td><td>—</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr><td>检查方式</td><td>自动化脚本</td></tr><tr class="tb-empty"><td>用例从哪来</td><td><span class="tb-no">（空）</span></td></tr><tr><td>结果</td><td>未运行</td></tr><tr><td>跑的哪个版本</td><td>scripts/collect-audit.mjs --demo</td></tr><tr><td>这一项验什么</td><td>跨区域抓取时滞是否一致、跨源重复有没有处理</td></tr><tr><td>重复次数</td><td>1</td></tr><tr><td>防止什么真实失败</td><td>德国比美国晚抓 4 天，时滞进了自变量，「区域差异」其实是「抓取时间差异」</td></tr><tr><td>验收对象</td><td>数据管道</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr><td>最近一次跑</td><td>1793232000000</td></tr></tbody></table></div><div class="tb-row" id="verify-acc-10"><h3><code>acc-10</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-10</td></tr><tr><td>通过门槛</td><td>五个源各取一条同一帖子，统一字段逐个相等；缺失值必须是 null 不是 0</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>dev-06 要等 dev-01/02 都完成。这条验收同样是提前立的：它规定了「统一字段」到底统一成什么，dev-06 才有得做。</td></tr><tr><td>只有这种算通过</td><td>五个源全过。缺值写成 0 即不通过——那是最难查的一类错。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-06（主）；dev-02/03/04/05 也受这一条约束——它验的是五个 adapter 的输出一致，不是某一个</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>确定性命令</td></tr><tr><td>成本与步数上限</td><td>—</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr><td>检查方式</td><td>自动化脚本</td></tr><tr><td>用例从哪来</td><td>仓库里还没有这个用例集</td></tr><tr><td>结果</td><td>无检查器</td></tr><tr class="tb-empty"><td>跑的哪个版本</td><td><span class="tb-no">（空）</span></td></tr><tr><td>这一项验什么</td><td>五个 adapter 的输出字段是否真的统一，还是各留各的</td></tr><tr><td>重复次数</td><td>0</td></tr><tr><td>防止什么真实失败</td><td>TikTok 有 engagement_rate、IG 只有 likes，聚合器把缺失当 0，平均数被系统性拉低</td></tr><tr><td>验收对象</td><td>数据管道</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="verify-acc-11"><h3><code>acc-11</code></h3><table class="tb-fields"><tbody><tr><td>验收编号</td><td>acc-11</td></tr><tr><td>通过门槛</td><td>造一次 empty run（items=0），账本里必须有一条 status=ok 的 run 记录；再造一次根本没跑的周，两者在审计输出里必须可区分</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>卡在哪</td><td>collect-store 现在能证明「空抓留了记录」，但证明不了「压根没跑」——后者需要「本该跑什么」作为独立输入，账本自己推不出来。这是它自己写在文档里的已知缺口，不是漏做。另外 verify 对不存在的账本文件返回 exit 0「不变量成立」，这个也要先修。</td></tr><tr><td>只有这种算通过</td><td>两种缺席可区分。如果都读成「没有数据」，即不通过。</td></tr><tr><td>实际跑了</td><td>0</td></tr><tr><td>实际通过</td><td>0</td></tr><tr><td>对应开发</td><td>dev-06（des-06 的存储契约）</td></tr><tr><td>对应需求</td><td>dem-01</td></tr><tr><td>怎么判</td><td>确定性命令</td></tr><tr><td>成本与步数上限</td><td>—</td></tr><tr><td>护栏级别</td><td>硬门</td></tr><tr><td>检查方式</td><td>自动化脚本</td></tr><tr class="tb-empty"><td>用例从哪来</td><td><span class="tb-no">（空）</span></td></tr><tr><td>结果</td><td>无检查器</td></tr><tr><td>跑的哪个版本</td><td>scripts/collect-store.mjs verify</td></tr><tr><td>这一项验什么</td><td>账本里 empty 状态的 run 有没有留下记录——「这周这个源什么都没抓到」和「这周这个源根本没跑」不能再是文件里同一种缺席</td></tr><tr><td>重复次数</td><td>1</td></tr><tr><td>防止什么真实失败</td><td>一次抓取挂了，账本里没有 run 记录，下游把它读成「这个源这周很安静」，于是采集故障看起来像市场降温</td></tr><tr><td>验收对象</td><td>数据管道</td></tr><tr class="tb-empty"><td>从哪个入口进</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>点下去该到哪</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>用哪个角色登录</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>最近一次跑</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="nextprev"><div><span class="lbl">其它阶段的表</span><a href="/mas_router_method/site/tables-need.html">需求</a> · <a href="/mas_router_method/site/tables-design.html">设计</a> · <a href="/mas_router_method/site/tables-build.html">开发</a> · <a href="/mas_router_method/site/tables-ship.html">交付</a> · <a href="/mas_router_method/site/tables-operate.html">运营</a> · <a href="/mas_router_method/site/tables-iterate.html">迭代</a></div></div>
+      
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+</body>
+</html>

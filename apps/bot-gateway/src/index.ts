@@ -1,34 +1,122 @@
 /**
- * Feishu bot gateway.
+ * Main agent gateway.
  *
- * Deliberately thin. It owns three things — verifying a request came from Feishu,
- * turning an event into an agent request, and delivering the result — and no agent
- * logic at all. Everything about *what* the agent does lives in `@mas/core`, so the
- * same behaviour is reachable from the workbench without reimplementation.
- */
-export {};
-
-const PORT = Number(process.env['BOT_GATEWAY_PORT'] ?? 3001);
-
-/**
- * Placeholder entrypoint. The HTTP server, idempotency store, and Feishu delivery
- * land with milestone 2 (`docs/roadmap.md`); building them now, before there is a
- * recipe to deliver, would be a horizontal slice that demos nothing.
+ * Two transports, one handler:
+ *   - `FEISHU_EVENT_MODE=ws`   long connection (default; no public URL needed)
+ *   - `FEISHU_EVENT_MODE=http` webhook at POST /events
  *
- * What this file will need, so it is not discovered by accident later:
- *   - POST /events         verify -> normalise -> enqueue -> 200 immediately
- *   - GET  /healthz        for the deploy platform
- *   - an idempotency check on event_id, because Feishu retries
- *   - a run queue, because a run outlives Feishu's timeout by a wide margin
+ * The gateway owns verification, idempotency, queueing, and delivery. The
+ * consulting logic lives in `@mas/consult`, so the same agent can be reused by
+ * the workbench or a CLI without reimplementation.
  */
-export const config = {
-  port: PORT,
-  hasVerificationToken: Boolean(process.env['FEISHU_VERIFICATION_TOKEN']),
-} as const;
+import { MainConsultAgent } from '@mas/consult';
+import { loadConfig } from './config.js';
+import { createLogger } from './logger.js';
+import { LarkGatewayClient } from './feishu/client.js';
+import type { BotIdentity } from './feishu/client.js';
+import { MainAgentHandler } from './handler.js';
+import { startHttpServer } from './http.js';
+import { startWebSocket, type WebSocketHandle } from './ws.js';
+import type { Server } from 'node:http';
 
-if (process.env['NODE_ENV'] !== 'test') {
-  // eslint-disable-next-line no-console
-  console.log(
-    `bot-gateway starting on :${config.port} — event handling arrives in milestone 2`,
+async function main(): Promise<void> {
+  const config = loadConfig();
+  const logger = createLogger(config.logLevel, { app: 'main-agent-gateway' });
+
+  const client = new LarkGatewayClient(
+    config,
+    process.env['FEISHU_OPEN_BASE_URL'] ?? 'https://open.feishu.cn',
   );
+
+  let identity: BotIdentity = {
+    ...(config.botOpenId !== undefined ? { openId: config.botOpenId } : {}),
+    name: config.botName,
+  };
+
+  try {
+    const fetched = await client.getBotIdentity();
+    identity = {
+      ...(fetched.openId !== undefined ? { openId: fetched.openId } : {}),
+      name: fetched.name ?? config.botName,
+    };
+    logger.info('bot identity resolved', { openId: identity.openId, name: identity.name });
+  } catch (cause) {
+    logger.warn('could not resolve bot identity; mention matching falls back to names', {
+      error: cause instanceof Error ? cause.message : String(cause),
+    });
+  }
+
+  const agent = MainConsultAgent.fromRepo({
+    root: config.knowledgeRoot,
+    maxChars: config.maxAnswerChars,
+    ...(config.sourcesPath !== undefined ? { sourcesPath: config.sourcesPath } : {}),
+  });
+
+  const handler = new MainAgentHandler({
+    config,
+    client,
+    agent,
+    identity,
+    logger,
+  });
+
+  logger.info('main agent ready', {
+    mode: config.mode,
+    appId: config.appId,
+    knowledgeChunks: agent.corpus.chunks.length,
+    groupMode: config.groupMode,
+    messageFormat: config.messageFormat,
+    llm: process.env['MAIN_AGENT_LLM'] ?? 'auto',
+  });
+
+  let ws: WebSocketHandle | undefined;
+  let server: Server | undefined;
+
+  if (config.mode === 'ws') {
+    ws = await startWebSocket(handler, config, logger);
+    logger.info('websocket status', { status: ws.status() });
+  } else {
+    server = await startHttpServer(handler, config, logger);
+  }
+
+  let stopping = false;
+  const shutdown = async (signal: string): Promise<void> => {
+    if (stopping) return;
+    stopping = true;
+    logger.info('shutting down', { signal });
+    ws?.close();
+    if (server !== undefined) {
+      await new Promise<void>((resolve) => server?.close(() => resolve()));
+    }
+    await handler.drain();
+    logger.info('shutdown complete', { stats: handler.stats() });
+    process.exit(0);
+  };
+
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('unhandledRejection', (reason) => {
+    logger.error('unhandled rejection', {
+      error: reason instanceof Error ? reason.message : String(reason),
+    });
+  });
+  process.on('uncaughtException', (error) => {
+    logger.error('uncaught exception', { error: error.message });
+  });
+
+  // Keep the process alive even if the transport is reconnecting and no server is
+  // listening. A gateway that exits silently is worse than one that logs an error.
+  await new Promise<void>(() => {});
 }
+
+void main().catch((cause: unknown) => {
+  console.error(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      level: 'error',
+      msg: 'fatal startup error',
+      error: cause instanceof Error ? cause.message : String(cause),
+    }),
+  );
+  process.exit(1);
+});

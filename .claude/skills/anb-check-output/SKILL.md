@@ -69,6 +69,6 @@ navigation list" is crude and countable and would have caught the case above.
 ## The honest limit
 
 This check can find that the output is bad. It cannot tell you what good output
-looks like — that is stage 3, and it depends on knowing what the product is for. If
-stage 3 produced only machinery checks, this check will keep failing and the real
+looks like — that is the verify stage, and it depends on knowing what the product is for. If
+the verify stage produced only machinery checks, this check will keep failing and the real
 fix is back there.
