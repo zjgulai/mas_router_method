@@ -84,16 +84,16 @@ jobs:
       # answer the question — a real state that must be visible but must not fail
       # the build, because the demo fixtures are shaped to exercise all three.
       - name: §七 the kill switch still fails when regions move together
-        run: node scripts/region-corr.mjs --demo; test $? -eq 1
+        run: node scripts/region-corr.mjs --demo || code=$?; test "${code:-0}" -eq 1
 
       - name: The panel fit recovers its planted β
         run: node scripts/panel-fit.mjs --demo
 
       - name: The collection audit still catches all three silent failures
-        run: node scripts/collect-audit.mjs --demo; test $? -eq 1
+        run: node scripts/collect-audit.mjs --demo || code=$?; test "${code:-0}" -eq 1
 
       - name: The falsification checks fire on a dead interval
-        run: node scripts/verify-conclusion.mjs --demo; test $? -eq 1
+        run: node scripts/verify-conclusion.mjs --demo || code=$?; test "${code:-0}" -eq 1
 
       - name: Every metric card answers all eight fields
         run: node scripts/metric-card.mjs check
