@@ -39,14 +39,8 @@ install -m 0644 "${SRC}/deploy/compose.yaml" "${RELEASE}/compose.yaml"
 printf 'IMAGE_TAG=%s\n' "${TAG}" > "${RELEASE}/.env"
 ln -sfn "${RELEASE}" "${ROOT}/current"
 cd "${RELEASE}"
-docker compose -f compose.yaml --env-file .env up -d
-
-echo "== 等待 healthy"
-for _ in $(seq 1 240); do
-  STATE="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' mas-router-site-web 2>/dev/null || echo missing)"
-  [ "${STATE}" = "healthy" ] && break
-  sleep 0.5
-done
+# --wait 让 compose 自己等 healthy；自写轮询在 recreate 窗口上不可靠。
+docker compose -f compose.yaml --env-file .env up -d --wait --wait-timeout 240
 STATE="$(docker inspect --format '{{.State.Health.Status}}' mas-router-site-web 2>/dev/null || echo missing)"
 if [ "${STATE}" != "healthy" ]; then
   echo "容器未进入 healthy：${STATE}" >&2
