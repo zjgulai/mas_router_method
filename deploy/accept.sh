@@ -65,30 +65,41 @@ echo "-- 5. TLS"
 if [ "${SKIP_TLS}" = "1" ]; then
   skip "TLS 检查已跳过（本地 HTTP 验收）"
 else
-CERT="$(echo | openssl s_client -connect "${HOST}" -servername "${HOSTNAME_ONLY}" 2>/dev/null | openssl x509 -noout -subject -dates -ext subjectAltName 2>/dev/null || true)"
-if printf '%s' "${CERT}" | grep -q "${HOSTNAME_ONLY}"; then
-  ok "证书覆盖 ${HOSTNAME_ONLY}"
+# 用 curl 的系统信任链验证：通配符证书的 SAN 是 *.luteos.com，
+# 字面 grep 主域名会误报，必须让校验器做主机名匹配。本脚本在公网侧运行，
+# 直接走 DNS；SNI 指向 127.0.0.1 的写法是服务器侧脚本用的，放在这里会连到本机 443。
+TLS_OUT="$(curl -s -o /dev/null -w '%{ssl_verify_result} %{http_code}' \
+  --max-time 15 "https://${HOSTNAME_ONLY}/" 2>/dev/null || echo '1 000')"
+VERIFY="${TLS_OUT%% *}"; CODE="${TLS_OUT##* }"
+if [ "${VERIFY}" = "0" ] && { [ "${CODE}" = "200" ] || [ "${CODE}" = "301" ] || [ "${CODE}" = "302" ]; }; then
+  ok "证书链与主机名验证通过（${HOSTNAME_ONLY}，HTTP ${CODE}）"
 else
-  bad "证书未覆盖 ${HOSTNAME_ONLY}"
+  bad "TLS 验证失败：ssl_verify_result=${VERIFY}, http_code=${CODE}"
 fi
+CERT="$(echo | openssl s_client -connect "${HOSTNAME_ONLY}:443" -servername "${HOSTNAME_ONLY}" 2>/dev/null | openssl x509 -noout -dates -issuer 2>/dev/null || true)"
 if printf '%s' "${CERT}" | grep -q 'notAfter'; then
   EXPIRES="$(printf '%s' "${CERT}" | grep notAfter | cut -d= -f2)"
-  ok "证书有效期至 ${EXPIRES}"
+  ISSUER="$(printf '%s' "${CERT}" | grep '^issuer' | sed 's/^issuer=//' | head -c 80)"
+  ok "证书有效期至 ${EXPIRES}（issuer: ${ISSUER}）"
+else
+  skip "无法读取证书有效期"
 fi
-VER="$(echo | openssl s_client -connect "${HOST}" -servername "${HOSTNAME_ONLY}" 2>/dev/null | grep -m1 'Protocol' || true)"
-printf '%s' "${VER}" | grep -qE 'TLSv1\.[23]' && ok "TLS 协商：${VER#*: }" || skip "无法读取 TLS 版本"
 fi
 
 echo
 echo "-- 6. HTTP -> HTTPS（80 未放行时跳过，记已知缺口）"
 case "${BASE}" in
   https://*)
-    c="$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 "http://${HOST}/" 2>/dev/null || echo timeout)"
-    case "${c}" in
-      301|302|307|308) ok "HTTP ${c} -> HTTPS" ;;
-      timeout|000)      skip "80 不可达（腾讯云安全组未放行；首次 HTTP 访问会超时）" ;;
-      *)                bad "HTTP -> ${c}" ;;
-    esac
+    OUT="$(curl -s -o /dev/null -w '%{http_code}' --max-time 6 "http://${HOST}/" 2>/dev/null)"
+    RC=$?
+    if [ "${RC}" -ne 0 ] || [ "${OUT}" = "000" ]; then
+      skip "80 不可达（腾讯云安全组未放行；首次 HTTP 访问会超时）"
+    else
+      case "${OUT}" in
+        301|302|307|308) ok "HTTP ${OUT} -> HTTPS" ;;
+        *)               bad "HTTP -> ${OUT}" ;;
+      esac
+    fi
     ;;
   *) skip "本地/HTTP 验收，无跳转检查" ;;
 esac

@@ -37,9 +37,12 @@
 - 新容器 `mas-router-site-web`，镜像 `mas-router-site:<tag>`（linux/amd64），
   只读文件系统、非 root、`cap_drop: ALL`、内存/CPU/pid 限额、日志轮转。
 - 只发布 `172.20.0.1:18890`（宿主侧），不占公网端口；独立 compose 项目与网络。
-- 共享网关 `ai_video_nginx` 只增加一个 `main.luteos.com` server block 并
-  graceful reload；有标记、有备份、失败自动回滚；不重启任何既有容器。
-- 证书复用 `*.luteos.com` 泛域名证书（有效期到 2027-03-07）。
+- 共享网关 `ai_video_nginx` 只增加一个 `main.luteos.com` server block；
+  因主配置是单文件只读 bind mount（容器固定旧 inode），生效需要一次有界
+  重启 `docker restart ai_video_nginx`。脚本带候选验证、备份、32 域名基线
+  和失败自动回滚；不重启任何业务容器。
+- 证书复用 `*.luteos.com` 泛域名证书（有效期到 2027-03-07）；server block
+  内 `server_tokens off`，不把网关版本号带到这个域上。
 
 ## 五、验收标准
 

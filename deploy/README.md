@@ -18,8 +18,12 @@ Internet :443
   与服务器上其他 30+ 个 compose 项目互不相干。
 - 容器只发布到 `172.20.0.1`（lighthouse 网关的宿主侧地址），不监听公网。
 - TLS 由共享网关用 `*.luteos.com` 泛域名证书终止；容器内只有 8080 明文。
-- 共享网关的改动只有一处：向 `http { }` 末尾插入一个带标记的 server block，
-  然后 `nginx -s reload`（不重启任何容器）。
+- 共享网关的改动只有一处：向 `http { }` 插入一个带标记的 server block。
+  主配置是「单文件只读 bind mount」，容器启动后固定当时的 inode；之后宿主上
+  改文件，运行中的容器看不到，`nginx -t` 与 HUP reload 都不能证明候选生效。
+  因此接入动作是**一次有界重启**（`docker restart ai_video_nginx`），且脚本
+  自带候选验证、备份、32 域名基线与失败自动回滚。这是本仓库 xmind 部署
+  Runbook 里已经记录过的同一个约束。
 
 ## 文件
 
@@ -85,13 +89,16 @@ deploy/accept.sh
 cd /opt/mas-router-site/current && docker compose down
 ```
 
-**回滚网关**：
+**回滚网关**（同样需要一次有界重启，原因见上）：
 
 ```bash
 sudo install -m 0644 /opt/mas-router-site/backups/nginx.conf.<时间戳> \
   /opt/ai-video/deploy/lighthouse/nginx.conf
-docker exec ai_video_nginx nginx -t && docker exec ai_video_nginx nginx -s reload
+docker restart ai_video_nginx
 ```
+
+更新已存在的 server 块（例如改 header）：`patch-ingress.sh` 检测到部署标记时
+会自动进入更新模式（`patch-ingress.py --replace`），重复执行是安全的。
 
 ## 已知缺口
 

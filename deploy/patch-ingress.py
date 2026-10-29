@@ -77,15 +77,25 @@ def find_http_closing_brace(source: str) -> int:
     raise ValueError("unbalanced braces in Nginx http block")
 
 
-def build_candidate(base: str, snippet: str) -> str:
-    if BEGIN_MARKER in base or END_MARKER in base:
+def build_candidate(base: str, snippet: str, replace: bool = False) -> str:
+    has_markers = BEGIN_MARKER in base or END_MARKER in base
+    if has_markers and not replace:
         raise ValueError("deployment markers already exist in base config")
-    if DOMAIN in base:
-        raise ValueError(f"{DOMAIN} already exists in base config")
+    if DOMAIN in base and not has_markers:
+        raise ValueError(f"{DOMAIN} already exists in base config without deployment markers")
     if DOMAIN not in snippet:
         raise ValueError(f"snippet does not contain {DOMAIN}")
     if BEGIN_MARKER in snippet or END_MARKER in snippet:
         raise ValueError("snippet must not contain deployment markers")
+
+    if has_markers:
+        pattern = re.compile(
+            r"(?m)^\s*" + re.escape(BEGIN_MARKER) + r".*?^\s*" + re.escape(END_MARKER) + r"[^\n]*\n",
+            re.S,
+        )
+        base, count = pattern.subn("", base, count=1)
+        if count != 1:
+            raise ValueError("could not locate exactly one marked block to replace")
 
     closing = find_http_closing_brace(base)
     indented = "\n".join(f"    {line}" if line else "" for line in snippet.strip().splitlines())
@@ -98,6 +108,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--base", type=Path, required=True)
     parser.add_argument("--snippet", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--replace",
+        action="store_true",
+        help="replace an existing marked block instead of refusing",
+    )
     return parser.parse_args()
 
 
@@ -107,9 +122,10 @@ def main() -> None:
         raise SystemExit(f"refusing to overwrite output: {args.output}")
     base = args.base.read_text(encoding="utf-8")
     snippet = args.snippet.read_text(encoding="utf-8")
-    candidate = build_candidate(base, snippet)
+    candidate = build_candidate(base, snippet, replace=args.replace)
+    mode = "replaced" if args.replace and BEGIN_MARKER in base else "inserted"
     args.output.write_text(candidate, encoding="utf-8", newline="")
-    print(f"wrote {args.output} with one marked mas-router-site server-block insertion")
+    print(f"wrote {args.output} with one marked mas-router-site server block {mode}")
 
 
 if __name__ == "__main__":
