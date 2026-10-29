@@ -39,20 +39,28 @@ test('links: the real site resolves', async () => {
 });
 
 test('links: goes red on a link to a page that does not exist', async () => {
-  const { code, out } = await withProbe('/mas_router_method/site/no-such-page.html');
+  const { code, out } = await withProbe('no-such-page.html');
   assert.equal(code, 1);
   assert.match(out, /no page no-such-page\.html/);
 });
 
 test('links: goes red on a stale numbered stage URL', async () => {
   // The exact link that survived the rename and shipped.
-  const { code, out } = await withProbe('/mas_router_method/site/07-iterate.html');
+  const { code, out } = await withProbe('07-iterate.html');
   assert.equal(code, 1);
   assert.match(out, /07-iterate\.html/);
 });
 
+test('links: goes red on a legacy absolute prefix', async () => {
+  // The site must work at both the Pages subpath and the domain root; an
+  // absolute prefix breaks one of them, so it is an error rather than a style.
+  const { code, out } = await withProbe('/mas_router_method/site/need.html');
+  assert.equal(code, 1);
+  assert.match(out, /legacy absolute prefix/);
+});
+
 test('links: goes red on an anchor that is not on the target page', async () => {
-  const { code, out } = await withProbe('/mas_router_method/site/need.html#no-such-anchor');
+  const { code, out } = await withProbe('need.html#no-such-anchor');
   assert.equal(code, 1);
   assert.match(out, /no id "no-such-anchor"/);
 });

@@ -22,7 +22,7 @@ def docs_page():
     b.append('<div class="grid two">')
     for fn, title, desc in DOCS:
         # id carries the filename so other pages can deep-link to a specific document
-        b.append(f'<a class="card" id="{fn}" href="/mas_router_method/site/originals/{fn}" style="display:block;text-decoration:none;color:inherit">'
+        b.append(f'<a class="card" id="{fn}" href="originals/{fn}" style="display:block;text-decoration:none;color:inherit">'
                  f'<h3 style="margin-top:0">{title} <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">{fn}</span></h3>'
                  f'<p style="margin:0;font-size:.9rem;color:var(--muted)">{desc}</p></a>')
     b.append('</div>')
@@ -38,7 +38,7 @@ def docs_page():
              '<tr><td>实测二（报告）</td><td><b>修正验证</b>：补齐后再做一次，发现补得对，但仍有一层漏。</td></tr>'
              '<tr><td>实测二（完整）</td><td><b>走完全程</b>：六步都做了，三步的验收做不到，如实记录。</td></tr>'
              '</tbody></table>')
-    return page('docs', '原始文档', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / 原始文档')
+    return page('docs', '原始文档', '\n'.join(b), '<a href="./">总览</a> / 原始文档')
 
 if __name__ == '__main__':
     # 原件是仓库里的源文件（docs/site/originals/），不是生成物，所以这里不复制任何东西。

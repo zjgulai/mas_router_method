@@ -240,28 +240,28 @@ def stage_page(slug, name, oneline):
     missing = [s for s in d['skills'] if s not in MAP]
     if missing:
         raise SystemExit(f"{slug}: these skills are not in map.py, so the page would silently omit them: {missing}")
-    sl = ''.join(f'<li><a href="/mas_router_method/site/skills.html#{s}"><code>{s}</code></a> — {MAP[s][2]}</li>'
+    sl = ''.join(f'<li><a href="skills.html#{s}"><code>{s}</code></a> — {MAP[s][2]}</li>'
                  for s in d['skills'])
     body.append(f'<ul>{sl}</ul>')
 
     # 这一步要写的表。方法论和样张是两个问题，两页分开，互相指向。
     body.append(f'<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>'
                 f'方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。'
-                f'<a href="/mas_router_method/site/tables-{slug}.html">看 {name} 的表 →</a></div>')
+                f'<a href="tables-{slug}.html">看 {name} 的表 →</a></div>')
 
     # 原文
     body.append('<h2 id="docs">原文与依据</h2>')
-    body.append('<ul>' + ''.join(f'<li><a href="/mas_router_method/site/docs.html#{f}">{t}</a></li>' for f, t in d['docs']) + '</ul>')
+    body.append('<ul>' + ''.join(f'<li><a href="docs.html#{f}">{t}</a></li>' for f, t in d['docs']) + '</ul>')
 
     # prev/next
     prev = STAGES[idx-1] if idx > 0 else None
     nxt = STAGES[idx+1] if idx < len(STAGES)-1 else None
     pp = ['<div class="nextprev">']
-    pp.append(f'<a href="/mas_router_method/site/{prev[0]}.html"><span class="lbl">上一步</span>{prev[1]}</a>' if prev else '<span></span>')
-    pp.append(f'<a href="/mas_router_method/site/{nxt[0]}.html" style="text-align:right"><span class="lbl">下一步</span>{nxt[1]}</a>' if nxt else '<span></span>')
+    pp.append(f'<a href="{prev[0]}.html"><span class="lbl">上一步</span>{prev[1]}</a>' if prev else '<span></span>')
+    pp.append(f'<a href="{nxt[0]}.html" style="text-align:right"><span class="lbl">下一步</span>{nxt[1]}</a>' if nxt else '<span></span>')
     pp.append('</div>')
 
-    crumb = '<a href="/mas_router_method/site/">总览</a> / ' + name
+    crumb = '<a href="./">总览</a> / ' + name
     sections = [('branches', '走哪条路'), ('verify', '谁来验怎么验'),
                 ('skills', '用到哪些 skill'), ('docs', '原文与依据')]
     return page(slug, name, '\n'.join(body), crumb, '\n'.join(pp), sections)
@@ -284,7 +284,7 @@ def index_page():
     for (slug, name, one), i in zip(STAGES, range(1, len(STAGES) + 1)):
         d = DETAIL[slug]
         gap = {'covered': '', 'half': '<span class="tag t-branch">半个覆盖</span>', 'gap': '<span class="tag t-gap">未覆盖</span>'}[d['gap']]
-        cards.append(f'<a class="card" href="/mas_router_method/site/{slug}.html" style="display:block;text-decoration:none;color:inherit">'
+        cards.append(f'<a class="card" href="{slug}.html" style="display:block;text-decoration:none;color:inherit">'
                      f'<div style="font-family:var(--serif);color:var(--accent);font-size:1.5rem;line-height:1">{i:02d}</div>'
                      f'<h3 style="margin:.35rem 0 .3rem">{name} {gap}</h3>'
                      f'<p style="margin:0;font-size:.9rem;color:var(--muted)">{one}</p></a>')
@@ -292,12 +292,12 @@ def index_page():
 
     b.append('<h2>从这里进</h2>')
     b.append('<div class="grid two">')
-    b.append('<a class="card" href="/mas_router_method/site/matrix.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品的 8 × 8 矩阵</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">7 阶段 + 管理 × 8 层。每格写输入契约、输出契约、失败模式；状态由脚本算出，不手填——<b>验</b> 有检查器，<b>约</b> 只有契约。</p></a>')
-    b.append('<a class="card" href="/mas_router_method/site/branches.html" style="display:block;text-decoration:none;color:inherit"><h3>分支总表</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">所有 if/else 集中一页，按代价排序。不知道自己在哪一步时，先看这里。</p></a>')
-    b.append(f'<a class="card" href="/mas_router_method/site/skills.html" style="display:block;text-decoration:none;color:inherit"><h3>Skill 全表 · {N_ROWS} 个</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">三层来源、七阶段归属、每个都要说清「它坏了会怎样」。</p></a>')
-    b.append('<a class="card" href="/mas_router_method/site/prompts.html" style="display:block;text-decoration:none;color:inherit"><h3>提示词库</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">可直接复制的会话提示词，按阶段和用途分类。</p></a>')
-    b.append('<a class="card" href="/mas_router_method/site/docs.html" style="display:block;text-decoration:none;color:inherit"><h3>原始文档</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">八份未改一字的原始 HTML：失败图鉴、决策树、术语表、能力图谱、实测报告。</p></a>')
-    b.append(f'<a class="card" href="/mas_router_method/site/manage.html" style="display:block;text-decoration:none;color:inherit"><h3>管理</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">横跨七阶段的记录层：票据、事故、证据、设计记录各有归属，状态就是目录，<code>ls</code> 即看板。</p></a>')
+    b.append('<a class="card" href="matrix.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品的 8 × 8 矩阵</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">7 阶段 + 管理 × 8 层。每格写输入契约、输出契约、失败模式；状态由脚本算出，不手填——<b>验</b> 有检查器，<b>约</b> 只有契约。</p></a>')
+    b.append('<a class="card" href="branches.html" style="display:block;text-decoration:none;color:inherit"><h3>分支总表</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">所有 if/else 集中一页，按代价排序。不知道自己在哪一步时，先看这里。</p></a>')
+    b.append(f'<a class="card" href="skills.html" style="display:block;text-decoration:none;color:inherit"><h3>Skill 全表 · {N_ROWS} 个</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">三层来源、七阶段归属、每个都要说清「它坏了会怎样」。</p></a>')
+    b.append('<a class="card" href="prompts.html" style="display:block;text-decoration:none;color:inherit"><h3>提示词库</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">可直接复制的会话提示词，按阶段和用途分类。</p></a>')
+    b.append('<a class="card" href="docs.html" style="display:block;text-decoration:none;color:inherit"><h3>原始文档</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">八份未改一字的原始 HTML：失败图鉴、决策树、术语表、能力图谱、实测报告。</p></a>')
+    b.append(f'<a class="card" href="manage.html" style="display:block;text-decoration:none;color:inherit"><h3>管理</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">横跨七阶段的记录层：票据、事故、证据、设计记录各有归属，状态就是目录，<code>ls</code> 即看板。</p></a>')
     b.append('</div>')
 
     b.append('<h2>这套方法自己的证据</h2>')
@@ -306,13 +306,31 @@ def index_page():
              '<tr><td>七种误判</td><td>其中四条来自一个真实 agent 产品项目的实际运行：护栏把服务 502 记成「成功拒绝」、评测台自坏、预算检查恒假、截断超限 26 字符。</td></tr>'
              '<tr><td>第五类「找不到≠不存在」</td><td>我自己犯的：把「目录里没有」写成「根本不存在」，还配了一段听起来很有说服力的推理。</td></tr>'
              '<tr><td>第六类「测量污染」</td><td>用这套方法做第二个产品时发现：每看一次仪表盘，数字就变一次。</td></tr>'
-             '<tr><td>两次完整实测</td><td>两个可运行样本，共 66 条检查，全部可以失败。<a href="/mas_router_method/site/docs.html#atlas-test-report.html">第一次</a> · <a href="/mas_router_method/site/docs.html#anb2-full.html">第二次</a></td></tr>'
+             '<tr><td>两次完整实测</td><td>两个可运行样本，共 66 条检查，全部可以失败。<a href="docs.html#atlas-test-report.html">第一次</a> · <a href="docs.html#anb2-full.html">第二次</a></td></tr>'
              '</tbody></table>')
     return page('index', '总览', '\n'.join(b))
+
+def notfound_page():
+    # nginx 的 error_page 指向这一页。默认 404 会带服务器版本和一行死气沉沉的
+    # 「Not Found」；这一页至少告诉访客站里有什么、往哪走。
+    b = ['<h1>404 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">这一页不存在</span></h1>']
+    b.append('<p class="lede">地址打错了，或者这一页被移走了。<b>本站的每一页都可以从总览走到</b>，'
+             '下面几个入口覆盖了大部分来意。</p>')
+    b.append('<div class="grid two">')
+    for slug, label, one in [('index', '总览', '七个阶段、管理、十三个表、提示词库的入口')] + list(STAGES[:3]):
+        href = './' if slug == 'index' else f'{slug}.html'
+        b.append(f'<a class="card" href="{href}" '
+                 f'style="display:block;text-decoration:none;color:inherit"><h3 style="margin-top:0">{label}</h3>'
+                 f'<p style="margin:0;font-size:.9rem;color:var(--muted)">{one}</p></a>')
+    b.append('</div>')
+    b.append('<p style="margin-top:1.6rem"><a href="./">回总览 →</a></p>')
+    return page('404', '404', '\n'.join(b), desc='页面不存在 · Agent Native Builder')
+
 
 if __name__ == '__main__':
     OUT = out_dir()
     open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(index_page())
+    open(os.path.join(OUT, '404.html'), 'w', encoding='utf-8').write(notfound_page())
     for slug, name, one in STAGES:
         open(os.path.join(OUT, f'{slug}.html'), 'w', encoding='utf-8').write(stage_page(slug, name, one))
-    print('生成:', 1 + len(STAGES), '页')
+    print('生成:', 2 + len(STAGES), '页')

@@ -34,10 +34,12 @@ function mentions(text, name) {
   return new RegExp(`${esc}(?![\\w.-])`).test(text);
 }
 
-/** 链接必须是完整的站内路径：后面跟引号或锚点，不能是更长的文件名。 */
+/** 链接必须是相对本站的完整目标：后面跟引号或锚点，不能是更长的文件名。 */
 function linksTo(html, target) {
   const esc = target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`/mas_router_method/site/${esc}(?=["#])`).test(html);
+  // 站内链接一律相对（同一个站点要同时服务 Pages 子路径和域名根路径），
+  // 所以这里不再绑死绝对前缀；关键是目标名后面必须紧跟引号或锚点。
+  return new RegExp(`href="(?:\\./)?${esc}(?=["#])`).test(html);
 }
 
 

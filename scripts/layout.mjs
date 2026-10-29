@@ -122,6 +122,9 @@ for (const f of files) {
 const declared = new Set([
   'work', 'docs', 'packages', 'apps', 'scripts', 'node_modules', '.git', '.turbo', '.github',
   'anb-experiment-linkdigest', 'anb2-repo-vitals', '.agent-runs', '.claude', '.scratch', 'outputs',
+  // 交付物：镜像、compose、网关片段与部署/验收脚本。它们不是信息寄存器，
+  // 但同样需要一个明确的家；运行手册在 deploy/README.md。
+  'deploy',
 ]);
 const top = await readdir(ROOT, { withFileTypes: true });
 const unknown = top

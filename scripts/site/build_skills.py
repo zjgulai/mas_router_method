@@ -55,9 +55,9 @@ def skills_page():
         # 管理没有阶段页，它的落点是 manage.html；数据产品的落点是矩阵页——
         # 它是唯一一张按层而不是按阶段组织的视图，也正是这批 skill 的归属单位。
         # 第一版直接拼了 data.html，而那个页面不存在，links.mjs 当场抓出来了。
-        LANDING = {'manage': '/mas_router_method/site/manage.html',
-                   'data': '/mas_router_method/site/matrix.html'}
-        href = LANDING.get(slug, f'/mas_router_method/site/{slug}.html#skills')
+        LANDING = {'manage': 'manage.html',
+                   'data': 'matrix.html'}
+        href = LANDING.get(slug, f'{slug}.html#skills')
         b.append(f'<a class="card" href="{href}" style="display:block;text-decoration:none;color:inherit">'
                  f'<div style="font-family:var(--serif);color:var(--accent);font-size:1.3rem">{per_stage[sname]}</div>'
                  f'<div style="font-size:.9rem">{sname}</div></a>')
@@ -71,7 +71,7 @@ def skills_page():
         if not items: continue
         head = f'{sname}'
         if slug == 'data':
-            head = f'<a href="/mas_router_method/site/matrix.html" style="text-decoration:none">{sname}</a>'
+            head = f'<a href="matrix.html" style="text-decoration:none">{sname}</a>'
         b.append(f'<h3>{head} <span style="color:var(--faint);font-weight:400;font-size:.85rem">（{len(items)}）</span></h3>')
         rows = []
         for name, (stage, tags, note) in items:
@@ -88,7 +88,7 @@ def skills_page():
     b.append('<h2>装了但没接进流程的</h2>')
     b.append('<p class="h2sub">这些在仓库里、能调用，但不在七阶段的任何一步上。它们不是没用，是还没找到位置。</p>')
     b.append('<p>见上表中标「（未安装）」的条目，以及 <code>ask-matt</code>、<code>wait-what</code>、<code>to-questionnaire</code>、<code>teach</code>、<code>wizard</code>、<code>writing-for-agents</code>。这几个的用途分别写在表里，但严格说它们服务于"怎么把话问清楚"，不专属于某一步。</p>')
-    return page('skills', 'Skill 全表', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / Skill 全表')
+    return page('skills', 'Skill 全表', '\n'.join(b), '<a href="./">总览</a> / Skill 全表')
 
 def branches_page():
     b = ['<h1>分支总表</h1>']
@@ -98,14 +98,14 @@ def branches_page():
     from build_pages import DETAIL
     for slug, name, one in STAGES:
         d = DETAIL[slug]
-        b.append(f'<h2><a href="/mas_router_method/site/{slug}.html" style="text-decoration:none">{name}</a></h2>')
-        rows = ''.join(f'<tr><td>{c}</td><td><a href="/mas_router_method/site/{slug}.html#{a.lstrip("#")}">{a.lstrip("#")}</a></td><td>{note}</td></tr>'
+        b.append(f'<h2><a href="{slug}.html" style="text-decoration:none">{name}</a></h2>')
+        rows = ''.join(f'<tr><td>{c}</td><td><a href="{slug}.html#{a.lstrip("#")}">{a.lstrip("#")}</a></td><td>{note}</td></tr>'
                        for c, a, note in d['branches'])
         b.append(f'<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody>{rows}</tbody></table>')
 
     # 管理横跨七阶段，不是第八个阶段，所以它在这里和阶段并列、单独一节。
     # 之前它只出现在顶部导航里：一个卡住的人从路由表或分支总表出发都到不了它。
-    b.append('<h2><a href="/mas_router_method/site/manage.html" style="text-decoration:none">管理</a>'
+    b.append('<h2><a href="manage.html" style="text-decoration:none">管理</a>'
              '<span style="font-size:.6em;color:var(--faint);font-family:var(--sans);font-weight:400">'
              '　横跨以上全部，不是第八个阶段</span></h2>')
     b.append('<p class="h2sub">提问的对象是<b>项目自己的记录</b>而不是产品时，走这里。'
@@ -120,10 +120,10 @@ def branches_page():
         ('你记不清它现在是什么状态', '#m-status',
          '状态就是目录。<code>ls</code> 一次比回忆可靠，也比回忆便宜。'),
     ]
-    mrows = ''.join(f'<tr><td>{c}</td><td><a href="/mas_router_method/site/manage.html{a}">{a}</a></td><td>{n}</td></tr>'
+    mrows = ''.join(f'<tr><td>{c}</td><td><a href="manage.html{a}">{a}</a></td><td>{n}</td></tr>'
                     for c, a, n in mgmt)
     b.append(f'<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody>{mrows}</tbody></table>')
-    return page('branches', '分支总表', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / 分支总表')
+    return page('branches', '分支总表', '\n'.join(b), '<a href="./">总览</a> / 分支总表')
 
 if __name__ == '__main__':
     OUT = out_dir()

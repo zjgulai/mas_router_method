@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>管理 · 表 · Agent Native Builder</title>
+<meta name="description" content="管理 · 表 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:light;
@@ -28,20 +30,21 @@
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
   .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
-               letter-spacing:-.02em}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
   .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
   .nav{padding:0 .5rem}
   .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
          text-transform:uppercase}
   .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
          border-radius:2px;line-height:1.35}
   .nav a:hover{background:#2a2c26;color:#fff}
   .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
   .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
   .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
             border-left:1px solid #3d3f38;line-height:1.35}
   .subnav a:hover{color:#fff;border-left-color:#8d8f86}
@@ -57,7 +60,8 @@
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.6rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem}
-    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.4rem}
   }
@@ -80,6 +84,7 @@
   .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
   thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
   tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
   tbody tr:last-child td{border-bottom:0}
@@ -138,30 +143,31 @@
 <body>
 <div class="layout">
   <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
     <details open>
-      <summary class="brand">
-        <a class="home" href="/mas_router_method/site/">ANB</a>
-        <span class="brand-sub">Agent Native Builder</span>
-      </summary>
+      <summary class="nav-toggle">导航</summary>
       <nav class="nav">
         <div class="nav-g"><span class="nav-h">流程</span>
-      <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/need.html">需求</a>
-      <a href="/mas_router_method/site/design.html">设计</a>
-      <a href="/mas_router_method/site/build.html">开发</a>
-      <a href="/mas_router_method/site/verify.html">验收</a>
-      <a href="/mas_router_method/site/ship.html">交付</a>
-      <a href="/mas_router_method/site/operate.html">运营</a>
-      <a href="/mas_router_method/site/iterate.html">迭代</a>
-      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
-      <a href="/mas_router_method/site/branches.html">分支总表</a>
-      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/site/prompts.html">提示词</a>
-      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
-      <a href="/mas_router_method/site/tables.html">十三个表</a>
-      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
@@ -171,13 +177,13 @@
   </aside>
   <div class="content">
     <main>
-      <div class="crumb">表格 · <a href="/mas_router_method/site/tables.html">全部</a></div>
-      <h1>管理 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">1 张表</span></h1><p class="lede">横跨七阶段的记录层：每一种信息只有一个家</p><p style="font-size:.9rem;color:var(--faint)">这一页是<b>表的样张</b>，不是方法论。方法在<a href="/mas_router_method/site/manage.html">管理</a>那一页。两页读的是同一件事：一页讲这一步要问什么，一页讲答案记在哪一列。</p><h2 id="manage-09-管理">09 管理</h2><p class="lede" style="margin-bottom:1rem">这件事该记成哪种文件——ADR、事故、设计记录，还是票。</p><div class="tb-index"><a href="#manage-adm-01"><code>adm-01</code> 口径版本只增不改：旧数据永不重算</a><a href="#manage-adm-02"><code>adm-02</code> 挂载目录上，刚写的文件被新进程读成陈旧的 4096 字节块</a><a href="#manage-adm-03"><code>adm-03</code> 分析层的模型设定会随新数据重估，不是一次定终身</a></div><p class="h2sub">3 条记录、13 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="manage-adm-01"><h3><code>adm-01</code></h3><table class="tb-fields"><tbody><tr><td>管理编号</td><td>adm-01</td></tr><tr><td>为什么是这一种，不是另外三种</td><td>这是定下来的规则，不会因为下个月的数据变化而改。写成设计记录它就还能被改，而这条一旦被改，所有跨期对比都失效。也不是票——没有「做完」的那一刻。</td></tr><tr><td>以后还会改吗</td><td>不会，定了</td></tr><tr><td>备注</td><td>这条是 data-product-layers §五 那条「下游读到陌生上游版本要报警」的前提。</td></tr><tr><td>标题</td><td>口径版本只增不改：旧数据永不重算</td></tr><tr><td>涉及哪一层</td><td>跨层</td></tr><tr><td>现在的状态</td><td>已关闭</td></tr><tr><td>记成什么</td><td>ADR（已定的决策）</td></tr><tr class="tb-empty"><td>严重性</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>什么时候发生的</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>关闭条件是什么</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>影响哪些结论或看板</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>如果会改，新版记在哪</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="manage-adm-02"><h3><code>adm-02</code></h3><table class="tb-fields"><tbody><tr><td>管理编号</td><td>adm-02</td></tr><tr><td>为什么是这一种，不是另外三种</td><td>它发生了，不是打算做。记成票会让人以为修完就完事，而它的实际影响是「本机绿不算证据」这条长期约束。</td></tr><tr><td>以后还会改吗</td><td>不知道</td></tr><tr><td>备注</td><td>实测 /tmp 0/60 失败，挂载目录约每三次一次。写入 78 字节可能读回 4157–4167 字节的别的内容。</td></tr><tr><td>标题</td><td>挂载目录上，刚写的文件被新进程读成陈旧的 4096 字节块</td></tr><tr><td>涉及哪一层</td><td>跨层</td></tr><tr><td>现在的状态</td><td>已控制</td></tr><tr><td>记成什么</td><td>INC（发生了的事故）</td></tr><tr><td>严重性</td><td>P1 部分不可用</td></tr><tr><td>什么时候发生的</td><td>1792886400000</td></tr><tr><td>关闭条件是什么</td><td>所有写后跨进程读的验证都改在 /tmp 或 CI 上做；或挂载行为改变</td></tr><tr><td>影响哪些结论或看板</td><td>所有「写文件→立刻起进程读」的本机验证，包括本站点构建的门禁</td></tr><tr class="tb-empty"><td>如果会改，新版记在哪</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="manage-adm-03"><h3><code>adm-03</code></h3><table class="tb-fields"><tbody><tr><td>管理编号</td><td>adm-03</td></tr><tr><td>为什么是这一种，不是另外三种</td><td>模型设定会被 superseded——新的重估可能推翻旧的。写成 ADR 会逼着人「不改原件」，而这里正确的做法恰恰是新增一条并标被推翻。</td></tr><tr><td>以后还会改吗</td><td>会，还要改</td></tr><tr><td>备注</td><td>这是 ADR 与设计记录的分界线：ADR 是历史（写完不改），设计记录是当前想法（会被推翻）。</td></tr><tr><td>标题</td><td>分析层的模型设定会随新数据重估，不是一次定终身</td></tr><tr><td>涉及哪一层</td><td>分析</td></tr><tr><td>现在的状态</td><td>已关闭</td></tr><tr><td>记成什么</td><td>设计记录（会变的想法）</td></tr><tr class="tb-empty"><td>严重性</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>什么时候发生的</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>关闭条件是什么</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>影响哪些结论或看板</td><td><span class="tb-no">（空）</span></td></tr><tr><td>如果会改，新版记在哪</td><td>新增一条设计记录，旧条目标 superseded，不修改原件</td></tr></tbody></table></div><div class="nextprev"><div><span class="lbl">其它阶段的表</span><a href="/mas_router_method/site/tables-need.html">需求</a> · <a href="/mas_router_method/site/tables-design.html">设计</a> · <a href="/mas_router_method/site/tables-build.html">开发</a> · <a href="/mas_router_method/site/tables-verify.html">验收</a> · <a href="/mas_router_method/site/tables-ship.html">交付</a> · <a href="/mas_router_method/site/tables-operate.html">运营</a> · <a href="/mas_router_method/site/tables-iterate.html">迭代</a></div></div>
+      <div class="crumb">表格 · <a href="tables.html">全部</a></div>
+      <h1>管理 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">1 张表</span></h1><p class="lede">横跨七阶段的记录层：每一种信息只有一个家</p><p style="font-size:.9rem;color:var(--faint)">这一页是<b>表的样张</b>，不是方法论。方法在<a href="manage.html">管理</a>那一页。两页读的是同一件事：一页讲这一步要问什么，一页讲答案记在哪一列。</p><h2 id="manage-09-管理">09 管理</h2><p class="lede" style="margin-bottom:1rem">这件事该记成哪种文件——ADR、事故、设计记录，还是票。</p><div class="tb-index"><a href="#manage-adm-01"><code>adm-01</code> 口径版本只增不改：旧数据永不重算</a><a href="#manage-adm-02"><code>adm-02</code> 挂载目录上，刚写的文件被新进程读成陈旧的 4096 字节块</a><a href="#manage-adm-03"><code>adm-03</code> 分析层的模型设定会随新数据重估，不是一次定终身</a></div><p class="h2sub">3 条记录、13 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="manage-adm-01"><h3><code>adm-01</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>管理编号</td><td>adm-01</td></tr><tr><td>为什么是这一种，不是另外三种</td><td>这是定下来的规则，不会因为下个月的数据变化而改。写成设计记录它就还能被改，而这条一旦被改，所有跨期对比都失效。也不是票——没有「做完」的那一刻。</td></tr><tr><td>以后还会改吗</td><td>不会，定了</td></tr><tr><td>备注</td><td>这条是 data-product-layers §五 那条「下游读到陌生上游版本要报警」的前提。</td></tr><tr><td>标题</td><td>口径版本只增不改：旧数据永不重算</td></tr><tr><td>涉及哪一层</td><td>跨层</td></tr><tr><td>现在的状态</td><td>已关闭</td></tr><tr><td>记成什么</td><td>ADR（已定的决策）</td></tr><tr class="tb-empty"><td>严重性</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>什么时候发生的</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>关闭条件是什么</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>影响哪些结论或看板</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>如果会改，新版记在哪</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div></div><div class="tb-row" id="manage-adm-02"><h3><code>adm-02</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>管理编号</td><td>adm-02</td></tr><tr><td>为什么是这一种，不是另外三种</td><td>它发生了，不是打算做。记成票会让人以为修完就完事，而它的实际影响是「本机绿不算证据」这条长期约束。</td></tr><tr><td>以后还会改吗</td><td>不知道</td></tr><tr><td>备注</td><td>实测 /tmp 0/60 失败，挂载目录约每三次一次。写入 78 字节可能读回 4157–4167 字节的别的内容。</td></tr><tr><td>标题</td><td>挂载目录上，刚写的文件被新进程读成陈旧的 4096 字节块</td></tr><tr><td>涉及哪一层</td><td>跨层</td></tr><tr><td>现在的状态</td><td>已控制</td></tr><tr><td>记成什么</td><td>INC（发生了的事故）</td></tr><tr><td>严重性</td><td>P1 部分不可用</td></tr><tr><td>什么时候发生的</td><td>1792886400000</td></tr><tr><td>关闭条件是什么</td><td>所有写后跨进程读的验证都改在 /tmp 或 CI 上做；或挂载行为改变</td></tr><tr><td>影响哪些结论或看板</td><td>所有「写文件→立刻起进程读」的本机验证，包括本站点构建的门禁</td></tr><tr class="tb-empty"><td>如果会改，新版记在哪</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div></div><div class="tb-row" id="manage-adm-03"><h3><code>adm-03</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>管理编号</td><td>adm-03</td></tr><tr><td>为什么是这一种，不是另外三种</td><td>模型设定会被 superseded——新的重估可能推翻旧的。写成 ADR 会逼着人「不改原件」，而这里正确的做法恰恰是新增一条并标被推翻。</td></tr><tr><td>以后还会改吗</td><td>会，还要改</td></tr><tr><td>备注</td><td>这是 ADR 与设计记录的分界线：ADR 是历史（写完不改），设计记录是当前想法（会被推翻）。</td></tr><tr><td>标题</td><td>分析层的模型设定会随新数据重估，不是一次定终身</td></tr><tr><td>涉及哪一层</td><td>分析</td></tr><tr><td>现在的状态</td><td>已关闭</td></tr><tr><td>记成什么</td><td>设计记录（会变的想法）</td></tr><tr class="tb-empty"><td>严重性</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>什么时候发生的</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>关闭条件是什么</td><td><span class="tb-no">（空）</span></td></tr><tr class="tb-empty"><td>影响哪些结论或看板</td><td><span class="tb-no">（空）</span></td></tr><tr><td>如果会改，新版记在哪</td><td>新增一条设计记录，旧条目标 superseded，不修改原件</td></tr></tbody></table></div></div><div class="nextprev"><div><span class="lbl">其它阶段的表</span><a href="tables-need.html">需求</a> · <a href="tables-design.html">设计</a> · <a href="tables-build.html">开发</a> · <a href="tables-verify.html">验收</a> · <a href="tables-ship.html">交付</a> · <a href="tables-operate.html">运营</a> · <a href="tables-iterate.html">迭代</a></div></div>
       
     </main>
     <footer>
       Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
     </footer>
   </div>
 </div>

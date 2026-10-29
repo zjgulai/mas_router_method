@@ -2,29 +2,33 @@
 /**
  * links — every internal link on the site resolves.
  *
- * The stage pages lost their numeric prefixes, and the site has three kinds of
- * internal link that fail independently: same-page anchors, cross-page paths, and
- * links into the frozen originals. A stale `07-iterate.html` survived that rename
- * until this script existed — checking by hand is exactly the step that gets
- * skipped when the change looks routine.
+ * The site is served from two roots: GitHub Pages serves it under
+ * `/mas_router_method/site/`, and main.luteos.com serves it at `/`. The only
+ * link shape that works on both is a relative one, so an absolute legacy prefix
+ * is treated as broken here — that is what keeps the migration from coming back.
+ *
+ * Three kinds of internal link fail independently: same-page anchors, cross-page
+ * paths, and links into the frozen originals. A stale `07-iterate.html` survived
+ * a rename until this script existed — checking by hand is exactly the step that
+ * gets skipped when the change looks routine.
  *
  * Scope: the generated pages at the site root, the hand-written originals, and
  * docs/index.html (the entry point Pages serves, where a broken link is worst).
  *
  * Usage: node scripts/site/links.mjs
  */
-import { readdir, readFile } from 'node:fs/promises';
-import { join, dirname, resolve } from 'node:path';
+import { readdir, readFile, access } from 'node:fs/promises';
+import { join, dirname, resolve, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', DIM = '\x1b[2m', RESET = '\x1b[0m';
+const RED = '\x1b[31m', GREEN = '\x1b[32m', RESET = '\x1b[0m';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
 const SITE = join(REPO, 'docs', 'site');
-const PREFIX = '/mas_router_method/site/';
+const LEGACY = '/mas_router_method/site/';
 
-/** Every page we own, keyed by the path a link would use to reach it. */
+/** Every page we own, keyed by the path a relative link would use to reach it. */
 async function pages() {
   const out = new Map(); // 'need.html' | 'originals/terms.html' -> html
 
@@ -33,10 +37,9 @@ async function pages() {
       out.set(e.name, await readFile(join(SITE, e.name), 'utf8'));
     }
   }
-  const originalsDir = join(SITE, 'originals');
-  for (const name of await readdir(originalsDir).catch(() => [])) {
+  for (const name of await readdir(join(SITE, 'originals')).catch(() => [])) {
     if (name.endsWith('.html')) {
-      out.set(`originals/${name}`, await readFile(join(originalsDir, name), 'utf8'));
+      out.set(`originals/${name}`, await readFile(join(SITE, 'originals', name), 'utf8'));
     }
   }
   // The Pages entry point. It lives one level up, so it is not reachable by an
@@ -50,30 +53,72 @@ const idsOf = (html) => new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) =>
 const all = await pages();
 const broken = [];
 
-for (const [page, html] of all) {
-  const ids = idsOf(html);
-  const where = page === '__entry__' ? 'docs/index.html' : `docs/site/${page}`;
+const anchorOf = (raw) => {
+  try { return decodeURIComponent(raw); } catch { return raw; }
+};
 
-  for (const m of html.matchAll(/href="([^"]+)"/g)) {
+for (const [page, html] of all) {
+  const entry = page === '__entry__';
+  const where = entry ? 'docs/index.html' : `docs/site/${page}`;
+  const base = entry ? '.' : posix.dirname(page);
+
+  for (const m of html.matchAll(/href="([^"]*)"/g)) {
     const href = m[1];
 
-    if (href.startsWith('#')) {
+    if (href === '' || href.startsWith('#')) {
       const anchor = href.slice(1);
-      if (anchor !== '' && !ids.has(anchor)) broken.push(`${where} -> ${href} (no such id on the page)`);
+      if (anchor !== '' && !idsOf(html).has(anchorOf(anchor))) {
+        broken.push(`${where} -> ${href} (no such id on the page)`);
+      }
       continue;
     }
-    if (!href.startsWith(PREFIX)) continue; // external, mailto, or an in-page asset
+    // External, mailto, tel, data, javascript, protocol-relative — not ours.
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href)) continue;
 
-    const rest = href.slice(PREFIX.length);
-    const [target = '', anchor] = rest.split('#');
-    if (target === '') continue; // a link to /site/ — served by index.html
-
-    if (!all.has(target)) {
-      broken.push(`${where} -> ${href} (no page ${target})`);
+    if (href.startsWith(LEGACY)) {
+      broken.push(`${where} -> ${href} (legacy absolute prefix; the site must work at the domain root)`);
       continue;
     }
-    if (anchor !== undefined && anchor !== '' && !idsOf(all.get(target)).has(anchor)) {
-      broken.push(`${where} -> ${href} (no id "${anchor}" on ${target})`);
+
+    let raw = href;
+    let target;
+    let anchor = '';
+    if (entry) {
+      if (!/^(?:\.\/)?site\//.test(raw)) continue; // the entry links elsewhere are not site pages
+      raw = raw.replace(/^(?:\.\/)?site\//, '');
+      target = raw === '' ? 'index.html' : raw;
+    } else {
+      if (raw.startsWith('/')) raw = raw.slice(1);
+      const [pathPart, anchorPart = ''] = raw.split('#');
+      anchor = anchorPart;
+      target = pathPart === '' ? page : posix.normalize(posix.join(base, pathPart));
+      if (target === '' || target === '.') target = 'index.html';
+      if (target.endsWith('/')) target = posix.join(target, 'index.html');
+    }
+
+    if (target.startsWith('../')) {
+      broken.push(`${where} -> ${href} (escapes the site root)`);
+      continue;
+    }
+
+    const [targetPath = '', targetAnchor = ''] = target.split('#');
+    anchor = anchor || targetAnchor;
+    const content = all.get(targetPath);
+    if (content === undefined) {
+      if (/\.html?$/i.test(targetPath)) {
+        broken.push(`${where} -> ${href} (no page ${targetPath})`);
+        continue;
+      }
+      try {
+        await access(join(SITE, targetPath));
+        continue;
+      } catch {
+        broken.push(`${where} -> ${href} (no file ${targetPath})`);
+        continue;
+      }
+    }
+    if (anchor !== '' && !idsOf(content).has(anchorOf(anchor))) {
+      broken.push(`${where} -> ${href} (no id "${anchor}" on ${targetPath})`);
     }
   }
 }
