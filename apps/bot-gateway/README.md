@@ -147,7 +147,7 @@ Set `MAIN_AGENT_LOG_LEVEL=debug` to see raw events and ignore reasons.
 pnpm --filter @mas/bot-gateway eval:real
 ```
 
-Runs the 20 real group questions in `packages/consult/data/eval/main-agent-cases.json`
+Runs the 30 real group questions in `packages/consult/data/eval/main-agent-cases.json`
 through the same agent the gateway uses. It writes:
 
 - `packages/consult/data/eval/main-agent-real-results.jsonl` — per-case answer, node, checks

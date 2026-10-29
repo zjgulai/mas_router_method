@@ -4,20 +4,20 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/consult/**"
-      - "apps/bot-gateway/**"
-      - "packages/feishu/**"
-      - "docs/evals/main-agent*"
-      - "scripts/materialize-main-knowledge.py"
-      - ".github/workflows/main-agent.yml"
+      - 'packages/consult/**'
+      - 'apps/bot-gateway/**'
+      - 'packages/feishu/**'
+      - 'docs/evals/main-agent*'
+      - 'scripts/materialize-main-knowledge.py'
+      - '.github/workflows/main-agent.yml'
   pull_request:
     paths:
-      - "packages/consult/**"
-      - "apps/bot-gateway/**"
-      - "packages/feishu/**"
-      - "docs/evals/main-agent*"
-      - "scripts/materialize-main-knowledge.py"
-      - ".github/workflows/main-agent.yml"
+      - 'packages/consult/**'
+      - 'apps/bot-gateway/**'
+      - 'packages/feishu/**'
+      - 'docs/evals/main-agent*'
+      - 'scripts/materialize-main-knowledge.py'
+      - '.github/workflows/main-agent.yml'
   workflow_dispatch:
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: Enable pnpm
         run: corepack enable && corepack prepare pnpm@12.15.0 --activate
