@@ -140,3 +140,19 @@ If the message is visible in Feishu but the gateway does not answer:
    This sends the answer as a reply in the original thread.
 
 Set `MAIN_AGENT_LOG_LEVEL=debug` to see raw events and ignore reasons.
+
+## Real-question eval
+
+```bash
+pnpm --filter @mas/bot-gateway eval:real
+```
+
+Runs the 20 real group questions in `packages/consult/data/eval/main-agent-cases.json`
+through the same agent the gateway uses. It writes:
+
+- `packages/consult/data/eval/main-agent-real-results.jsonl` — per-case answer, node, checks
+- `packages/consult/data/eval/main-agent-real-summary.json` — pass rate + manual verdicts
+- `docs/evals/main-agent-real-qa.md` — human-readable report
+
+The automated gate is currently 0.75; the manual verdict column is the honest
+quality signal. Do not delete a failing real question to make the suite green.

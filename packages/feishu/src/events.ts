@@ -107,7 +107,7 @@ export function normaliseMessageEvent(payload: unknown): NormalisedMessage | nul
   if (event.sender.sender_type === 'app') return null;
   if (event.message.message_type !== 'text' && event.message.message_type !== 'post') return null;
 
-  const senderOpenId = event.sender.sender_id?.open_id;
+  const senderOpenId = event.sender.sender_id?.open_id ?? undefined;
   if (senderOpenId === undefined) return null;
 
   const parsedText = extractText(event.message.content, event.message.message_type);
