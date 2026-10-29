@@ -7,7 +7,7 @@
 
 ---
 
-## 一、能力图谱是什么：四条轴，十六个节点，十三条问题路线
+## 一、能力图谱是什么：四条轴，十七个节点，十四条问题路线
 
 ### 1.1 四条轴
 
@@ -20,7 +20,7 @@
 
 这四条轴不是并列的流程图。**生命周期是时间，数据层是空间，三柱是每层都要回答的义务，交付车道是入口。** 把四者混成一条瀑布，是这类项目最常见的死法。
 
-### 1.2 十六个能力节点
+### 1.2 十七个能力节点
 
 | 节点                      | 一句话                                       | 主要证据                             |
 | ------------------------- | -------------------------------------------- | ------------------------------------ |
@@ -40,6 +40,7 @@
 | `delivery-lanes`          | 一个前门、四车道、五道硬门                   | `skill-chain.md`                     |
 | `method-governance`       | 没有能变红的命令，就是愿望                   | `data-product-layers.md §一`         |
 | `feishu-surface`          | 事件 → 验签 → 幂等 → 队列 → 回复             | `packages/feishu`、`docs/roadmap.md` |
+| `long-running-tasks`      | 超过 3 秒不同步等；回执 + task_id + 后台队列 | `apps/bot-gateway/README.md`、`docs/roadmap.md` |
 
 ### 1.3 节点之间的边（关键链路）
 
@@ -152,9 +153,9 @@ Agent Playbook ─→ Eval ─→ 失败诊断 ─→ 回写 Playbook
 
 | 动作             | 实现                                                                    | 失败时的行为                                |
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------- |
-| **分类**         | 16 个节点的关键词/别名/ canonical question + 检索证据加权               | 低于阈值 → 追问一层，或明确超出范围         |
+| **分类**         | 17 个节点的关键词/别名/ canonical question + 检索证据加权               | 低于阈值 → 追问一层，或明确超出范围         |
 | **检索**         | 1128 个 chunk 的 BM25（CJK bigram + 英文词），路径/标题加权，路径多样性 | 无结果 → 只给节点动作，不编造证据           |
-| **路由**         | 13 条症状路线，取首检最便宜的一条                                       | 无路由 → 用节点默认动作                     |
+| **路由**         | 14 条症状路线，取首检最便宜的一条                                       | 无路由 → 用节点默认动作                     |
 | **成文**         | 固定结构：结论/定位/依据/下一步/边界/证据                               | 超长 → 先删「还可以看」、再压证据，不删结论 |
 | **合成（可选）** | Anthropic / OpenAI-compatible；只允许改写，不允许新增事实               | 失败/无 key → 直接用 grounded 答案          |
 
@@ -181,7 +182,7 @@ Agent Playbook ─→ Eval ─→ 失败诊断 ─→ 回写 Playbook
 - `agent.answer(question)` — 返回 `ConsultAnswer`（文本、节点、路线、置信度、来源、检索、步骤）
 - `agent.menu()` — 能力菜单
 - `agent.routeFor(question)` — 只做症状路由
-- `agent.capabilities()` — 16 个节点及其边界/检查器
+- `agent.capabilities()` — 17 个节点及其边界/检查器
 - `KnowledgeCorpus.load()` / `.search()` — 独立检索
 - `capabilityGraph` — 机器可读的能力图谱
 
@@ -305,12 +306,12 @@ pnpm --filter @mas/bot-gateway check
 - 活体验收：群内 @Main 的真实事件已走通 `ws event received → ws event normalised → question received → answer delivered`，回复落在原消息线程
 - 事件解析已兼容飞书返回的 `user_id: null`、mention id 的字符串/对象两种形状；此前 `z.string().optional()` 会把整条事件判为非法并静默丢弃
 - 已向目标群 “ABI智能应用与算法组” 发送上线通知
-- 真实群问题 eval：20 条，自动检查 20/20；人工判定 15 可用 / 5 需改进；报告 `docs/evals/main-agent-real-qa.md`
+- 真实群问题 eval：30 条，自动检查 30/30；人工判定 27 可用 / 3 需改进；Rubric 均分 0.92；报告 `docs/evals/main-agent-real-qa.md`
 - 测试：103 个（39 + 41 + 23），工作区 typecheck/test/build 全过
 
 ### 还没做
 
-1. **更多真实问题覆盖**：首条群内问答已跑通；下一步是积累 20 条真实问题，观察路由与回答质量。
+1. **更多真实问题覆盖**：首条群内问答已跑通；已积累 30 条；下一步扩到 50 条并跟踪可用率。
 2. **生产部署**：长连接是单实例；多实例要换 webhook + 共享幂等存储。
 3. **持久化幂等**：当前是进程内 TTL；重启后 Feishu 重试可能重复回复。
 4. **多轮对话**：当前每条消息独立；需要 thread 级 session。
@@ -320,7 +321,7 @@ pnpm --filter @mas/bot-gateway check
 ### 下一步建议（按风险排序）
 
 1. 在目标群 @Main 跑通第一条真实问答，并查看 `/tmp/main-agent-gateway.log` 的 `question received` / `answer delivered`（最高风险：飞书侧事件是否真的送达）。
-2. 记录 20 条真实问题与回答，标「可用/不可用」，形成 Main Agent 的第一版 eval。
+2. 继续扩充真实问题到 50 条，标「可用/不可用」，跟踪可用率与 Rubric 趋势。
 3. 加 thread session，让「接着上一个问题」可用。
 4. 把 `checks.jsonl` 接进来：回答里能引用「这个检查最近一次跑是什么时候」。
 5. 多实例前把幂等和队列换成持久化存储。

@@ -62,7 +62,7 @@ cases is a wish, and every later argument about quality becomes an opinion.
 and Agent Native builder questions. It answers in Feishu groups with a grounded
 answer contract: conclusion, location, evidence, next actions, boundaries.
 
-- Engine: `packages/consult` — 16 capability nodes, 13 problem routes, BM25 retrieval,
+- Engine: `packages/consult` — 17 capability nodes, 14 problem routes, BM25 retrieval,
   grounded answers, optional model synthesis.
 - Surface: `apps/bot-gateway` — Feishu long connection (default) or webhook.
 - Graph and acceptance criteria: `docs/product/main-agent-capability-graph.md`.
