@@ -5,6 +5,7 @@ allowBuilds:
   '@tailwindcss/oxide': true
   esbuild: true
   sharp: true
+  protobufjs: true
 minimumReleaseAgeExclude:
   - "@anthropic-ai/claude-agent-sdk-darwin-arm64@0.3.309"
   - "@anthropic-ai/claude-agent-sdk-darwin-x64@0.3.309"
