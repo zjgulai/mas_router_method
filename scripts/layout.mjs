@@ -125,6 +125,10 @@ const declared = new Set([
   // 交付物：镜像、compose、网关片段与部署/验收脚本。它们不是信息寄存器，
   // 但同样需要一个明确的家；运行手册在 deploy/README.md。
   'deploy',
+  // 记忆底座（Nowledge Mem）：tools/ 放蒸馏脚本，artifacts/ 放本体补丁。
+  // 由 9274430 引入；声明在这里以免每个新顶层目录都开一次例外。
+  'tools',
+  'artifacts',
 ]);
 // 构建产物（dist/outputs 等）不是信息分类，用同一份 SKIP_DIRS 排除；
 // 否则跑完一次 deploy/pack-context.sh 就会把 layout 检查打红。
