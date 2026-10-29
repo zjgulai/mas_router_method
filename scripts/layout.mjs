@@ -126,9 +126,11 @@ const declared = new Set([
   // 但同样需要一个明确的家；运行手册在 deploy/README.md。
   'deploy',
 ]);
+// 构建产物（dist/outputs 等）不是信息分类，用同一份 SKIP_DIRS 排除；
+// 否则跑完一次 deploy/pack-context.sh 就会把 layout 检查打红。
 const top = await readdir(ROOT, { withFileTypes: true });
 const unknown = top
-  .filter((e) => e.isDirectory() && !declared.has(e.name) && !e.name.startsWith('.'))
+  .filter((e) => e.isDirectory() && !declared.has(e.name) && !SKIP_DIRS.has(e.name) && !e.name.startsWith('.'))
   .map((e) => e.name);
 
 if (problems.length === 0 && unknown.length === 0) {
