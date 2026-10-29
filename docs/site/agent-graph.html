@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Main Agent 图谱 · Agent Native Builder</title>
+<meta name="description" content="Main Agent 图谱 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--ink);color:#e9e7e0;position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.1rem 0 2rem}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
+  .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
+  .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
+  .nav{padding:0 .5rem}
+  .nav-g{margin-bottom:.9rem}
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
+         text-transform:uppercase}
+  .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
+         border-radius:2px;line-height:1.35}
+  .nav a:hover{background:#2a2c26;color:#fff}
+  .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
+  .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
+  .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
+            border-left:1px solid #3d3f38;line-height:1.35}
+  .subnav a:hover{color:#fff;border-left-color:#8d8f86}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2rem,4vw,3.2rem) clamp(16px,4vw,52px) 4rem;
+                max-width:min(56rem,100%)}
+  .content footer{margin:0 clamp(16px,4vw,52px) 0;padding:1.1rem 1.3rem;background:var(--sunk);
+                  font-size:.8rem;color:var(--muted);line-height:1.7;max-width:min(56rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。禁用 JS 时它默认展开，
+     退化成一张普通的纵向导航列表——内容一个不少。 */
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.6rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.4rem}
+  }
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。 */
+  .tb-index{background:var(--surface);padding:.75rem .9rem;margin:1rem 0 1.2rem;font-size:.86rem}
+  .tb-index a{display:flex;gap:.7rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.22rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent)}
+  .tb-index code{background:transparent;padding:0;color:var(--accent);font-weight:650;
+    flex:0 0 4.6rem;border-bottom:1px solid var(--deep)}
+  .tb-row{margin:1.6rem 0 2rem}
+  .tb-row h3{margin:0 0 .5rem;font-family:var(--mono);font-size:.92rem}
+  .tb-row h3 code{background:var(--ink);color:var(--surface);padding:.1rem .45rem;font-size:.86rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:9.5rem;color:var(--faint);font-weight:600;font-size:.8rem}
+  table.tb-fields td:last-child{font-size:.89rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--deep)}
+  .tb-no{color:var(--deep);font-style:italic}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:6.5rem;font-size:.76rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
+    <details open>
+      <summary class="nav-toggle">导航</summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="agent-graph.html" class="on">Agent 图谱</a>
+      <a href="data-design.html">数据产品设计</a>
+      <a href="data-layers.html">8+3 层契约</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
+      </div>
+      </nav>
+      <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#axes">四条坐标轴</a>
+      <a href="#nodes">十七个能力节点</a>
+      <a href="#routes">急诊分诊台</a>
+      <a href="#pipeline">咨询执行链路</a>
+      </div>
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb"><a href="./">总览</a> / Agent 图谱</div>
+      <h1>Main Agent 能力图谱</h1>
+<p class="lede">从「方法文档」到「飞书群里可用的咨询 Agent」。这个项目最值钱的不是写代码，而是<b>把数据产品 / Agent 产品从想法推到可验收</b>的判断与证据体系。Main Agent 将这套体系变为可路由、可引用、可拒绝的能力网络。</p>
+<div class="note"><b>核心原则。</b>
+Main Agent 不是通用闲聊机器人。它以仓库中的已验证事实（代码、ADR、设计记录、评测用例、检查器）为唯一依据。
+回答结构固定：【结论】一句话可执行 + 【定位】四条轴坐标 + 【依据】2–3 条短引文与路径 + 【下一步动作】。</div>
+<h2 id="axes">一、四条核心坐标轴</h2>
+<p class="h2sub">定位一个问题时，先确定它落在哪个坐标系中。混淆四者是项目失控的最常见原因。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:20%">坐标轴</th><th style="width:45%">取值范围</th><th>回答的核心问题</th></tr></thead><tbody><tr><td><b>生命周期 (7+1)</b></td><td><code>需求 → 设计 → 开发 → 验收 → 交付 → 运营 → 迭代 → 管理</code></td><td>现在处在哪一步？这一步的关门条件是什么？</td></tr><tr><td><b>数据产品层 (8)</b></td><td><code>采集 → 存储 → 打标 → 指标 → 分析 → 呈现 → 结论 → 报告</code></td><td>问题卡在哪一层？这一层的输入/输出/失败模式是什么？</td></tr><tr><td><b>横切三柱 (3)</b></td><td><code>口径 / 质量 / 血缘</code></td><td>这个数字的定义、可信度、来路能不能说清？</td></tr><tr><td><b>Agent 交付车道</b></td><td><code>Incident / Exploration / Capability / Fast (G1–G5)</code></td><td>这是能力问题还是确定性问题？最少要过哪几道门？</td></tr></tbody></table></div>
+<h2 id="nodes">二、十七个能力节点</h2>
+<p class="h2sub">Main Agent 咨询引擎内部维护的 17 个能力节点与主责范围。</p>
+<div class="grid two"><div class="card" id="node-navigate-capabilities"><h3>能力导航 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">navigate-capabilities</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">先判断问题属于哪条轴，避免把工程问题当模型问题解决。</p></div><div class="card" id="node-intent-and-decision"><h3>意图与决策 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">intent-and-decision</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">先写「要改变哪个动作」和停止信号，通不过不进入设计。</p></div><div class="card" id="node-data-conclusion-card"><h3>结论卡规范 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">data-conclusion-card</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">结论卡六项必填，证伪条件必须可执行、可检验。</p></div><div class="card" id="node-metric-contract"><h3>指标契约 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">metric-contract</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">一个指标一个明确定义，口径变更升级版本号、不重算历史。</p></div><div class="card" id="node-collection-time"><h3>采集时点 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">collection-time</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)"><code>first_seen_at</code> 是锚点，抓得晚会被错误读成「更热」。</p></div><div class="card" id="node-storage-lineage"><h3>存储与血缘 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">storage-lineage</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">只追加、读侧迁移、版本四元组，保证旧记录始终可读。</p></div><div class="card" id="node-labeling-taxonomy"><h3>打标体系 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">labeling-taxonomy</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">标签带版本、标注带置信度、维护金标准集与 Kappa 门槛。</p></div><div class="card" id="node-analysis-identification"><h3>分析与识别 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">analysis-identification</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">先跑相关性门禁，再做区域固定效应估计，避免伪相关。</p></div><div class="card" id="node-presentation-drilldown"><h3>呈现与下钻 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">presentation-drilldown</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">聚合数必须可逐级下钻，明确区分空值与异常状态。</p></div><div class="card" id="node-reporting-falsification"><h3>报告与证伪 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">reporting-falsification</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">主动报告「哪条旧结论失效了」，结论具备时效性。</p></div><div class="card" id="node-agent-playbook"><h3>Agent 行为边界 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">agent-playbook</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">Playbook 锁目标与边界，工具层做硬护栏，不靠提示词兜底。</p></div><div class="card" id="node-eval-quality"><h3>评测质量 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">eval-quality</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">Eval set 就是 spec；严格区分确定性检查与模型主观评分。</p></div><div class="card" id="node-agent-failure-diagnosis"><h3>失败诊断 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">agent-failure-diagnosis</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">修复顺序铁律：eval → 数据 → 工具 → prompt，绝不反向。</p></div><div class="card" id="node-delivery-lanes"><h3>交付车道 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">delivery-lanes</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">按四车道分流，严格守住 G1~G5 五道交付硬门。</p></div><div class="card" id="node-method-governance"><h3>方法治理 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">method-governance</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">没有能变红的命令就是愿望；单一来源与机器门禁。</p></div><div class="card" id="node-feishu-surface"><h3>飞书网关 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">feishu-surface</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">事件验签、3秒异步应答、幂等去重、长连接与 Webhook。</p></div><div class="card" id="node-long-running-tasks"><h3>长任务处理 <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">long-running-tasks</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">超长任务回执确认、异步队列调度与任务进度通知。</p></div></div>
+<h2 id="routes">三、急诊分诊台：症状 → 首检 → 处方</h2>
+<p class="h2sub">用户描述症状时，路由引擎优先匹配首检成本最低的路线。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:24%">用户症状</th><th style="width:18%">路由 ID</th><th style="width:24%">第一检查动作</th><th>推荐处方</th></tr></thead><tbody><tr><td><b>有个想法，不知道从哪开始</b></td><td><code>route-idea</code></td><td>写「要改变哪个动作」</td><td>写停止信号；先定 C1–C4 结论框架</td></tr><tr><td><b>声量 → GMV 归因不可信</b></td><td><code>route-attribution</code></td><td><code>region-corr</code> 检验</td><td>相关系数 >0.8 停机；补缺货/促销控制变量</td></tr><tr><td><b>两个报表数字对不上</b></td><td><code>route-metric-drift</code></td><td><code>metric-card check</code></td><td>比对两处口径版本；强制指标卡对账</td></tr><tr><td><b>不同区域数据不可比</b></td><td><code>route-collection-lag</code></td><td><code>collect-audit</code></td><td>检查首次见到时间；按帖子发布年龄折算</td></tr><tr><td><b>标签改版后历史不可比</b></td><td><code>route-label-version</code></td><td><code>label-audit</code></td><td>旧数据禁止覆盖；建立跨版本映射表</td></tr><tr><td><b>报告没人看 / 结论没人信</b></td><td><code>route-report-theater</code></td><td>核对结论卡六项</td><td>证伪条件函数化；增加数据下钻支撑</td></tr><tr><td><b>Agent 答错 / 不稳定</b></td><td><code>route-agent-quality</code></td><td>抓取最小复现 Case</td><td>严格按 eval → 数据 → 工具 → prompt 排查</td></tr><tr><td><b>Playbook 不知道写什么</b></td><td><code>route-agent-scope</code></td><td>七项模板检查</td><td>只锁目标与边界；在工具层加硬限制</td></tr><tr><td><b>流程太重 / 不知走哪条</b></td><td><code>route-delivery-process</code></td><td>四问判别交付车道</td><td>只守 G1–G5 硬门，其余按需剪裁</td></tr><tr><td><b>检查全绿但心里没底</b></td><td><code>route-fake-green</code></td><td>检查命令退出码与证据</td><td>核对是否具备能变红的真实失败测试</td></tr><tr><td><b>飞书没反应 / 重复回复</b></td><td><code>route-feishu</code></td><td><code>bot-gateway check</code></td><td>检查事件订阅权限、OpenID 匹配与幂等表</td></tr></tbody></table></div>
+<h2 id="pipeline">四、咨询引擎的执行链路</h2>
+<pre>用户提问
+  │
+  ├─ 1. 分类：匹配 17 个能力节点与意图范围（低于阈值则追问或礼貌拒绝）
+  ├─ 2. 路由：根据 14 条症状路线确定最经济的首检建议
+  ├─ 3. 检索：BM25 检索知识库 chunk（优先匹配规范定义与事实依据）
+  ├─ 4. 成文：按照【结论 / 定位 / 依据 / 下一步 / 边界】五段式严格输出
+  └─ 5. 校验：禁止大模型生成无依据的路径与指令
+</pre>
+      
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+</body>
+</html>

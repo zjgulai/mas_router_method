@@ -292,7 +292,10 @@ def index_page():
 
     b.append('<h2>从这里进</h2>')
     b.append('<div class="grid two">')
+    b.append('<a class="card" href="agent-graph.html" style="display:block;text-decoration:none;color:inherit"><h3>Main Agent 能力图谱</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">4 条轴、17 个核心能力节点与 14 条咨询急诊路线，将方法体系变成可运行的咨询 Agent。</p></a>')
     b.append('<a class="card" href="matrix.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品的 8 × 8 矩阵</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">7 阶段 + 管理 × 8 层。每格写输入契约、输出契约、失败模式；状态由脚本算出，不手填——<b>验</b> 有检查器，<b>约</b> 只有契约。</p></a>')
+    b.append('<a class="card" href="data-design.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品设计（Momcozy）</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">自顶向下设计全景：双向固定效应面板模型、三前置发现与 C1–C4 四级结论卡。</p></a>')
+    b.append('<a class="card" href="data-layers.html" style="display:block;text-decoration:none;color:inherit"><h3>8+3 层级契约与检查器</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">八个工序层输入输出契约、三条只追加不变量与命令级检查器规范。</p></a>')
     b.append('<a class="card" href="branches.html" style="display:block;text-decoration:none;color:inherit"><h3>分支总表</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">所有 if/else 集中一页，按代价排序。不知道自己在哪一步时，先看这里。</p></a>')
     b.append(f'<a class="card" href="skills.html" style="display:block;text-decoration:none;color:inherit"><h3>Skill 全表 · {N_ROWS} 个</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">三层来源、七阶段归属、每个都要说清「它坏了会怎样」。</p></a>')
     b.append('<a class="card" href="prompts.html" style="display:block;text-decoration:none;color:inherit"><h3>提示词库</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">可直接复制的会话提示词，按阶段和用途分类。</p></a>')

@@ -41,6 +41,9 @@ const GENERATORS = [
   'build_manage.py',
   'build_matrix.py',
   'build_tables.py',
+  'build_agent_graph.py',
+  'build_data_design.py',
+  'build_data_layers.py',
 ];
 
 function runGenerator(file, stage) {
