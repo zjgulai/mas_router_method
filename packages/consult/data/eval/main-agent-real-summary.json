@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T05:59:05.967Z",
+  "generatedAt": "2026-10-29T06:00:43.153Z",
   "source": "ABI智能应用与算法组（真实群消息摘录）",
   "note": "真实问题用于测量路由、边界与拒答；不是合成 benchmark。文本做了去链接/去 @ 的轻度清理。",
   "total": 30,
@@ -23,8 +23,8 @@
     }
   ],
   "manual": {
-    "usable": 15,
-    "needsImprovement": 5,
-    "unreviewed": 10
+    "usable": 27,
+    "needsImprovement": 3,
+    "unreviewed": 0
   }
 }

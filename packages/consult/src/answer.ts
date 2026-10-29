@@ -63,6 +63,9 @@ const CONTEXTUAL_PATTERNS = [
   '总体进度',
   '拓展到欧洲',
   'AI 视频生成',
+  '多一个流程',
+  'PR 的部分',
+  '按照之前的记录',
 ];
 
 const META_PATTERNS = [

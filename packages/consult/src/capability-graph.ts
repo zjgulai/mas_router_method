@@ -278,7 +278,7 @@ export const capabilityGraph: CapabilityGraph = {
       title: '采集时点：抓得晚会被读成“更热”',
       family: 'data-product',
       summary:
-        '互动量随帖子年龄增长。每条记录必须同时存 first_seen_at 和 fetched_at，时间序列以 first_seen_at 为锚；抓取按固定节奏，不按“有人看报表”触发。空抓要留记录，跨源要去重。',
+        'VOC 接入先定源、去重、区域归属；互动量随帖子年龄增长。每条记录必须同时存 first_seen_at 和 fetched_at，时间序列以 first_seen_at 为锚；抓取按固定节奏，不按“有人看报表”触发。空抓要留记录，跨源要去重。',
       keywords: [
         '采集',
         '抓取',
@@ -320,6 +320,7 @@ export const capabilityGraph: CapabilityGraph = {
         '跨源同一内容被重复计数',
       ],
       actions: [
+        'VOC 接入先定源、去重、区域归属；洞察层再谈选题，不要把采集口径当成洞察结论。',
         '每条观察记录统一输出 {raw, first_seen_at, fetched_at, source_task_id}；原始载荷原样压缩存。',
         '时间序列用 first_seen_at 做锚；不要用最后抓取时间。',
         '把互动量折算到统一帖子年龄；不做这一步，跨区域比较不成立。',
@@ -442,7 +443,7 @@ export const capabilityGraph: CapabilityGraph = {
       title: '打标与标签版本：改一个标签，历史全部不可比',
       family: 'data-product',
       summary:
-        '标签体系必须带 taxonomy_version；每条标注带置信度；金标准集必须人工标，准确率 < 0.7 该维度不可用，Kappa < 0.6 说明标签定义有歧义。A2 必须拆成 A2+ / A2−，否则负面事件会被算成声量跃升。',
+        '标签体系必须带 taxonomy_version；状态更新（已拆分/已分类）不是验收；每条标注带置信度；金标准集必须人工标，准确率 < 0.7 该维度不可用，Kappa < 0.6 说明标签定义有歧义。A2 必须拆成 A2+ / A2−，否则负面事件会被算成声量跃升。',
       keywords: [
         '打标',
         '标签',
@@ -483,6 +484,7 @@ export const capabilityGraph: CapabilityGraph = {
         '两个人标同一批，Kappa 很低',
       ],
       actions: [
+        '状态更新（已拆分/已分类）不是验收；先确认 taxonomy_version、置信度、金标准集。',
         '给每条标注写 taxonomy_version；查询时按版本分组或显式映射，绝不静默合并。',
         '每条标注带置信度；没有置信度就做不了敏感性分析。',
         '建 200–300 条人工金标准集；算准确率、Kappa、按置信度分层的准确率。',
@@ -745,7 +747,7 @@ export const capabilityGraph: CapabilityGraph = {
       title: 'Agent 产品 Playbook：锁目标，不锁机制',
       family: 'agent-product',
       summary:
-        'Agent 产品的 Playbook 冻结目标、用户、行为边界、质量门槛、预算、人工兜底、非目标；交互步骤、prompt 措辞、工具编排留给 tracer 和评测迭代。没有 Playbook 就没有 G1；没有 eval 就没有 G2。',
+        'Agent 产品的 Playbook 冻结目标、用户、行为边界、质量门槛、预算、人工兜底、非目标；内容生成类先定 claims/风险点/禁用表达和人工复核点；交互步骤、prompt 措辞、工具编排留给 tracer 和评测迭代。没有 Playbook 就没有 G1；没有 eval 就没有 G2。',
       keywords: [
         'Agent',
         'Playbook',
@@ -788,6 +790,7 @@ export const capabilityGraph: CapabilityGraph = {
       ],
       actions: [
         '只锁目标、用户、行为边界、质量门槛、成本/延迟预算、人工兜底、非目标。',
+        '内容生成类 Agent：先定 claims/风险点/禁用表达和人工复核点；文章生成不例外。',
         '把 guardrail 放进工具层强制，不放进 prompt；prompt 是建议，guardrail 不是。',
         '工具失败返回 err(text, retryable)，不抛异常；retryable 最多重试一次。',
         '低置信度：重跑一次，仍低则终止并说明缺什么，不输出半成品。',
@@ -831,7 +834,7 @@ export const capabilityGraph: CapabilityGraph = {
       title: '评测：eval set 就是 spec',
       family: 'agent-product',
       summary:
-        '没有 eval case 的 spec 是愿望。确定性检查做硬门，rubric 看趋势，should_fail 必须 100% 拒绝。基线必须记录模型版本和日期；没有基线就无法判断“没有变差”。',
+        '先把真实失败样例落库（输入/期望/实际/模型与工具版本/是否 should_fail），再谈通过线和基线；确定性检查做硬门，rubric 看趋势，should_fail 100% 拒绝。小样本（如 10 条）只能做方向性判断。',
       keywords: [
         'eval',
         '评测',
@@ -884,11 +887,12 @@ export const capabilityGraph: CapabilityGraph = {
         'eval 全绿但 pilot 不用',
       ],
       actions: [
+        '把真实失败样例落库：输入、期望、实际、模型/工具版本、是否 should_fail；按 eval/数据/工具/prompt 分层，再统一诊断。',
+        '小样本（如 10 条）只能做方向性判断；记录样本量、判定标准、基线，再谈「70% 稳定」是否可信。',
         '从失败模式生成 case，每个 case 写 why：它防住哪个真实世界的失败。',
         '确定性检查做硬门（~60%），rubric 做趋势（~40%），should_fail 单独 100% 拒绝。',
         '先定通过线和基线，再写实现；基线记录模型版本、日期、分数。',
         '模型升级、prompt 改动、工具 schema 改动、数据形状改动都重跑 eval。',
-        '把真实失败样例落库：输入、期望、实际、模型/工具版本、是否 should_fail；按 eval/数据/工具/prompt 分层，再统一诊断。',
         'eval 全绿是必要条件，不是充分条件；还要看 pilot 是否真的用。',
       ],
       artifacts: [
