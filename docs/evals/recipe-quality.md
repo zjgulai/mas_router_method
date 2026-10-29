@@ -111,6 +111,11 @@ Rubric statements use the brand's own `successCriteria` wording. This is enforce
 by construction: the judge prompt is built from the profile, so the two cannot
 drift.
 
+The judge ships as `packages/evals/src/rubric-judge.ts` (2026-10-30): four
+dimensions, one judge call per dimension, prompt built from the brand's own
+`successCriteria`. Opt in per run with `EVAL_RUBRIC=on`; a judge outage scores
+as a skip, never a pass.
+
 Each dimension scores 0–1 with a required justification:
 
 - **Voice match** — would this brand's existing audience recognise the voice?

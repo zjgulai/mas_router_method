@@ -52,3 +52,6 @@ packages/evals/runs/
 # --- Python 编译缓存（站点生成器是 Python）---
 __pycache__/
 *.pyc
+
+# --- local runtime state ---
+.data/

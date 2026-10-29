@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cases } from './cases/index.js';
 import { makeSelfTestArtifact } from './fixtures.js';
-import { evaluateCase } from './rules.js';
+import { evaluateCase, evaluateRubricExpectations } from './rules.js';
 import { runCase } from './runner.js';
 import type { CaseResult, EvalCase, SuiteResult } from './types.js';
 
@@ -105,7 +105,10 @@ async function main(): Promise<void> {
       const outcome = options.selfTest
         ? { artifact: makeSelfTestArtifact(evalCase), costUsd: 0 }
         : await runCase(evalCase);
-      const evaluation = evaluateCase(evalCase, outcome.artifact, { rubric: options.rubric });
+      let evaluation = evaluateCase(evalCase, outcome.artifact, { rubric: options.rubric });
+      if (options.rubric && !evaluation.inconclusive) {
+        evaluation = await evaluateRubricExpectations(evalCase, outcome.artifact, evaluation);
+      }
       results.push({
         caseId: evalCase.id,
         passed: evaluation.passed,

@@ -2,8 +2,15 @@ import { capabilityGraph } from './capability-graph.js';
 import { KnowledgeCorpus } from './corpus.js';
 import { classifyQuestion, composeAnswer, buildMenu } from './answer.js';
 import { createLlmFromEnv, type LlmSynthesizer } from './llm.js';
+import { findPlay } from './plays.js';
 import { findRepoRoot } from './paths.js';
-import type { CapabilityGraph, CapabilityNode, ConsultAnswer, ProblemRoute } from './types.js';
+import type {
+  CapabilityGraph,
+  CapabilityNode,
+  ConsultAnswer,
+  ConversationTurn,
+  ProblemRoute,
+} from './types.js';
 import { tokenize } from './tokenize.js';
 
 export interface MainConsultAgentOptions {
@@ -88,7 +95,10 @@ export class MainConsultAgent {
     return best.route;
   }
 
-  async answer(question: string): Promise<ConsultAnswer> {
+  async answer(
+    question: string,
+    options: { history?: ConversationTurn[] } = {},
+  ): Promise<ConsultAnswer> {
     const trimmed = question.trim();
     if (trimmed.length === 0) {
       return {
@@ -101,14 +111,49 @@ export class MainConsultAgent {
       };
     }
 
-    const retrieved = this.corpus.search(trimmed, 10);
-    const classification = classifyQuestion(trimmed, this.graph, retrieved);
-    const route = this.routeFor(trimmed);
-    const grounded = composeAnswer(trimmed, this.graph, retrieved, classification, {
+    const history = options.history?.slice(-4) ?? [];
+    const historyText = history
+      .map((turn) => `${turn.role}: ${turn.text.slice(0, 600)}`)
+      .join('\n');
+    const contextualQuestion =
+      historyText.length === 0 ? trimmed : `${historyText}\nuser: ${trimmed}`;
+
+    const retrieved = this.corpus.search(contextualQuestion, 10);
+    const classification = classifyQuestion(contextualQuestion, this.graph, retrieved);
+    const route = this.routeFor(contextualQuestion);
+
+    // The node's own sources are the evidence contract. Pull them in even when
+    // the query terms do not match code identifiers, then let the composer quote
+    // from them first.
+    const earlyPlay = classification.needsContext
+      ? undefined
+      : findPlay(trimmed, history);
+    const nodeId = earlyPlay?.nodeId ?? classification.node?.id;
+    const evidenceNode =
+      nodeId === undefined
+        ? undefined
+        : this.graph.nodes.find((node) => node.id === nodeId);
+    const sourceEvidence =
+      evidenceNode === undefined
+        ? []
+        : this.corpus.evidenceForPaths(
+            evidenceNode.sources.map((source) => source.path),
+            2,
+          );
+    const seen = new Set(sourceEvidence.map((item) => item.chunk.id));
+    const groundedEvidence = [
+      ...sourceEvidence,
+      ...retrieved.filter((item) => !seen.has(item.chunk.id)),
+    ];
+    const grounded = composeAnswer(trimmed, this.graph, groundedEvidence, classification, {
       maxChars: this.maxChars,
+      history,
     });
 
     const steps = [...grounded.steps];
+    if (history.length > 0) {
+      steps.push({ name: 'classify', detail: `historyTurns=${history.length}` });
+    }
     if (route !== undefined) {
       steps.push({ name: 'classify', detail: `route=${route.id}; firstCheck=${route.firstCheck}` });
     }
@@ -120,6 +165,7 @@ export class MainConsultAgent {
         grounded: grounded.text,
         node: classification.node,
         retrieved,
+        history,
       });
       if (synthesised !== null) {
         text =

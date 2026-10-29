@@ -201,19 +201,25 @@ Honest status, so the next session does not over-estimate what exists:
 - `packages/evals` — harness, 14 cases, 15 deterministic rules, store conformance.
   30 tests passing. Rubric judging is not implemented, and **no eval run has ever
   reached a real model** (the one attempt had no API key).
-- `apps/workbench`, `apps/bot-gateway` — placeholder surfaces. Their designs are
-  specified; only session resolution and a placeholder page exist.
+- `apps/workbench` — placeholder surface. Its design is specified; only session
+  resolution and a placeholder page exist.
+- `apps/bot-gateway` — live Feishu surface; see the Main agent section below.
 
 ## Main agent (2026-10-29)
 
-- `packages/consult` — capability graph (16 nodes, 13 routes), portable knowledge
-  bundle, BM25 retrieval, grounded answer composer, optional Anthropic / OpenAI
-  synthesis. 33 tests.
+- `packages/consult` — capability graph (20 nodes, 17 routes), portable knowledge
+  bundle, BM25 retrieval, grounded answer composer, direct plays (false premises,
+  conflict/authority/governance, follow-ups), optional Anthropic / OpenAI synthesis.
+  58 tests.
 - `apps/bot-gateway` — Feishu gateway in two modes: WebSocket long connection
   (default, no public URL) and HTTP webhook (`POST /events`). Idempotency, per-chat
-  queue, mention matching by bot open_id, reply fallback, doctor/configure/authorize
-  CLIs. 39 tests.
-- `packages/feishu` — added Feishu `post` rich-text extraction and mention open ids.
+  queue, mention matching by bot open_id, reply fallback, thread sessions persisted
+  in SQLite, doctor/configure/authorize/eval CLIs. 45 tests.
+- `packages/feishu` — added Feishu `post` rich-text extraction, mention open ids, and
+  thread/root ids. 24 tests.
+- Eval dataset: 150 cases (83 real group questions + 67 adversarial/conflict/multi-turn),
+  150/150 automatic, 150 usable by manual review;
+  deterministic rubric averages 0.99. LLM judge is wired but needs a key.
 - Knowledge is materialised by `scripts/materialize-main-knowledge.py` because some
   Markdown files in this workspace are stored in a form Node reads as binary.
 - Acceptance and limits: `docs/product/main-agent-capability-graph.md`.

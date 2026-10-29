@@ -19,7 +19,11 @@
     "main:dev": "pnpm --filter @mas/bot-gateway dev",
     "main:simulate": "pnpm --filter @mas/bot-gateway simulate",
     "main:knowledge": "pnpm --filter @mas/consult materialize",
-    "clean": "turbo run clean && rm -rf node_modules .turbo"
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "main:usage": "python3 scripts/feishu-usage-snapshot.py --days 14",
+    "main:blind": "python3 scripts/build-blind-review.py --out /tmp/main-blind.json --key .data/blind-key.json",
+    "main:live": "python3 scripts/feishu-live-check.py",
+    "main:human-review": "python3 scripts/build-blind-review.py --out .data/blind-30-human.json --key .data/blind-key.json --markdown docs/evals/main-agent-human-review-packet.md"
   },
   "devDependencies": {
     "prettier": "3.9.10",

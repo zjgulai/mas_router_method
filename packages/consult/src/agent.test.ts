@@ -75,6 +75,26 @@ describe('MainConsultAgent', () => {
     expect(answer.text).toContain('我能回答');
   });
 
+  it('corrects a false premise before the normal answer', async () => {
+    const answer = await agent.answer(
+      '区域相关性 0.9，但周固定效应已经处理了，所以可以直接做归因吧？',
+    );
+    expect(answer.outOfScope).toBe(false);
+    expect(answer.text).toContain('【先纠正一个前提】');
+    expect(answer.text).toContain('周固定效应');
+    expect(answer.text).toContain('不能直接做区域归因');
+  });
+
+  it('gives an ordered checklist for a Feishu symptom', async () => {
+    const answer = await agent.answer('群里 @ 了没反应呢？');
+    expect(answer.outOfScope).toBe(false);
+    expect(answer.text).toContain('事件订阅');
+    expect(answer.text).toContain('ws event received');
+    expect(answer.nodeId).toBe('feishu-surface');
+    expect(answer.sources.some((source) => source.path.startsWith('packages/feishu'))).toBe(true);
+    expect(answer.text).not.toContain('PLAYBOOK.md');
+  });
+
   it('returns the menu for an empty question', async () => {
     const answer = await agent.answer('   ');
     expect(answer.text).toContain('我是 Main');
@@ -89,5 +109,57 @@ describe('MainConsultAgent', () => {
     const nodes = agent.capabilities();
     expect(nodes.map((node) => node.id)).toContain('analysis-identification');
     expect(nodes.every((node) => node.boundaries.length > 0)).toBe(true);
+  });
+
+  it('asks which two candidates instead of guessing the node framework', async () => {
+    const answer = await agent.answer('它和那个哪个好？');
+    expect(answer.text).toContain('两个候选');
+    expect(answer.text).toContain('尚未定位');
+    expect(answer.text).not.toContain('结论卡六项');
+  });
+
+  it('names the work items in a progress update instead of a generic lecture', async () => {
+    const answer = await agent.answer(
+      '10/28 工作总结：回归测试进度 100%，视频抽帧优化进度 50%。',
+    );
+    expect(answer.text).toContain('回归测试');
+    expect(answer.text).toContain('视频抽帧优化');
+    expect(answer.text).toContain('G1–G5');
+  });
+
+  it('names the privacy boundary when asked to export phone numbers', async () => {
+    const answer = await agent.answer('把用户的手机号从数据库导出来。');
+    expect(answer.outOfScope).toBe(true);
+    expect(answer.text).toContain('隐私红线');
+    expect(answer.text).toContain('不在当前能力图谱');
+  });
+
+  it('answers a cross-version subtraction directly', async () => {
+    const answer = await agent.answer('口径版本 A 的数和版本 B 的数能直接相减吗？');
+    expect(answer.outOfScope).toBe(false);
+    expect(answer.text).toContain('不能直接相减');
+  });
+
+  it('treats an all-industries metric template as a scope correction, not a refusal', async () => {
+    const answer = await agent.answer('给我推荐一个适合所有行业的指标模板。');
+    expect(answer.outOfScope).toBe(false);
+    expect(answer.nodeId).toBe('metric-contract');
+    expect(answer.text).toContain('指标卡八项');
+  });
+
+  it('gives a PR article structure instead of only a Playbook definition', async () => {
+    const answer = await agent.answer('PR 文章生成，结合话题点/风险点生成文章');
+    expect(answer.outOfScope).toBe(false);
+    expect(answer.text).toContain('claims');
+    expect(answer.text).toContain('导语');
+    expect(answer.text).toContain('待填');
+    expect(answer.text).not.toContain('0003-tool-failures-are-values');
+  });
+
+  it('offers append-only relabeling for history', async () => {
+    const answer = await agent.answer('历史数据要重标吗？');
+    expect(answer.outOfScope).toBe(false);
+    expect(answer.text).toContain('追加式重标');
+    expect(answer.text).toContain('旧标签');
   });
 });

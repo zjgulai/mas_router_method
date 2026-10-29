@@ -99,6 +99,29 @@ describe('normaliseMessageEvent', () => {
     expect(normaliseMessageEvent(payload)?.text).toBe('parsed object');
   });
 
+  it('keeps thread and root ids for follow-up sessions', () => {
+    const payload = {
+      header: { event_id: 'ev_thread', event_type: 'im.message.receive_v1' },
+      event: {
+        sender: { sender_id: { open_id: 'ou_1' }, sender_type: 'user' },
+        message: {
+          message_id: 'om_thread',
+          chat_id: 'oc_1',
+          chat_type: 'group',
+          message_type: 'text',
+          content: JSON.stringify({ text: '@_user_1 那 0.6 呢？' }),
+          thread_id: 'omt_1',
+          root_id: 'om_root',
+          parent_id: 'om_parent',
+          mentions: [{ key: '@_user_1', name: 'Main', id: { open_id: 'ou_main' } }],
+        },
+      },
+    };
+    const result = normaliseMessageEvent(payload);
+    expect(result?.threadId).toBe('omt_1');
+    expect(result?.rootId).toBe('om_root');
+  });
+
   it('extracts text from a Feishu rich-text post', () => {
     const payload = {
       header: { event_id: 'ev_post', event_type: 'im.message.receive_v1' },

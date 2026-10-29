@@ -28,6 +28,7 @@ function config(overrides: Partial<MainAgentConfig> = {}): MainAgentConfig {
     ackAfterMs: 0,
     answerTimeoutMs: 1000,
     allowUnverifiedHttp: false,
+    sessionDbPath: ':memory:',
     ...overrides,
   };
 }

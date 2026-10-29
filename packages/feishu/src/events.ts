@@ -44,6 +44,10 @@ export const FeishuMessageEvent = z.object({
       chat_id: z.string(),
       chat_type: z.enum(['p2p', 'group']),
       message_type: z.string(),
+      /** Present when the message is a reply in a thread/topic. */
+      thread_id: z.string().nullish(),
+      root_id: z.string().nullish(),
+      parent_id: z.string().nullish(),
       /**
        * JSON-encoded string for text messages: `{"text":"..."}`. Some SDK
        * transports hand the already-parsed object instead, so accept both.
@@ -86,6 +90,10 @@ export interface NormalisedMessage {
   mentionedOpenIds: string[];
   /** Display names of everyone mentioned, for tenants that do not expose open ids. */
   mentionedNames: string[];
+  /** Feishu thread id, when the message is a reply in a thread. */
+  threadId?: string;
+  /** Root message id of the thread. */
+  rootId?: string;
 }
 
 /**
@@ -144,6 +152,12 @@ export function normaliseMessageEvent(payload: unknown): NormalisedMessage | nul
     addressedToBot: event.message.chat_type === 'p2p' || hadMention,
     mentionedOpenIds,
     mentionedNames,
+    ...(typeof event.message.thread_id === 'string' && event.message.thread_id.length > 0
+      ? { threadId: event.message.thread_id }
+      : {}),
+    ...(typeof event.message.root_id === 'string' && event.message.root_id.length > 0
+      ? { rootId: event.message.root_id }
+      : {}),
   };
 }
 

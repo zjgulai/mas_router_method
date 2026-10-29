@@ -7,7 +7,7 @@
 
 ---
 
-## 一、能力图谱是什么：四条轴，十七个节点，十四条问题路线
+## 一、能力图谱是什么：四条轴，二十个节点，十七条问题路线
 
 ### 1.1 四条轴
 
@@ -20,7 +20,7 @@
 
 这四条轴不是并列的流程图。**生命周期是时间，数据层是空间，三柱是每层都要回答的义务，交付车道是入口。** 把四者混成一条瀑布，是这类项目最常见的死法。
 
-### 1.2 十七个能力节点
+### 1.2 二十个能力节点
 
 | 节点                      | 一句话                                       | 主要证据                             |
 | ------------------------- | -------------------------------------------- | ------------------------------------ |
@@ -41,6 +41,9 @@
 | `method-governance`       | 没有能变红的命令，就是愿望                   | `data-product-layers.md §一`         |
 | `feishu-surface`          | 事件 → 验签 → 幂等 → 队列 → 回复             | `packages/feishu`、`docs/roadmap.md` |
 | `long-running-tasks`      | 超过 3 秒不同步等；回执 + task_id + 后台队列 | `apps/bot-gateway/README.md`、`docs/roadmap.md` |
+| `roadmap-and-scope`       | 路线图按风险排序；每个条目先写决策动作 | `docs/roadmap.md`、`data-product-design.md §8.4` |
+| `sampling-coverage`       | 先定义覆盖什么，再谈抽多少 | `vision-spike.md`、`data-collect.md` |
+| `progress-and-gates`      | 百分比不是进度，gate 证据才是 | `skill-chain.md`、`docs/roadmap.md` |
 
 ### 1.3 节点之间的边（关键链路）
 
@@ -153,9 +156,9 @@ Agent Playbook ─→ Eval ─→ 失败诊断 ─→ 回写 Playbook
 
 | 动作             | 实现                                                                    | 失败时的行为                                |
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------- |
-| **分类**         | 17 个节点的关键词/别名/ canonical question + 检索证据加权               | 低于阈值 → 追问一层，或明确超出范围         |
+| **分类**         | 20 个节点的关键词/别名/ canonical question + 检索证据加权               | 低于阈值 → 追问一层，或明确超出范围         |
 | **检索**         | 1128 个 chunk 的 BM25（CJK bigram + 英文词），路径/标题加权，路径多样性 | 无结果 → 只给节点动作，不编造证据           |
-| **路由**         | 14 条症状路线，取首检最便宜的一条                                       | 无路由 → 用节点默认动作                     |
+| **路由**         | 17 条症状路线，取首检最便宜的一条                                       | 无路由 → 用节点默认动作                     |
 | **成文**         | 固定结构：结论/定位/依据/下一步/边界/证据                               | 超长 → 先删「还可以看」、再压证据，不删结论 |
 | **合成（可选）** | Anthropic / OpenAI-compatible；只允许改写，不允许新增事实               | 失败/无 key → 直接用 grounded 答案          |
 
@@ -182,7 +185,7 @@ Agent Playbook ─→ Eval ─→ 失败诊断 ─→ 回写 Playbook
 - `agent.answer(question)` — 返回 `ConsultAnswer`（文本、节点、路线、置信度、来源、检索、步骤）
 - `agent.menu()` — 能力菜单
 - `agent.routeFor(question)` — 只做症状路由
-- `agent.capabilities()` — 17 个节点及其边界/检查器
+- `agent.capabilities()` — 20 个节点及其边界/检查器
 - `KnowledgeCorpus.load()` / `.search()` — 独立检索
 - `capabilityGraph` — 机器可读的能力图谱
 
@@ -290,7 +293,8 @@ pnpm --filter @mas/bot-gateway check
 2. 不编造命令、数字、文件路径。
 3. 低置信度时承认，并问一个能改变答案的问题。
 4. 超出范围时拒答，不即兴发挥。
-5. 不超过 3400 字；超长拆成多条。
+5. 问题含错误前提时先纠正，再回答；含冲突约束时先给取舍，不两边都答应。
+6. 不超过 3400 字；超长拆成多条。
 
 ---
 
@@ -299,32 +303,44 @@ pnpm --filter @mas/bot-gateway check
 ### 已落地
 
 - `packages/consult`：能力图谱、语料加载、BM25 检索、分类、路由、回答、可选 LLM
-- `packages/consult/data/sources.json`：111 个源文件的便携快照（Markdown 在本机被压缩存储，Node 读不到原文；Python 物化后由 TS 分块）
+- `packages/consult/data/sources.json`：115 个源文件的便携快照（Markdown 在本机被压缩存储，Node 读不到原文；Python 物化后由 TS 分块）
 - `apps/bot-gateway`：WS + HTTP、幂等、队列、回复/降级、doctor、授权/配置脚本
 - `packages/feishu`：post 消息、mention open_id
 - 飞书侧：`im:message` / `im:message:send_as_bot` / `im:message.group_msg` / `im:message.p2p_msg` / `im:chat:readonly` 已授权；`im.message.receive_v1` 已设为长连接；已发布 v1.0.3（events: 接收消息）；长连接在线数 1
-- 活体验收：群内 @Main 的真实事件已走通 `ws event received → ws event normalised → question received → answer delivered`，回复落在原消息线程
+- 活体验收：事件接收与归一化已走通；但 14 天快照里本群 **没有可见的 answer delivered**（两次提问都发生在 parser 修复前），真实问答验收需要重做
 - 事件解析已兼容飞书返回的 `user_id: null`、mention id 的字符串/对象两种形状；此前 `z.string().optional()` 会把整条事件判为非法并静默丢弃
 - 已向目标群 “ABI智能应用与算法组” 发送上线通知
-- 真实群问题 eval：30 条，自动检查 30/30；人工判定 27 可用 / 3 需改进；Rubric 均分 0.92；报告 `docs/evals/main-agent-real-qa.md`
-- 测试：103 个（39 + 41 + 23），工作区 typecheck/test/build 全过
+- eval 数据集：150 条（83 条真实群问题 + 67 条自写对抗/冲突/多轮），自动检查 150/150；人工判定 150 可用 / 0 需改进；Rubric 均分 0.99；报告 `docs/evals/main-agent-real-qa.md`
+- 对抗层：20 条安全/越界（提示词注入、凭据、删库、隐私、伪造引用）+ 35 条冲突/权威/治理/数值陷阱 + 5 条多轮；拒答、纠错或上下文优先，不套模板
+- 错误前提纠正：相关≠因果、周固定效应救不了高相关、should_fail 90%、小样本 70%、旧数据重算，回答先给 `【先纠正一个前提】`
+- 症状排查：`@ 没反应` 直接给事件订阅 → 权限 → 群/mention → 网关 → 回复权限的顺序清单
+- thread session：`thread > root > p2p chat`，SQLite 持久化，TTL 30 分钟、最近 6 轮；顶层群消息不共享历史
+- 独立盲评：30 条分层抽样，6 轮 AI 盲评；初始 9 条需改进，最终 0 条（B29 单条复评通过）；报告 `docs/evals/main-agent-blind-review.md`
+- 真实使用快照（最近 14 天）：252 条消息、2 次 @Main、1 个唯一问题、1 次 15 分钟复问、0 条可见答案；报告 `docs/evals/main-agent-usage.md`
+- Live check：`scripts/feishu-live-check.py` 检查“提问 → 回复 burst → 四段契约 → 延迟 → 重复回复”；当前 2 个历史提问 0 通过（都在 parser 修复前），报告 `docs/evals/main-agent-live-check.md`，等待真人重测
+- 人类盲评包：30 条已生成（`docs/evals/main-agent-human-review-packet.md`），结果表 `docs/evals/main-agent-human-review.md` 仍为 pending
+- 测试：127 个（58 + 45 + 24），工作区 typecheck/test/build 全过
 
 ### 还没做
 
-1. **更多真实问题覆盖**：首条群内问答已跑通；已积累 30 条；下一步扩到 50 条并跟踪可用率。
-2. **生产部署**：长连接是单实例；多实例要换 webhook + 共享幂等存储。
-3. **持久化幂等**：当前是进程内 TTL；重启后 Feishu 重试可能重复回复。
-4. **多轮对话**：当前每条消息独立；需要 thread 级 session。
+1. **真实问答验收未完成**：14 天快照里本群 0 条可见回答；先让一个真人 @Main 问一次并确认回复，再谈采用率。样本只有 2 条提问，不能判断采用率。
+2. **生产部署**：长连接是单实例；多实例要换 webhook + 共享幂等/队列/会话存储。
+3. **持久化幂等**：当前是进程内 TTL；重启后 Feishu 重试仍可能重复回复（会话已持久化，幂等没有）。
+4. **LLM judge**：代码已接，但没有 key；需要用 judge 校验 deterministic rubric 是否高估。
 5. **权限分级**：当前 allow-list 是静态配置；没有按用户/群的能力分级。
-6. **评测**：Main Agent 还没有自己的 eval set；当前用 14 个 canonical 问题做路由测试，不是完整 eval。
+6. **评测偏差**：150 条里有一部分是自写对抗样本；真实群问题与自写样本要分开统计，避免刷绿。
+7. **评审偏差**：已做 6 轮 AI 盲评，但还不是人类盲评；下一步找第二个人抽 30 条，记录与 AI 的分歧。
+8. **多实例未实现**：ADR 0010 已定 Postgres + `SKIP LOCKED` 方案，但代码仍是 SQLite/进程内幂等；第二个实例会产生重复回复。
 
 ### 下一步建议（按风险排序）
 
-1. 在目标群 @Main 跑通第一条真实问答，并查看 `/tmp/main-agent-gateway.log` 的 `question received` / `answer delivered`（最高风险：飞书侧事件是否真的送达）。
-2. 继续扩充真实问题到 50 条，标「可用/不可用」，跟踪可用率与 Rubric 趋势。
-3. 加 thread session，让「接着上一个问题」可用。
-4. 把 `checks.jsonl` 接进来：回答里能引用「这个检查最近一次跑是什么时候」。
-5. 多实例前把幂等和队列换成持久化存储。
+1. 先做一次真人 @Main 验收；之后继续观察真实群，目标累计 30 条提问，每周重跑使用快照。
+2. 有 API key 后开 `MAIN_AGENT_JUDGE=llm`，对比 judge 与 deterministic rubric，校准高估/低估。
+3. 把 `checks.jsonl` 接进来：回答里能引用「这个检查最近一次跑是什么时候」。
+4. 多实例前把幂等、队列、会话换成共享存储；SQLite 只解决单机重启。
+5. 维持“先纠正前提 / 直接拒答 / 症状清单”三类 play 的回归测试，防止模板化回退。
+6. 做一次人类盲评：第二个人只看问题与回答，不看预期类别，抽 30 条；分歧就是下一轮的改进入口。
+7. 按 ADR 0010 把 session/幂等/队列迁到 Postgres，再允许第二个实例。
 
 ---
 

@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { findRepoRoot } from '@mas/consult';
 
 export type EventMode = 'ws' | 'http';
@@ -31,6 +32,8 @@ export interface MainAgentConfig {
   answerTimeoutMs: number;
   /** HTTP mode only: allow an empty verification token (local testing). */
   allowUnverifiedHttp: boolean;
+  /** SQLite file for thread sessions; survives a restart on one host. */
+  sessionDbPath: string;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): MainAgentConfig {
@@ -75,6 +78,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): MainAgentConfi
     ackAfterMs: nonNegativeInt(env['MAIN_AGENT_ACK_AFTER_MS'], 4000),
     answerTimeoutMs: positiveInt(env['MAIN_AGENT_ANSWER_TIMEOUT_MS'], 90_000),
     allowUnverifiedHttp,
+    sessionDbPath:
+      env['MAIN_AGENT_SESSION_DB'] ?? join(findRepoRoot(), '.data', 'main-agent-sessions.db'),
   };
 }
 

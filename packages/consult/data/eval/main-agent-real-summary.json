@@ -1,34 +1,39 @@
 {
-  "generatedAt": "2026-10-29T06:03:32.692Z",
-  "source": "ABI智能应用与算法组（真实群消息摘录）",
-  "note": "真实问题用于测量路由、边界与拒答；不是合成 benchmark。文本做了去链接/去 @ 的轻度清理。",
-  "total": 30,
-  "passed": 30,
+  "generatedAt": "2026-10-29T13:55:57.730Z",
+  "source": "ABI智能应用与算法组（83 条真实群消息）+ 67 条自写对抗/冲突/多轮用例",
+  "note": "真实问题用于测量路由、边界与拒答；自写用例用于压测错误前提、冲突约束、权威压力与多轮指代。文本做了去链接/去 @ 的轻度清理。",
+  "total": 150,
+  "passed": 150,
   "passRate": 1,
   "byExpected": [
     {
       "expected": "in_scope",
-      "total": 12,
-      "passed": 12
+      "total": 64,
+      "passed": 64
     },
     {
       "expected": "needs_context",
-      "total": 10,
-      "passed": 10
+      "total": 54,
+      "passed": 54
     },
     {
       "expected": "out_of_scope",
-      "total": 8,
-      "passed": 8
+      "total": 32,
+      "passed": 32
     }
   ],
   "manual": {
-    "usable": 27,
-    "needsImprovement": 3,
+    "usable": 150,
+    "needsImprovement": 0,
     "unreviewed": 0
   },
   "rubric": {
-    "average": 0.9166666666666666,
-    "cases": 12
-  }
+    "average": 0.9947916666666667,
+    "cases": 64
+  },
+  "llmJudge": {
+    "average": 0,
+    "cases": 0
+  },
+  "historyEntries": 50
 }

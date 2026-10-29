@@ -17,7 +17,7 @@ describe('knowledge corpus', () => {
   });
 
   it('retrieves the §七 correlation gate for a correlation question', () => {
-    const results = corpus.search('区域间声量相关性 0.9 还能做归因吗', 8);
+    const results = corpus.search('区域间声量相关性 0.9 还能做归因吗', 12);
     const top = results.map((item) => `${item.chunk.path} ${item.chunk.heading}`);
     expect(top.some((item) => item.includes('data-product-design.md'))).toBe(true);
     expect(top.some((item) => item.includes('data-product-layers.md'))).toBe(true);

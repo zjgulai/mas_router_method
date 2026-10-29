@@ -27,6 +27,7 @@ function testConfig(overrides: Partial<MainAgentConfig> = {}): MainAgentConfig {
     ackAfterMs: 0,
     answerTimeoutMs: 1000,
     allowUnverifiedHttp: false,
+    sessionDbPath: ':memory:',
     ...overrides,
   };
 }
@@ -52,12 +53,17 @@ class FakeClient implements FeishuGatewayClient {
 
 class FakeAgent implements AnswerAgent {
   readonly questions: string[] = [];
+  readonly histories: ({ role: 'user' | 'assistant'; text: string }[] | undefined)[] = [];
   constructor(
     private readonly impl: (question: string) => Promise<ConsultAnswer> | ConsultAnswer,
   ) {}
 
-  async answer(question: string): Promise<ConsultAnswer> {
+  async answer(
+    question: string,
+    options?: { history?: { role: 'user' | 'assistant'; text: string }[] },
+  ): Promise<ConsultAnswer> {
     this.questions.push(question);
+    this.histories.push(options?.history);
     return this.impl(question);
   }
 }
@@ -237,6 +243,40 @@ describe('MainAgentHandler', () => {
 
     expect(agent.questions).toEqual(['全栈 Agent Native builder 的开发流程是？']);
     expect(client.replies).toHaveLength(1);
+  });
+
+  it('passes thread history to the agent on a follow-up', async () => {
+    const { agent, handler } = setup();
+    const base = {
+      chatId: 'oc_1',
+      chatType: 'group' as const,
+      senderOpenId: 'ou_sender',
+      addressedToBot: true,
+      mentionedOpenIds: ['ou_main'],
+      mentionedNames: ['Main'],
+      threadId: 'omt_1',
+    };
+
+    handler.handleMessage({
+      ...base,
+      eventId: 'ev_t1',
+      messageId: 'om_t1',
+      text: '区域相关性 0.9 还能做归因吗',
+    });
+    await handler.drain();
+    handler.handleMessage({
+      ...base,
+      eventId: 'ev_t2',
+      messageId: 'om_t2',
+      text: '那 0.6 呢？',
+    });
+    await handler.drain();
+
+    expect(agent.histories[0]).toEqual([]);
+    expect(agent.histories[1]).toEqual([
+      { role: 'user', text: '区域相关性 0.9 还能做归因吗' },
+      { role: 'assistant', text: '测试答案' },
+    ]);
   });
 
   it('reports stats for health checks', async () => {

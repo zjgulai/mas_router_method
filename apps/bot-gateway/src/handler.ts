@@ -1,9 +1,10 @@
 import { normaliseMessageEvent } from '@mas/feishu';
-import type { ConsultAnswer } from '@mas/consult';
+import type { ConsultAnswer, ConversationTurn } from '@mas/consult';
 import type { MainAgentConfig } from './config.js';
 import { TtlSet } from './dedupe.js';
 import type { Logger } from './logger.js';
 import { ChatQueue } from './queue.js';
+import { SessionStore, sessionKeyFor, type SessionStoreLike } from './session.js';
 import type { BotIdentity, FeishuGatewayClient, MessagePayload } from './feishu/client.js';
 import { formatAck, formatAnswer, formatError } from './feishu/format.js';
 import {
@@ -14,7 +15,7 @@ import {
 } from './feishu/normalize.js';
 
 export interface AnswerAgent {
-  answer(question: string): Promise<ConsultAnswer>;
+  answer(question: string, options?: { history?: ConversationTurn[] }): Promise<ConsultAnswer>;
 }
 
 export interface HandlerDeps {
@@ -23,16 +24,19 @@ export interface HandlerDeps {
   agent: AnswerAgent;
   identity: BotIdentity;
   logger: Logger;
+  sessions?: SessionStoreLike;
 }
 
 export class MainAgentHandler {
   private readonly dedupe = new TtlSet();
   private readonly queue: ChatQueue;
+  private readonly sessions: SessionStoreLike;
   private readonly counts = { received: 0, ignored: 0, processed: 0, failed: 0 };
   private lastError: string | undefined;
 
   constructor(private readonly deps: HandlerDeps) {
     this.queue = new ChatQueue(deps.config.concurrency);
+    this.sessions = deps.sessions ?? new SessionStore();
   }
 
   /** HTTP webhook path. Returns immediately; the queue does the work. */
@@ -120,12 +124,14 @@ export class MainAgentHandler {
     queue: { active: number; pending: number; chats: number };
     lastError?: string;
     dedupeSize: number;
+    sessions: number;
   } {
     return {
       ...this.counts,
       queue: this.queue.stats(),
       ...(this.lastError !== undefined ? { lastError: this.lastError } : {}),
       dedupeSize: this.dedupe.size,
+      sessions: this.sessions.size,
     };
   }
 
@@ -150,9 +156,15 @@ export class MainAgentHandler {
     }
 
     try {
-      log.info('question received', { chars: message.text.length, chatType: message.chatType });
+      const sessionKey = sessionKeyFor(message);
+      const history = sessionKey === undefined ? [] : this.sessions.get(sessionKey);
+      log.info('question received', {
+        chars: message.text.length,
+        chatType: message.chatType,
+        historyTurns: history.length,
+      });
       const answer = await withTimeout(
-        this.deps.agent.answer(message.text),
+        this.deps.agent.answer(message.text, { history }),
         this.deps.config.answerTimeoutMs,
       );
       if (ackTimer !== undefined) clearTimeout(ackTimer);
@@ -163,6 +175,11 @@ export class MainAgentHandler {
       });
       for (const payload of payloads) {
         await this.safeReply(message, payload, log);
+      }
+
+      if (sessionKey !== undefined) {
+        this.sessions.append(sessionKey, { role: 'user', text: message.text });
+        this.sessions.append(sessionKey, { role: 'assistant', text: answer.text });
       }
 
       this.counts.processed += 1;

@@ -1,4 +1,4 @@
-import type { CapabilityNode, RetrievedChunk } from './types.js';
+import type { CapabilityNode, ConversationTurn, RetrievedChunk } from './types.js';
 
 /**
  * Optional synthesis layer.
@@ -14,6 +14,7 @@ export interface LlmInput {
   grounded: string;
   node?: CapabilityNode;
   retrieved: RetrievedChunk[];
+  history?: ConversationTurn[];
 }
 
 export interface LlmSynthesizer {
@@ -66,7 +67,8 @@ const SYSTEM_PROMPT = `你是 Main，一个「数据产品 × Agent Native build
 2. 用中文回答，结构固定：【结论】【定位】【依据】【下一步】【边界】【证据】。
 3. 【下一步】必须是可执行动作；【证据】必须列出文件路径，不能编造路径。
 4. 如果证据不足，直接说“仓库里没有这条依据”，并给出需要补充的信息。
-5. 不要写“作为一个 AI”之类的套话；不要超过 1800 字。`;
+5. 不要写“作为一个 AI”之类的套话；不要超过 1800 字。
+6. 如果提供了对话历史，用它解析“它/那/第二步”等指代；不要重复历史里已经说过的长段内容。`;
 
 function buildUserPrompt(input: LlmInput): string {
   const evidence = input.retrieved
@@ -79,6 +81,15 @@ function buildUserPrompt(input: LlmInput): string {
     .join('\n\n');
 
   return [
+    ...(input.history !== undefined && input.history.length > 0
+      ? [
+          '【对话历史】',
+          ...input.history.map(
+            (turn) => `${turn.role}: ${turn.text.slice(0, 600)}`,
+          ),
+          '',
+        ]
+      : []),
     `用户问题：${input.question}`,
     '',
     '【已核实答案】',

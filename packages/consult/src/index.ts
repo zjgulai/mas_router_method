@@ -3,6 +3,8 @@ export * from './capability-graph.js';
 export * from './corpus.js';
 export * from './tokenize.js';
 export * from './answer.js';
+export * from './plays.js';
 export * from './agent.js';
 export * from './llm.js';
+export * from './judge.js';
 export * from './paths.js';

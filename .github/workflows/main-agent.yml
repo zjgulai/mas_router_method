@@ -9,6 +9,11 @@ on:
       - 'packages/feishu/**'
       - 'docs/evals/main-agent*'
       - 'scripts/materialize-main-knowledge.py'
+      - 'scripts/feishu_history.py'
+      - 'scripts/feishu-usage-snapshot.py'
+      - 'scripts/feishu-live-check.py'
+      - 'scripts/build-blind-review.py'
+      - 'docs/adr/0010-main-agent-shared-state.md'
       - '.github/workflows/main-agent.yml'
   pull_request:
     paths:
@@ -17,6 +22,11 @@ on:
       - 'packages/feishu/**'
       - 'docs/evals/main-agent*'
       - 'scripts/materialize-main-knowledge.py'
+      - 'scripts/feishu_history.py'
+      - 'scripts/feishu-usage-snapshot.py'
+      - 'scripts/feishu-live-check.py'
+      - 'scripts/build-blind-review.py'
+      - 'docs/adr/0010-main-agent-shared-state.md'
       - '.github/workflows/main-agent.yml'
   workflow_dispatch:
 
@@ -36,6 +46,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Python script syntax
+        run: python3 -m py_compile scripts/feishu_history.py scripts/feishu-usage-snapshot.py scripts/feishu-live-check.py scripts/build-blind-review.py
+
       - name: Consult tests
         run: pnpm --filter @mas/consult test
 
@@ -54,6 +67,8 @@ jobs:
           name: main-agent-real-eval
           path: |
             docs/evals/main-agent-real-qa.md
+            docs/evals/main-agent-live-check.md
             packages/consult/data/eval/main-agent-real-results.jsonl
             packages/consult/data/eval/main-agent-real-summary.json
+            packages/consult/data/eval/history.jsonl
           if-no-files-found: warn

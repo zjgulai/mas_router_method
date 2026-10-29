@@ -122,6 +122,12 @@ export interface RetrievedChunk {
 
 export type Confidence = 'high' | 'medium' | 'low';
 
+/** One turn of prior conversation, used for thread-level follow-ups. */
+export interface ConversationTurn {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
 export interface ConsultStep {
   name: 'classify' | 'retrieve' | 'compose' | 'synthesize';
   detail: string;

@@ -2,7 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { MainConsultAgent } from '@mas/consult';
 import type { ConsultAnswer } from '@mas/consult';
-import { findRepoRoot, tokenize } from '@mas/consult';
+import { createLlmJudgeFromEnv, findRepoRoot, tokenize } from '@mas/consult';
+import type { ConversationTurn, JudgeResult } from '@mas/consult';
 
 type Expected = 'in_scope' | 'out_of_scope' | 'needs_context';
 
@@ -13,6 +14,7 @@ interface EvalCase {
   expectedNodes?: string[];
   why: string;
   source?: string;
+  history?: ConversationTurn[];
   verdict?: 'usable' | 'needs_improvement';
   reviewNote?: string;
 }
@@ -38,6 +40,7 @@ interface CaseResult {
   passed: boolean;
   checks: Check[];
   rubric?: Rubric;
+  llmJudge?: JudgeResult;
   answer: string;
   sources: string[];
 }
@@ -50,11 +53,21 @@ interface Rubric {
   notes: string[];
 }
 
+interface HistoryEntry {
+  generatedAt: string;
+  total: number;
+  passed: number;
+  passRate: number;
+  manual: { usable: number; needsImprovement: number; unreviewed: number };
+  rubricAverage: number;
+}
+
 const root = findRepoRoot();
 const casesPath = join(root, 'packages', 'consult', 'data', 'eval', 'main-agent-cases.json');
 const outDir = join(root, 'packages', 'consult', 'data', 'eval');
 const resultsPath = join(outDir, 'main-agent-real-results.jsonl');
 const summaryPath = join(outDir, 'main-agent-real-summary.json');
+const historyPath = join(outDir, 'history.jsonl');
 const reportPath = join(root, 'docs', 'evals', 'main-agent-real-qa.md');
 
 const parsed = JSON.parse(readFileSync(casesPath, 'utf8')) as {
@@ -70,12 +83,20 @@ if (!Array.isArray(parsed.cases) || parsed.cases.length < 20) {
 }
 
 const agent = MainConsultAgent.fromRepo({ llm: null });
+const llmJudge = createLlmJudgeFromEnv();
 const results: CaseResult[] = [];
 
 for (const testCase of parsed.cases) {
-  const answer = await agent.answer(testCase.text);
+  const answer = await agent.answer(
+    testCase.text,
+    testCase.history !== undefined ? { history: testCase.history } : {},
+  );
   const checks = evaluate(testCase, answer);
   const rubric = testCase.expected === 'in_scope' ? evaluateRubric(testCase, answer) : undefined;
+  const judgeResult =
+    llmJudge !== null && testCase.expected === 'in_scope'
+      ? await llmJudge.judge({ question: testCase.text, answer })
+      : null;
   if (rubric !== undefined) {
     checks.push({
       name: 'rubric_score',
@@ -98,6 +119,7 @@ for (const testCase of parsed.cases) {
     passed: checks.every((check) => check.pass),
     checks,
     ...(rubric !== undefined ? { rubric } : {}),
+    ...(judgeResult !== null ? { llmJudge: judgeResult } : {}),
     answer: answer.text,
     sources: answer.sources.map((source) => source.path),
   });
@@ -124,8 +146,23 @@ const rubricAverage =
     ? 0
     : rubricResults.reduce((sum, result) => sum + (result.rubric?.score ?? 0), 0) /
       rubricResults.length;
+const llmResults = results.filter((result) => result.llmJudge !== undefined);
+const llmAverage =
+  llmResults.length === 0
+    ? 0
+    : llmResults.reduce((sum, result) => sum + (result.llmJudge?.score ?? 0), 0) /
+      llmResults.length;
 
 mkdirSync(outDir, { recursive: true });
+const currentRun: HistoryEntry = {
+  generatedAt: new Date().toISOString(),
+  total,
+  passed,
+  passRate: total === 0 ? 0 : passed / total,
+  manual,
+  rubricAverage,
+};
+const history = appendHistory(historyPath, currentRun);
 writeFileSync(resultsPath, `${results.map((result) => JSON.stringify(result)).join('\n')}\n`, 'utf8');
 writeFileSync(
   summaryPath,
@@ -140,6 +177,8 @@ writeFileSync(
       byExpected,
       manual,
       rubric: { average: rubricAverage, cases: rubricResults.length },
+      llmJudge: { average: llmAverage, cases: llmResults.length },
+      historyEntries: history.length,
     },
     null,
     2,
@@ -149,7 +188,7 @@ writeFileSync(
 
 writeFileSync(
   reportPath,
-  buildReport(parsed, results, passed, total, byExpected, manual, rubricAverage),
+  buildReport(parsed, results, passed, total, byExpected, manual, rubricAverage, history, llmAverage),
   'utf8',
 );
 
@@ -161,6 +200,7 @@ console.log(
   `  manual: usable=${manual.usable}, needs_improvement=${manual.needsImprovement}, unreviewed=${manual.unreviewed}`,
 );
 console.log(`  rubric: average=${rubricAverage.toFixed(2)} over ${rubricResults.length} in-scope cases`);
+if (llmResults.length > 0) console.log(`  llm judge: average=${llmAverage.toFixed(2)} over ${llmResults.length} cases`);
 for (const failure of results.filter((result) => !result.passed)) {
   console.log(`\nFAIL ${failure.id} [${failure.expected}] ${failure.text.slice(0, 80)}`);
   for (const check of failure.checks.filter((item) => !item.pass)) {
@@ -175,7 +215,13 @@ if (passed / total < threshold) {
 }
 
 function evaluateRubric(testCase: EvalCase, answer: ConsultAnswer): Rubric {
-  const questionTerms = [...new Set(tokenize(testCase.text))].filter((term) => term.length >= 2);
+  const questionTerms = [
+    ...new Set(
+      tokenize(
+        [testCase.text, ...(testCase.history ?? []).map((turn) => turn.text)].join(' '),
+      ),
+    ),
+  ].filter((term) => term.length >= 2);
   const head = answer.text.slice(0, 700);
   const hits = questionTerms.filter((term) => head.includes(term)).length;
   const directAnswer = hits >= Math.min(2, questionTerms.length) ? 1 : 0;
@@ -186,7 +232,9 @@ function evaluateRubric(testCase: EvalCase, answer: ConsultAnswer): Rubric {
     .map((line) => line.trim())
     .filter((line) => /^\d+\./.test(line));
   const concrete = actionLines.filter((line) =>
-    /node scripts\/|pnpm |跑|确认|写|建|记录|检查|先|不要|回执|task_id|落库|版本|核对|标/.test(line),
+    /node scripts\/|pnpm |跑|确认|写|建|记录|检查|先|不要|回执|task_id|落库|版本|核对|标|开启|添加|选|用|按|设置|配置|授权/.test(
+      line,
+    ),
   ).length;
   const actionable = actionLines.length >= 2 && concrete >= 2 ? 1 : 0;
   const evidence =
@@ -269,6 +317,24 @@ function evaluate(testCase: EvalCase, answer: ConsultAnswer): Check[] {
   return checks;
 }
 
+function appendHistory(path: string, entry: HistoryEntry): HistoryEntry[] {
+  const entries: HistoryEntry[] = [];
+  if (existsSync(path)) {
+    for (const line of readFileSync(path, 'utf8').split('\n')) {
+      if (line.trim().length === 0) continue;
+      try {
+        entries.push(JSON.parse(line) as HistoryEntry);
+      } catch {
+        // A corrupt history line must not break the current eval.
+      }
+    }
+  }
+  entries.push(entry);
+  const tail = entries.slice(-50);
+  writeFileSync(path, `${tail.map((item) => JSON.stringify(item)).join('\n')}\n`, 'utf8');
+  return tail;
+}
+
 function buildReport(
   input: typeof parsed,
   results: CaseResult[],
@@ -277,9 +343,11 @@ function buildReport(
   byExpected: { expected: string; total: number; passed: number }[],
   manual: { usable: number; needsImprovement: number; unreviewed: number },
   rubricAverage: number,
+  history: HistoryEntry[],
+  llmAverage: number,
 ): string {
   const lines: string[] = [
-    '# Main Agent 真实群问题 Eval',
+    '# Main Agent Eval（真实问题 + 对抗/多轮）',
     '',
     `**生成时间**：${new Date().toISOString()}`,
     `**来源**：${input.source}`,
@@ -292,18 +360,28 @@ function buildReport(
     `- 通过率：${(passed / total).toFixed(2)}`,
     `- 人工判定：可用 ${manual.usable} / 需改进 ${manual.needsImprovement} / 未审 ${manual.unreviewed}`,
     `- Rubric 均分（in-scope）：${rubricAverage.toFixed(2)}（直接回答 / 可执行动作 / 证据，各 0–1）`,
+    `- LLM judge 均分：${llmAverage > 0 ? llmAverage.toFixed(2) : '未启用（需要 MAIN_AGENT_JUDGE=llm + API key）'}`,
     '',
     '| 类别 | 自动化通过 / 总数 |',
     '|---|---|',
     ...byExpected.map((group) => `| ${group.expected} | ${group.passed} / ${group.total} |`),
     '',
+    '## 历史',
+    '',
+    '| 时间 | 用例 | 自动通过 | 人工可用 | 需改进 | Rubric |',
+    '|---|---|---|---|---|---|',
+    ...history.slice(-10).map(
+      (item) =>
+        `| ${item.generatedAt.slice(0, 19)} | ${item.total} | ${item.passed} | ${item.manual.usable} | ${item.manual.needsImprovement} | ${item.rubricAverage.toFixed(2)} |`,
+    ),
+    '',
     '## 逐条结果',
     '',
-    '| ID | 问题 | 期望 | 实际节点 | 置信度 | 自动 | Rubric | 人工 |',
-    '|---|---|---|---|---|---|---|---|',
+    '| ID | 问题 | 期望 | 实际节点 | 置信度 | 自动 | Rubric | LLM | 人工 |',
+    '|---|---|---|---|---|---|---|---|---|',
     ...results.map(
       (result) =>
-        `| ${result.id} | ${escapeCell(result.text)} | ${result.expected} | ${result.actualNode ?? '—'} | ${result.confidence} | ${result.passed ? '✅' : '❌'} | ${result.rubric === undefined ? '—' : result.rubric.score.toFixed(2)} | ${result.verdict === 'usable' ? '可用' : result.verdict === 'needs_improvement' ? '需改进' : '未审'} |`,
+        `| ${result.id} | ${escapeCell(result.text)} | ${result.expected} | ${result.actualNode ?? '—'} | ${result.confidence} | ${result.passed ? '✅' : '❌'} | ${result.rubric === undefined ? '—' : result.rubric.score.toFixed(2)} | ${result.llmJudge === undefined ? '—' : result.llmJudge.score.toFixed(2)} | ${result.verdict === 'usable' ? '可用' : result.verdict === 'needs_improvement' ? '需改进' : '未审'} |`,
     ),
     '',
   ];

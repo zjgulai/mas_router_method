@@ -1,5 +1,5 @@
 import { Recipe, recipeDurationSec, TARGET_DURATION_SEC, type BrandProfile } from '@mas/shared';
-import type { EvalCase } from './types.js';
+import type { EvalCase, Expectation } from './types.js';
 
 export interface ArtifactStep {
   kind: string;
@@ -302,7 +302,7 @@ export function evaluateCase(
     if (expectation.kind === 'rubric') {
       skipped.push({
         expectation: `rubric:${expectation.dimension}`,
-        reason: options.rubric ? 'rubric judge not implemented yet' : 'fast mode: rubric skipped',
+        reason: options.rubric ? 'rubric: judged by evaluateRubricExpectations (async)' : 'fast mode: rubric skipped',
       });
       continue;
     }
@@ -311,4 +311,84 @@ export function evaluateCase(
   }
 
   return { passed: failures.length === 0, failures, skipped, refused, inconclusive: false };
+}
+
+
+/**
+ * Async rubric pass, kept out of `evaluateCase` so the deterministic evaluator
+ * stays synchronous and pure. Call after `evaluateCase` when rubric judging is
+ * requested: converts that call's rubric skips into scores or failures, or
+ * leaves them as skips when the judge is unavailable. A judge outage or
+ * unparseable output is a skip, never a pass — the same principle as an agent
+ * outage being inconclusive rather than a refusal.
+ */
+export async function evaluateRubricExpectations(
+  evalCase: EvalCase,
+  artifact: CaseArtifact,
+  evaluation: CaseEvaluation,
+): Promise<CaseEvaluation> {
+  const dimensions = evalCase.expectations.filter(
+    (expectation): expectation is Extract<Expectation, { kind: 'rubric' }> =>
+      expectation.kind === 'rubric',
+  );
+  if (dimensions.length === 0) return evaluation;
+
+  const failures = [...evaluation.failures];
+  const skipped = [...evaluation.skipped];
+
+  for (const expectation of dimensions) {
+    const skipIndex = skipped.findIndex(
+      (entry) => entry.expectation === `rubric:${expectation.dimension}`,
+    );
+    // The rubric judge needs a produced recipe; a refusal has none to judge.
+    if (artifact.recipe === undefined) {
+      if (skipIndex >= 0) {
+        skipped[skipIndex] = {
+          expectation: `rubric:${expectation.dimension}`,
+          reason: 'no recipe produced (refused) — nothing to judge',
+        };
+      }
+      continue;
+    }
+    const { judgeDimension, createRubricJudgeFromEnv } = await import('./rubric-judge.js');
+    const config = createRubricJudgeFromEnv();
+    if (config === null) {
+      if (skipIndex >= 0) {
+        skipped[skipIndex] = {
+          expectation: `rubric:${expectation.dimension}`,
+          reason: 'rubric requested but no judge credentials (EVAL_RUBRIC unset or no API key)',
+        };
+      }
+      continue;
+    }
+    try {
+      const scored = await judgeDimension(
+        expectation.dimension,
+        artifact.recipe as Recipe,
+        artifact.brand,
+        config,
+      );
+      if (skipIndex >= 0) skipped.splice(skipIndex, 1);
+      if (scored.score < expectation.minScore) {
+        failures.push({
+          rule: `rubric:${expectation.dimension}`,
+          observed: `score ${scored.score.toFixed(2)} < ${expectation.minScore} — ${scored.justification}`,
+        });
+      }
+    } catch (cause) {
+      if (skipIndex >= 0) {
+        skipped[skipIndex] = {
+          expectation: `rubric:${expectation.dimension}`,
+          reason: `rubric judge failed: ${cause instanceof Error ? cause.message : String(cause)}`.slice(0, 200),
+        };
+      }
+    }
+  }
+
+  return {
+    ...evaluation,
+    passed: failures.length === 0,
+    failures,
+    skipped,
+  };
 }

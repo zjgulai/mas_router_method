@@ -62,10 +62,16 @@ cases is a wish, and every later argument about quality becomes an opinion.
 and Agent Native builder questions. It answers in Feishu groups with a grounded
 answer contract: conclusion, location, evidence, next actions, boundaries.
 
-- Engine: `packages/consult` — 17 capability nodes, 14 problem routes, BM25 retrieval,
+- Engine: `packages/consult` — 20 capability nodes, 17 problem routes, BM25 retrieval,
   grounded answers, optional model synthesis.
 - Surface: `apps/bot-gateway` — Feishu long connection (default) or webhook.
 - Graph and acceptance criteria: `docs/product/main-agent-capability-graph.md`.
+- Eval: `docs/evals/main-agent-real-qa.md`; blind review: `docs/evals/main-agent-blind-review.md`.
+- Real usage snapshot: `docs/evals/main-agent-usage.md`; regenerate with
+  `python3 scripts/feishu-usage-snapshot.py --days 14`.
+- Live acceptance: `python3 scripts/feishu-live-check.py --wait 120` (send an
+  @Main message while it waits); baseline: `docs/evals/main-agent-live-check.md`. Human blind-review packet:
+  `docs/evals/main-agent-human-review-packet.md`.
 - Knowledge snapshot: `packages/consult/data/sources.json`, produced by
   `python3 scripts/materialize-main-knowledge.py`.
 

@@ -147,12 +147,17 @@ Set `MAIN_AGENT_LOG_LEVEL=debug` to see raw events and ignore reasons.
 pnpm --filter @mas/bot-gateway eval:real
 ```
 
-Runs the 30 real group questions in `packages/consult/data/eval/main-agent-cases.json`
+Runs the 150-case eval dataset (83 real group questions + 67 adversarial) in `packages/consult/data/eval/main-agent-cases.json`
 through the same agent the gateway uses. It writes:
 
 - `packages/consult/data/eval/main-agent-real-results.jsonl` — per-case answer, node, checks
 - `packages/consult/data/eval/main-agent-real-summary.json` — pass rate + manual verdicts
-- `docs/evals/main-agent-real-qa.md` — human-readable report
+- `packages/consult/data/eval/history.jsonl` — one line per run, for trend tracking
+- `docs/evals/main-agent-real-qa.md` — human-readable report with rubric + history
 
 The automated gate is currently 0.75; the manual verdict column is the honest
 quality signal. Do not delete a failing real question to make the suite green.
+
+The deterministic rubric scores directness, actionability, and evidence. Set
+`MAIN_AGENT_JUDGE=llm` plus an API key to also record an LLM judge score; it is
+off by default so CI stays free and deterministic.

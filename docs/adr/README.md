@@ -26,6 +26,7 @@ Status legend:
 | [0007](./0007-vision-analysis-provider.md) | Dedicated video-understanding service behind the port | Accepted (provider spike pending) |
 | [0008](./0008-workflow-versioning.md) | Version every workflow; gate prompt changes on eval | Accepted |
 | [0009](./0009-brand-isolation.md) | Brand scope is an argument on every store call, enforced by tests | Accepted |
+| [0010](./0010-main-agent-shared-state.md) | Main agent state moves to Postgres before a second gateway instance | Proposed |
 
 ## Inventory
 
@@ -47,6 +48,9 @@ Status legend:
 | 14 | Store technology (Postgres / SQLite / external) | **Recorded** | ADR 0006: SQLite now, Postgres before Milestone 2 | — |
 | 15 | Feishu auth, workbench auth | Deferred | Roadmap milestone 2–3 | — |
 | 16 | Deployment shape, rollback, secrets | Deferred | Roadmap | — |
+| 17 | Main agent thread sessions: SQLite per host, 30-min TTL | **Recorded** | ADR 0010; `apps/bot-gateway/src/session.ts` | A second instance loses thread context |
+| 18 | Main agent idempotency and queue are process-local | **Missing** | ADR 0010 (proposed) | Duplicate events can produce duplicate answers across instances |
+| 19 | Main agent idempotency/queue/session shared store | **Proposed** | ADR 0010: Postgres tables + `SKIP LOCKED` | Multi-instance deployment is unsafe until implemented |
 
 ## Findings from the code (2026-10-24)
 

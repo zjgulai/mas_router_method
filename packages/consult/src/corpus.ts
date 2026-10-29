@@ -131,6 +131,21 @@ export class KnowledgeCorpus {
    * Scores are relative, not calibrated. The answer layer uses `coverage` and the
    * graph classifier's own score for confidence, never the raw BM25 number.
    */
+  /** Chunks from the node's own source files, independent of query overlap. */
+  evidenceForPaths(paths: string[], perPath = 2): RetrievedChunk[] {
+    const wanted = new Set(paths);
+    const counts = new Map<string, number>();
+    const out: RetrievedChunk[] = [];
+    for (const chunk of this.chunks) {
+      if (!wanted.has(chunk.path) || chunk.kind === 'capability') continue;
+      const count = counts.get(chunk.path) ?? 0;
+      if (count >= perPath) continue;
+      counts.set(chunk.path, count + 1);
+      out.push({ chunk, score: 1, coverage: 0, matchedTerms: [] });
+    }
+    return out;
+  }
+
   search(question: string, limit = 8): RetrievedChunk[] {
     const queryTerms = expandTerms(question);
     const unique = [...new Set(queryTerms)].filter((term) => term.length > 0);
