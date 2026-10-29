@@ -55,7 +55,8 @@ echo
 echo "-- 3. 404 行为"
 c="$(code "${BASE}/${RANDOM_PATH}")"
 [ "${c}" = "404" ] && ok "不存在的路径 -> 404" || bad "不存在路径 -> ${c}（期望 404）"
-curl -sS --max-time 15 "${BASE}/${RANDOM_PATH}" | grep -q '404' && ok "404 页是站点自己的页面" || bad "404 页内容"
+# 不用 grep -q：pipefail 下命中即关管道，curl 收到 SIGPIPE 会被误判为失败。
+curl -sS --max-time 15 "${BASE}/${RANDOM_PATH}" | grep '404' >/dev/null && ok "404 页是站点自己的页面" || bad "404 页内容"
 c="$(code "${BASE}/404.html")"
 [ "${c}" = "404" ] && ok "/404.html 直接访问 -> 404（internal 生效）" || bad "/404.html -> ${c}（期望 404）"
 
