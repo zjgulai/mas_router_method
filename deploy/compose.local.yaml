@@ -1,0 +1,8 @@
+# 本地验收用的覆盖文件：把端口收到 127.0.0.1，不碰 172.20.0.1。
+#
+#   IMAGE_TAG=local docker compose -f deploy/compose.yaml -f deploy/compose.local.yaml up -d
+#   IMAGE_TAG=local docker compose -f deploy/compose.yaml -f deploy/compose.local.yaml down
+services:
+  web:
+    ports: !override
+      - "127.0.0.1:18890:8080"

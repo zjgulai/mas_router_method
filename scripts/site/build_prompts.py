@@ -154,7 +154,7 @@ def prompts_page():
                      f'<div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">{when}</span></div>'
                      f'<div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">{caution}</span></div></div>')
             b.append('</div>')
-    return page('prompts', '提示词库', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / 提示词库')
+    return page('prompts', '提示词库', '\n'.join(b), '<a href="./">总览</a> / 提示词库')
 
 if __name__ == '__main__':
     open(os.path.join(out_dir(), 'prompts.html'), 'w', encoding='utf-8').write(prompts_page())

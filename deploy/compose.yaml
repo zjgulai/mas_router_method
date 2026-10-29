@@ -1,0 +1,58 @@
+# 生产 compose：服务器只加载镜像，不在服务器上构建。
+#
+# 只发布到 172.20.0.1（lighthouse 网关的宿主侧地址），不发布到 0.0.0.0；
+# 公网入口由共享网关的 main.luteos.com server 块提供。
+# 独立项目名 + 独立网络：与现有 31 个 compose 项目互不相干。
+name: mas-router-site
+
+services:
+  web:
+    image: mas-router-site:${IMAGE_TAG:?set IMAGE_TAG to the verified release tag}
+    container_name: mas-router-site-web
+    platform: linux/amd64
+    pull_policy: never
+    restart: unless-stopped
+    stop_grace_period: 10s
+    user: "101:101"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 64
+    cpus: 0.25
+    mem_limit: 128m
+    mem_reservation: 32m
+    memswap_limit: 128m
+    tmpfs:
+      - /tmp:size=16m,mode=1777,noexec,nosuid,nodev
+    ports:
+      - name: mas-edge-origin
+        target: 8080
+        published: "18890"
+        host_ip: 172.20.0.1
+        protocol: tcp
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    labels:
+      com.lute.application: mas-router-site
+      com.lute.exposure: lighthouse-gateway-only
+      org.opencontainers.image.title: Agent Native Builder
+      org.opencontainers.image.source: https://github.com/zjgulai/mas_router_method
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+        compress: "true"
+
+networks:
+  internal:
+    name: mas_router_site_internal
+    driver: bridge

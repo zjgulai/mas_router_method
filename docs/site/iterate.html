@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>迭代 · Agent Native Builder</title>
+<meta name="description" content="迭代 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:light;
@@ -28,20 +30,21 @@
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
   .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
-               letter-spacing:-.02em}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
   .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
   .nav{padding:0 .5rem}
   .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
          text-transform:uppercase}
   .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
          border-radius:2px;line-height:1.35}
   .nav a:hover{background:#2a2c26;color:#fff}
   .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
   .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
   .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
             border-left:1px solid #3d3f38;line-height:1.35}
   .subnav a:hover{color:#fff;border-left-color:#8d8f86}
@@ -57,7 +60,8 @@
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.6rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem}
-    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.4rem}
   }
@@ -80,6 +84,7 @@
   .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
   thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
   tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
   tbody tr:last-child td{border-bottom:0}
@@ -138,30 +143,31 @@
 <body>
 <div class="layout">
   <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
     <details open>
-      <summary class="brand">
-        <a class="home" href="/mas_router_method/site/">ANB</a>
-        <span class="brand-sub">Agent Native Builder</span>
-      </summary>
+      <summary class="nav-toggle">导航</summary>
       <nav class="nav">
         <div class="nav-g"><span class="nav-h">流程</span>
-      <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/need.html">需求</a>
-      <a href="/mas_router_method/site/design.html">设计</a>
-      <a href="/mas_router_method/site/build.html">开发</a>
-      <a href="/mas_router_method/site/verify.html">验收</a>
-      <a href="/mas_router_method/site/ship.html">交付</a>
-      <a href="/mas_router_method/site/operate.html">运营</a>
-      <a href="/mas_router_method/site/iterate.html" class="on">迭代</a>
-      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html" class="on">迭代</a>
+      <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
-      <a href="/mas_router_method/site/branches.html">分支总表</a>
-      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/site/prompts.html">提示词</a>
-      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
-      <a href="/mas_router_method/site/tables.html">十三个表</a>
-      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
@@ -174,33 +180,33 @@
   </aside>
   <div class="content">
     <main>
-      <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 迭代</div>
+      <div class="crumb"><a href="./">总览</a> / 迭代</div>
       <h1><span class="num">07</span>迭代</h1>
 <p class="lede">只留下真的用过的，改掉真的错的。先由运营给到的三个数字决定<b>改什么</b>，把结论落成 <code>R-</code> 或 <code>T-</code>；再决定<b>留下什么</b>做下个产品的起点。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-reusable</code> 覆盖，并且推翻了它自己的一条规则（"用过三次才抽"太严）。<br><br><b>为什么这一步重要：</b>迭代不是加功能，是去掉不该留的。判断标准是"上个产品用过吗"，不是"这个可能有用"。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
-<table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你要加一个新功能</td><td><a href="#b-add">要加新功能</a></td><td>先问：它解决的是观测到的哪个问题？答不出来就是猜。</td></tr><tr><td>你想抽一个通用模板</td><td><a href="#b-template">想抽通用模板</a></td><td>判据不是"用了几次"，是"它的形状会不会随产品变"。</td></tr><tr><td>一个东西你想保留，但说不清为什么</td><td><a href="#b-keep">想保留但说不清理由</a></td><td>删掉。想不清理由的东西会成为下个项目的负担。</td></tr><tr><td>有了真实使用数据，知道该改什么</td><td><a href="#b-next">这一步过了</a></td><td>回到需求，开始下一轮。</td></tr></tbody></table>
+<div class="tablewrap"><table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你要加一个新功能</td><td><a href="#b-add">要加新功能</a></td><td>先问：它解决的是观测到的哪个问题？答不出来就是猜。</td></tr><tr><td>你想抽一个通用模板</td><td><a href="#b-template">想抽通用模板</a></td><td>判据不是"用了几次"，是"它的形状会不会随产品变"。</td></tr><tr><td>一个东西你想保留，但说不清为什么</td><td><a href="#b-keep">想保留但说不清理由</a></td><td>删掉。想不清理由的东西会成为下个项目的负担。</td></tr><tr><td>有了真实使用数据，知道该改什么</td><td><a href="#b-next">这一步过了</a></td><td>回到需求，开始下一轮。</td></tr></tbody></table></div>
 <div class="card" id="b-add"><h3>要加新功能</h3><p>先问：它解决的是你在观测里看到的哪个问题？<br><br>答不出来，那就是猜。猜的功能不会被用，而且会挤占维护别人在用的功能的精力。<br><br><b>答出来了，就把它落成记录</b>：需求本身变了就写 <code>work/requirements/</code> 里的 <code>R-</code>，是新认领的工作就写 <code>work/tickets/</code> 里的 <code>T-</code>。这一步不是仪式——不落记录，结论就只活在这轮对话里，下一轮又从记忆开始，于是每隔几个月把同一件事重新学一遍。</p></div>
 <div class="card" id="b-template"><h3>想抽通用模板</h3><p>判据不是"用了几次"。<br><br><b>真正的判据是：这东西的形状会不会随产品变。</b>测试运行器的形状不变，抽出来两次就够；仓库骨架的形状每次都变，抽出来就是负担。<br><br>第二个判据：它要不要在每个产品里都重新验证一次"它可靠"。如果要，那抽取省的不是行数，是验证次数。</p></div>
 <div class="card" id="b-keep"><h3>想保留但说不清理由</h3><p>删掉。<br><br>没有理由的保留物会成为下个项目的负担，因为每个未来的决定都要塞进它的形状里。而且你会在三个月后忘记它为什么在那儿，于是没人敢删。</p></div>
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
-<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>每一项保留物都能说出"在哪个产品用过、用了几次"</td><td>答不出来的删掉</td></tr><tr><td>用模板开第二个产品，计时比第一个快</td><td>更慢说明模板是负担</td></tr><tr><td>复盘产出的每一项有 owner 和复查日期</td><td>没有归属的改进项等于没有</td></tr></tbody></table>
+<div class="tablewrap"><table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>每一项保留物都能说出"在哪个产品用过、用了几次"</td><td>答不出来的删掉</td></tr><tr><td>用模板开第二个产品，计时比第一个快</td><td>更慢说明模板是负担</td></tr><tr><td>复盘产出的每一项有 owner 和复查日期</td><td>没有归属的改进项等于没有</td></tr></tbody></table></div>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/site/skills.html#anb-reusable"><code>anb-reusable</code></a> — 只用过三次以上的才抽；形状会变的别抽。</li><li><a href="/mas_router_method/site/skills.html#retro"><code>retro</code></a> — 按严重度排序的环境改进项。</li><li><a href="/mas_router_method/site/skills.html#improve-codebase-architecture"><code>improve-codebase-architecture</code></a> — 找架构里的深化机会。</li><li><a href="/mas_router_method/site/skills.html#triage"><code>triage</code></a> — issue 状态机、分类、agent brief。</li><li><a href="/mas_router_method/site/skills.html#setup-matt-pocock-skills"><code>setup-matt-pocock-skills</code></a> — 新仓库首次接入工程 skill。</li><li><a href="/mas_router_method/site/skills.html#consolidate-memory"><code>consolidate-memory</code></a> — 合并重复记忆，修剪索引。</li></ul>
-<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="/mas_router_method/site/tables-iterate.html">看 迭代 的表 →</a></div>
+<ul><li><a href="skills.html#anb-reusable"><code>anb-reusable</code></a> — 只用过三次以上的才抽；形状会变的别抽。</li><li><a href="skills.html#retro"><code>retro</code></a> — 按严重度排序的环境改进项。</li><li><a href="skills.html#improve-codebase-architecture"><code>improve-codebase-architecture</code></a> — 找架构里的深化机会。</li><li><a href="skills.html#triage"><code>triage</code></a> — issue 状态机、分类、agent brief。</li><li><a href="skills.html#setup-matt-pocock-skills"><code>setup-matt-pocock-skills</code></a> — 新仓库首次接入工程 skill。</li><li><a href="skills.html#consolidate-memory"><code>consolidate-memory</code></a> — 合并重复记忆，修剪索引。</li></ul>
+<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="tables-iterate.html">看 迭代 的表 →</a></div>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/site/docs.html#anb2-full.html">第二次实测：阶段六的规则被自己的实验推翻</a></li></ul>
+<ul><li><a href="docs.html#anb2-full.html">第二次实测：阶段六的规则被自己的实验推翻</a></li></ul>
       <div class="nextprev">
-<a href="/mas_router_method/site/operate.html"><span class="lbl">上一步</span>运营</a>
+<a href="operate.html"><span class="lbl">上一步</span>运营</a>
 <span></span>
 </div>
     </main>
     <footer>
       Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
     </footer>
   </div>
 </div>

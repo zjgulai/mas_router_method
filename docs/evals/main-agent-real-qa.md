@@ -1,6 +1,6 @@
 # Main Agent 真实群问题 Eval
 
-**生成时间**：2026-10-29T06:02:20.325Z
+**生成时间**：2026-10-29T06:03:32.692Z
 **来源**：ABI智能应用与算法组（真实群消息摘录）
 **说明**：真实问题用于测量路由、边界与拒答；不是合成 benchmark。文本做了去链接/去 @ 的轻度清理。
 
@@ -27,7 +27,7 @@
 | rg-003 | BGM 趋势需要优化趋势口径 | in_scope | metric-contract | low | ✅ | 0.67 | 可用 |
 | rg-004 | 评论区的解析比较重要，因为有些争议点非本土人无法理解；趋势详情/爆款/互动率等口径需要优化 | in_scope | metric-contract | low | ✅ | 1.00 | 可用 |
 | rg-005 | 我听不懂啥是回归测试，我只是要今天测的这几个的结果，有没有在表格存 | in_scope | eval-quality | low | ✅ | 1.00 | 可用 |
-| rg-006 | 你的机器人在大群里随时会面临被爆破诟病的风险，把测试出来的样例都存在下来，统一去识别问题 | in_scope | eval-quality | high | ✅ | 1.00 | 可用 |
+| rg-006 | 你的机器人在大群里随时会面临被爆破诟病的风险，把测试出来的样例都存在下来，统一去识别问题 | in_scope | eval-quality | high | ✅ | 0.67 | 可用 |
 | rg-007 | 雨宁，数据采集的这就是需求 PRD 吧？ | in_scope | intent-and-decision | high | ✅ | 1.00 | 可用 |
 | rg-008 | 关注的趋势还是无法点击进入详情，今天看下能不能解决 | needs_context | — | low | ✅ | — | 可用 |
 | rg-009 | 几天群里的测试，是不是没有落多维表格？ | needs_context | storage-lineage | low | ✅ | — | 可用 |
@@ -50,7 +50,7 @@
 | rg-026 | 最终版更新好了，有几个点：红人还要写入进来么？品牌项目 agent 那个更像个看板，也要写进来么？目标我大概写，你复核下？ | needs_context | agent-playbook | low | ✅ | — | 可用 |
 | rg-027 | 本周进度：社媒 agent 总体进度 80%，内容治理 agent 50%，数据采集 agent 60% | needs_context | agent-playbook | low | ✅ | — | 需改进 |
 | rg-028 | PR 文章生成，结合话题点/风险点生成文章 | in_scope | agent-playbook | high | ✅ | 1.00 | 可用 |
-| rg-029 | 社媒的爆款内容打标，沉淀资产库 | in_scope | labeling-taxonomy | low | ✅ | 0.67 | 可用 |
+| rg-029 | 社媒的爆款内容打标，沉淀资产库 | in_scope | labeling-taxonomy | low | ✅ | 1.00 | 可用 |
 | rg-030 | 用户 VOC 接入和洞察，辅助社媒选题 | in_scope | collection-time | high | ✅ | 1.00 | 可用 |
 
 ## 人工判定：需要改进
@@ -78,4 +78,6 @@
 - `in_scope`：必须回答、必须命中预期节点、必须有可解析的证据路径。
 - `needs_context`：必须承认缺少上下文，或明确拒答；高置信度硬答算失败。
 - `out_of_scope`：必须拒答，不能拿一个相邻节点硬套。
+- Rubric 是确定性代理：直接回答（问题词覆盖）、可执行动作（命令/动作数）、证据路径；不是 LLM judge，只做趋势和预警。
+- 人工判定才是质量信号；自动通过不等于可用。
 - 这是真实群消息的第一版样本，不是完整 benchmark；新增问题应继续追加，不要为了变绿而删除失败项。

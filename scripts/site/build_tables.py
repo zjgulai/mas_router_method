@@ -217,7 +217,7 @@ def stage_page(slug, label, oneline, tables, data):
 
     b.append('<p style="font-size:.9rem;color:var(--faint)">这一页是<b>表的样张</b>，'
              '不是方法论。方法在'
-             f'<a href="/mas_router_method/site/{slug}.html">{esc(label)}</a>那一页。'
+             f'<a href="{slug}.html">{esc(label)}</a>那一页。'
              '两页读的是同一件事：一页讲这一步要问什么，一页讲答案记在哪一列。</p>')
 
     for name in names:
@@ -226,13 +226,13 @@ def stage_page(slug, label, oneline, tables, data):
 
     others = [(s, l) for s, l, _ in STAGES if s != slug and STAGE_TABLES.get(s)]
     links = ' · '.join(
-        f'<a href="/mas_router_method/site/tables-{s}.html">{esc(l)}</a>' for s, l in others)
+        f'<a href="tables-{s}.html">{esc(l)}</a>' for s, l in others)
     b.append(f'<div class="nextprev"><div><span class="lbl">其它阶段的表</span>{links}</div></div>')
     # 二级导航就是这几张表本身——这一页的内容形状就是「几张表依次展开」，
     # 所以小节天然等于表名，不需要另外起名字。
     sections = [(f'{slug}-{n.replace(" ", "-")}', n) for n in names]
     return page(f'tables-{slug}', f'{label} · 表', ''.join(b),
-                crumb=f'表格 · <a href="/mas_router_method/site/tables.html">全部</a>',
+                crumb=f'表格 · <a href="tables.html">全部</a>',
                 sections=sections)
 
 
@@ -271,7 +271,7 @@ def index_page(data):
         if not names:
             continue
         rows = sum(len(data.get(n, [])) for n in names)
-        b.append(f'<a class="card" href="/mas_router_method/site/tables-{slug}.html" '
+        b.append(f'<a class="card" href="tables-{slug}.html" '
                  f'style="display:block;text-decoration:none;color:inherit">'
                  f'<h3>{esc(label)} <span style="font-weight:400;font-size:.82rem;'
                  f'color:var(--faint)">{len(names)} 表 · {rows} 条</span></h3>'

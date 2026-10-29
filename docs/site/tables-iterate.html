@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>迭代 · 表 · Agent Native Builder</title>
+<meta name="description" content="迭代 · 表 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:light;
@@ -28,20 +30,21 @@
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
   .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
-               letter-spacing:-.02em}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
   .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
   .nav{padding:0 .5rem}
   .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
          text-transform:uppercase}
   .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
          border-radius:2px;line-height:1.35}
   .nav a:hover{background:#2a2c26;color:#fff}
   .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
   .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
   .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
             border-left:1px solid #3d3f38;line-height:1.35}
   .subnav a:hover{color:#fff;border-left-color:#8d8f86}
@@ -57,7 +60,8 @@
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.6rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem}
-    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.4rem}
   }
@@ -80,6 +84,7 @@
   .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
   thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
   tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
   tbody tr:last-child td{border-bottom:0}
@@ -138,30 +143,31 @@
 <body>
 <div class="layout">
   <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
     <details open>
-      <summary class="brand">
-        <a class="home" href="/mas_router_method/site/">ANB</a>
-        <span class="brand-sub">Agent Native Builder</span>
-      </summary>
+      <summary class="nav-toggle">导航</summary>
       <nav class="nav">
         <div class="nav-g"><span class="nav-h">流程</span>
-      <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/need.html">需求</a>
-      <a href="/mas_router_method/site/design.html">设计</a>
-      <a href="/mas_router_method/site/build.html">开发</a>
-      <a href="/mas_router_method/site/verify.html">验收</a>
-      <a href="/mas_router_method/site/ship.html">交付</a>
-      <a href="/mas_router_method/site/operate.html">运营</a>
-      <a href="/mas_router_method/site/iterate.html">迭代</a>
-      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
-      <a href="/mas_router_method/site/branches.html">分支总表</a>
-      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/site/prompts.html">提示词</a>
-      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
-      <a href="/mas_router_method/site/tables.html">十三个表</a>
-      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
@@ -172,13 +178,13 @@
   </aside>
   <div class="content">
     <main>
-      <div class="crumb">表格 · <a href="/mas_router_method/site/tables.html">全部</a></div>
-      <h1>迭代 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">2 张表</span></h1><p class="lede">只留下真的用过的，改掉真的错的</p><p style="font-size:.9rem;color:var(--faint)">这一页是<b>表的样张</b>，不是方法论。方法在<a href="/mas_router_method/site/iterate.html">迭代</a>那一页。两页读的是同一件事：一页讲这一步要问什么，一页讲答案记在哪一列。</p><h2 id="iterate-08-迭代">08 迭代</h2><p class="lede" style="margin-bottom:1rem">一次改动的全部后果：旧数据、下游、以及哪些旧结论失效了。</p><div class="tb-index"><a href="#iterate-it-01"><code>it-01</code> 情感标签只有正/负/中性，但漏掉了「问句」——问句被算成中性…</a><a href="#iterate-it-02"><code>it-02</code> 「声量」的口径里没排除品牌自己的官方账号，官方发帖被算成用户…</a><a href="#iterate-it-03"><code>it-03</code> schema v1 的 region 字段只允许 ISO a…</a></div><p class="h2sub">3 条记录、13 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="iterate-it-01"><h3><code>it-01</code></h3><table class="tb-fields"><tbody><tr><td>迭代编号</td><td>it-01</td></tr><tr><td>旧数据怎么办</td><td>保留但要用透镜</td></tr><tr><td>为什么现在改</td><td>情感标签只有正/负/中性，但漏掉了「问句」——问句被算成中性，而问句其实是最强的购买意图信号</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>会不会让旧结论失效</td><td>会，已标 superseded</td></tr><tr><td>备注</td><td>旧数据的「中性」里藏着问句，用 migration 记录套上去读，不改写任何一行<br><br>这是仓库里 design 层已经写下的规则的实例：标签改版必须给显式映射表，不许静默合并。旧数据可查靠的是读侧透镜，不是重写。</td></tr><tr><td>怎么知道改对了</td><td>新标签跑一周，用同一批金标准集复测，四分类的 Kappa 要 ≥ 三分类的</td></tr><tr><td>改之前是什么样</td><td>三分类：正面 / 负面 / 中性</td></tr><tr><td>改之后是什么样</td><td>四分类：正面 / 负面 / 中性 / 问句（购买意图）</td></tr><tr><td>改的是哪一层</td><td>打标</td></tr><tr><td>状态</td><td>提出</td></tr><tr><td>留下的是哪种记录</td><td>版本映射表 + ADR</td></tr><tr><td>谁知道这件事需要跟着改</td><td>指标层（中性占比会变）、分析层（分母变了）、结论卡 C1（用中性占比算的那部分）</td></tr></tbody></table></div><div class="tb-row" id="iterate-it-02"><h3><code>it-02</code></h3><table class="tb-fields"><tbody><tr><td>迭代编号</td><td>it-02</td></tr><tr><td>旧数据怎么办</td><td>保留且可查</td></tr><tr><td>为什么现在改</td><td>「声量」的口径里没排除品牌自己的官方账号，官方发帖被算成用户讨论</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>会不会让旧结论失效</td><td>会，已标 superseded</td></tr><tr><td>备注</td><td>旧口径的数字留着并标 v1，新口径标 v2。旧数据不重算<br><br>这是最容易做错的一条：口径变了却重算旧数据，会让「变化」同时包含口径变化和事实变化，从此没有任何一段序列可比。</td></tr><tr><td>怎么知道改对了</td><td>拿同一周数据两套口径各算一遍，差值应等于官方账号发帖数；对不上说明过滤逻辑写错</td></tr><tr><td>改之前是什么样</td><td>声量 = 所有提及，含官方账号</td></tr><tr><td>改之后是什么样</td><td>声量 = 提及数 − 官方自有账号的帖子</td></tr><tr><td>改的是哪一层</td><td>指标</td></tr><tr><td>状态</td><td>提出</td></tr><tr><td>留下的是哪种记录</td><td>ADR + 新旧对应说明</td></tr><tr><td>谁知道这件事需要跟着改</td><td>所有用到声量的下游：分析层的弹性系数、结论卡 C1、区域对比报告</td></tr></tbody></table></div><div class="tb-row" id="iterate-it-03"><h3><code>it-03</code></h3><table class="tb-fields"><tbody><tr><td>迭代编号</td><td>it-03</td></tr><tr><td>旧数据怎么办</td><td>保留但要用透镜</td></tr><tr><td>为什么现在改</td><td>schema v1 的 region 字段只允许 ISO alpha-2，实际发现了没法归到国家的帖子</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>会不会让旧结论失效</td><td>不会</td></tr><tr><td>备注</td><td>旧记录没有这两个值，读的时候按 v1 解释<br><br>这一条实测过：第一版校验要求 insufficient 也必须给 region_basis，而 insufficient 的全部含义就是「没找到依据」。一条与定义矛盾的检查会教人编造依据来通过检查。</td></tr><tr><td>怎么知道改对了</td><td>跑一遍 collect-store verify，不变量仍成立；再抽样 100 条旧记录确认还能读</td></tr><tr><td>改之前是什么样</td><td>region 枚举：ISO alpha-2 或 unattributable</td></tr><tr><td>改之后是什么样</td><td>增加 insufficient（找不到依据）和 not_applicable（不适用）两个值</td></tr><tr><td>改的是哪一层</td><td>存储</td></tr><tr><td>状态</td><td>提出</td></tr><tr><td>留下的是哪种记录</td><td>ADR + 版本映射表</td></tr><tr><td>谁知道这件事需要跟着改</td><td>采集层（要能写新值）、区域相关性检查（要处理 insufficient 的样本）</td></tr></tbody></table></div><h2 id="iterate-10-回流（闭环）">10 回流（闭环）</h2><p class="lede" style="margin-bottom:1rem">观察变成了什么决定，以及改完之后信号变没变。</p><div class="tb-index"><a href="#iterate-loop-01"><code>loop-01</code> 不加功能。查清楚分析师知不知道这个东西存在——如果是没人告诉…</a><a href="#iterate-loop-02"><code>loop-02</code> 把「写后跨进程读」的验证统一改到 /tmp 或 CI 上做；…</a><a href="#iterate-loop-03"><code>loop-03</code> 结论卡上的「区间」要在看板上直接显示，不能只存在文件里——分…</a></div><p class="h2sub">3 条记录、15 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="iterate-loop-01"><h3><code>loop-01</code></h3><table class="tb-fields"><tbody><tr><td>回流编号</td><td>loop-01</td></tr><tr><td>不做什么</td><td>不做新平台接入，不做性能优化</td></tr><tr><td>下次看哪个信号</td><td>ops-06 呈现访问量：上线两周内是否有 ≥3 个不同分析师访问</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>从哪来</td><td>运营发现的</td></tr><tr><td>出发点是哪个信号</td><td>ops-01 采集成功率</td></tr><tr><td>回到哪个寄存器</td><td>不改，只记录</td></tr><tr><td>回来的决定日期</td><td>1793232000000</td></tr><tr><td>备注</td><td>这一行是这张表存在的理由：它记的是一个「不加功能」的决定。anb-reusable 的原话——几乎没跑不是产品缺陷，是触达问题，构建再多也修不好它。</td></tr><tr><td>所以问题出在哪一层</td><td>不是产品问题</td></tr><tr><td>改完信号变了吗</td><td>还没看</td></tr><tr><td>状态</td><td>观察中</td></tr><tr><td>观察到的形态</td><td>几乎没跑</td></tr><tr><td>这次要改什么</td><td>不加功能。查清楚分析师知不知道这个东西存在——如果是没人告诉过他们，这是触达问题，加多少功能都没用</td></tr><tr class="tb-empty"><td>对应编号</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div><div class="tb-row" id="iterate-loop-02"><h3><code>loop-02</code></h3><table class="tb-fields"><tbody><tr><td>回流编号</td><td>loop-02</td></tr><tr><td>不做什么</td><td>不查 4096 对齐的具体来源——已知它不影响 CI，查它不改变任何决定</td></tr><tr><td>下次看哪个信号</td><td>本机测试的偶发失败率：如果仍然出现「同一条断言两次跑结果不同」，说明还有验证没搬到 /tmp</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>从哪来</td><td>事故暴露的</td></tr><tr><td>出发点是哪个信号</td><td>INC-002 挂载写后读不一致</td></tr><tr><td>回到哪个寄存器</td><td>ADR</td></tr><tr><td>回来的决定日期</td><td>1793232000000</td></tr><tr><td>备注</td><td>「不做什么」那一栏是有意的：查清 4096 的来源需要时间，而它对任何决定都没有影响。一个不肯写「不做什么」的闭环会变成无限调查。</td></tr><tr><td>所以问题出在哪一层</td><td>不是产品问题</td></tr><tr><td>改完信号变了吗</td><td>还没看</td></tr><tr><td>状态</td><td>已决定</td></tr><tr><td>观察到的形态</td><td>同一个原因反复失败</td></tr><tr><td>这次要改什么</td><td>把「写后跨进程读」的验证统一改到 /tmp 或 CI 上做；本机门禁不再作为完成证据</td></tr><tr><td>对应编号</td><td>adm-02</td></tr></tbody></table></div><div class="tb-row" id="iterate-loop-03"><h3><code>loop-03</code></h3><table class="tb-fields"><tbody><tr><td>回流编号</td><td>loop-03</td></tr><tr><td>不做什么</td><td>不改区间本身的计算方式</td></tr><tr><td>下次看哪个信号</td><td>下一次复盘时，是否还有人把点估计当确定值引用</td></tr><tr><td>产品</td><td>洞察分析</td></tr><tr><td>从哪来</td><td>用户说的</td></tr><tr><td>出发点是哪个信号</td><td>交付后对方的第一句话</td></tr><tr><td>回到哪个寄存器</td><td>票</td></tr><tr><td>回来的决定日期</td><td>1793232000000</td></tr><tr><td>备注</td><td>这一行的形态是「有人用但用错了」，它和「没人用」的处置完全相反：前者说明产品被接受了而展示有问题，后者说明产品根本没进去。</td></tr><tr><td>所以问题出在哪一层</td><td>呈现</td></tr><tr><td>改完信号变了吗</td><td>还没看</td></tr><tr><td>状态</td><td>观察中</td></tr><tr><td>观察到的形态</td><td>有人用但用错了</td></tr><tr><td>这次要改什么</td><td>结论卡上的「区间」要在看板上直接显示，不能只存在文件里——分析师看到点估计就当成确定值去汇报</td></tr><tr><td>对应编号</td><td>待开</td></tr></tbody></table></div><div class="nextprev"><div><span class="lbl">其它阶段的表</span><a href="/mas_router_method/site/tables-need.html">需求</a> · <a href="/mas_router_method/site/tables-design.html">设计</a> · <a href="/mas_router_method/site/tables-build.html">开发</a> · <a href="/mas_router_method/site/tables-verify.html">验收</a> · <a href="/mas_router_method/site/tables-ship.html">交付</a> · <a href="/mas_router_method/site/tables-operate.html">运营</a></div></div>
+      <div class="crumb">表格 · <a href="tables.html">全部</a></div>
+      <h1>迭代 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">2 张表</span></h1><p class="lede">只留下真的用过的，改掉真的错的</p><p style="font-size:.9rem;color:var(--faint)">这一页是<b>表的样张</b>，不是方法论。方法在<a href="iterate.html">迭代</a>那一页。两页读的是同一件事：一页讲这一步要问什么，一页讲答案记在哪一列。</p><h2 id="iterate-08-迭代">08 迭代</h2><p class="lede" style="margin-bottom:1rem">一次改动的全部后果：旧数据、下游、以及哪些旧结论失效了。</p><div class="tb-index"><a href="#iterate-it-01"><code>it-01</code> 情感标签只有正/负/中性，但漏掉了「问句」——问句被算成中性…</a><a href="#iterate-it-02"><code>it-02</code> 「声量」的口径里没排除品牌自己的官方账号，官方发帖被算成用户…</a><a href="#iterate-it-03"><code>it-03</code> schema v1 的 region 字段只允许 ISO a…</a></div><p class="h2sub">3 条记录、13 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="iterate-it-01"><h3><code>it-01</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>迭代编号</td><td>it-01</td></tr><tr><td>旧数据怎么办</td><td>保留但要用透镜</td></tr><tr><td>为什么现在改</td><td>情感标签只有正/负/中性，但漏掉了「问句」——问句被算成中性，而问句其实是最强的购买意图信号</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>会不会让旧结论失效</td><td>会，已标 superseded</td></tr><tr><td>备注</td><td>旧数据的「中性」里藏着问句，用 migration 记录套上去读，不改写任何一行<br><br>这是仓库里 design 层已经写下的规则的实例：标签改版必须给显式映射表，不许静默合并。旧数据可查靠的是读侧透镜，不是重写。</td></tr><tr><td>怎么知道改对了</td><td>新标签跑一周，用同一批金标准集复测，四分类的 Kappa 要 ≥ 三分类的</td></tr><tr><td>改之前是什么样</td><td>三分类：正面 / 负面 / 中性</td></tr><tr><td>改之后是什么样</td><td>四分类：正面 / 负面 / 中性 / 问句（购买意图）</td></tr><tr><td>改的是哪一层</td><td>打标</td></tr><tr><td>状态</td><td>提出</td></tr><tr><td>留下的是哪种记录</td><td>版本映射表 + ADR</td></tr><tr><td>谁知道这件事需要跟着改</td><td>指标层（中性占比会变）、分析层（分母变了）、结论卡 C1（用中性占比算的那部分）</td></tr></tbody></table></div></div><div class="tb-row" id="iterate-it-02"><h3><code>it-02</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>迭代编号</td><td>it-02</td></tr><tr><td>旧数据怎么办</td><td>保留且可查</td></tr><tr><td>为什么现在改</td><td>「声量」的口径里没排除品牌自己的官方账号，官方发帖被算成用户讨论</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>会不会让旧结论失效</td><td>会，已标 superseded</td></tr><tr><td>备注</td><td>旧口径的数字留着并标 v1，新口径标 v2。旧数据不重算<br><br>这是最容易做错的一条：口径变了却重算旧数据，会让「变化」同时包含口径变化和事实变化，从此没有任何一段序列可比。</td></tr><tr><td>怎么知道改对了</td><td>拿同一周数据两套口径各算一遍，差值应等于官方账号发帖数；对不上说明过滤逻辑写错</td></tr><tr><td>改之前是什么样</td><td>声量 = 所有提及，含官方账号</td></tr><tr><td>改之后是什么样</td><td>声量 = 提及数 − 官方自有账号的帖子</td></tr><tr><td>改的是哪一层</td><td>指标</td></tr><tr><td>状态</td><td>提出</td></tr><tr><td>留下的是哪种记录</td><td>ADR + 新旧对应说明</td></tr><tr><td>谁知道这件事需要跟着改</td><td>所有用到声量的下游：分析层的弹性系数、结论卡 C1、区域对比报告</td></tr></tbody></table></div></div><div class="tb-row" id="iterate-it-03"><h3><code>it-03</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>迭代编号</td><td>it-03</td></tr><tr><td>旧数据怎么办</td><td>保留但要用透镜</td></tr><tr><td>为什么现在改</td><td>schema v1 的 region 字段只允许 ISO alpha-2，实际发现了没法归到国家的帖子</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>会不会让旧结论失效</td><td>不会</td></tr><tr><td>备注</td><td>旧记录没有这两个值，读的时候按 v1 解释<br><br>这一条实测过：第一版校验要求 insufficient 也必须给 region_basis，而 insufficient 的全部含义就是「没找到依据」。一条与定义矛盾的检查会教人编造依据来通过检查。</td></tr><tr><td>怎么知道改对了</td><td>跑一遍 collect-store verify，不变量仍成立；再抽样 100 条旧记录确认还能读</td></tr><tr><td>改之前是什么样</td><td>region 枚举：ISO alpha-2 或 unattributable</td></tr><tr><td>改之后是什么样</td><td>增加 insufficient（找不到依据）和 not_applicable（不适用）两个值</td></tr><tr><td>改的是哪一层</td><td>存储</td></tr><tr><td>状态</td><td>提出</td></tr><tr><td>留下的是哪种记录</td><td>ADR + 版本映射表</td></tr><tr><td>谁知道这件事需要跟着改</td><td>采集层（要能写新值）、区域相关性检查（要处理 insufficient 的样本）</td></tr></tbody></table></div></div><h2 id="iterate-10-回流（闭环）">10 回流（闭环）</h2><p class="lede" style="margin-bottom:1rem">观察变成了什么决定，以及改完之后信号变没变。</p><div class="tb-index"><a href="#iterate-loop-01"><code>loop-01</code> 不加功能。查清楚分析师知不知道这个东西存在——如果是没人告诉…</a><a href="#iterate-loop-02"><code>loop-02</code> 把「写后跨进程读」的验证统一改到 /tmp 或 CI 上做；…</a><a href="#iterate-loop-03"><code>loop-03</code> 结论卡上的「区间」要在看板上直接显示，不能只存在文件里——分…</a></div><p class="h2sub">3 条记录、15 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="iterate-loop-01"><h3><code>loop-01</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>回流编号</td><td>loop-01</td></tr><tr><td>不做什么</td><td>不做新平台接入，不做性能优化</td></tr><tr><td>下次看哪个信号</td><td>ops-06 呈现访问量：上线两周内是否有 ≥3 个不同分析师访问</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>从哪来</td><td>运营发现的</td></tr><tr><td>出发点是哪个信号</td><td>ops-01 采集成功率</td></tr><tr><td>回到哪个寄存器</td><td>不改，只记录</td></tr><tr><td>回来的决定日期</td><td>1793232000000</td></tr><tr><td>备注</td><td>这一行是这张表存在的理由：它记的是一个「不加功能」的决定。anb-reusable 的原话——几乎没跑不是产品缺陷，是触达问题，构建再多也修不好它。</td></tr><tr><td>所以问题出在哪一层</td><td>不是产品问题</td></tr><tr><td>改完信号变了吗</td><td>还没看</td></tr><tr><td>状态</td><td>观察中</td></tr><tr><td>观察到的形态</td><td>几乎没跑</td></tr><tr><td>这次要改什么</td><td>不加功能。查清楚分析师知不知道这个东西存在——如果是没人告诉过他们，这是触达问题，加多少功能都没用</td></tr><tr class="tb-empty"><td>对应编号</td><td><span class="tb-no">（空）</span></td></tr></tbody></table></div></div><div class="tb-row" id="iterate-loop-02"><h3><code>loop-02</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>回流编号</td><td>loop-02</td></tr><tr><td>不做什么</td><td>不查 4096 对齐的具体来源——已知它不影响 CI，查它不改变任何决定</td></tr><tr><td>下次看哪个信号</td><td>本机测试的偶发失败率：如果仍然出现「同一条断言两次跑结果不同」，说明还有验证没搬到 /tmp</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>从哪来</td><td>事故暴露的</td></tr><tr><td>出发点是哪个信号</td><td>INC-002 挂载写后读不一致</td></tr><tr><td>回到哪个寄存器</td><td>ADR</td></tr><tr><td>回来的决定日期</td><td>1793232000000</td></tr><tr><td>备注</td><td>「不做什么」那一栏是有意的：查清 4096 的来源需要时间，而它对任何决定都没有影响。一个不肯写「不做什么」的闭环会变成无限调查。</td></tr><tr><td>所以问题出在哪一层</td><td>不是产品问题</td></tr><tr><td>改完信号变了吗</td><td>还没看</td></tr><tr><td>状态</td><td>已决定</td></tr><tr><td>观察到的形态</td><td>同一个原因反复失败</td></tr><tr><td>这次要改什么</td><td>把「写后跨进程读」的验证统一改到 /tmp 或 CI 上做；本机门禁不再作为完成证据</td></tr><tr><td>对应编号</td><td>adm-02</td></tr></tbody></table></div></div><div class="tb-row" id="iterate-loop-03"><h3><code>loop-03</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>回流编号</td><td>loop-03</td></tr><tr><td>不做什么</td><td>不改区间本身的计算方式</td></tr><tr><td>下次看哪个信号</td><td>下一次复盘时，是否还有人把点估计当确定值引用</td></tr><tr><td>产品</td><td>洞察分析</td></tr><tr><td>从哪来</td><td>用户说的</td></tr><tr><td>出发点是哪个信号</td><td>交付后对方的第一句话</td></tr><tr><td>回到哪个寄存器</td><td>票</td></tr><tr><td>回来的决定日期</td><td>1793232000000</td></tr><tr><td>备注</td><td>这一行的形态是「有人用但用错了」，它和「没人用」的处置完全相反：前者说明产品被接受了而展示有问题，后者说明产品根本没进去。</td></tr><tr><td>所以问题出在哪一层</td><td>呈现</td></tr><tr><td>改完信号变了吗</td><td>还没看</td></tr><tr><td>状态</td><td>观察中</td></tr><tr><td>观察到的形态</td><td>有人用但用错了</td></tr><tr><td>这次要改什么</td><td>结论卡上的「区间」要在看板上直接显示，不能只存在文件里——分析师看到点估计就当成确定值去汇报</td></tr><tr><td>对应编号</td><td>待开</td></tr></tbody></table></div></div><div class="nextprev"><div><span class="lbl">其它阶段的表</span><a href="tables-need.html">需求</a> · <a href="tables-design.html">设计</a> · <a href="tables-build.html">开发</a> · <a href="tables-verify.html">验收</a> · <a href="tables-ship.html">交付</a> · <a href="tables-operate.html">运营</a></div></div>
       
     </main>
     <footer>
       Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
     </footer>
   </div>
 </div>

@@ -313,9 +313,9 @@ def body_html(doc):
     parts.append('<p class="h2sub">格子之间的一致性原来没人管。现在它是一张有校验的表：'
                  '每一跳都要写清交的是什么、带哪些版本、下游怎么校验、断了会怎样；'
                  '缺任何一项 <code>matrix-check</code> 就报错。</p>')
-    parts.append('<table class="mt-trans"><thead><tr><th>从</th><th>到</th><th>交的是什么</th>'
+    parts.append('<div class="mt-grid"><table class="mt-trans"><thead><tr><th>从</th><th>到</th><th>交的是什么</th>'
                  '<th>带哪些版本</th><th>下游怎么校验</th><th>断了会怎样</th></tr></thead><tbody>'
-                 + trans_rows + '</tbody></table>')
+                 + trans_rows + '</tbody></table></div>')
 
     payload = {
         'cells': [{

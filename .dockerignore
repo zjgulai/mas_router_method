@@ -1,0 +1,32 @@
+# 镜像只要 docs/site 和 deploy/nginx.conf；其余不进构建上下文。
+# 这里同时挡住密钥类文件，避免它们被 COPY 或进入 layer（即便本次 Dockerfile 不 COPY）。
+.git
+.github
+.claude
+.claude-sessions
+.agent-runs
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.bundle
+node_modules
+**/node_modules
+.turbo
+.next
+dist
+logs
+coverage
+packages/evals/runs
+apps
+packages
+work
+docs/adr
+docs/agents
+docs/evals
+docs/plans
+docs/policy
+docs/product
+docs/skills
+docs/index.html

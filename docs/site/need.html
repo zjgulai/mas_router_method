@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>需求 · Agent Native Builder</title>
+<meta name="description" content="需求 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:light;
@@ -28,20 +30,21 @@
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
   .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
-               letter-spacing:-.02em}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
   .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
   .nav{padding:0 .5rem}
   .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
          text-transform:uppercase}
   .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
          border-radius:2px;line-height:1.35}
   .nav a:hover{background:#2a2c26;color:#fff}
   .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
   .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
   .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
             border-left:1px solid #3d3f38;line-height:1.35}
   .subnav a:hover{color:#fff;border-left-color:#8d8f86}
@@ -57,7 +60,8 @@
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.6rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem}
-    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.4rem}
   }
@@ -80,6 +84,7 @@
   .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
   thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
   tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
   tbody tr:last-child td{border-bottom:0}
@@ -138,30 +143,31 @@
 <body>
 <div class="layout">
   <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
     <details open>
-      <summary class="brand">
-        <a class="home" href="/mas_router_method/site/">ANB</a>
-        <span class="brand-sub">Agent Native Builder</span>
-      </summary>
+      <summary class="nav-toggle">导航</summary>
       <nav class="nav">
         <div class="nav-g"><span class="nav-h">流程</span>
-      <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/need.html" class="on">需求</a>
-      <a href="/mas_router_method/site/design.html">设计</a>
-      <a href="/mas_router_method/site/build.html">开发</a>
-      <a href="/mas_router_method/site/verify.html">验收</a>
-      <a href="/mas_router_method/site/ship.html">交付</a>
-      <a href="/mas_router_method/site/operate.html">运营</a>
-      <a href="/mas_router_method/site/iterate.html">迭代</a>
-      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="./">总览</a>
+      <a href="need.html" class="on">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
-      <a href="/mas_router_method/site/branches.html">分支总表</a>
-      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/site/prompts.html">提示词</a>
-      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
-      <a href="/mas_router_method/site/tables.html">十三个表</a>
-      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
@@ -174,13 +180,13 @@
   </aside>
   <div class="content">
     <main>
-      <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 需求</div>
+      <div class="crumb"><a href="./">总览</a> / 需求</div>
       <h1><span class="num">01</span>需求</h1>
 <p class="lede">把「我想做个 X」变成一句话：谁在什么情况下用、用完他能做什么以前做不到的事。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-idea</code> 覆盖，完整。<br><br><b>为什么这一步重要：</b>这一步决定后面所有事。写错方向，后面每一步都在加固一个错误假设，而且越往后返工越贵。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
-<table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你说的是功能清单（"要有登录、能导出"）</td><td><a href="#b-func">功能清单不是问题</a></td><td>功能是解决方案，不是问题。跳过它会让你在验收时无从判断好坏。</td></tr><tr><td>你说的是品类（"用 AI 做内容"）</td><td><a href="#b-cat">品类不是用途</a></td><td>品类不是用途。问：谁、在哪一天、用它做什么。</td></tr><tr><td>你已经有一句话，但说不清"什么情况说明不该做"</td><td><a href="#b-falsify">缺一个可证伪的否定条件</a></td><td>缺这一句，你后面无法判断自己是不是错了。</td></tr><tr><td>你说得清用途和对象，但说不清"它给你什么"</td><td><a href="#b-hands-back">说得清用途，说不清产出</a></td><td>第五句问的是他能做什么，不是这东西还给他什么。这两个不一样，而第二个没人会主动写。</td></tr><tr><td>你的否定条件写着"做不出来就别做"，而你说"但人能判断出来"</td><td><a href="#b-human-vs-product">「人能判断出来」不等于「产品能判断」</a></td><td>"人能判断"不等于"产品能判断"。这两个一个听起来像另一个，而它们决定产品存不存在。</td></tr><tr><td>你有清晰的一句话，且否定条件可测</td><td><a href="#b-next">这一步过了</a></td><td>进入设计。</td></tr></tbody></table>
+<div class="tablewrap"><table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你说的是功能清单（"要有登录、能导出"）</td><td><a href="#b-func">功能清单不是问题</a></td><td>功能是解决方案，不是问题。跳过它会让你在验收时无从判断好坏。</td></tr><tr><td>你说的是品类（"用 AI 做内容"）</td><td><a href="#b-cat">品类不是用途</a></td><td>品类不是用途。问：谁、在哪一天、用它做什么。</td></tr><tr><td>你已经有一句话，但说不清"什么情况说明不该做"</td><td><a href="#b-falsify">缺一个可证伪的否定条件</a></td><td>缺这一句，你后面无法判断自己是不是错了。</td></tr><tr><td>你说得清用途和对象，但说不清"它给你什么"</td><td><a href="#b-hands-back">说得清用途，说不清产出</a></td><td>第五句问的是他能做什么，不是这东西还给他什么。这两个不一样，而第二个没人会主动写。</td></tr><tr><td>你的否定条件写着"做不出来就别做"，而你说"但人能判断出来"</td><td><a href="#b-human-vs-product">「人能判断出来」不等于「产品能判断」</a></td><td>"人能判断"不等于"产品能判断"。这两个一个听起来像另一个，而它们决定产品存不存在。</td></tr><tr><td>你有清晰的一句话，且否定条件可测</td><td><a href="#b-next">这一步过了</a></td><td>进入设计。</td></tr></tbody></table></div>
 <div class="card" id="b-func"><h3>功能清单不是问题</h3><p>「要有登录」是解决方案。要问的是：登录是为了让谁做什么？如果答案是"让每一个用户只能看到自己的数据"，那么真正的问题是隔离，而隔离可以用别的方式解决。<br><br><b>怎么改</b>：每个功能后面追问一句"它让用户能做什么以前做不到的事"。答不上来的功能，先不做。</p></div>
 <div class="card" id="b-cat"><h3>品类不是用途</h3><p>「用 AI 做内容」等于没说。它可以是任何人做任何事。<br><br><b>怎么改</b>：问三个具体问题——谁、在什么情况下、他今天没有更好的办法是因为什么。第三个问题是关键，它决定了这个产品有没有存在理由。</p></div>
 <div class="card" id="b-falsify"><h3>缺一个可证伪的否定条件</h3><p>「如果没人用」不是否定条件，那是任何产品都成立的废话。<br><br><b>怎么改</b>：写一个可以被测量的事件。例："如果五个指标拼出来的结论，和资深从业者凭经验判断的不一致超过三成，那这些指标不承载判断。"这句话在产品做出来之后能被验证。</p></div>
@@ -189,20 +195,20 @@
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
-<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>把六句念给一个不做这行的人，他能复述出用途、对象、以及它会还给他什么</td><td>他能说出"所以你是在帮谁解决什么"，以及"所以你拿到手的是什么"</td></tr><tr><td>你的否定条件是一个可以被测量的事件</td><td>不是"如果没人用"，而是"如果 X 和 Y 不一致超过三成"</td></tr><tr><td>否定条件里说的是"产品能做到",不是"人能做到"</td><td>问一句：这个判断凭哪一条信息？说得出具体来源，条件没触发；只能答"经验"，条件已经触发了</td></tr><tr><td>写下了"这一步需要谁参与"</td><td>如果需要别人而你找不到，现在就记成未通过</td></tr></tbody></table>
+<div class="tablewrap"><table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>把六句念给一个不做这行的人，他能复述出用途、对象、以及它会还给他什么</td><td>他能说出"所以你是在帮谁解决什么"，以及"所以你拿到手的是什么"</td></tr><tr><td>你的否定条件是一个可以被测量的事件</td><td>不是"如果没人用"，而是"如果 X 和 Y 不一致超过三成"</td></tr><tr><td>否定条件里说的是"产品能做到",不是"人能做到"</td><td>问一句：这个判断凭哪一条信息？说得出具体来源，条件没触发；只能答"经验"，条件已经触发了</td></tr><tr><td>写下了"这一步需要谁参与"</td><td>如果需要别人而你找不到，现在就记成未通过</td></tr></tbody></table></div>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/site/skills.html#interview-me"><code>interview-me</code></a> — 把一句话想法问成可验收的意图。需求阶段的内核。</li><li><a href="/mas_router_method/site/skills.html#anb-idea"><code>anb-idea</code></a> — 五句话写成想法，含可证伪的否定条件。</li><li><a href="/mas_router_method/site/skills.html#grilling"><code>grilling</code></a> — 攻击已有草稿，把含糊处问空。</li><li><a href="/mas_router_method/site/skills.html#grill-me"><code>grill-me</code></a> — 七行壳，转调 grilling。</li><li><a href="/mas_router_method/site/skills.html#grill-with-docs"><code>grill-with-docs</code></a> — 拷问同时沉淀术语表与 ADR。</li><li><a href="/mas_router_method/site/skills.html#wayfinder"><code>wayfinder</code></a> — 目标大到一个会话装不下时，先画决策地图。</li><li><a href="/mas_router_method/site/skills.html#agent-delivery-router"><code>agent-delivery-router</code></a> — 先定车道：incident/exploration/capability/fast。</li></ul>
-<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="/mas_router_method/site/tables-need.html">看 需求 的表 →</a></div>
+<ul><li><a href="skills.html#interview-me"><code>interview-me</code></a> — 把一句话想法问成可验收的意图。需求阶段的内核。</li><li><a href="skills.html#anb-idea"><code>anb-idea</code></a> — 五句话写成想法，含可证伪的否定条件。</li><li><a href="skills.html#grilling"><code>grilling</code></a> — 攻击已有草稿，把含糊处问空。</li><li><a href="skills.html#grill-me"><code>grill-me</code></a> — 七行壳，转调 grilling。</li><li><a href="skills.html#grill-with-docs"><code>grill-with-docs</code></a> — 拷问同时沉淀术语表与 ADR。</li><li><a href="skills.html#wayfinder"><code>wayfinder</code></a> — 目标大到一个会话装不下时，先画决策地图。</li><li><a href="skills.html#agent-delivery-router"><code>agent-delivery-router</code></a> — 先定车道：incident/exploration/capability/fast。</li></ul>
+<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="tables-need.html">看 需求 的表 →</a></div>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/site/docs.html#decision-tree.html">决策树：三个问题定位到阶段</a></li><li><a href="/mas_router_method/site/docs.html#failure-atlas.html">失败图鉴：第五类「找不到≠不存在」在这里最常见</a></li></ul>
+<ul><li><a href="docs.html#decision-tree.html">决策树：三个问题定位到阶段</a></li><li><a href="docs.html#failure-atlas.html">失败图鉴：第五类「找不到≠不存在」在这里最常见</a></li></ul>
       <div class="nextprev">
 <span></span>
-<a href="/mas_router_method/site/design.html" style="text-align:right"><span class="lbl">下一步</span>设计</a>
+<a href="design.html" style="text-align:right"><span class="lbl">下一步</span>设计</a>
 </div>
     </main>
     <footer>
       Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
     </footer>
   </div>
 </div>

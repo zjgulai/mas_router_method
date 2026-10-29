@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>分支总表 · Agent Native Builder</title>
+<meta name="description" content="分支总表 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:light;
@@ -28,20 +30,21 @@
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
   .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
-               letter-spacing:-.02em}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
   .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
   .nav{padding:0 .5rem}
   .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
          text-transform:uppercase}
   .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
          border-radius:2px;line-height:1.35}
   .nav a:hover{background:#2a2c26;color:#fff}
   .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
   .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
   .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
             border-left:1px solid #3d3f38;line-height:1.35}
   .subnav a:hover{color:#fff;border-left-color:#8d8f86}
@@ -57,7 +60,8 @@
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.6rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem}
-    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.4rem}
   }
@@ -80,6 +84,7 @@
   .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
   thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
   tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
   tbody tr:last-child td{border-bottom:0}
@@ -138,30 +143,31 @@
 <body>
 <div class="layout">
   <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
     <details open>
-      <summary class="brand">
-        <a class="home" href="/mas_router_method/site/">ANB</a>
-        <span class="brand-sub">Agent Native Builder</span>
-      </summary>
+      <summary class="nav-toggle">导航</summary>
       <nav class="nav">
         <div class="nav-g"><span class="nav-h">流程</span>
-      <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/need.html">需求</a>
-      <a href="/mas_router_method/site/design.html">设计</a>
-      <a href="/mas_router_method/site/build.html">开发</a>
-      <a href="/mas_router_method/site/verify.html">验收</a>
-      <a href="/mas_router_method/site/ship.html">交付</a>
-      <a href="/mas_router_method/site/operate.html">运营</a>
-      <a href="/mas_router_method/site/iterate.html">迭代</a>
-      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
-      <a href="/mas_router_method/site/branches.html" class="on">分支总表</a>
-      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/site/prompts.html">提示词</a>
-      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
-      <a href="/mas_router_method/site/tables.html">十三个表</a>
-      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      <a href="branches.html" class="on">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
       </div>
       </nav>
       
@@ -169,32 +175,32 @@
   </aside>
   <div class="content">
     <main>
-      <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 分支总表</div>
+      <div class="crumb"><a href="./">总览</a> / 分支总表</div>
       <h1>分支总表</h1>
 <p class="lede">所有判断集中一页，<b>按代价排序</b>：先做便宜、且能推翻结论的。</p>
 <div class="note">这一页的用法：你不需要读完。找到一个和你处境相符的行，跳到对应处理。</div>
-<h2><a href="/mas_router_method/site/need.html" style="text-decoration:none">需求</a></h2>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你说的是功能清单（"要有登录、能导出"）</td><td><a href="/mas_router_method/site/need.html#b-func">b-func</a></td><td>功能是解决方案，不是问题。跳过它会让你在验收时无从判断好坏。</td></tr><tr><td>你说的是品类（"用 AI 做内容"）</td><td><a href="/mas_router_method/site/need.html#b-cat">b-cat</a></td><td>品类不是用途。问：谁、在哪一天、用它做什么。</td></tr><tr><td>你已经有一句话，但说不清"什么情况说明不该做"</td><td><a href="/mas_router_method/site/need.html#b-falsify">b-falsify</a></td><td>缺这一句，你后面无法判断自己是不是错了。</td></tr><tr><td>你说得清用途和对象，但说不清"它给你什么"</td><td><a href="/mas_router_method/site/need.html#b-hands-back">b-hands-back</a></td><td>第五句问的是他能做什么，不是这东西还给他什么。这两个不一样，而第二个没人会主动写。</td></tr><tr><td>你的否定条件写着"做不出来就别做"，而你说"但人能判断出来"</td><td><a href="/mas_router_method/site/need.html#b-human-vs-product">b-human-vs-product</a></td><td>"人能判断"不等于"产品能判断"。这两个一个听起来像另一个，而它们决定产品存不存在。</td></tr><tr><td>你有清晰的一句话，且否定条件可测</td><td><a href="/mas_router_method/site/need.html#b-next">b-next</a></td><td>进入设计。</td></tr></tbody></table>
-<h2><a href="/mas_router_method/site/design.html" style="text-decoration:none">设计</a></h2>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你要判断这东西到底该不该用 agent</td><td><a href="/mas_router_method/site/design.html#b-agent">b-agent</a></td><td>一个测试：能不能把决策树画出来。能画就是管线，画不出来才需要 agent。</td></tr><tr><td>你说的是功能和技术选型，说不清它必须拒绝什么</td><td><a href="/mas_router_method/site/design.html#b-refuse">b-refuse</a></td><td>拒绝清单写不出具体输入的，是价值观，不是设计。它在验收时会被悄悄丢掉。</td></tr><tr><td>它能发消息、删东西、付款或发布</td><td><a href="/mas_router_method/site/design.html#b-perm">b-perm</a></td><td>按能不能撤销分三档，不按重要性。重要性你会排错，能不能撤销是事实。</td></tr><tr><td>模型要自己决定调哪个工具</td><td><a href="/mas_router_method/site/design.html#b-contract">b-contract</a></td><td>每个工具三行，第二行「什么时候别用」是重点，也是最常被省掉的。</td></tr><tr><td>四问答完了，要动手了</td><td><a href="/mas_router_method/site/design.html#b-done">b-done</a></td><td>把四块交给一个 agent，数它不得不猜了几处。每一处都是一个洞。</td></tr><tr><td>你的"拒绝清单"越写越长，而且大部分是"该怎么答"</td><td><a href="/mas_router_method/site/design.html#b-prohibitions">b-prohibitions</a></td><td>禁令是清单，应答规则是表格——形状不同。实测里有十一行，只有三行是真正的禁令。</td></tr><tr><td>拒绝清单要对照的政策，散在好几处</td><td><a href="/mas_router_method/site/design.html#b-scattered">b-scattered</a></td><td>最常见也最麻烦的形态：既不是"有"，也不是"没有"。中间那件「拢成一份」的工作没人负责，而它跨会话。</td></tr><tr><td>只有一个用户、只跑一次、只读不写</td><td><a href="/mas_router_method/site/design.html#b-skip">b-skip</a></td><td>可以跳过，但写下"我跳过了，因为…"。</td></tr></tbody></table>
-<h2><a href="/mas_router_method/site/build.html" style="text-decoration:none">开发</a></h2>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>跑通了，但结果来自样例/固定数据</td><td><a href="/mas_router_method/site/build.html#b-fake">b-fake</a></td><td>这是第一类假信号的温床。换一个你自己随手找的真实输入再试。</td></tr><tr><td>跑通了，但只对一种输入有效</td><td><a href="/mas_router_method/site/build.html#b-narrow">b-narrow</a></td><td>那不是跑通，是特判。换第二个说不上来的输入。</td></tr><tr><td>跑不通，报错看不懂</td><td><a href="/mas_router_method/site/build.html#b-error">b-error</a></td><td>错误必须是句子，不是堆栈。这是产品问题，不是调试问题。</td></tr><tr><td>真实输入跑通两次，结果都能给人看</td><td><a href="/mas_router_method/site/build.html#b-next">b-next</a></td><td>进入验收。</td></tr></tbody></table>
-<h2><a href="/mas_router_method/site/verify.html" style="text-decoration:none">验收</a></h2>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>还没有任何检查</td><td><a href="/mas_router_method/site/verify.html#b-none">b-none</a></td><td>先写五到十条判断标准，再改产品。顺序反了，检查只会描述现状。</td></tr><tr><td>有检查，但从来没红过</td><td><a href="/mas_router_method/site/verify.html#b-neverfail">b-neverfail</a></td><td>一条从没失败过的检查不是检查。走「故意弄坏」。</td></tr><tr><td>检查红了</td><td><a href="/mas_router_method/site/verify.html#b-red">b-red</a></td><td>先问：是产品错了还是尺子错？实测中三条红的，三条全是测试自己写错。</td></tr><tr><td>检查全绿，但你不确定结果好不好</td><td><a href="/mas_router_method/site/verify.html#b-green-bad">b-green-bad</a></td><td>这是另一类问题：机制可信 ≠ 产出可用。</td></tr><tr><td>检查全绿，且空跑五次数字不动</td><td><a href="/mas_router_method/site/verify.html#b-pass">b-pass</a></td><td>进入交付。</td></tr></tbody></table>
-<h2><a href="/mas_router_method/site/ship.html" style="text-decoration:none">交付</a></h2>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="/mas_router_method/site/ship.html#b-local">b-local</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="/mas_router_method/site/ship.html#b-wall">b-wall</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="/mas_router_method/site/ship.html#b-nobody">b-nobody</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="/mas_router_method/site/ship.html#b-next">b-next</a></td><td>进入运营。</td></tr></tbody></table>
-<h2><a href="/mas_router_method/site/operate.html" style="text-decoration:none">运营</a></h2>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你不知道它跑了多少次、失败多少次</td><td><a href="/mas_router_method/site/operate.html#b-blind">b-blind</a></td><td>先补三个数字，再谈别的。没有观测就加功能，等于在黑暗里挪。</td></tr><tr><td>有记录，但总数和分项对不上</td><td><a href="/mas_router_method/site/operate.html#b-reconcile">b-reconcile</a></td><td>记录有洞。每一条其它结论都建立在这上面。</td></tr><tr><td>数字正常，但不知道有没有人真的在用</td><td><a href="/mas_router_method/site/operate.html#b-nouser">b-nouser</a></td><td>这是产品侧观测，需要埋点而不是日志。</td></tr><tr><td>能回答"谁在用、用了多少次、哪里失败"</td><td><a href="/mas_router_method/site/operate.html#b-next">b-next</a></td><td>进入迭代。</td></tr></tbody></table>
-<h2><a href="/mas_router_method/site/iterate.html" style="text-decoration:none">迭代</a></h2>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你要加一个新功能</td><td><a href="/mas_router_method/site/iterate.html#b-add">b-add</a></td><td>先问：它解决的是观测到的哪个问题？答不出来就是猜。</td></tr><tr><td>你想抽一个通用模板</td><td><a href="/mas_router_method/site/iterate.html#b-template">b-template</a></td><td>判据不是"用了几次"，是"它的形状会不会随产品变"。</td></tr><tr><td>一个东西你想保留，但说不清为什么</td><td><a href="/mas_router_method/site/iterate.html#b-keep">b-keep</a></td><td>删掉。想不清理由的东西会成为下个项目的负担。</td></tr><tr><td>有了真实使用数据，知道该改什么</td><td><a href="/mas_router_method/site/iterate.html#b-next">b-next</a></td><td>回到需求，开始下一轮。</td></tr></tbody></table>
-<h2><a href="/mas_router_method/site/manage.html" style="text-decoration:none">管理</a><span style="font-size:.6em;color:var(--faint);font-family:var(--sans);font-weight:400">　横跨以上全部，不是第八个阶段</span></h2>
+<h2><a href="need.html" style="text-decoration:none">需求</a></h2>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你说的是功能清单（"要有登录、能导出"）</td><td><a href="need.html#b-func">b-func</a></td><td>功能是解决方案，不是问题。跳过它会让你在验收时无从判断好坏。</td></tr><tr><td>你说的是品类（"用 AI 做内容"）</td><td><a href="need.html#b-cat">b-cat</a></td><td>品类不是用途。问：谁、在哪一天、用它做什么。</td></tr><tr><td>你已经有一句话，但说不清"什么情况说明不该做"</td><td><a href="need.html#b-falsify">b-falsify</a></td><td>缺这一句，你后面无法判断自己是不是错了。</td></tr><tr><td>你说得清用途和对象，但说不清"它给你什么"</td><td><a href="need.html#b-hands-back">b-hands-back</a></td><td>第五句问的是他能做什么，不是这东西还给他什么。这两个不一样，而第二个没人会主动写。</td></tr><tr><td>你的否定条件写着"做不出来就别做"，而你说"但人能判断出来"</td><td><a href="need.html#b-human-vs-product">b-human-vs-product</a></td><td>"人能判断"不等于"产品能判断"。这两个一个听起来像另一个，而它们决定产品存不存在。</td></tr><tr><td>你有清晰的一句话，且否定条件可测</td><td><a href="need.html#b-next">b-next</a></td><td>进入设计。</td></tr></tbody></table></div>
+<h2><a href="design.html" style="text-decoration:none">设计</a></h2>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你要判断这东西到底该不该用 agent</td><td><a href="design.html#b-agent">b-agent</a></td><td>一个测试：能不能把决策树画出来。能画就是管线，画不出来才需要 agent。</td></tr><tr><td>你说的是功能和技术选型，说不清它必须拒绝什么</td><td><a href="design.html#b-refuse">b-refuse</a></td><td>拒绝清单写不出具体输入的，是价值观，不是设计。它在验收时会被悄悄丢掉。</td></tr><tr><td>它能发消息、删东西、付款或发布</td><td><a href="design.html#b-perm">b-perm</a></td><td>按能不能撤销分三档，不按重要性。重要性你会排错，能不能撤销是事实。</td></tr><tr><td>模型要自己决定调哪个工具</td><td><a href="design.html#b-contract">b-contract</a></td><td>每个工具三行，第二行「什么时候别用」是重点，也是最常被省掉的。</td></tr><tr><td>四问答完了，要动手了</td><td><a href="design.html#b-done">b-done</a></td><td>把四块交给一个 agent，数它不得不猜了几处。每一处都是一个洞。</td></tr><tr><td>你的"拒绝清单"越写越长，而且大部分是"该怎么答"</td><td><a href="design.html#b-prohibitions">b-prohibitions</a></td><td>禁令是清单，应答规则是表格——形状不同。实测里有十一行，只有三行是真正的禁令。</td></tr><tr><td>拒绝清单要对照的政策，散在好几处</td><td><a href="design.html#b-scattered">b-scattered</a></td><td>最常见也最麻烦的形态：既不是"有"，也不是"没有"。中间那件「拢成一份」的工作没人负责，而它跨会话。</td></tr><tr><td>只有一个用户、只跑一次、只读不写</td><td><a href="design.html#b-skip">b-skip</a></td><td>可以跳过，但写下"我跳过了，因为…"。</td></tr></tbody></table></div>
+<h2><a href="build.html" style="text-decoration:none">开发</a></h2>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>跑通了，但结果来自样例/固定数据</td><td><a href="build.html#b-fake">b-fake</a></td><td>这是第一类假信号的温床。换一个你自己随手找的真实输入再试。</td></tr><tr><td>跑通了，但只对一种输入有效</td><td><a href="build.html#b-narrow">b-narrow</a></td><td>那不是跑通，是特判。换第二个说不上来的输入。</td></tr><tr><td>跑不通，报错看不懂</td><td><a href="build.html#b-error">b-error</a></td><td>错误必须是句子，不是堆栈。这是产品问题，不是调试问题。</td></tr><tr><td>真实输入跑通两次，结果都能给人看</td><td><a href="build.html#b-next">b-next</a></td><td>进入验收。</td></tr></tbody></table></div>
+<h2><a href="verify.html" style="text-decoration:none">验收</a></h2>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>还没有任何检查</td><td><a href="verify.html#b-none">b-none</a></td><td>先写五到十条判断标准，再改产品。顺序反了，检查只会描述现状。</td></tr><tr><td>有检查，但从来没红过</td><td><a href="verify.html#b-neverfail">b-neverfail</a></td><td>一条从没失败过的检查不是检查。走「故意弄坏」。</td></tr><tr><td>检查红了</td><td><a href="verify.html#b-red">b-red</a></td><td>先问：是产品错了还是尺子错？实测中三条红的，三条全是测试自己写错。</td></tr><tr><td>检查全绿，但你不确定结果好不好</td><td><a href="verify.html#b-green-bad">b-green-bad</a></td><td>这是另一类问题：机制可信 ≠ 产出可用。</td></tr><tr><td>检查全绿，且空跑五次数字不动</td><td><a href="verify.html#b-pass">b-pass</a></td><td>进入交付。</td></tr></tbody></table></div>
+<h2><a href="ship.html" style="text-decoration:none">交付</a></h2>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="ship.html#b-local">b-local</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="ship.html#b-wall">b-wall</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="ship.html#b-nobody">b-nobody</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="ship.html#b-next">b-next</a></td><td>进入运营。</td></tr></tbody></table></div>
+<h2><a href="operate.html" style="text-decoration:none">运营</a></h2>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你不知道它跑了多少次、失败多少次</td><td><a href="operate.html#b-blind">b-blind</a></td><td>先补三个数字，再谈别的。没有观测就加功能，等于在黑暗里挪。</td></tr><tr><td>有记录，但总数和分项对不上</td><td><a href="operate.html#b-reconcile">b-reconcile</a></td><td>记录有洞。每一条其它结论都建立在这上面。</td></tr><tr><td>数字正常，但不知道有没有人真的在用</td><td><a href="operate.html#b-nouser">b-nouser</a></td><td>这是产品侧观测，需要埋点而不是日志。</td></tr><tr><td>能回答"谁在用、用了多少次、哪里失败"</td><td><a href="operate.html#b-next">b-next</a></td><td>进入迭代。</td></tr></tbody></table></div>
+<h2><a href="iterate.html" style="text-decoration:none">迭代</a></h2>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你要加一个新功能</td><td><a href="iterate.html#b-add">b-add</a></td><td>先问：它解决的是观测到的哪个问题？答不出来就是猜。</td></tr><tr><td>你想抽一个通用模板</td><td><a href="iterate.html#b-template">b-template</a></td><td>判据不是"用了几次"，是"它的形状会不会随产品变"。</td></tr><tr><td>一个东西你想保留，但说不清为什么</td><td><a href="iterate.html#b-keep">b-keep</a></td><td>删掉。想不清理由的东西会成为下个项目的负担。</td></tr><tr><td>有了真实使用数据，知道该改什么</td><td><a href="iterate.html#b-next">b-next</a></td><td>回到需求，开始下一轮。</td></tr></tbody></table></div>
+<h2><a href="manage.html" style="text-decoration:none">管理</a><span style="font-size:.6em;color:var(--faint);font-family:var(--sans);font-weight:400">　横跨以上全部，不是第八个阶段</span></h2>
 <p class="h2sub">提问的对象是<b>项目自己的记录</b>而不是产品时，走这里。票据在需求时开，证据在验收时落，事故可能发生在任何一刻。</p>
-<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你打算做一件事，而且不止这一次会话</td><td><a href="/mas_router_method/site/manage.html#m-file">#m-file</a></td><td>开一张票。一次会话内做完并验证的不要开——否则票据会变成流水账，流水账没人看。</td></tr><tr><td>发生了一件你没计划的事</td><td><a href="/mas_router_method/site/manage.html#m-file">#m-file</a></td><td>那是事故，不是票。分开记，因为触发方式不同：票是你打算做，事故是发生了。</td></tr><tr><td>文档里的数字和实际对不上</td><td><a href="/mas_router_method/site/manage.html#m-commands">#m-commands</a></td><td>先跑 <code>facts</code>，再改文档。文档可能是对的，磁盘才是意外的那个。</td></tr><tr><td>你记不清它现在是什么状态</td><td><a href="/mas_router_method/site/manage.html#m-status">#m-status</a></td><td>状态就是目录。<code>ls</code> 一次比回忆可靠，也比回忆便宜。</td></tr></tbody></table>
+<div class="tablewrap"><table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody><tr><td>你打算做一件事，而且不止这一次会话</td><td><a href="manage.html#m-file">#m-file</a></td><td>开一张票。一次会话内做完并验证的不要开——否则票据会变成流水账，流水账没人看。</td></tr><tr><td>发生了一件你没计划的事</td><td><a href="manage.html#m-file">#m-file</a></td><td>那是事故，不是票。分开记，因为触发方式不同：票是你打算做，事故是发生了。</td></tr><tr><td>文档里的数字和实际对不上</td><td><a href="manage.html#m-commands">#m-commands</a></td><td>先跑 <code>facts</code>，再改文档。文档可能是对的，磁盘才是意外的那个。</td></tr><tr><td>你记不清它现在是什么状态</td><td><a href="manage.html#m-status">#m-status</a></td><td>状态就是目录。<code>ls</code> 一次比回忆可靠，也比回忆便宜。</td></tr></tbody></table></div>
       
     </main>
     <footer>
       Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
     </footer>
   </div>
 </div>

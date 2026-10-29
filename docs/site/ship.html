@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>交付 · Agent Native Builder</title>
+<meta name="description" content="交付 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:light;
@@ -28,20 +30,21 @@
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
   .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
-               letter-spacing:-.02em}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
   .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
   .nav{padding:0 .5rem}
   .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
          text-transform:uppercase}
   .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
          border-radius:2px;line-height:1.35}
   .nav a:hover{background:#2a2c26;color:#fff}
   .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
   .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
   .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
             border-left:1px solid #3d3f38;line-height:1.35}
   .subnav a:hover{color:#fff;border-left-color:#8d8f86}
@@ -57,7 +60,8 @@
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.6rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem}
-    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.4rem}
   }
@@ -80,6 +84,7 @@
   .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
   thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
   tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
   tbody tr:last-child td{border-bottom:0}
@@ -138,30 +143,31 @@
 <body>
 <div class="layout">
   <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
     <details open>
-      <summary class="brand">
-        <a class="home" href="/mas_router_method/site/">ANB</a>
-        <span class="brand-sub">Agent Native Builder</span>
-      </summary>
+      <summary class="nav-toggle">导航</summary>
       <nav class="nav">
         <div class="nav-g"><span class="nav-h">流程</span>
-      <a href="/mas_router_method/site/">总览</a>
-      <a href="/mas_router_method/site/need.html">需求</a>
-      <a href="/mas_router_method/site/design.html">设计</a>
-      <a href="/mas_router_method/site/build.html">开发</a>
-      <a href="/mas_router_method/site/verify.html">验收</a>
-      <a href="/mas_router_method/site/ship.html" class="on">交付</a>
-      <a href="/mas_router_method/site/operate.html">运营</a>
-      <a href="/mas_router_method/site/iterate.html">迭代</a>
-      <a href="/mas_router_method/site/manage.html">管理</a>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html" class="on">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
-      <a href="/mas_router_method/site/branches.html">分支总表</a>
-      <a href="/mas_router_method/site/skills.html">Skill 全表</a>
-      <a href="/mas_router_method/site/prompts.html">提示词</a>
-      <a href="/mas_router_method/site/matrix.html">数据矩阵</a>
-      <a href="/mas_router_method/site/tables.html">十三个表</a>
-      <a href="/mas_router_method/site/docs.html">原始文档</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
@@ -174,33 +180,33 @@
   </aside>
   <div class="content">
     <main>
-      <div class="crumb"><a href="/mas_router_method/site/">总览</a> / 交付</div>
+      <div class="crumb"><a href="./">总览</a> / 交付</div>
       <h1><span class="num">05</span>交付</h1>
 <p class="lede">别人拿到一个地址就能用，不需要你在旁边。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-shipable</code> 覆盖，但它有一个我做不到的验收动作：换一台设备、让另一个人试。<br><br><b>为什么这一步重要：</b>这是你第一次从使用者的位置看它。前面每一步你都在里面，所有东西都是配好的。</div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
-<table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="#b-local">只有你能打开</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="#b-wall">别人一进来就撞墙</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="#b-nobody">没人告诉你哪不好</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="#b-next">这一步过了</a></td><td>进入运营。</td></tr></tbody></table>
+<div class="tablewrap"><table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="#b-local">只有你能打开</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="#b-wall">别人一进来就撞墙</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="#b-nobody">没人告诉你哪不好</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="#b-next">这一步过了</a></td><td>进入运营。</td></tr></tbody></table></div>
 <div class="card" id="b-local"><h3>只有你能打开</h3><p>本机地址、localhost、只在你的机器上有效。<br><br><b>这不是交付。</b>有四件事在你这里是配好的，在别人那里全是缺的：密钥、数据、权限、地址。它们不会在开发时报错，因为开发时它们本来就没被用到。</p></div>
 <div class="card" id="b-wall"><h3>别人一进来就撞墙</h3><p>最常见的四种：API 配额耗尽、权限不足、依赖没装、域名/证书问题。<br><br><b>怎么提前发现</b>：算一遍配额。如果一次使用消耗 N 次配额，而你只有 M 次，那第 M/N 个用户就会撞墙。这个算术在写完代码时就能做。</p></div>
 <div class="card" id="b-nobody"><h3>没人告诉你哪不好</h3><p>你需要一个人，在旁边看着他用，不说话。<br><br><b>看三件事</b>：他第一次点哪里、第一次停顿超过三秒在哪、他问了你什么。<b>每一个问题都是一个缺陷</b>，不是文档缺口。</p></div>
 <div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
-<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>用手机打开这个地址</td><td>打得开才算交付</td></tr><tr><td>另一个人在没有解释的情况下用了一次</td><td>他问的每一个问题都是一个缺陷，不是文档缺口</td></tr><tr><td>所有密钥来自环境，不在任何文件里</td><td>全仓搜一次</td></tr></tbody></table>
+<div class="tablewrap"><table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>用手机打开这个地址</td><td>打得开才算交付</td></tr><tr><td>另一个人在没有解释的情况下用了一次</td><td>他问的每一个问题都是一个缺陷，不是文档缺口</td></tr><tr><td>所有密钥来自环境，不在任何文件里</td><td>全仓搜一次</td></tr></tbody></table></div>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="/mas_router_method/site/skills.html#anb-shipable"><code>anb-shipable</code></a> — 别人能打开、能用，不需要你在旁边。</li><li><a href="/mas_router_method/site/skills.html#anb-check-otherdevice"><code>anb-check-otherdevice</code></a> — 换一台设备打开，让另一个人试。</li><li><a href="/mas_router_method/site/skills.html#pr"><code>pr</code></a> — PR 正文：最小视图、前后证据、合并风险。</li><li><a href="/mas_router_method/site/skills.html#deploy-checklist"><code>deploy-checklist</code></a> — 发布前清单与回滚触发条件。</li><li><a href="/mas_router_method/site/skills.html#deployment-patterns"><code>deployment-patterns</code></a> — 滚动/蓝绿/金丝雀、容器化、CI/CD。</li><li><a href="/mas_router_method/site/skills.html#milestone-report"><code>milestone-report</code></a> — 一页 HTML 里程碑报告，结论先行。</li></ul>
-<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="/mas_router_method/site/tables-ship.html">看 交付 的表 →</a></div>
+<ul><li><a href="skills.html#anb-shipable"><code>anb-shipable</code></a> — 别人能打开、能用，不需要你在旁边。</li><li><a href="skills.html#anb-check-otherdevice"><code>anb-check-otherdevice</code></a> — 换一台设备打开，让另一个人试。</li><li><a href="skills.html#pr"><code>pr</code></a> — PR 正文：最小视图、前后证据、合并风险。</li><li><a href="skills.html#deploy-checklist"><code>deploy-checklist</code></a> — 发布前清单与回滚触发条件。</li><li><a href="skills.html#deployment-patterns"><code>deployment-patterns</code></a> — 滚动/蓝绿/金丝雀、容器化、CI/CD。</li><li><a href="skills.html#milestone-report"><code>milestone-report</code></a> — 一页 HTML 里程碑报告，结论先行。</li></ul>
+<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="tables-ship.html">看 交付 的表 →</a></div>
 <h2 id="docs">原文与依据</h2>
-<ul><li><a href="/mas_router_method/site/docs.html#decision-tree.html">决策树：怎么判断自己卡在交付还是别的地方</a></li></ul>
+<ul><li><a href="docs.html#decision-tree.html">决策树：怎么判断自己卡在交付还是别的地方</a></li></ul>
       <div class="nextprev">
-<a href="/mas_router_method/site/verify.html"><span class="lbl">上一步</span>验收</a>
-<a href="/mas_router_method/site/operate.html" style="text-align:right"><span class="lbl">下一步</span>运营</a>
+<a href="verify.html"><span class="lbl">上一步</span>验收</a>
+<a href="operate.html" style="text-align:right"><span class="lbl">下一步</span>运营</a>
 </div>
     </main>
     <footer>
       Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
-      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="/mas_router_method/site/docs.html">原始文档</a>。
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
     </footer>
   </div>
 </div>

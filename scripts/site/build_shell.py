@@ -6,7 +6,7 @@ skill 没跟上，于是出现了「不要做验收」这种反向指令——�
 
 站点显示用的编号由这里的下标算出（见 build_pages.py），从不手写。
 """
-import json, os, subprocess
+import json, os, re, subprocess
 from paths import REPO
 
 
@@ -44,20 +44,21 @@ CSS = """
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
   .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:block;color:#f2f1ec;text-decoration:none;font:650 1.15rem/1.2 var(--serif);
-               letter-spacing:-.02em}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
   .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
   .nav{padding:0 .5rem}
   .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;padding:.2rem .62rem .3rem;
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
          text-transform:uppercase}
   .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
          border-radius:2px;line-height:1.35}
   .nav a:hover{background:#2a2c26;color:#fff}
   .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
   .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#7b7d74;margin-bottom:.3rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
   .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;padding:.2rem 0 .2rem .55rem;
             border-left:1px solid #3d3f38;line-height:1.35}
   .subnav a:hover{color:#fff;border-left-color:#8d8f86}
@@ -73,7 +74,8 @@ CSS = """
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.6rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem}
-    .side summary::after{content:'▾';position:absolute;right:1.1rem;top:1.15rem;color:#8d8f86}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.4rem}
   }
@@ -96,6 +98,7 @@ CSS = """
   .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
   .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
   thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
   tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
   tbody tr:last-child td{border-bottom:0}
@@ -170,7 +173,9 @@ def nav_groups():
 
 
 def _href(slug):
-    return f'/mas_router_method/site/{"" if slug == "index" else slug + ".html"}'
+    # 站内链接一律相对当前页。站点同时要在 GitHub Pages 的子路径和
+    # main.luteos.com 的根路径上工作，绝对前缀会让其中一个必坏。
+    return './' if slug == 'index' else f'{slug}.html'
 
 
 def nav(current_slug):
@@ -198,7 +203,16 @@ def subnav(sections, current_slug):
     out.append('</div>')
     return "\n      ".join(out)
 
-def page(slug, title, body, crumb='', prevnext='', sections=None):
+def _wrap_tables(html):
+    """宽表在窄屏上会让整页横向滚动；套一层容器让它自己滚，页面不动。
+
+    生成器里每张表都手写包裹是一次性正确、永久易忘的做法——新加一张表的人
+    不会记得。这里统一包，测试会盯着「窄屏下没有整页溢出」。
+    """
+    return re.sub(r'(<table\b.*?</table>)', r'<div class="tablewrap">\1</div>', html, flags=re.S)
+
+
+def page(slug, title, body, crumb='', prevnext='', sections=None, desc=None):
     """整站外壳。左栏常驻，右栏是这一页。
 
     左侧边栏而不是顶栏，理由是这套文档的**深度**：七个阶段加一层管理，每一阶段
@@ -207,23 +221,35 @@ def page(slug, title, body, crumb='', prevnext='', sections=None):
 
     移动端不用 JS 折叠：<details> 是浏览器自带的，禁用脚本时它的内容默认展开——
     也就是退化成没有折叠的普通列表，内容一个都不少。
+
+    desc 缺省时用标题拼一句，保证每页都有 meta description；SEO 检查器会读它。
     """
+    description = desc or f'{title} · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。'
+    # 内联 SVG favicon：站点零外部依赖，多一个文件就要在生成器里多一处拷贝。
+    favicon = ("data:image/svg+xml,"
+               "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E"
+               "%3Crect width='64' height='64' fill='%23191a17'/%3E"
+               "%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec'"
+               " font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E")
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} · Agent Native Builder</title>
+<meta name="description" content="{description}">
+<link rel="icon" href="{favicon}">
 <style>{CSS}</style>
 </head>
 <body>
 <div class="layout">
   <aside class="side">
+    <div class="brand">
+      <a class="home" href="{_href('index')}">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
     <details open>
-      <summary class="brand">
-        <a class="home" href="{_href('index')}">ANB</a>
-        <span class="brand-sub">Agent Native Builder</span>
-      </summary>
+      <summary class="nav-toggle">导航</summary>
       <nav class="nav">
         {nav(slug)}
       </nav>
@@ -233,7 +259,7 @@ def page(slug, title, body, crumb='', prevnext='', sections=None):
   <div class="content">
     <main>
       {f'<div class="crumb">{crumb}</div>' if crumb else ''}
-      {body}
+      {_wrap_tables(body)}
       {prevnext}
     </main>
     <footer>

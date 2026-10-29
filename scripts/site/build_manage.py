@@ -93,9 +93,9 @@ def manage_page():
       <b>三次都没有抛错，三次都给出了自信的错误输出。</b>每一个都有测试锁住，而测试是通过"临时把 bug 注回去、看它会不会红"来验证的。</div>''')
 
         # 指向最后一个阶段，但用它的 slug，不写死文件名——文件名会随阶段改名而变。
-    pp = (f'<div class="nextprev"><a href="/mas_router_method/site/{STAGES[-1][0]}.html">'
+    pp = (f'<div class="nextprev"><a href="{STAGES[-1][0]}.html">'
           '<span class="lbl">上一个阶段</span>迭代</a></div>')
-    return page('manage', '管理', '\n'.join(b), '<a href="/mas_router_method/site/">总览</a> / 管理', pp)
+    return page('manage', '管理', '\n'.join(b), '<a href="./">总览</a> / 管理', pp)
 
 if __name__ == '__main__':
     open(os.path.join(out_dir(), 'manage.html'), 'w', encoding='utf-8').write(manage_page())
