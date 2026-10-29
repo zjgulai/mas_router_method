@@ -44,6 +44,7 @@ const GENERATORS = [
   'build_agent_graph.py',
   'build_data_design.py',
   'build_data_layers.py',
+  'build_cheatsheet.py',
 ];
 
 function runGenerator(file, stage) {

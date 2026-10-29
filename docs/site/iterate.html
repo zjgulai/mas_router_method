@@ -163,6 +163,7 @@
       <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="data-design.html">数据产品设计</a>
       <a href="data-layers.html">8+3 层契约</a>
@@ -175,6 +176,7 @@
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#battle-tips">实战避坑 (Battle Tips)</a>
       <a href="#branches">走哪条路</a>
       <a href="#verify">谁来验怎么验</a>
       <a href="#skills">用到哪些 skill</a>
@@ -188,6 +190,9 @@
       <h1><span class="num">07</span>迭代</h1>
 <p class="lede">只留下真的用过的，改掉真的错的。先由运营给到的三个数字决定<b>改什么</b>，把结论落成 <code>R-</code> 或 <code>T-</code>；再决定<b>留下什么</b>做下个产品的起点。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-reusable</code> 覆盖，并且推翻了它自己的一条规则（"用过三次才抽"太严）。<br><br><b>为什么这一步重要：</b>迭代不是加功能，是去掉不该留的。判断标准是"上个产品用过吗"，不是"这个可能有用"。</div>
+<h2 id="battle-tips">实战避坑与作战原则 (Battle Tips)</h2>
+<p class="h2sub">来自 6 大作战面板中归属于<b>迭代</b>阶段的实战守则。详见 <a href="cheatsheet.html">作战手卡全表 →</a></p>
+<div class="grid two"><div class="card" id="bt-agent-eng-06"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-06</span> 让环境和 Agent 一起变强</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>静态环境只给结果，不给足够的反馈；Agent 很难知道什么算好。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>把业务契约、评测集、失败样本和运行日志纳入环境。</li><li>每次执行保留 evidence → finding → path，允许回放和比较。</li><li>将高频失败模式写回 Skill、Harness 或测试，而不是只修当前对话。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">把这项任务改造成可评测环境：定义状态、动作、反馈、成功判定和失败样本。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>下次执行应能复用上一轮的证据，而不是重新猜。</div></div><div class="card" id="bt-skills-ctx-01"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-01</span> 新对话失忆 / 先做记忆分层</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>需求、决策、坑和偏好散在聊天里，换会话就要重新交代。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>把 定规则、项目事实、当前任务、历史决策分别存放。</li><li>把大段历史压成：关键决策 / 当前状态 / 待解决问题。</li><li>记忆必须能被检索、更新、删除，不能只靠一个超长文件。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请把本次对话压缩成交接文档：目标、已确认决策、当前状态、未解决问题、下一步验证。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>交接文档脱离原对话仍能让另一个 Agent 继续。</div></div><div class="card" id="bt-skills-ctx-04"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-04</span> 创建 Skill / 先抽取 定方法</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>把一次对话复制成 Skill，容易把偶然措辞和无效步骤固化。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>先观察多次任务中的共同输入、决策、工具和验收。</li><li>只保留可迁移的流程、模板、检查项和失败边界。</li><li>给 Skill 加版本、示例、反例、回归任务和废弃条件。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">从这组真实任务中抽取 Skill：先列 定模式，再删除一次性细节，最后给出触发器和回归样例。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>Skill 必须能被另一个人读懂、运行和验证。</div></div><div class="card" id="bt-product-growth-03"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-03</span> 内容增长 / 把一次实践沉淀成方法</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>内容靠灵感重复生产，经验无法复用，热点也难以转变成长期资产。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>把一次实践拆成问题、过程、结果、证据和可复用模板。</li><li>建立知识库：专题、案例、镜头语言和词库等索引。</li><li>用前 5 秒对照实验优化钩子，而不是只看总播放。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">把这次实践整理成可复用内容资产：问题、受众、过程、结果、证据、模板、下一次实验。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>内容必须留下下次可以直接执行的动作。</div></div></div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你要加一个新功能</td><td><a href="#b-add">要加新功能</a></td><td>先问：它解决的是观测到的哪个问题？答不出来就是猜。</td></tr><tr><td>你想抽一个通用模板</td><td><a href="#b-template">想抽通用模板</a></td><td>判据不是"用了几次"，是"它的形状会不会随产品变"。</td></tr><tr><td>一个东西你想保留，但说不清为什么</td><td><a href="#b-keep">想保留但说不清理由</a></td><td>删掉。想不清理由的东西会成为下个项目的负担。</td></tr><tr><td>有了真实使用数据，知道该改什么</td><td><a href="#b-next">这一步过了</a></td><td>回到需求，开始下一轮。</td></tr></tbody></table></div>

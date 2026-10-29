@@ -163,6 +163,7 @@
       <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="data-design.html">数据产品设计</a>
       <a href="data-layers.html">8+3 层契约</a>
@@ -175,6 +176,7 @@
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#battle-tips">实战避坑 (Battle Tips)</a>
       <a href="#branches">走哪条路</a>
       <a href="#verify">谁来验怎么验</a>
       <a href="#skills">用到哪些 skill</a>
@@ -188,6 +190,9 @@
       <h1><span class="num">05</span>交付</h1>
 <p class="lede">别人拿到一个地址就能用，不需要你在旁边。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-shipable</code> 覆盖，但它有一个我做不到的验收动作：换一台设备、让另一个人试。<br><br><b>为什么这一步重要：</b>这是你第一次从使用者的位置看它。前面每一步你都在里面，所有东西都是配好的。</div>
+<h2 id="battle-tips">实战避坑与作战原则 (Battle Tips)</h2>
+<p class="h2sub">来自 6 大作战面板中归属于<b>交付</b>阶段的实战守则。详见 <a href="cheatsheet.html">作战手卡全表 →</a></p>
+<div class="grid two"><div class="card" id="bt-agent-eng-03"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-03</span> 长任务要可观察、可接管</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>多个 Agent 并行跑，最怕失忆、卡住、上下文膨胀和没人知道当前状态。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>用 goal / issue / ticket 维持任务边界；每个阶段产出可读文件。</li><li>把进度在工作、谁卡住、token 消耗、待确认事项放到可见面板。</li><li>让 Agent 在关键节点停下来请求人审，而不是无限制重试。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">把这项长任务拆成可并行的 tickets；为每个 ticket 写输入、输出、停止条件、交接文件和人工审批点。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>任何分支都能从最近一次产物恢复，不依赖完整聊天记录。</div></div><div class="card" id="bt-skills-ctx-06"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-06</span> 汇报要能让非工程师判断完成度</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>一堆 commit hash 和工程术语，无法回答到底完成成了什么。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>结论先行：工作状态和验证状态分开。</li><li>每个事实给定定位证据；不确定写“未确认”。</li><li>待决事项编号化，给出影响和选项，而不是把判断甩回去。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">先写结论；把工作状态和验证状态分开；每个事实给定定位证据；不确定写“未确认”；需要我决定时列编号选项。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>读者不打开代码，也能判断范围、原因、证据、验证和待确认项。</div></div><div class="card" id="bt-product-growth-05"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-05</span> SEO / 从真实站点证据开始</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>套模板写 SEO 报告，容易忽略 robots、跳转、死链和 JS 内容。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>真实抓取站点、站点地图、canonical、结构化数据和核心网页指标。</li><li>每个问题给出 URL、规则、影响和修复建议。</li><li>修复后再次跑同一套检查，比较前后结果。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请对这个站点做真实审计：抓取 → 规则检查 → 证据 → 影响 → 修复 → 复测；不要只给通用建议。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>报告必须能定位到页面和规则，不能只写“优化内容”。</div></div></div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>只有你能打开（本地地址）</td><td><a href="#b-local">只有你能打开</a></td><td>不是交付。密钥、数据、权限、域名四件事在你这里全配好了。</td></tr><tr><td>别人能打开，但第一分钟就撞墙</td><td><a href="#b-wall">别人一进来就撞墙</a></td><td>最常见的：配额耗尽、权限不足、依赖缺失。</td></tr><tr><td>能打开，也能用，但没人告诉你哪不好</td><td><a href="#b-nobody">没人告诉你哪不好</a></td><td>让一个人试，你只看不帮。他卡住的第一步就是下一步的工作。</td></tr><tr><td>换一台设备打开过，另一个人用过</td><td><a href="#b-next">这一步过了</a></td><td>进入运营。</td></tr></tbody></table></div>

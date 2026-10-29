@@ -163,6 +163,7 @@
       <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="data-design.html">数据产品设计</a>
       <a href="data-layers.html">8+3 层契约</a>
@@ -181,7 +182,7 @@
     <main>
       <div class="crumb"><a href="./">总览</a> / 提示词库</div>
       <h1>提示词库</h1>
-<p class="lede">可以直接复制的会话提示词。按阶段分类，每条都标明：<b>什么时候用、以及为什么这么写</b>。</p>
+<p class="lede">可以直接复制的会话提示词。按阶段分类，每条都标明：<b>什么时候用、以及为什么这么写</b>。<br>更系统的 36 张战斗卡片见 <a href="cheatsheet.html">实战作战手卡</a>。</p>
 <div class="note">这些提示词的共同点：<b>都在要求一个具体动作，而不是一个结论。</b>
 "帮我检查一下"会让它给你一段看起来认真的话；"造一个会让它失败的情况，跑一次，把结果原样贴给我"会让它给你证据。
 <br><br>把 <code>___</code> 换成你的内容。带 <code>&lt;b&gt;</code> 的地方是强调，复制时可以去掉。</div>
@@ -473,6 +474,194 @@
 <h3>被推翻的时候新增而不是改写</h3>
 <pre>这条结论被证伪了。别改原件。按三句话给我：<b>旧结论主张什么</b>、<b>什么条件触发了</b>、<b>新结论是什么</b>。然后告诉我这张旧卡该标成什么状态。</pre>
 <div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">证伪检查报红之后</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">删掉旧结论会失去「我们曾经相信过什么、为什么信错了」的记录，而那份记录是唯一能让下次判断更快的东西。</span></div></div>
+</div>
+<h2>实战战斗 Prompt 专区（36 条原则精选）</h2>
+<p class="h2sub">精选自 6 大实战作战主题。详见 <a href="cheatsheet.html">完整作战手卡与验收判定 →</a></p>
+<h3>01 Agent 工程：从会做，到可持续运行</h3>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-01</span> 先配问题放回系统</h3>
+<pre>请先不要改代码：先确认真正目标、扫描系统结构、列出边界与依赖，再给出最小可行执行计划。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">Agent 直接动手，往往连目标、边界和依赖都没有对齐。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">计划必须指标输入、输出、验收和阻塞回退点。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-02</span> 模型只是乘数，Harness 才是系统</h3>
+<pre>如果模型明年强 10 倍，这个功能还应该留在 Harness 里吗？请按必要性、可替代性、验证成本回答。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">模型会更换；真正累积的是工具、技能、上下文、循环和审批。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每个长期机制都要能说清保留理由和删除条件。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-03</span> 长任务要可观察、可接管</h3>
+<pre>把这项长任务拆成可并行的 tickets；为每个 ticket 写输入、输出、停止条件、交接文件和人工审批点。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">多个 Agent 并行跑，最怕失忆、卡住、上下文膨胀和没人知道当前状态。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">任何分支都能从最近一次产物恢复，不依赖完整聊天记录。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-04</span> 先路由，再执行</h3>
+<pre>Route first, execute second: 先写任务类型、授权 scope、可用工具和退出条件，再开始 ACT。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">工具很多，Agent 选错方法时会把时间浪费在无效探索上。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">没有授权、scope 或工具前置条件时，不进入执行阶段。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-05</span> 让 Agent 先看地图再改代码</h3>
+<pre>请先画出本次改动涉及的模块、调用关系和数据流；标出不能碰的边界，再开始实现。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">一口气动十几个文件，依赖和影响面不可见，合并后才发现牵连别处。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">变更说明必须能回答：改了哪里、为什么、可能影响谁、如何回滚。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-06</span> 让环境和 Agent 一起变强</h3>
+<pre>把这项任务改造成可评测环境：定义状态、动作、反馈、成功判定和失败样本。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">静态环境只给结果，不给足够的反馈；Agent 很难知道什么算好。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">下次执行应能复用上一轮的证据，而不是重新猜。</span></div></div>
+</div>
+<h3>02 Skills 与上下文：少而准，按需加载</h3>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-01</span> 新对话失忆 / 先做记忆分层</h3>
+<pre>请把本次对话压缩成交接文档：目标、已确认决策、当前状态、未解决问题、下一步验证。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">需求、决策、坑和偏好散在聊天里，换会话就要重新交代。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">交接文档脱离原对话仍能让另一个 Agent 继续。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-02</span> AGENTS.md 太重 / 规则要分层</h3>
+<pre>审查当前 AGENTS.md、Skills 和任务提示：哪些规则应保留在根层，哪些应下沉或删除？给出迁移表。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">把代码规范、API 格式、业务逻辑和所有例子全塞根目录，Agent 反而变慢。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每条规则都要有触发场景、适用范围、验证方式和删除条件。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-03</span> 装了 Skill / 不等于真的会用</h3>
+<pre>请为这个 Skill 写一个最小评测集：触发样例、反例、完成标准、错误边界和回归任务。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">Skill 数量增长很快，但模型、Harness 和任务上下文改变使用效果。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">没有评测证据时，只能说“已安装”，不能说“已掌握”。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-04</span> 创建 Skill / 先抽取 定方法</h3>
+<pre>从这组真实任务中抽取 Skill：先列 定模式，再删除一次性细节，最后给出触发器和回归样例。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">把一次对话复制成 Skill，容易把偶然措辞和无效步骤固化。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">Skill 必须能被另一个人读懂、运行和验证。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-05</span> 上下文窗口 / 先做价值排序</h3>
+<pre>请将当前上下文分成：必须保留、可按需加载、可丢弃三层，并说明每项的判断理由。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">低频 Skill、旧决定和中间噪声驻上下文中，挤掉真正有用的信息。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">压缩后不能丢失用户目标、关键报错、约束和可复现路径。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">02-06</span> 汇报要能让非工程师判断完成度</h3>
+<pre>先写结论；把工作状态和验证状态分开；每个事实给定定位证据；不确定写“未确认”；需要我决定时列编号选项。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">一堆 commit hash 和工程术语，无法回答到底完成成了什么。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">读者不打开代码，也能判断范围、原因、证据、验证和待确认项。</span></div></div>
+</div>
+<h3>03 Eval First：从会生成，到值得交付</h3>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">03-01</span> AI 项目 / 先建评测再建功能</h3>
+<pre>Eval First: 先给出评测集、成功标准、失败类型和基线，再设计实现方案。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">输出不可预测，单元测试通过也不能说明用户结果有效。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">没有基线和失败样例，不宣称“效果更好”。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">03-02</span> 单测通过 / 仍要跑真实业务路径</h3>
+<pre>请从真实入口跑完整业务路径，并同时给出用户可见结果、工具证据和业务契约对照。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">局部函数正确，不代表权限、状态、并发、重试和回滚真的成立。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">从入口跑到底端，并留下可复核证据。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">03-03</span> 机制很多 / 用消融实验找贡献</h3>
+<pre>给这三个优化设计消融实验，判断真正的收益来自哪里。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">缓存、队列、锁、Agent、插件一起上线，没人知道真正收益来自哪里。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每个机制都有对照结果和业务收益。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">03-04</span> Bug 反复改 / 设调试止损线</h3>
+<pre>先复现问题；每轮只改一处；用同一验收方法验证；连续两轮无进展就停止修改并重新诊断。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">改一次、又引出新问题，第三轮已经忘了最初错误，Token 和时间一起烧掉。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">没有新的证据时，不继续堆 patch。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">03-05</span> Review / 先看业务风险再看代码风格</h3>
+<pre>按业务路径做 Review: 先列高风险假设，再逐项给出证据、影响、修复建议和未确认项。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">Agent 生成速度上去了，人工判断却仍按原节奏，审查变成瓶颈。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每条评论都必须能改变风险、验收或维护成本。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">03-06</span> 工具返回合理 / 不等于业务正确</h3>
+<pre>先写业务契约，再让工具证明结果；不要让工具替你定义正确答案。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">DB、日志和 Trace 能说明发生了什么，却不能替业务定义什么是对。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">结论必须同时有业务依据和可定位的运行证据。</span></div></div>
+</div>
+<h3>04 Creative Workflow：让 Prompt 可读、可控、可复用</h3>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-01</span> Prompt 不用专业 / 要写到自己读得懂</h3>
+<pre>【主体】x【风格】x【构图】x【媒介】；请把我的想法改写成我能读懂、能逐项检查的 Prompt。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">复杂术语堆在一起，自己都无法检查，模型也难以稳定复现。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每个形容词都要对应可观察的画面证据。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-02</span> 视频从想法到成片 / 先管前 2 秒和镜头</h3>
+<pre>请先给出前 2 秒钩子、镜头时间线、每镜头的动作与转场，再生成完整视频 Prompt。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">旁白塞太满、方向没定、细节越改越重，成片反而失去重点。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">删掉不能服务主题、节奏或转化的镜头。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-03</span> 抄参考 / 先提取设计系统</h3>
+<pre>请从这个参考网站提取一份可执行设计系统：色板、字体层级、间距、组件、状态、无障碍和验收清单。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">只看截图容易抄到表面，配色、字体、间距和组件关系仍靠猜。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">输出必须能直接指导实现和 Review，而不是只说“高级、简洁”。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-04</span> 风格库 / 用编号减少描述成本</h3>
+<pre>浏览风格画廊，选出最适合主题的 1 个风格编号，并说明它与主体、构图和媒介如何组合。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">审美词汇不稳定，团队和模型对“手绘、电影感、高级”理解不一致。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">风格选择必须能解释为什么适合当前任务。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-05</span> 复刻 / 先拆结构再换内容</h3>
+<pre>请把这个参考拆成结构变量与内容变量；先保持结构不变，只替换主体，并列出每轮对照检查项。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">看到结果就照抄，往往只能复制表面，无法迁移到新主题。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">复刻结果要能说明差异来自哪个变量。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-06</span> UI 不是堆功能 / 是任务与层级</h3>
+<pre>请按用户任务重构这个页面：先列层级、关键状态和操作路径，再决定组件、动效和视觉风格。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">页面看起来完整，却没有清晰任务路径，AI 带来无意义装饰和默认组件。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每个视觉元素都要服务理解、操作或反馈。</span></div></div>
+</div>
+<h3>05 Product & Growth：从有人感兴趣，到有人付费</h3>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-01</span> 早期验证 / 不要把兴趣当需求</h3>
+<pre>请把这个想法拆成信号阶梯：每一级需要用户付出什么、如何观察、什么结果才允许进入下一步？</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">点赞、浏览和口头喜欢很容易，真实付出才能接近购买意愿。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">没有最高成本信号前，不要把曝光写成 PMF。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-02</span> 竞品调研 / 先找切入口再做功能</h3>
+<pre>请做竞品调研：用户任务 → 搜索词 → 竞品替代 → 未满足需求 → 可测试切入口，并标注证据源。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">资料很多，但没有形成目标用户、替代方案和可交付缺口。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每个结论都要能回到用户行为或公开证据。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-03</span> 内容增长 / 把一次实践沉淀成方法</h3>
+<pre>把这次实践整理成可复用内容资产：问题、受众、过程、结果、证据、模板、下一次实验。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">内容靠灵感重复生产，经验无法复用，热点也难以转变成长期资产。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">内容必须留下下次可以直接执行的动作。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-04</span> 自动化 / 先拆链路再接工具</h3>
+<pre>请把这条业务链路画成状态机：输入 → 抽取 → 分类 → 生成 → 审批 → 发布 → 复盘，并标注人工门。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">把多个平台和 Agent 串起来很容易，但错误会被自动化放大。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">没有权限、幂等和回滚设计时，不做全自动发布。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-05</span> SEO / 从真实站点证据开始</h3>
+<pre>请对这个站点做真实审计：抓取 → 规则检查 → 证据 → 影响 → 修复 → 复测；不要只给通用建议。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">套模板写 SEO 报告，容易忽略 robots、跳转、死链和 JS 内容。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">报告必须能定位到页面和规则，不能只写“优化内容”。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-06</span> 电商 / 让 AI 负责流程，人负责契约</h3>
+<pre>请把这条电商流程拆成可独立验收的 Skills，并为每一步写输入、输出和人工审批点。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">从选品到上架、文案、出图和投放都自动化，最怕品牌和业务标准失控。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">自动化不能绕过合规、价格、库存和品牌边界。</span></div></div>
+</div>
+<h3>06 Data & Research：把资料变成可行动知识</h3>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">06-01</span> 资料很多 / 先找来源和证据边界</h3>
+<pre>请输出：原文事实 / 作者观点 / 你的推断 / 未确认缺口；每条事实给出定位来源。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">AI 总结流畅，但读者分不清哪句来自原文，哪句是模型补全。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">没有原文证据时，不把推断写成事实。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">06-02</span> RAG / 先问检索结构是否适合任务</h3>
+<pre>请先分析文档结构和问题类型，再比较向量、关键词、树状索引等检索方案，给出基线与评测集。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">切块、向量和相似度搜索并非所有文档任务的最优解。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">不要因为“大家常用 RAG”跳过任务结构分析。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">06-03</span> 数据工程 / 用状态机和 Provenance 管住链路</h3>
+<pre>请把这个数据流程建模为：状态机 + DAG + I/O + 执行器 + Provenance，并列出每个状态的进入与退出条件。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">数据产生、摄取、存储、处理、发布混在一起，失败后无法定位。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">任何结果都能回到源头、变换和版本。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">06-04</span> 陌生领域 / 先建地图再深入</h3>
+<pre>请把这些资料整理成知识地图：实体、概念、关系、来源、证据等级和待验证问题。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">资料散落，概念、人物、项目和来源互相混淆，学习路径不可见。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">地图要能指导下一次搜索，而不是只做漂亮目录。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">06-05</span> 学习材料 / 让 AI 解释但不替你相信</h3>
+<pre>请把这份材料变成交互式学习路径：章节 → 核心概念 → 原文证据 → 例子 → 自测题 → 待复习。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">一本书、PDF 或课程很难系统读完，摘要又可能混入幻觉。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">解释必须能回到材料，不能只凭常识补全。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">06-06</span> 研究闭环 / 从信息摄取到可执行决策</h3>
+<pre>请把这批资料按相关性、具体程度、可信度和时效评分，给出今日优先阅读与下一步实验。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">收藏、阅读和转发很多，但没有排序、筛选、实验和反馈。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每条研究输出至少导向一个可执行动作或明确的“不做”。</span></div></div>
 </div>
       
     </main>

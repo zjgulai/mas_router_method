@@ -2,6 +2,7 @@ import sys, json, collections, os
 from build_shell import page, STAGES
 from paths import out_dir
 from map import MAP
+from battle_tips_data import THEMES
 
 # 文档里的数字从归属表数，不写字面量。
 N_ROWS = len(MAP)
@@ -209,12 +210,33 @@ def stage_page(slug, name, oneline):
     body.append(f'<p class="lede">{d["goal"]}</p>')
     body.append(f'<div class="note{" warn" if d["gap"]!="covered" else ""}">{gap_badge}　{d["gapnote"]}<br><br><b>为什么这一步重要：</b>{d["why"]}</div>')
 
+    # 实战战斗卡（Battle Tips）：从 36 条原则中自动匹配归属于当前阶段的条目
+    stage_tips = []
+    for t in THEMES:
+        for c in t['cards']:
+            if c.get('stage') == slug:
+                stage_tips.append((t, c))
+
+    if stage_tips:
+        body.append('<h2 id="battle-tips">实战避坑与作战原则 (Battle Tips)</h2>')
+        body.append(f'<p class="h2sub">来自 6 大作战面板中归属于<b>{name}</b>阶段的实战守则。详见 <a href="cheatsheet.html">作战手卡全表 →</a></p>')
+        cards_html = []
+        for t, c in stage_tips:
+            tips_li = ''.join(f'<li>{tip}</li>' for tip in c['tips'])
+            cards_html.append(
+                f'<div class="card" id="bt-{t["id"]}-{c["num"]}">'
+                f'<h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">{t["num"]}-{c["num"]}</span> {c["title"]}</h3>'
+                f'<p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>{c["problem"]}</p>'
+                f'<ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)">{tips_li}</ul>'
+                f'<pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">{c["prompt"]}</pre>'
+                f'<div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>{c["verdict"]}</div>'
+                f'</div>'
+            )
+        body.append('<div class="grid two">' + ''.join(cards_html) + '</div>')
+
     # 分支
     body.append('<h2 id="branches">什么情况走哪条路</h2>')
     body.append('<p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>')
-    # 「去」这一列显示括号里那张卡片的标题，不是锚点 id。
-    # 原来直接印 `b-neverfail`，读者要想知道它是什么得先点过去——而这一列
-    # 存在的意义正是「不点也知道会去哪」。
     rows = ''.join(
         f'<tr><td>{c}</td><td><a href="{a}">{BRANCH_BODY[a.lstrip("#")][0] if a.lstrip("#") in BRANCH_BODY else a.lstrip("#")}</a></td><td>{note}</td></tr>'
         for c, a, note in d['branches'])
@@ -235,8 +257,6 @@ def stage_page(slug, name, oneline):
 
     # skill
     body.append('<h2 id="skills">这一步用到哪些 skill</h2>')
-    # 不在 MAP 里的 skill 之前被静默丢掉：一个拼错的 skill 名会让这一行凭空消失，
-    # 而页面看起来完好无损。缺了就报出来。
     missing = [s for s in d['skills'] if s not in MAP]
     if missing:
         raise SystemExit(f"{slug}: these skills are not in map.py, so the page would silently omit them: {missing}")
@@ -264,6 +284,8 @@ def stage_page(slug, name, oneline):
     crumb = '<a href="./">总览</a> / ' + name
     sections = [('branches', '走哪条路'), ('verify', '谁来验怎么验'),
                 ('skills', '用到哪些 skill'), ('docs', '原文与依据')]
+    if stage_tips:
+        sections.insert(0, ('battle-tips', '实战避坑 (Battle Tips)'))
     return page(slug, name, '\n'.join(body), crumb, '\n'.join(pp), sections)
 
 # ---------- 首页 ----------
@@ -292,6 +314,7 @@ def index_page():
 
     b.append('<h2>从这里进</h2>')
     b.append('<div class="grid two">')
+    b.append('<a class="card" href="cheatsheet.html" style="display:block;text-decoration:none;color:inherit"><h3>实战作战手卡 · 36 条</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">Agent 工程、上下文、Eval、创意流、产品增长、数据研究 6 大实战主题闭环。</p></a>')
     b.append('<a class="card" href="agent-graph.html" style="display:block;text-decoration:none;color:inherit"><h3>Main Agent 能力图谱</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">4 条轴、17 个核心能力节点与 14 条咨询急诊路线，将方法体系变成可运行的咨询 Agent。</p></a>')
     b.append('<a class="card" href="matrix.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品的 8 × 8 矩阵</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">7 阶段 + 管理 × 8 层。每格写输入契约、输出契约、失败模式；状态由脚本算出，不手填——<b>验</b> 有检查器，<b>约</b> 只有契约。</p></a>')
     b.append('<a class="card" href="data-design.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品设计（Momcozy）</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">自顶向下设计全景：双向固定效应面板模型、三前置发现与 C1–C4 四级结论卡。</p></a>')
@@ -314,8 +337,6 @@ def index_page():
     return page('index', '总览', '\n'.join(b))
 
 def notfound_page():
-    # nginx 的 error_page 指向这一页。默认 404 会带服务器版本和一行死气沉沉的
-    # 「Not Found」；这一页至少告诉访客站里有什么、往哪走。
     b = ['<h1>404 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);font-weight:400">这一页不存在</span></h1>']
     b.append('<p class="lede">地址打错了，或者这一页被移走了。<b>本站的每一页都可以从总览走到</b>，'
              '下面几个入口覆盖了大部分来意。</p>')

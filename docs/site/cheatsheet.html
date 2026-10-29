@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实战作战手卡 · Agent Native Builder</title>
+<meta name="description" content="实战作战手卡 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--ink);color:#e9e7e0;position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.1rem 0 2rem}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
+  .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
+  .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
+  .nav{padding:0 .5rem}
+  .nav-g{margin-bottom:.9rem}
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
+         text-transform:uppercase}
+  .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
+         border-radius:2px;line-height:1.35}
+  .nav a:hover{background:#2a2c26;color:#fff}
+  .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
+  .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
+  .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;
+            padding:.3rem 0 .3rem .55rem;
+            border-left:1px solid #3d3f38;line-height:1.35}
+  .subnav a:hover{color:#fff;border-left-color:#8d8f86}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2rem,4vw,3.2rem) clamp(16px,4vw,52px) 4rem;
+                max-width:min(56rem,100%)}
+  .content footer{margin:0 clamp(16px,4vw,52px) 0;padding:1.1rem 1.3rem;background:var(--sunk);
+                  font-size:.8rem;color:var(--muted);line-height:1.7;max-width:min(56rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。禁用 JS 时它默认展开，
+     退化成一张普通的纵向导航列表——内容一个不少。 */
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.6rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.4rem}
+  }
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。 */
+  .tb-index{background:var(--surface);padding:.75rem .9rem;margin:1rem 0 1.2rem;font-size:.86rem}
+  .tb-index a{display:flex;gap:.7rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.22rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent)}
+  .tb-index code{background:transparent;padding:0;color:var(--accent);font-weight:650;
+    flex:0 0 4.6rem;border-bottom:1px solid var(--deep)}
+  .tb-row{margin:1.6rem 0 2rem}
+  .tb-row h3{margin:0 0 .5rem;font-family:var(--mono);font-size:.92rem}
+  .tb-row h3 code{background:var(--ink);color:var(--surface);padding:.1rem .45rem;font-size:.86rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:9.5rem;color:var(--faint);font-weight:600;font-size:.8rem}
+  table.tb-fields td:last-child{font-size:.89rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--deep)}
+  .tb-no{color:var(--deep);font-style:italic}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:6.5rem;font-size:.76rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
+    <details open>
+      <summary class="nav-toggle">导航</summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="cheatsheet.html" class="on">作战手卡</a>
+      <a href="agent-graph.html">Agent 图谱</a>
+      <a href="data-design.html">数据产品设计</a>
+      <a href="data-layers.html">8+3 层契约</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
+      </div>
+      </nav>
+      <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#agent-eng">01 Agent 工程</a>
+      <a href="#skills-ctx">02 Skills 与上下文</a>
+      <a href="#eval-first">03 Eval First</a>
+      <a href="#creative-flow">04 Creative Workflow</a>
+      <a href="#product-growth">05 Product & Growth</a>
+      <a href="#data-research">06 Data & Research</a>
+      </div>
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb"><a href="./">总览</a> / 作战手卡</div>
+      <style>
+  .cs-theme{margin:2.5rem 0 3rem;padding-top:1.5rem;border-top:1px solid var(--deep)}
+  .cs-theme:first-of-type{border-top:0;margin-top:1rem;padding-top:0}
+  .cs-meta{font-size:.84rem;color:var(--faint);margin:0 0 1.2rem}
+  .cs-card{background:var(--surface);border:1px solid var(--deep);padding:1.2rem 1.3rem;margin-bottom:1px;position:relative}
+  .cs-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.5rem;border-bottom:1px solid var(--sunk);padding-bottom:.4rem}
+  .cs-head h3{margin:0;font-size:.98rem;font-weight:650;color:var(--ink)}
+  .cs-num{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--accent)}
+  .cs-stage-tag{font-size:.7rem;padding:.05rem .35rem;background:var(--accent2);color:var(--accent);border-radius:2px;margin-left:.4rem;font-family:var(--sans)}
+  .cs-prob{font-size:.86rem;color:var(--alert);margin:0 0 .6rem;line-height:1.45}
+  .cs-prob b{color:var(--ink)}
+  .cs-tips{margin:0 0 .7rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted);line-height:1.55}
+  .cs-tips li{margin-bottom:.25rem}
+  .cs-prompt{background:#20211d;color:#e6e4dc;padding:.65rem .85rem;margin:.5rem 0;font-family:var(--mono);font-size:.78rem;line-height:1.5;border-radius:2px;overflow-x:auto}
+  .cs-prompt-lbl{font-size:.7rem;font-weight:700;color:#8d8f86;letter-spacing:.05em;margin-bottom:.2rem;text-transform:uppercase}
+  .cs-verdict{background:var(--sunk);padding:.45rem .65rem;font-size:.8rem;color:var(--ink);border-left:3px solid var(--accent);margin-top:.6rem}
+  .cs-nav-chips{display:flex;gap:.35rem;flex-wrap:wrap;margin:1.2rem 0 1.8rem}
+  .cs-chip{font:inherit;font-size:.82rem;padding:.3rem .65rem;background:var(--surface);color:var(--muted);border:1px solid var(--deep);text-decoration:none}
+  .cs-chip:hover{border-color:var(--accent);color:var(--ink);background:var(--accent2)}
+</style>
+<h1>实战作战手卡 · 36 条</h1>
+<p class="lede">把一组收藏压缩成可执行的工作闭环：<b>先说清场景，再选择方法，最后保留证据</b>。<br>整理自一线 Agent 工程与大模型产品实战，涵盖 Agent 工程、上下文、Eval 评测、创意流、产品增长与数据研究 6 大主题。</p>
+<div class="note"><b>作战原则。</b>
+不是把收藏变成口号，而是把它变成下一次可以执行和验证的动作。<br>
+每张卡片遵循四段式结构：<b>问题暴露 → TIPS 实操要点 → PROMPT 复制口令 → 验收判定</b>。</div>
+<div class="cs-nav-chips"><a class="cs-chip" href="#agent-eng"><b>01</b> Agent 工程</a><a class="cs-chip" href="#skills-ctx"><b>02</b> Skills 与上下文</a><a class="cs-chip" href="#eval-first"><b>03</b> Eval First</a><a class="cs-chip" href="#creative-flow"><b>04</b> Creative Workflow</a><a class="cs-chip" href="#product-growth"><b>05</b> Product & Growth</a><a class="cs-chip" href="#data-research"><b>06</b> Data & Research</a></div>
+<div class="cs-theme" id="agent-eng"><h2><span class="num">01</span>Agent 工程：从会做，到可持续运行</h2><p class="cs-meta"><b>主题聚焦</b>：Harness · 长任务 · 并行 · 路由 · 系统地图 ｜ <b>关联阶段</b>：开发/设计</p>
+<div class="grid two"><div class="cs-card" id="agent-eng-01"><div class="cs-head"><h3><span class="cs-num">01-01</span> 先配问题放回系统 <a href="need.html" class="cs-stage-tag" title="前往 需求 阶段">需求</a></h3></div><p class="cs-prob"><b>痛点：</b>Agent 直接动手，往往连目标、边界和依赖都没有对齐。</p><ul class="cs-tips"><li>先确认真实目标，再看系统结构：把问题放回它所属的层。</li><li>区分用户看见的结果和内部工程对象：先剪错误逻辑，再增加新逻辑。</li><li>复杂任务先拆成产物链：intent → spec → tickets → implementation → verification。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请先不要改代码：先确认真正目标、扫描系统结构、列出边界与依赖，再给出最小可行执行计划。</pre><div class="cs-verdict"><b>验收判定：</b>计划必须指标输入、输出、验收和阻塞回退点。</div></div><div class="cs-card" id="agent-eng-02"><div class="cs-head"><h3><span class="cs-num">01-02</span> 模型只是乘数，Harness 才是系统 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>模型会更换；真正累积的是工具、技能、上下文、循环和审批。</p><ul class="cs-tips"><li>把 system prompt、tools、agent loop、translation layer 视为最小 Harness。</li><li>把高频流程沉淀成 Skill，把长期知识放到可检索的外层。</li><li>不要用角色数量替代调度设计：先看上下文、工具边界、任务停止、结果验证。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">如果模型明年强 10 倍，这个功能还应该留在 Harness 里吗？请按必要性、可替代性、验证成本回答。</pre><div class="cs-verdict"><b>验收判定：</b>每个长期机制都要能说清保留理由和删除条件。</div></div><div class="cs-card" id="agent-eng-03"><div class="cs-head"><h3><span class="cs-num">01-03</span> 长任务要可观察、可接管 <a href="ship.html" class="cs-stage-tag" title="前往 交付 阶段">交付</a></h3></div><p class="cs-prob"><b>痛点：</b>多个 Agent 并行跑，最怕失忆、卡住、上下文膨胀和没人知道当前状态。</p><ul class="cs-tips"><li>用 goal / issue / ticket 维持任务边界；每个阶段产出可读文件。</li><li>把进度在工作、谁卡住、token 消耗、待确认事项放到可见面板。</li><li>让 Agent 在关键节点停下来请求人审，而不是无限制重试。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">把这项长任务拆成可并行的 tickets；为每个 ticket 写输入、输出、停止条件、交接文件和人工审批点。</pre><div class="cs-verdict"><b>验收判定：</b>任何分支都能从最近一次产物恢复，不依赖完整聊天记录。</div></div><div class="cs-card" id="agent-eng-04"><div class="cs-head"><h3><span class="cs-num">01-04</span> 先路由，再执行 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>工具很多，Agent 选错方法时会把时间浪费在无效探索上。</p><ul class="cs-tips"><li>先判断任务类型：代码库、浏览器、数据、研究、视觉内容。</li><li>按 scenario skill / tool index 选最短路径，保留 timeline 与证据。</li><li>模型负责推理，专用执行器负责高频、低熵动作。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">Route first, execute second: 先写任务类型、授权 scope、可用工具和退出条件，再开始 ACT。</pre><div class="cs-verdict"><b>验收判定：</b>没有授权、scope 或工具前置条件时，不进入执行阶段。</div></div><div class="cs-card" id="agent-eng-05"><div class="cs-head"><h3><span class="cs-num">01-05</span> 让 Agent 先看地图再改代码 <a href="build.html" class="cs-stage-tag" title="前往 开发 阶段">开发</a></h3></div><p class="cs-prob"><b>痛点：</b>一口气动十几个文件，依赖和影响面不可见，合并后才发现牵连别处。</p><ul class="cs-tips"><li>先生成本项目系统地图：模块、调用关系、导入导出、数据流与运行入口。</li><li>把本次变更圈在地图上，先说明影响面，再让 Agent 改。</li><li>真实入口验证后，把新发现写回地图和交接文档。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请先画出本次改动涉及的模块、调用关系和数据流；标出不能碰的边界，再开始实现。</pre><div class="cs-verdict"><b>验收判定：</b>变更说明必须能回答：改了哪里、为什么、可能影响谁、如何回滚。</div></div><div class="cs-card" id="agent-eng-06"><div class="cs-head"><h3><span class="cs-num">01-06</span> 让环境和 Agent 一起变强 <a href="iterate.html" class="cs-stage-tag" title="前往 迭代 阶段">迭代</a></h3></div><p class="cs-prob"><b>痛点：</b>静态环境只给结果，不给足够的反馈；Agent 很难知道什么算好。</p><ul class="cs-tips"><li>把业务契约、评测集、失败样本和运行日志纳入环境。</li><li>每次执行保留 evidence → finding → path，允许回放和比较。</li><li>将高频失败模式写回 Skill、Harness 或测试，而不是只修当前对话。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">把这项任务改造成可评测环境：定义状态、动作、反馈、成功判定和失败样本。</pre><div class="cs-verdict"><b>验收判定：</b>下次执行应能复用上一轮的证据，而不是重新猜。</div></div></div></div>
+<div class="cs-theme" id="skills-ctx"><h2><span class="num">02</span>Skills 与上下文：少而准，按需加载</h2><p class="cs-meta"><b>主题聚焦</b>：Skills · AGENTS.md · 记忆 · 规则分层 · Context Budget ｜ <b>关联阶段</b>：开发/设计/运营</p>
+<div class="grid two"><div class="cs-card" id="skills-ctx-01"><div class="cs-head"><h3><span class="cs-num">02-01</span> 新对话失忆 / 先做记忆分层 <a href="iterate.html" class="cs-stage-tag" title="前往 迭代 阶段">迭代</a></h3></div><p class="cs-prob"><b>痛点：</b>需求、决策、坑和偏好散在聊天里，换会话就要重新交代。</p><ul class="cs-tips"><li>把 定规则、项目事实、当前任务、历史决策分别存放。</li><li>把大段历史压成：关键决策 / 当前状态 / 待解决问题。</li><li>记忆必须能被检索、更新、删除，不能只靠一个超长文件。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把本次对话压缩成交接文档：目标、已确认决策、当前状态、未解决问题、下一步验证。</pre><div class="cs-verdict"><b>验收判定：</b>交接文档脱离原对话仍能让另一个 Agent 继续。</div></div><div class="cs-card" id="skills-ctx-02"><div class="cs-head"><h3><span class="cs-num">02-02</span> AGENTS.md 太重 / 规则要分层 <a href="build.html" class="cs-stage-tag" title="前往 开发 阶段">开发</a></h3></div><p class="cs-prob"><b>痛点：</b>把代码规范、API 格式、业务逻辑和所有例子全塞根目录，Agent 反而变慢。</p><ul class="cs-tips"><li>根规则只做路由和不可违背的边界；细节放到按需加载的 Skill。</li><li>工具参数写进工具说明；任务特例与当前任务包挂钩。</li><li>定期删除已经没有收益的旧约束，避免规则冲突。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">审查当前 AGENTS.md、Skills 和任务提示：哪些规则应保留在根层，哪些应下沉或删除？给出迁移表。</pre><div class="cs-verdict"><b>验收判定：</b>每条规则都要有触发场景、适用范围、验证方式和删除条件。</div></div><div class="cs-card" id="skills-ctx-03"><div class="cs-head"><h3><span class="cs-num">02-03</span> 装了 Skill / 不等于真的会用 <a href="verify.html" class="cs-stage-tag" title="前往 验收 阶段">验收</a></h3></div><p class="cs-prob"><b>痛点：</b>Skill 数量增长很快，但模型、Harness 和任务上下文改变使用效果。</p><ul class="cs-tips"><li>先定义 Skill 的触发条件和完成标准，再讨论安装数量。</li><li>用真实任务评测：是否被正确选择、是否完整执行、是否产生副作用。</li><li>把优秀做法编译进可执行 Harness，减少靠文字提醒的遗漏。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请为这个 Skill 写一个最小评测集：触发样例、反例、完成标准、错误边界和回归任务。</pre><div class="cs-verdict"><b>验收判定：</b>没有评测证据时，只能说“已安装”，不能说“已掌握”。</div></div><div class="cs-card" id="skills-ctx-04"><div class="cs-head"><h3><span class="cs-num">02-04</span> 创建 Skill / 先抽取 定方法 <a href="iterate.html" class="cs-stage-tag" title="前往 迭代 阶段">迭代</a></h3></div><p class="cs-prob"><b>痛点：</b>把一次对话复制成 Skill，容易把偶然措辞和无效步骤固化。</p><ul class="cs-tips"><li>先观察多次任务中的共同输入、决策、工具和验收。</li><li>只保留可迁移的流程、模板、检查项和失败边界。</li><li>给 Skill 加版本、示例、反例、回归任务和废弃条件。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">从这组真实任务中抽取 Skill：先列 定模式，再删除一次性细节，最后给出触发器和回归样例。</pre><div class="cs-verdict"><b>验收判定：</b>Skill 必须能被另一个人读懂、运行和验证。</div></div><div class="cs-card" id="skills-ctx-05"><div class="cs-head"><h3><span class="cs-num">02-05</span> 上下文窗口 / 先做价值排序 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>低频 Skill、旧决定和中间噪声驻上下文中，挤掉真正有用的信息。</p><ul class="cs-tips"><li>按当前任务的决策价值排序：目标、约束、接口、失败样本优先。</li><li>过期 Read、中间尝试和重复解释进入可丢弃区。</li><li>用按需加载、摘要和状态文件维持长任务连续性。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请将当前上下文分成：必须保留、可按需加载、可丢弃三层，并说明每项的判断理由。</pre><div class="cs-verdict"><b>验收判定：</b>压缩后不能丢失用户目标、关键报错、约束和可复现路径。</div></div><div class="cs-card" id="skills-ctx-06"><div class="cs-head"><h3><span class="cs-num">02-06</span> 汇报要能让非工程师判断完成度 <a href="ship.html" class="cs-stage-tag" title="前往 交付 阶段">交付</a></h3></div><p class="cs-prob"><b>痛点：</b>一堆 commit hash 和工程术语，无法回答到底完成成了什么。</p><ul class="cs-tips"><li>结论先行：工作状态和验证状态分开。</li><li>每个事实给定定位证据；不确定写“未确认”。</li><li>待决事项编号化，给出影响和选项，而不是把判断甩回去。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">先写结论；把工作状态和验证状态分开；每个事实给定定位证据；不确定写“未确认”；需要我决定时列编号选项。</pre><div class="cs-verdict"><b>验收判定：</b>读者不打开代码，也能判断范围、原因、证据、验证和待确认项。</div></div></div></div>
+<div class="cs-theme" id="eval-first"><h2><span class="num">03</span>Eval First：从会生成，到值得交付</h2><p class="cs-meta"><b>主题聚焦</b>：评测 · 真实入口 · 验收 · Review · 证据 · 止损 ｜ <b>关联阶段</b>：验收/开发</p>
+<div class="grid two"><div class="cs-card" id="eval-first-01"><div class="cs-head"><h3><span class="cs-num">03-01</span> AI 项目 / 先建评测再建功能 <a href="verify.html" class="cs-stage-tag" title="前往 验收 阶段">验收</a></h3></div><p class="cs-prob"><b>痛点：</b>输出不可预测，单元测试通过也不能说明用户结果有效。</p><ul class="cs-tips"><li>先定义成功/失败、边界和质量等级。</li><li>用代表性样例集反复回归，记录输入、输出、上下文和工具轨迹。</li><li>把评测结果作为产品迭代的眼睛，而不是上线后的补丁。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">Eval First: 先给出评测集、成功标准、失败类型和基线，再设计实现方案。</pre><div class="cs-verdict"><b>验收判定：</b>没有基线和失败样例，不宣称“效果更好”。</div></div><div class="cs-card" id="eval-first-02"><div class="cs-head"><h3><span class="cs-num">03-02</span> 单测通过 / 仍要跑真实业务路径 <a href="verify.html" class="cs-stage-tag" title="前往 验收 阶段">验收</a></h3></div><p class="cs-prob"><b>痛点：</b>局部函数正确，不代表权限、状态、并发、重试和回滚真的成立。</p><ul class="cs-tips"><li>一键启动环境、准备数据、明确账号权限，并支持清理重置。</li><li>从浏览器、API 或 CLI 操作真实入口。</li><li>用 DB、日志、Trace 和业务断言闭合证据链。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请从真实入口跑完整业务路径，并同时给出用户可见结果、工具证据和业务契约对照。</pre><div class="cs-verdict"><b>验收判定：</b>从入口跑到底端，并留下可复核证据。</div></div><div class="cs-card" id="eval-first-03"><div class="cs-head"><h3><span class="cs-num">03-03</span> 机制很多 / 用消融实验找贡献 <a href="verify.html" class="cs-stage-tag" title="前往 验收 阶段">验收</a></h3></div><p class="cs-prob"><b>痛点：</b>缓存、队列、锁、Agent、插件一起上线，没人知道真正收益来自哪里。</p><ul class="cs-tips"><li>先建基线，再一次只移除或加入一个机制。</li><li>比较质量、延迟、成本、失败率和复杂度变化。</li><li>没有贡献或无法验证的机制，删除而不是继续解释。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">给这三个优化设计消融实验，判断真正的收益来自哪里。</pre><div class="cs-verdict"><b>验收判定：</b>每个机制都有对照结果和业务收益。</div></div><div class="cs-card" id="eval-first-04"><div class="cs-head"><h3><span class="cs-num">03-04</span> Bug 反复改 / 设调试止损线 <a href="build.html" class="cs-stage-tag" title="前往 开发 阶段">开发</a></h3></div><p class="cs-prob"><b>痛点：</b>改一次、又引出新问题，第三轮已经忘了最初错误，Token 和时间一起烧掉。</p><ul class="cs-tips"><li>先复现，再只改一处，用同一方法验证。</li><li>连续两轮没有进展，停止修改，重新诊断根因。</li><li>保留失败日志和当前假设，避免下一轮从头猜。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">先复现问题；每轮只改一处；用同一验收方法验证；连续两轮无进展就停止修改并重新诊断。</pre><div class="cs-verdict"><b>验收判定：</b>没有新的证据时，不继续堆 patch。</div></div><div class="cs-card" id="eval-first-05"><div class="cs-head"><h3><span class="cs-num">03-05</span> Review / 先看业务风险再看代码风格 <a href="verify.html" class="cs-stage-tag" title="前往 验收 阶段">验收</a></h3></div><p class="cs-prob"><b>痛点：</b>Agent 生成速度上去了，人工判断却仍按原节奏，审查变成瓶颈。</p><ul class="cs-tips"><li>先验验收标准，再测试结果；治业务路径查权限、状态、并发和回滚。</li><li>小 MR，复核需求拆成可独立验收的 Issue。</li><li>Review 关注有效问题遗漏和用户风险，不追求评论数量。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">按业务路径做 Review: 先列高风险假设，再逐项给出证据、影响、修复建议和未确认项。</pre><div class="cs-verdict"><b>验收判定：</b>每条评论都必须能改变风险、验收或维护成本。</div></div><div class="cs-card" id="eval-first-06"><div class="cs-head"><h3><span class="cs-num">03-06</span> 工具返回合理 / 不等于业务正确 <a href="verify.html" class="cs-stage-tag" title="前往 验收 阶段">验收</a></h3></div><p class="cs-prob"><b>痛点：</b>DB、日志和 Trace 能说明发生了什么，却不能替业务定义什么是对。</p><ul class="cs-tips"><li>先写业务契约和预期结果，再让工具提供证据。</li><li>把事实、推断、未确认分开。</li><li>对 Agent 产品，还要评估答案质量、定性和拒答边界。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">先写业务契约，再让工具证明结果；不要让工具替你定义正确答案。</pre><div class="cs-verdict"><b>验收判定：</b>结论必须同时有业务依据和可定位的运行证据。</div></div></div></div>
+<div class="cs-theme" id="creative-flow"><h2><span class="num">04</span>Creative Workflow：让 Prompt 可读、可控、可复用</h2><p class="cs-meta"><b>主题聚焦</b>：图像 · 视频 · UI · 设计系统 · 审美参考 · 复刻 ｜ <b>关联阶段</b>：设计/需求</p>
+<div class="grid two"><div class="cs-card" id="creative-flow-01"><div class="cs-head"><h3><span class="cs-num">04-01</span> Prompt 不用专业 / 要写到自己读得懂 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>复杂术语堆在一起，自己都无法检查，模型也难以稳定复现。</p><ul class="cs-tips"><li>先写主体、风格、构图、媒介，再补镜头、光线、材质和约束。</li><li>把目标拆成可观察的画面条件，而不是形容词堆叠。</li><li>让 AI 帮你看改写，但最终 Prompt 必须能被自己读懂和验收。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">【主体】x【风格】x【构图】x【媒介】；请把我的想法改写成我能读懂、能逐项检查的 Prompt。</pre><div class="cs-verdict"><b>验收判定：</b>每个形容词都要对应可观察的画面证据。</div></div><div class="cs-card" id="creative-flow-02"><div class="cs-head"><h3><span class="cs-num">04-02</span> 视频从想法到成片 / 先管前 2 秒和镜头 <a href="need.html" class="cs-stage-tag" title="前往 需求 阶段">需求</a></h3></div><p class="cs-prob"><b>痛点：</b>旁白塞太满、方向没定、细节越改越重，成片反而失去重点。</p><ul class="cs-tips"><li>先确定钩子、节奏和镜头功能，再写逐拍时间线。</li><li>每个镜头只承担一个信息或情绪任务。</li><li>用参考图、角色设定和镜头语言保持镜头一致。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请先给出前 2 秒钩子、镜头时间线、每镜头的动作与转场，再生成完整视频 Prompt。</pre><div class="cs-verdict"><b>验收判定：</b>删掉不能服务主题、节奏或转化的镜头。</div></div><div class="cs-card" id="creative-flow-03"><div class="cs-head"><h3><span class="cs-num">04-03</span> 抄参考 / 先提取设计系统 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>只看截图容易抄到表面，配色、字体、间距和组件关系仍靠猜。</p><ul class="cs-tips"><li>从真实网站提取颜色、字体、间距、阴影、圆角和状态。</li><li>用 Design.md / design system 把审美决策写成可复用约束。</li><li>把参考分成灵感、规范、组件和验收，不要混成一张收藏夹。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请从这个参考网站提取一份可执行设计系统：色板、字体层级、间距、组件、状态、无障碍和验收清单。</pre><div class="cs-verdict"><b>验收判定：</b>输出必须能直接指导实现和 Review，而不是只说“高级、简洁”。</div></div><div class="cs-card" id="creative-flow-04"><div class="cs-head"><h3><span class="cs-num">04-04</span> 风格库 / 用编号减少描述成本 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>审美词汇不稳定，团队和模型对“手绘、电影感、高级”理解不一致。</p><ul class="cs-tips"><li>把风格做成编号画廊，选择时引用编号而不是重复形容。</li><li>为每种风格保存中英描述、适用场景和反例。</li><li>风格只是变量，仍要单独定义主体、构图、媒介和约束。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">浏览风格画廊，选出最适合主题的 1 个风格编号，并说明它与主体、构图和媒介如何组合。</pre><div class="cs-verdict"><b>验收判定：</b>风格选择必须能解释为什么适合当前任务。</div></div><div class="cs-card" id="creative-flow-05"><div class="cs-head"><h3><span class="cs-num">04-05</span> 复刻 / 先拆结构再换内容 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>看到结果就照抄，往往只能复制表面，无法迁移到新主题。</p><ul class="cs-tips"><li>拆出镜头、角色、服装、光影、动作、节奏和负面约束。</li><li>先固定结构，再替换主体；每轮只改变一个变量。</li><li>用对照图或片段回看判断是哪一层造成差异。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这个参考拆成结构变量与内容变量；先保持结构不变，只替换主体，并列出每轮对照检查项。</pre><div class="cs-verdict"><b>验收判定：</b>复刻结果要能说明差异来自哪个变量。</div></div><div class="cs-card" id="creative-flow-06"><div class="cs-head"><h3><span class="cs-num">04-06</span> UI 不是堆功能 / 是任务与层级 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>页面看起来完整，却没有清晰任务路径，AI 带来无意义装饰和默认组件。</p><ul class="cs-tips"><li>先写用户任务、信息层级和状态，再选组件和动作。</li><li>用高内聚、低耦合组织页面；动效服务反馈，不服务炫技。</li><li>把无障碍、响应式、性能和文案纳入设计验收。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请按用户任务重构这个页面：先列层级、关键状态和操作路径，再决定组件、动效和视觉风格。</pre><div class="cs-verdict"><b>验收判定：</b>每个视觉元素都要服务理解、操作或反馈。</div></div></div></div>
+<div class="cs-theme" id="product-growth"><h2><span class="num">05</span>Product & Growth：从有人感兴趣，到有人付费</h2><p class="cs-meta"><b>主题聚焦</b>：需求验证 · 竞品 · SEO · 内容增长 · 电商 · 自动化 ｜ <b>关联阶段</b>：需求/交付/运营</p>
+<div class="grid two"><div class="cs-card" id="product-growth-01"><div class="cs-head"><h3><span class="cs-num">05-01</span> 早期验证 / 不要把兴趣当需求 <a href="need.html" class="cs-stage-tag" title="前往 需求 阶段">需求</a></h3></div><p class="cs-prob"><b>痛点：</b>点赞、浏览和口头喜欢很容易，真实付出才能接近购买意愿。</p><ul class="cs-tips"><li>按用户付出排序：看过 → 收藏 → 留邮箱 → 回消息 → 试用 → 验收 → 预付 → 续费。</li><li>为每一级信号设最小样本和下一步动作。</li><li>把“有人感兴趣”与“有人愿买单”分成两个结论。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这个想法拆成信号阶梯：每一级需要用户付出什么、如何观察、什么结果才允许进入下一步？</pre><div class="cs-verdict"><b>验收判定：</b>没有最高成本信号前，不要把曝光写成 PMF。</div></div><div class="cs-card" id="product-growth-02"><div class="cs-head"><h3><span class="cs-num">05-02</span> 竞品调研 / 先找切入口再做功能 <a href="need.html" class="cs-stage-tag" title="前往 需求 阶段">需求</a></h3></div><p class="cs-prob"><b>痛点：</b>资料很多，但没有形成目标用户、替代方案和可交付缺口。</p><ul class="cs-tips"><li>从真实用户问题出发，再翻译成用户会搜索的关键词。</li><li>按场景、价格、分发、交付和留存比较竞品。</li><li>把观察写成可验证假设，而不是一份链接堆。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请做竞品调研：用户任务 → 搜索词 → 竞品替代 → 未满足需求 → 可测试切入口，并标注证据源。</pre><div class="cs-verdict"><b>验收判定：</b>每个结论都要能回到用户行为或公开证据。</div></div><div class="cs-card" id="product-growth-03"><div class="cs-head"><h3><span class="cs-num">05-03</span> 内容增长 / 把一次实践沉淀成方法 <a href="iterate.html" class="cs-stage-tag" title="前往 迭代 阶段">迭代</a></h3></div><p class="cs-prob"><b>痛点：</b>内容靠灵感重复生产，经验无法复用，热点也难以转变成长期资产。</p><ul class="cs-tips"><li>把一次实践拆成问题、过程、结果、证据和可复用模板。</li><li>建立知识库：专题、案例、镜头语言和词库等索引。</li><li>用前 5 秒对照实验优化钩子，而不是只看总播放。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">把这次实践整理成可复用内容资产：问题、受众、过程、结果、证据、模板、下一次实验。</pre><div class="cs-verdict"><b>验收判定：</b>内容必须留下下次可以直接执行的动作。</div></div><div class="cs-card" id="product-growth-04"><div class="cs-head"><h3><span class="cs-num">05-04</span> 自动化 / 先拆链路再接工具 <a href="build.html" class="cs-stage-tag" title="前往 开发 阶段">开发</a></h3></div><p class="cs-prob"><b>痛点：</b>把多个平台和 Agent 串起来很容易，但错误会被自动化放大。</p><ul class="cs-tips"><li>先列输入、转换、审批、输出和回滚；再选择 MCP 或 API。</li><li>高风险动作保留人工确认，低风险动作交给专用执行器。</li><li>记录每一步的状态、权限、失败重试和来源。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这条业务链路画成状态机：输入 → 抽取 → 分类 → 生成 → 审批 → 发布 → 复盘，并标注人工门。</pre><div class="cs-verdict"><b>验收判定：</b>没有权限、幂等和回滚设计时，不做全自动发布。</div></div><div class="cs-card" id="product-growth-05"><div class="cs-head"><h3><span class="cs-num">05-05</span> SEO / 从真实站点证据开始 <a href="ship.html" class="cs-stage-tag" title="前往 交付 阶段">交付</a></h3></div><p class="cs-prob"><b>痛点：</b>套模板写 SEO 报告，容易忽略 robots、跳转、死链和 JS 内容。</p><ul class="cs-tips"><li>真实抓取站点、站点地图、canonical、结构化数据和核心网页指标。</li><li>每个问题给出 URL、规则、影响和修复建议。</li><li>修复后再次跑同一套检查，比较前后结果。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请对这个站点做真实审计：抓取 → 规则检查 → 证据 → 影响 → 修复 → 复测；不要只给通用建议。</pre><div class="cs-verdict"><b>验收判定：</b>报告必须能定位到页面和规则，不能只写“优化内容”。</div></div><div class="cs-card" id="product-growth-06"><div class="cs-head"><h3><span class="cs-num">05-06</span> 电商 / 让 AI 负责流程，人负责契约 <a href="operate.html" class="cs-stage-tag" title="前往 运营 阶段">运营</a></h3></div><p class="cs-prob"><b>痛点：</b>从选品到上架、文案、出图和投放都自动化，最怕品牌和业务标准失控。</p><ul class="cs-tips"><li>先定义品牌、商品、合规和利润规则，再让 Agent 执行。</li><li>把素材、文案、库存、订单和投放拆成可检验步骤。</li><li>关键发布、付款和客服升级保留人工审批。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这条电商流程拆成可独立验收的 Skills，并为每一步写输入、输出和人工审批点。</pre><div class="cs-verdict"><b>验收判定：</b>自动化不能绕过合规、价格、库存和品牌边界。</div></div></div></div>
+<div class="cs-theme" id="data-research"><h2><span class="num">06</span>Data & Research：把资料变成可行动知识</h2><p class="cs-meta"><b>主题聚焦</b>：RAG · 检索 · 数据链路 · 知识图谱 · 学习 ｜ <b>关联阶段</b>：设计/运营/管理</p>
+<div class="grid two"><div class="cs-card" id="data-research-01"><div class="cs-head"><h3><span class="cs-num">06-01</span> 资料很多 / 先找来源和证据边界 <a href="manage.html" class="cs-stage-tag" title="前往 管理 阶段">管理</a></h3></div><p class="cs-prob"><b>痛点：</b>AI 总结流畅，但读者分不清哪句来自原文，哪句是模型补全。</p><ul class="cs-tips"><li>保留原始链接、文档版本、抓取时间和可见范围。</li><li>把原文事实、作者观点、我的推断分层。</li><li>折叠、付费墙、摘要和二手转述都要显式标记。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请输出：原文事实 / 作者观点 / 你的推断 / 未确认缺口；每条事实给出定位来源。</pre><div class="cs-verdict"><b>验收判定：</b>没有原文证据时，不把推断写成事实。</div></div><div class="cs-card" id="data-research-02"><div class="cs-head"><h3><span class="cs-num">06-02</span> RAG / 先问检索结构是否适合任务 <a href="design.html" class="cs-stage-tag" title="前往 设计 阶段">设计</a></h3></div><p class="cs-prob"><b>痛点：</b>切块、向量和相似度搜索并非所有文档任务的最优解。</p><ul class="cs-tips"><li>对长文档先保留层级、章节、表格和引用关系。</li><li>比较向量检索、关键词、树状索引和 Agent 导航。</li><li>用代表性问题集测准确、召回、成本和可解释性。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请先分析文档结构和问题类型，再比较向量、关键词、树状索引等检索方案，给出基线与评测集。</pre><div class="cs-verdict"><b>验收判定：</b>不要因为“大家常用 RAG”跳过任务结构分析。</div></div><div class="cs-card" id="data-research-03"><div class="cs-head"><h3><span class="cs-num">06-03</span> 数据工程 / 用状态机和 Provenance 管住链路 <a href="build.html" class="cs-stage-tag" title="前往 开发 阶段">开发</a></h3></div><p class="cs-prob"><b>痛点：</b>数据产生、摄取、存储、处理、发布混在一起，失败后无法定位。</p><ul class="cs-tips"><li>把目标、状态、关系、变换、执行、记录拆开。</li><li>用状态机管理生命周期，DAG 管依赖，Provenance 管可信度。</li><li>每次转换记录输入、版本、规则、输出和责任边界。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这个数据流程建模为：状态机 + DAG + I/O + 执行器 + Provenance，并列出每个状态的进入与退出条件。</pre><div class="cs-verdict"><b>验收判定：</b>任何结果都能回到源头、变换和版本。</div></div><div class="cs-card" id="data-research-04"><div class="cs-head"><h3><span class="cs-num">06-04</span> 陌生领域 / 先建地图再深入 <a href="need.html" class="cs-stage-tag" title="前往 需求 阶段">需求</a></h3></div><p class="cs-prob"><b>痛点：</b>资料散落，概念、人物、项目和来源互相混淆，学习路径不可见。</p><ul class="cs-tips"><li>先建立实体页、概念页、来源页和关系页。</li><li>把读过的内容沉淀成问题清单和下一步研究动作。</li><li>为每个结论保留来源和时间，定期清理过期信息。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这些资料整理成知识地图：实体、概念、关系、来源、证据等级和待验证问题。</pre><div class="cs-verdict"><b>验收判定：</b>地图要能指导下一次搜索，而不是只做漂亮目录。</div></div><div class="cs-card" id="data-research-05"><div class="cs-head"><h3><span class="cs-num">06-05</span> 学习材料 / 让 AI 解释但不替你相信 <a href="verify.html" class="cs-stage-tag" title="前往 验收 阶段">验收</a></h3></div><p class="cs-prob"><b>痛点：</b>一本书、PDF 或课程很难系统读完，摘要又可能混入幻觉。</p><ul class="cs-tips"><li>先按章节、概念、例子和练习建立阅读路线。</li><li>每个答案同时给出原文摘录、解释、反例和自测题。</li><li>对关键结论回到原质核对，记录未读与未验证范围。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这份材料变成交互式学习路径：章节 → 核心概念 → 原文证据 → 例子 → 自测题 → 待复习。</pre><div class="cs-verdict"><b>验收判定：</b>解释必须能回到材料，不能只凭常识补全。</div></div><div class="cs-card" id="data-research-06"><div class="cs-head"><h3><span class="cs-num">06-06</span> 研究闭环 / 从信息摄取到可执行决策 <a href="manage.html" class="cs-stage-tag" title="前往 管理 阶段">管理</a></h3></div><p class="cs-prob"><b>痛点：</b>收藏、阅读和转发很多，但没有排序、筛选、实验和反馈。</p><ul class="cs-tips"><li>先过滤时效、来源质量和与当前目标的相关性。</li><li>再抽取、打标签、聚类、评分，最后只深挖高价值候选。</li><li>把研究结果写成决策、行动、验证和复盘，而不是日报堆积。</li></ul><div class="cs-prompt-lbl">PROMPT 复制口令</div><pre class="cs-prompt">请把这批资料按相关性、具体程度、可信度和时效评分，给出今日优先阅读与下一步实验。</pre><div class="cs-verdict"><b>验收判定：</b>每条研究输出至少导向一个可执行动作或明确的“不做”。</div></div></div></div>
+      
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+</body>
+</html>

@@ -163,6 +163,7 @@
       <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="data-design.html">数据产品设计</a>
       <a href="data-layers.html">8+3 层契约</a>
@@ -175,6 +176,7 @@
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#battle-tips">实战避坑 (Battle Tips)</a>
       <a href="#branches">走哪条路</a>
       <a href="#verify">谁来验怎么验</a>
       <a href="#skills">用到哪些 skill</a>
@@ -188,6 +190,9 @@
       <h1><span class="num">06</span>运营</h1>
 <p class="lede">看得出它有没有被用、有没有变好、钱花在哪、出事时能不能查。</p>
 <div class="note warn"><span class="tag t-branch">半个覆盖</span>　这一步只有 <code>anb-observable</code> 覆盖技术侧的观测（跑几次、花多少、为什么失败）。产品侧——有没有人用、用了之后有没有变好——这套方法答不了。<br><br><b>为什么这一步重要：</b>没有这一步，你无法回答"这个产品到底成不成立"。而技术上的"全部正常"和产品上的"没人用"可以同时成立。</div>
+<h2 id="battle-tips">实战避坑与作战原则 (Battle Tips)</h2>
+<p class="h2sub">来自 6 大作战面板中归属于<b>运营</b>阶段的实战守则。详见 <a href="cheatsheet.html">作战手卡全表 →</a></p>
+<div class="grid two"><div class="card" id="bt-product-growth-06"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-06</span> 电商 / 让 AI 负责流程，人负责契约</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>从选品到上架、文案、出图和投放都自动化，最怕品牌和业务标准失控。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>先定义品牌、商品、合规和利润规则，再让 Agent 执行。</li><li>把素材、文案、库存、订单和投放拆成可检验步骤。</li><li>关键发布、付款和客服升级保留人工审批。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请把这条电商流程拆成可独立验收的 Skills，并为每一步写输入、输出和人工审批点。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>自动化不能绕过合规、价格、库存和品牌边界。</div></div></div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你不知道它跑了多少次、失败多少次</td><td><a href="#b-blind">不知道它跑了多少次</a></td><td>先补三个数字，再谈别的。没有观测就加功能，等于在黑暗里挪。</td></tr><tr><td>有记录，但总数和分项对不上</td><td><a href="#b-reconcile">总数和分项对不上</a></td><td>记录有洞。每一条其它结论都建立在这上面。</td></tr><tr><td>数字正常，但不知道有没有人真的在用</td><td><a href="#b-nouser">不知道有没有人真的在用</a></td><td>这是产品侧观测，需要埋点而不是日志。</td></tr><tr><td>能回答"谁在用、用了多少次、哪里失败"</td><td><a href="#b-next">这一步过了</a></td><td>进入迭代。</td></tr></tbody></table></div>
