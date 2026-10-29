@@ -1,0 +1,59 @@
+name: main-agent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/consult/**"
+      - "apps/bot-gateway/**"
+      - "packages/feishu/**"
+      - "docs/evals/main-agent*"
+      - "scripts/materialize-main-knowledge.py"
+      - ".github/workflows/main-agent.yml"
+  pull_request:
+    paths:
+      - "packages/consult/**"
+      - "apps/bot-gateway/**"
+      - "packages/feishu/**"
+      - "docs/evals/main-agent*"
+      - "scripts/materialize-main-knowledge.py"
+      - ".github/workflows/main-agent.yml"
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@12.15.0 --activate
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Consult tests
+        run: pnpm --filter @mas/consult test
+
+      - name: Gateway tests
+        run: pnpm --filter @mas/bot-gateway test
+
+      # Deterministic, no model calls: the runner uses llm: null. The manual
+      # verdict column is not a CI gate; the automated checks are.
+      - name: Real-question eval
+        run: pnpm --filter @mas/bot-gateway eval:real
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: main-agent-real-eval
+          path: |
+            docs/evals/main-agent-real-qa.md
+            packages/consult/data/eval/main-agent-real-results.jsonl
+            packages/consult/data/eval/main-agent-real-summary.json
+          if-no-files-found: warn
