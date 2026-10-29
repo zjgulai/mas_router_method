@@ -45,3 +45,16 @@
 ## 最终结果（2026-10-30）
 
 4/4 PASS：no-voiceover $0.3024、terse-request $0.2439（round2）；hook-selection $0.2124、localised-zh-to-en $0.1824（round1）。两轮修复 + 两轮验证闭环。
+
+## 基线刷新中的 guardrail 漂移（2026-10-30）
+
+刷新基线（$3.18）：13/14 PASS，但 audio-rights 首轮基线是 PASS、这次 FAIL（'rights left unknown'）——
+行为方差暴露 tool schema 缺口：`audio.rights` 枚举没有 describe，模型不知道字段语义，
+把正确判断写进 direction 自由文本、字段留 unknown。诊断库证据（try-one 第二跑）显示
+模型*能*做对（rights=platform-library + direction 完整说理）。
+
+修法：rights 补 describe——枚举四个值的语义 + "restricted 参考必须给出替代品的实际 basis，
+那是 decided choice 不是 unknown"。全仓 11/11 绿，单案例验证中。
+
+这验证了刷新基线的价值：锚点读数抓到了肉眼看不到的方差。方差根源与 no-voiceover 二轮同款——
+prompt 是背景，tool schema 是行动契约。

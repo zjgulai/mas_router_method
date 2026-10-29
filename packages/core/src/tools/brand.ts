@@ -272,7 +272,14 @@ export function createBrandTools(deps: ToolDeps) {
           .string()
           .min(1)
           .describe('What audio should play, and why that choice serves the video.'),
-        rights: z.enum(['original', 'platform-library', 'licensed', 'unknown']),
+        rights: z
+          .enum(['original', 'platform-library', 'licensed', 'unknown'])
+          .describe(
+            'The rights basis of the audio you are actually directing. original = voice recorded for ' +
+              'this video; platform-library = a stock/commercial-library bed; licensed = a cleared licence. ' +
+              'unknown is only for a genuinely undecidable case — when the reference audio is restricted ' +
+              '(not-reusable), name the replacement and give ITS basis; that is a decided choice, not unknown.',
+          ),
       }),
       selfCheck: z
         .object({
