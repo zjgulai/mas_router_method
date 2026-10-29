@@ -100,6 +100,24 @@ docker restart ai_video_nginx
 更新已存在的 server 块（例如改 header）：`patch-ingress.sh` 检测到部署标记时
 会自动进入更新模式（`patch-ingress.py --replace`），重复执行是安全的。
 
+## 监控
+
+服务器 cron 每 10 分钟跑一次 `monitor/check.sh`（探活：healthz、首页内容、
+最新页、sitemap、404 行为）。状态翻转（ok→fail 或 fail→ok）时推送飞书：
+
+```bash
+# 服务器上填一次 webhook（飞书群自定义机器人），下一轮探活即启用推送：
+sudo tee /opt/mas-router-site/monitor/feishu-webhook.env >/dev/null <<'ENV'
+FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/xxxx
+ENV
+sudo chmod 600 /opt/mas-router-site/monitor/feishu-webhook.env
+```
+
+- 日志：`/opt/mas-router-site/monitor/last-run.log`（保留 500 行）
+- 状态：`/opt/mas-router-site/monitor/state`（ok / fail）
+- 脚本来源：`deploy/monitor-check.sh`（改版后用
+  `git show HEAD:deploy/monitor-check.sh | ssh ... 'cat > /tmp/...'` 同步）
+
 ## 已知缺口
 
 - **80 端口未在腾讯云安全组放行**：`accept.sh` 第 6 项会 SKIP。首次用
@@ -108,3 +126,7 @@ docker restart ai_video_nginx
 - 八个“未改一字”的原始文档里，`capability-map.html` 在 390px 窄屏下自身
   横向溢出（历史文档未做响应式）。这是冻结内容，按规则不改；其余生成页
   已全部通过 390px 无溢出检查。
+- **证书是商业证书，到期要手动换**：`*.luteos.com`（GeoTrust/DigiCert 签发，
+  放在 `/etc/letsencrypt/live/luteos.com/` 但没有 certbot renewal 配置，
+  snap.certbot.renew 不会续它）。有效期至 **2027-03-07**；2027-02 前需购买
+  续期并替换 fullchain/privkey，然后 `docker restart ai_video_nginx`。
