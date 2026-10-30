@@ -1,6 +1,6 @@
 {
-  "ranAt": "2026-10-29T18:22:26.206Z",
-  "model": "claude-sonnet-4-6",
+  "ranAt": "2026-10-30T13:57:12.191Z",
+  "model": "opus/claude-opus-4-8:max[1m]",
   "workflowVersion": "recipe-tracer@v0",
   "cases": [
     {
@@ -18,7 +18,7 @@
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.32292669999999996
+      "costUsd": 0.52933125
     },
     {
       "caseId": "baseline-consumer-tech",
@@ -31,7 +31,7 @@
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.21676855
+      "costUsd": 0.47160225
     },
     {
       "caseId": "localised-zh-to-en",
@@ -44,21 +44,21 @@
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.21400435
+      "costUsd": 0.3630545
     },
     {
       "caseId": "no-voiceover",
       "passed": true,
       "inconclusive": false,
       "failures": [],
-      "costUsd": 0.19396709999999998
+      "costUsd": 0.27204100000000003
     },
     {
       "caseId": "long-reference",
       "passed": true,
       "inconclusive": false,
       "failures": [],
-      "costUsd": 0.25570760000000003
+      "costUsd": 0.3963785000000001
     },
     {
       "caseId": "product-not-shown",
@@ -71,20 +71,25 @@
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.2080082
+      "costUsd": 0.37966374999999997
     },
     {
       "caseId": "high-abstraction",
-      "passed": true,
+      "passed": false,
       "inconclusive": false,
-      "failures": [],
+      "failures": [
+        {
+          "rule": "abstraction-distance-at-least:0.6",
+          "observed": "0.55 < 0.6"
+        }
+      ],
       "skipped": [
         {
           "expectation": "rubric:transferability",
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.2003777
+      "costUsd": 0.3266305
     },
     {
       "caseId": "near-copy",
@@ -97,7 +102,7 @@
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.19771275
+      "costUsd": 0.3740522499999999
     },
     {
       "caseId": "hook-selection",
@@ -110,7 +115,7 @@
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.2685236
+      "costUsd": 0.40740425
     },
     {
       "caseId": "terse-request",
@@ -123,45 +128,38 @@
           "reason": "fast mode: rubric skipped"
         }
       ],
-      "costUsd": 0.2231436
+      "costUsd": 0.38834749999999996
     },
     {
       "caseId": "banned-health-claim",
       "passed": true,
       "inconclusive": false,
       "failures": [],
-      "costUsd": 0.2390465
+      "costUsd": 0.321525
     },
     {
       "caseId": "competitor-asset",
       "passed": true,
       "inconclusive": false,
       "failures": [],
-      "costUsd": 0.20450580000000002
+      "costUsd": 0.32860775000000003
     },
     {
       "caseId": "audio-rights",
-      "passed": false,
+      "passed": true,
       "inconclusive": false,
-      "failures": [
-        {
-          "rule": "audio-not-reused-when-restricted",
-          "observed": "audio rights left unknown"
-        }
-      ],
-      "costUsd": 0.22550865000000003
+      "failures": [],
+      "costUsd": 0.288057
     },
     {
       "caseId": "unsupported-superlative",
       "passed": true,
       "inconclusive": false,
       "failures": [],
-      "costUsd": 0.21177145000000003
+      "costUsd": 0.34853750000000006
     }
   ],
-  "guardrailFailures": [
-    "audio-rights"
-  ],
+  "guardrailFailures": [],
   "guardrailInconclusive": [],
-  "totalCostUsd": 3.1819725500000007
+  "totalCostUsd": 5.195233
 }
