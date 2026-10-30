@@ -63,8 +63,16 @@ async function* singleTurn(prompt: string): AsyncGenerator<SDKUserMessage> {
   };
 }
 
+/**
+ * Truncates for the run-record `summary` field, whose schema caps at 2000
+ * (`RunStep` in @mas/shared). The suffix is included in the budget, so a
+ * maxed-out slice would otherwise overflow the cap and make the whole run
+ * record fail to persist — which is how timelines go quietly missing.
+ */
 function truncate(text: string, max = 2000): string {
-  return text.length <= max ? text : `${text.slice(0, max)}... [${text.length - max} chars truncated]`;
+  if (text.length <= max) return text;
+  const suffix = `... [${text.length - max} chars truncated]`;
+  return `${text.slice(0, max - suffix.length)}${suffix}`;
 }
 
 /**
@@ -192,7 +200,7 @@ export async function runAgent(
             retryable:
               msg.subtype === 'error_max_turns' || msg.subtype === 'error_during_execution',
           };
-          recorder.record({ kind: 'error', summary: outcome.reason });
+          recorder.record({ kind: 'error', summary: truncate(outcome.reason) });
         }
       }
 
@@ -215,7 +223,7 @@ export async function runAgent(
       reason: abort.signal.aborted ? 'Run cancelled by caller.' : `Runtime threw: ${message}`,
       retryable: !abort.signal.aborted,
     };
-    recorder.record({ kind: 'error', summary: outcome.reason });
+    recorder.record({ kind: 'error', summary: truncate(outcome.reason) });
   } finally {
     deps.signal?.removeEventListener('abort', onOuterAbort);
   }

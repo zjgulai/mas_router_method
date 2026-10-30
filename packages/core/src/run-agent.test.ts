@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { recipeDurationSec, TARGET_DURATION_SEC } from '@mas/shared';
+import { recipeDurationSec, RunStep, TARGET_DURATION_SEC } from '@mas/shared';
 import { createStepRecorder, guard, toCallToolResult } from './tools/result.js';
 import { messageToSteps } from './run-agent.js';
 
@@ -51,6 +51,29 @@ describe('step recorder', () => {
     rec.record({ kind: 'assistant-text', summary: 'x' });
     rec.all().push({ index: 99, at: '2026-01-01T00:00:00Z', kind: 'error', summary: 'injected' });
     expect(rec.all()).toHaveLength(1);
+  });
+
+  it('keeps every summary inside the RunStep 2000-char cap', () => {
+    // Truncation lives in messageToSteps/run-loop (not the recorder), so drive a
+    // giant assistant text through the mapping. `truncate` must budget for its
+    // own suffix — a 2000-char slice plus a suffix once overflowed the schema
+    // cap and made whole run records fail to persist.
+    const rec = createStepRecorder();
+    messageToSteps(
+      {
+        type: 'assistant',
+        message: { content: [{ type: 'text', text: 'a'.repeat(5000) }] },
+        parent_tool_use_id: null,
+        uuid: '11111111-1111-1111-1111-111111111111',
+        session_id: 's1',
+      } as never,
+      rec,
+    );
+    const step = rec.all()[0];
+    expect(step).toBeDefined();
+    expect(step?.summary.length).toBeLessThanOrEqual(2000);
+    expect(step?.summary).toMatch(/\[\d+ chars truncated\]$/);
+    expect(() => RunStep.parse(step)).not.toThrow();
   });
 });
 
