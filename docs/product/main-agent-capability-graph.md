@@ -306,7 +306,7 @@ pnpm --filter @mas/bot-gateway check
 - `packages/consult/data/sources.json`：115 个源文件的便携快照（Markdown 在本机被压缩存储，Node 读不到原文；Python 物化后由 TS 分块）
 - `apps/bot-gateway`：WS + HTTP、幂等、队列、回复/降级、doctor、授权/配置脚本
 - `packages/feishu`：post 消息、mention open_id
-- 飞书侧：`im:message` / `im:message:send_as_bot` / `im:message.group_msg` / `im:message.p2p_msg` / `im:chat:readonly` 已授权；`im.message.receive_v1` 已设为长连接；已发布 v1.0.3（events: 接收消息）；长连接在线数 1
+- 飞书侧：`im:message` / `im:message:send_as_bot` / `im:message.group_msg` / `im:message.p2p_msg:readonly` / `im:message:readonly` / `im:chat:readonly` 已授权（p2p 单聊权限 2026-10-30 经管理员授权通道补齐，即时生效于当前版本，未发新版本）；`im.message.receive_v1` 已设为长连接；已发布 v1.0.5（events: 接收消息）；长连接在线数 1
 - 活体验收：事件接收与归一化已走通；但 14 天快照里本群 **没有可见的 answer delivered**（两次提问都发生在 parser 修复前），真实问答验收需要重做
 - 事件解析已兼容飞书返回的 `user_id: null`、mention id 的字符串/对象两种形状；此前 `z.string().optional()` 会把整条事件判为非法并静默丢弃
 - 已向目标群 “ABI智能应用与算法组” 发送上线通知
