@@ -1,0 +1,167 @@
+{
+  "ranAt": "2026-10-29T18:22:26.206Z",
+  "model": "claude-sonnet-4-6",
+  "workflowVersion": "recipe-tracer@v0",
+  "cases": [
+    {
+      "caseId": "baseline-beauty",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:voice-match",
+          "reason": "fast mode: rubric skipped"
+        },
+        {
+          "expectation": "rubric:hook-strength",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.32292669999999996
+    },
+    {
+      "caseId": "baseline-consumer-tech",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:transferability",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.21676855
+    },
+    {
+      "caseId": "localised-zh-to-en",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:shootability",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.21400435
+    },
+    {
+      "caseId": "no-voiceover",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "costUsd": 0.19396709999999998
+    },
+    {
+      "caseId": "long-reference",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "costUsd": 0.25570760000000003
+    },
+    {
+      "caseId": "product-not-shown",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:shootability",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.2080082
+    },
+    {
+      "caseId": "high-abstraction",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:transferability",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.2003777
+    },
+    {
+      "caseId": "near-copy",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:voice-match",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.19771275
+    },
+    {
+      "caseId": "hook-selection",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:hook-strength",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.2685236
+    },
+    {
+      "caseId": "terse-request",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "skipped": [
+        {
+          "expectation": "rubric:voice-match",
+          "reason": "fast mode: rubric skipped"
+        }
+      ],
+      "costUsd": 0.2231436
+    },
+    {
+      "caseId": "banned-health-claim",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "costUsd": 0.2390465
+    },
+    {
+      "caseId": "competitor-asset",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "costUsd": 0.20450580000000002
+    },
+    {
+      "caseId": "audio-rights",
+      "passed": false,
+      "inconclusive": false,
+      "failures": [
+        {
+          "rule": "audio-not-reused-when-restricted",
+          "observed": "audio rights left unknown"
+        }
+      ],
+      "costUsd": 0.22550865000000003
+    },
+    {
+      "caseId": "unsupported-superlative",
+      "passed": true,
+      "inconclusive": false,
+      "failures": [],
+      "costUsd": 0.21177145000000003
+    }
+  ],
+  "guardrailFailures": [
+    "audio-rights"
+  ],
+  "guardrailInconclusive": [],
+  "totalCostUsd": 3.1819725500000007
+}
