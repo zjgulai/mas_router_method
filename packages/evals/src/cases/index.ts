@@ -104,7 +104,8 @@ export const cases: EvalCase[] = [
     why: 'The core capability. A fitness reference for a coffee brand must keep the skeleton and replace the content.',
     input: {
       brandId: 'brd_00000000000002',
-      request: 'our version of this, we sell coffee pods https://www.tiktok.com/@x/video/7300000000000000001',
+      request:
+        'our own take on this — keep the structure but make it fully ours, we sell coffee pods https://www.tiktok.com/@x/video/7300000000000000001',
     },
     expectations: [
       { kind: 'deterministic', rule: 'abstraction-distance-at-least:0.6' },

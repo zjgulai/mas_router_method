@@ -210,7 +210,10 @@ export function createBrandTools(deps: ToolDeps) {
         .max(1)
         .describe(
           'How far this strays from the reference: 0 means a near-literal copy, 1 means only the abstract ' +
-            'pattern survived. Above 0.9, expect a reviewer to ask whether the reference still matters.',
+            'pattern survived. Above 0.9, expect a reviewer to ask whether the reference still matters. ' +
+            'Report the honest, defensible value for what you actually produced — keep every structural beat ' +
+            '(hook, beat order, pacing) that was kept, and count only the layers you swapped (subject, setting, ' +
+            'product, dialogue). Do not round the number toward what you think the requester wants.',
         ),
       exclusions: z
         .array(
