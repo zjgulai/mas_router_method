@@ -168,6 +168,7 @@ def nav_groups():
                   + [(s, n) for s, n, _ in STAGES]
                   + [('manage', '管理')]),
         ('查阅', [('cheatsheet', '作战手卡'), ('agent-graph', 'Agent 图谱'),
+                  ('toolchain', '工具链'),
                   ('data-design', '数据产品设计'), ('data-layers', '8+3 层契约'),
                   ('branches', '分支总表'), ('skills', 'Skill 全表'),
                   ('prompts', '提示词'), ('matrix', '数据矩阵'),

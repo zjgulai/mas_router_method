@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent 工具链 · Agent Native Builder</title>
+<meta name="description" content="Lody × Magpie × Nowledge Mem：多机调度、模型路由、Agent 记忆三件套的调研结论、衔接 SOP 与组合 Playbook。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme:light;
+    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
+    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
+    --accent:#0d5a51;--accent2:#d9e6e2;
+    --alert:#782c2c;--alert2:#eedcd8;
+    --warn:#6b5312;--warn2:#f0e8d2;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--ink);color:#e9e7e0;position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.1rem 0 2rem}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none}
+  .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
+  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
+               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
+  .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
+  .nav{padding:0 .5rem}
+  .nav-g{margin-bottom:.9rem}
+  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
+         text-transform:uppercase}
+  .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
+         border-radius:2px;line-height:1.35}
+  .nav a:hover{background:#2a2c26;color:#fff}
+  .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
+  .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
+  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
+  .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;
+            padding:.3rem 0 .3rem .55rem;
+            border-left:1px solid #3d3f38;line-height:1.35}
+  .subnav a:hover{color:#fff;border-left-color:#8d8f86}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2rem,4vw,3.2rem) clamp(16px,4vw,52px) 4rem;
+                max-width:min(56rem,100%)}
+  .content footer{margin:0 clamp(16px,4vw,52px) 0;padding:1.1rem 1.3rem;background:var(--sunk);
+                  font-size:.8rem;color:var(--muted);line-height:1.7;max-width:min(56rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。禁用 JS 时它默认展开，
+     退化成一张普通的纵向导航列表——内容一个不少。 */
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.6rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem}
+    .nav-toggle::after{content:' ▾';color:#8d8f86}
+    .nav-toggle{display:block}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.4rem}
+  }
+  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
+  h1 .num{color:var(--accent);margin-right:.5rem}
+  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
+  .lede strong{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
+  h2:first-of-type{margin-top:1.4rem}
+  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
+  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
+  p{margin:0 0 .9rem}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
+  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
+  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  .card h3{margin-top:0}
+  .grid{display:grid;gap:1px;background:var(--deep)}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .tablewrap{overflow-x:auto;max-width:100%}
+  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
+  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
+  .note.warn b{color:#2e1111}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
+  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
+  .cover .v{flex:1;min-width:200px}
+  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
+  .nextprev a{text-decoration:none}
+  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
+  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
+  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。 */
+  .tb-index{background:var(--surface);padding:.75rem .9rem;margin:1rem 0 1.2rem;font-size:.86rem}
+  .tb-index a{display:flex;gap:.7rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.22rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent)}
+  .tb-index code{background:transparent;padding:0;color:var(--accent);font-weight:650;
+    flex:0 0 4.6rem;border-bottom:1px solid var(--deep)}
+  .tb-row{margin:1.6rem 0 2rem}
+  .tb-row h3{margin:0 0 .5rem;font-family:var(--mono);font-size:.92rem}
+  .tb-row h3 code{background:var(--ink);color:var(--surface);padding:.1rem .45rem;font-size:.86rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:9.5rem;color:var(--faint);font-weight:600;font-size:.8rem}
+  table.tb-fields td:last-child{font-size:.89rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--deep)}
+  .tb-no{color:var(--deep);font-style:italic}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:6.5rem;font-size:.76rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
+    <details open>
+      <summary class="nav-toggle">导航</summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="cheatsheet.html">作战手卡</a>
+      <a href="agent-graph.html">Agent 图谱</a>
+      <a href="toolchain.html" class="on">工具链</a>
+      <a href="data-design.html">数据产品设计</a>
+      <a href="data-layers.html">8+3 层契约</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
+      </div>
+      </nav>
+      <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#position">三个工具各管什么</a>
+      <a href="#lody">Lody</a>
+      <a href="#magpie">Magpie</a>
+      <a href="#nowledge">Nowledge Mem</a>
+      <a href="#chain">怎么接成一条链</a>
+      <a href="#sop">SOP</a>
+      <a href="#playbook">Playbook</a>
+      <a href="#when-not">什么时候别用</a>
+      </div>
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb"><a href="./">总览</a> / Agent 工具链</div>
+      <h1>Agent 全栈工具链</h1>
+<p class="lede">三件本地工具，各管一段：<b>Lody</b> 管多机多 Agent 调度，<b>Magpie</b> 管模型路由与降本，<b>Nowledge Mem</b> 管跨会话记忆。它们互不依赖——但按下面的方式接起来，一条链就通了：<b>记忆注水 → 调度派活 → 路由降本 → 验收回流 → 记忆沉淀</b>。</p>
+<h2 id="position">三个工具各管什么</h2>
+<p class="h2sub">选型的第一问不是"它有什么功能"，而是"它不做什么"。三件事必须分开：模型从哪来（Magpie）、活怎么派（Lody）、昨天学到的怎么带到今天（Nowledge Mem）。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:15%">工具</th><th style="width:20%">一句话定位</th><th style="width:35%">管什么</th><th>不管什么</th></tr></thead><tbody><tr><td><b>Magpie</b></td><td>本地模型路由网关</td><td>所有 Agent 的请求统一走 <code>127.0.0.1:3425</code>；OpenAI/Anthropic/Gemini 协议互转；路由组容灾（429 自动切换）；订阅桥接降本；本地用量账本</td><td>不编排 Agent、不存记忆、不管部署</td></tr><tr><td><b>Lody</b></td><td>多机多 Agent 控制平面</td><td>把多台机器池化成一个执行池；Git worktree 隔离并行会话；ACP 协议托管 40+ Agent CLI；长任务异步回执；Diff 评审与行级批注</td><td>不写 Spec、不管知识库、不做 Eval 判题、不托管生产 Bot</td></tr><tr><td><b>Nowledge Mem</b></td><td>跨会话 Agent 记忆</td><td>会话启动注入工作记忆简报；持久记忆带 8 种类型与检索；Space 物理隔离项目；对话蒸馏沉淀；规则与技能托管</td><td>不做实时协作、不当向量数据库卖、不替你做架构决策</td></tr></tbody></table></div>
+<h2 id="lody">Lody：多机调度</h2>
+<p class="h2sub">本地优先的多机 Agent 控制平面。你的笔记本是控制端，重活派给局域网里的服务器跑。 仓库：<a href="https://github.com/LodyAI/Lody">https://github.com/LodyAI/Lody</a>。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:8%">优先级</th><th style="width:22%">板块</th><th style="width:40%">在 Agent 开发里扮演什么</th><th>对比</th></tr></thead><tbody><tr><td><span class="tag t-must">P0</span></td><td><b>跨机守护进程</b></td><td>把 Mac、Linux、云主机接成一个执行池。笔记本发起，重编译/长测试在服务器跑。本仓库实际就是 4 台机器在线。</td><td>Claude Code 只在当前终端；Cursor 只能 SSH 一台；Devin 只在官方云沙箱</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>Worktree 隔离</b></td><td>每个并行会话自动建独立 worktree 和分支，互不污染，用完回收。</td><td>Cursor/Claude Code 是单目录模型；云端方案（Factory）要拉容器，冷启动慢</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>ACP 会话编排</b></td><td>统一驱动 Claude Code、Codex 等 40+ CLI。主 Agent 能把子任务派给别的 Agent。</td><td>Cursor Composer 不能跨进程派发；Devin 是黑盒，混不进你自己的订阅</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>持久任务总线</b></td><td>长任务返回 operationId 就结束回合，后台跑完自动回执唤醒。不阻塞、不轮询。</td><td>普通 MCP 调用是阻塞等待，长任务必超时</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>Diff 评审</b></td><td>每轮改动可视化，代码行级批注直接回传给 Agent 当下一轮输入。</td><td>Cursor 只能看本地 diff；终端 diff 没法行级评论</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>Agent Roles</b></td><td>把机器+模型+权限+提示词固化为命名角色，团队复用。</td><td>Cursor rules 绑单个仓库；CLAUDE.md 没法图形化分发</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>Magpie 集成</b></td><td>一条命令导入本地 Magpie 的全部模型与路由组。</td><td>原生 Claude Code 只认环境变量代理，没有路由组</td></tr><tr><td><span class="tag t-plain">P2</span></td><td><b>定时任务 / Web 预览 / iOS 面板</b></td><td>cron 巡检、远程 dev server 穿透预览、手机审批权限。</td><td>同类工具基本没有横跨这三样的</td></tr></tbody></table></div>
+<div class="grid two">
+<div class="card"><h3>独特优势</h3><ul><li>真·多机拓扑：轻薄本当遥控器，4 台机器并行干活，同类做不到</li><li>本地 worktree 隔离：没有容器冷启动，node_modules 天然共享</li><li>Loro CRDT 本地优先：断网可写，联网合流，不锁死在云端</li><li>BYOK 零加价：用你自己的订阅，它只收协同席位费（$8/人/月）</li></ul></div>
+<div class="card"><h3>坑，先说清</h3><ul><li>服务端闭源：多机同步依赖 lody.ai 云，不能完全自建</li><li>E2EE 还没上线，敏感代码经它中继要有心理预期</li><li>单机单人用它属于过度设计，运维成本大于收益</li><li>长尾 ACP Agent 兼容性参差，Claude Code/Codex 是一等公民，其他有坑</li></ul></div>
+</div>
+<h2 id="magpie">Magpie：模型路由</h2>
+<p class="h2sub">MIT 开源、Go 写的本地网关，15MB 单文件。所有 Agent 的模型请求都从这里过。 仓库：<a href="https://github.com/yetone/magpie">https://github.com/yetone/magpie</a>。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:8%">优先级</th><th style="width:22%">板块</th><th style="width:40%">在 Agent 开发里扮演什么</th><th>对比</th></tr></thead><tbody><tr><td><span class="tag t-must">P0</span></td><td><b>协议互转网关</b></td><td>OpenAI/Anthropic/Gemini 三套协议双向无损转换，流式、Tool Call、Thinking 全保真。Claude Code 要 Anthropic 协议、Codex 要 OpenAI 协议，底层同一个 DeepSeek。</td><td>LiteLLM 是 Python 后端件，重；OpenRouter 是云端闭源、抽成</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>外科手术改配置</b></td><td>自动识别 20+ 款 Agent（Claude Code、Lody、Zed…），保留注释缩进原子改写配置。断开一键复原。</td><td>环境变量方案在 IDE 插件里不生效也难持久化</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>路由组容灾</b></td><td><code>group/*</code> 聚合多模型，smart/order/rotate 调度，429 自动冷却切换。长任务不被单一供应商打断。</td><td>NotDiamond/Unify 管质量路由，不管配额和熔断</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>订阅桥接</b></td><td>拉起官方 claude CLI 做双向管道，把 Claude Pro/Max、ChatGPT Plus 转成标准 API 用。包月变 API。</td><td>裸抓 Token 重放的脚本风控封号风险大得多</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>Lody 导入</b></td><td><code>magpieImport</code> 协议，Lody 一键读取全部供应商与路由组。</td><td>手工分发 .env 密钥满天飞</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>本地用量账本</b></td><td>usage.jsonl 记每笔请求的 TTFT、Token、缓存命中、费用。数据不出本机。</td><td>Helicone/Langfuse 要把全量 Prompt 发云端</td></tr><tr><td><span class="tag t-plain">P2</span></td><td><b>本地脱敏</b></td><td>出站前把密钥/邮箱/人名换成占位符，响应流式还原。厂商只见哈希。</td><td>云端防泄露网关先拿到明文，已经晚了</td></tr></tbody></table></div>
+<div class="grid two">
+<div class="card"><h3>独特优势</h3><ul><li>改配置不留痕：20+ Agent 一键接管/复原，注释缩进都在</li><li>订阅桥接走官方 CLI 子进程，不是重放 Token，风控特征最像真人</li><li>三协议无损热转，单二进制无运行时依赖</li><li>零成本零抽成：软件免费，账单就是你自己的 API 账单</li></ul></div>
+<div class="card"><h3>坑，先说清</h3><ul><li>订阅桥接在 ToS 灰色地带，高频批量分发有封号风险——生产环境用正规 API Key</li><li>本机单点：Magpie 一挂，所有走它的 Agent 全部断连</li><li>企业级鉴权/审计/多节点高可用没有，那类场景换 LiteLLM</li><li>协议转换会磨损厂商特有参数（如超长 Thinking 预算的细节）</li></ul></div>
+</div>
+<h2 id="nowledge">Nowledge Mem：记忆</h2>
+<p class="h2sub">本地优先的记忆与上下文层。CLI 已 Rust 化（本机 v0.10.111），核心 Server 闭源商业化。 仓库：<a href="https://github.com/nowledge-co/nowledge-mem">https://github.com/nowledge-co/nowledge-mem</a>。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:8%">优先级</th><th style="width:22%">板块</th><th style="width:40%">在 Agent 开发里扮演什么</th><th>对比</th></tr></thead><tbody><tr><td><span class="tag t-must">P0</span></td><td><b>会话注水</b></td><td>SessionStart hook 把工作记忆简报注入新会话：项目角色、近期动态、待办。新会话不再是失忆开局。</td><td>mem0 是嵌入式 SDK，要写代码集成；Letta 是黑盒记忆虚拟机</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>持久记忆</b></td><td><code>nmem m add/search</code>，8 种 unit_type（decision/boundary/…），BM25+向量混合检索，带重要度和标签。</td><td>Claude Code 原生 memory 是纯文件无检索；Zep 面向聊天机器人场景</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>Space 隔离</b></td><td>每个项目一个 Space，检索严格限定在 Space 内。跨项目记忆不串味。</td><td>通用记忆库通常是全局单池，要靠标签自己分层</td></tr><tr><td><span class="tag t-must">P0</span></td><td><b>混合检索</b></td><td>fast_bm25_vector，关键词+语义双通道。fast 模式日常用，strict 模式守门时用。</td><td>纯向量检索对代码符号/命令名召回差，BM25 补这个</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>线程存证与蒸馏</b></td><td>对话全文存 Thread，事后 distill 提炼成记忆。写前先检索去重。</td><td>多数记忆插件只存不炼，记忆库越用越脏</td></tr><tr><td><span class="tag t-branch">P1</span></td><td><b>规则与技能</b></td><td>Space 级 Rules 注入纪律；技能匹配闭环（匹配→使用→反馈结果）。</td><td>CLAUDE.md 是单文件静态注入，没有匹配和反馈</td></tr><tr><td><span class="tag t-plain">P2</span></td><td><b>虚拟文件系统 / 远程访问 / 启动器</b></td><td>Nowledge FS、跨机器取记忆、⌘⇧K 全局唤起。</td><td>加分项，非刚需</td></tr></tbody></table></div>
+<div class="grid two">
+<div class="card"><h3>独特优势</h3><ul><li>专为多 Agent 开发设计：Agent Identity + Space + 角色守门，不是聊天记忆改造</li><li>ADR 级记忆质量：unit_type 枚举强制你写"决策"而不是"日记"</li><li>蒸馏闭环：对话是证据，记忆是结论，两者分开存</li><li>本机实测 3 个月：这个仓库的守门规则就活在里面</li></ul></div>
+<div class="card"><h3>坑，先说清</h3><ul><li>冷启动注入吃 token：简报+规则每会话固定开销，简报要控制长度</li><li>复杂多跳检索（三度关系）能力有限，别当图数据库用</li><li>并发写有 SQLite 锁风险，多 Agent 同时写要串行</li><li>核心 Server 闭源：CLI 开源但完整服务端不能自建</li></ul></div>
+</div>
+<h2 id="chain">三个怎么接成一条链</h2>
+<p class="h2sub">衔接点只有三个，每个都很薄——薄到一条命令或一个协议。这正是它们能长期共存的原因：谁也不改造谁。</p>
+<pre>    Nowledge Mem（记忆层）
+      │ ① 注水：会话启动，简报+规则自动进入上下文
+      ▼
+    Lody（调度层）
+      │ ② 派活：主 Agent 把子任务派到多机的 worktree
+      │ ⑤ 验收：Diff 行级批注 → 回传 → 重跑
+      ▼
+    Magpie（路由层）
+      │ ③ 降本：探索用 free 组，正式生成用 opus 组
+      │ ④ 保活：429 自动切换，长任务不中断
+      ▼
+    上游模型（Claude / DeepSeek / GLM / 订阅）</pre>
+<div class="note"><b>三个衔接点。</b>① <b>记忆注水</b>：Nowledge Mem 的 hook 独立于 Lody 工作，任何 Agent 会话（包括 Lody 派发的）启动时都拿到简报。② <b>模型导入</b>：<code>lody agent-config import-magpie</code> 一条命令，Lody 的模型选择器里直接出现 magpie/* 全部路由组。③ <b>经验沉淀</b>：验收会话里产生的决策（为什么这么做、哪个坑踩过）用 <code>nmem m add</code> 写回记忆，下次注水就有了。</div>
+<p>反过来说，三个<b>不要</b>接的地方：不要让 Nowledge Mem 存业务数据（它是开发记忆，不是产品数据库）；不要让 Lody 管生产部署（它是开发态平台，产物走 Git PR 进 CI）；不要在生产环境依赖 Magpie 的订阅桥接（ToS 风险 + 本机单点）。</p>
+<h2 id="sop">SOP：一个特性从想法到合并</h2>
+<p class="h2sub">以"给 Agent 加一个新工具"为例。每一步标了谁在场。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:5%">#</th><th style="width:9%">步</th><th style="width:12%">谁在场</th><th style="width:44%">做什么</th><th>为什么</th></tr></thead><tbody><tr><td>1</td><td><b>开工</b></td><td>Nowledge Mem</td><td><code>nmem m search "相关主题"</code> 先查旧账：有没有做过、为什么放弃、当时的决策是什么。</td><td>避免重复造轮子，避免推翻三个月前有理由的决策</td></tr><tr><td>2</td><td><b>想清楚</b></td><td>人 + 任意 Agent</td><td>写 spec：改哪个动作、怎么验收。关键决策当场 <code>nmem m add</code>，带 importance 0.8+。</td><td>决策不落盘，两周后必然重新争论一遍</td></tr><tr><td>3</td><td><b>派活</b></td><td>Lody</td><td>主会话 <code>lody_session_create</code> 派子任务到远程机器的 worktree；批量任务用 <code>chat_many</code>。立即返回，不阻塞当前会话。</td><td>并行 3 个修复互不污染；笔记本合盖也不影响远程跑</td></tr><tr><td>4</td><td><b>选模型</b></td><td>Magpie</td><td>探索/讨论会话用 <code>magpie/group/auto-*free</code>；正式生成切 opus 组。Magpie 负责 429 时自动换道。</td><td>探索阶段烧的是免费/便宜 token，正式生成才用贵的</td></tr><tr><td>5</td><td><b>验收</b></td><td>人 + Lody</td><td>Diff 页逐行看，意见写在具体行上回传。Agent 拿着行级上下文重跑。数字对不对，跑 eval（这是本仓库的铁律：单测绿不算完）。</td><td>验收意见不再是一句"改一下"，而是带行号的精确输入</td></tr><tr><td>6</td><td><b>沉淀</b></td><td>Nowledge Mem</td><td>合并后蒸馏本线程：<code>nmem t search</code> 可查全程；重要教训 <code>nmem m add</code>（含"下次别怎么做"）。</td><td>下次同类任务的第 1 步自动命中这次的教训</td></tr></tbody></table></div>
+<div class="note warn"><b>SOP 的两条红线。</b>① 第 1 步的检索不能省——记忆库里的旧决策不查就是不存在，这是"找不到≠不存在"的镜像错误。② 第 6 步写记忆前先检索去重——重复记忆会让第 1 步的检索质量退化，最终整条链失灵。</div>
+<h2 id="playbook">Playbook：组合技与场景</h2>
+<div class="tablewrap"><table><thead><tr><th style="width:16%">组合技</th><th style="width:54%">怎么做</th><th>价值</th></tr></thead><tbody><tr><td><b>多机并行修 Bug</b></td><td>一个会话派 3 个 worktree 会话到 3 台机器，各修一个 issue，全部走 free 路由组跑通，最后你只验收 3 个 diff。</td><td>人只出现在派活和验收两头，中间全是机器</td></tr><tr><td><b>贵模型只花在刀刃</b></td><td>Magpie 建 <code>group/auto-beam-free</code>（探索）+ <code>opus</code> 组（生成）两个路由组。Lody Role 里锁死：评审角色用 opus 组 high 推理，跑腿角色用 free 组。</td><td>同一份工作，token 成本差一个数量级</td></tr><tr><td><b>跨机器接力</b></td><td>白天在笔记本上和 Agent 讨论方案；晚上把实现派给 Mac mini 跑长测试；手机上收 iOS 通知审批权限。第二天简报里已有昨晚结论。</td><td>机器各干各的强项，你只做决策</td></tr><tr><td><b>记忆驱动的守门</b></td><td>本仓库的做法：把架构红线（依赖单向、schema 单源、eval 即 spec）写成 Nowledge Mem 的 Space 规则，每次会话注水自动进场。</td><td>守门规则不靠自觉，靠注入</td></tr><tr><td><b>降本验证</b></td><td>改完路由组配置，跑 <code>magpie usage 7d</code> 对比改前改后的单任务成本和 429 次数。</td><td>降本不靠感觉，靠本地账本</td></tr><tr><td><b>长任务不盯梢</b></td><td>重构派给远程机器后结束回合。Lody operation 完成时自动回执唤醒；Magpie 在后台默默处理了 2 次 429。</td><td>你睡你的，链路自己会活</td></tr></tbody></table></div>
+<h2 id="when-not">什么时候这套组合是错的</h2>
+<ul><li><b>单人单机单任务</b>：直接终端跑 <code>claude</code> 更顺。Lody 的调度价值来自多机多任务，没有这个前提就是纯负担。</li><li><b>生产环境</b>：Magpie 订阅桥接有 ToS 风险、本机单点不可高可用。生产走正规 API + 企业网关（LiteLLM/Kong）。</li><li><b>对外产品内嵌记忆</b>：Nowledge Mem 是开发者自己的记忆，不是给最终用户的多租户记忆方案（那类场景用 mem0/Zep 的 SDK）。</li><li><b>需要审计合规的团队</b>：三者都以本地/闭源服务为代价换轻量，等保、SOC2 类硬要求出现时，这套组合要重新评。</li></ul>
+      
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+</body>
+</html>

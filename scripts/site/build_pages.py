@@ -316,6 +316,7 @@ def index_page():
     b.append('<div class="grid two">')
     b.append('<a class="card" href="cheatsheet.html" style="display:block;text-decoration:none;color:inherit"><h3>实战作战手卡 · 36 条</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">Agent 工程、上下文、Eval、创意流、产品增长、数据研究 6 大实战主题闭环。</p></a>')
     b.append('<a class="card" href="agent-graph.html" style="display:block;text-decoration:none;color:inherit"><h3>Main Agent 能力图谱</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">4 条轴、17 个核心能力节点与 14 条咨询急诊路线，将方法体系变成可运行的咨询 Agent。</p></a>')
+    b.append('<a class="card" href="toolchain.html" style="display:block;text-decoration:none;color:inherit"><h3>Agent 全栈工具链</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">Lody × Magpie × Nowledge Mem：多机调度、模型路由、跨会话记忆三件套的调研结论、衔接 SOP 与组合 Playbook。</p></a>')
     b.append('<a class="card" href="matrix.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品的 8 × 8 矩阵</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">7 阶段 + 管理 × 8 层。每格写输入契约、输出契约、失败模式；状态由脚本算出，不手填——<b>验</b> 有检查器，<b>约</b> 只有契约。</p></a>')
     b.append('<a class="card" href="data-design.html" style="display:block;text-decoration:none;color:inherit"><h3>数据产品设计（Momcozy）</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">自顶向下设计全景：双向固定效应面板模型、三前置发现与 C1–C4 四级结论卡。</p></a>')
     b.append('<a class="card" href="data-layers.html" style="display:block;text-decoration:none;color:inherit"><h3>8+3 层级契约与检查器</h3><p style="margin:0;font-size:.9rem;color:var(--muted)">八个工序层输入输出契约、三条只追加不变量与命令级检查器规范。</p></a>')
