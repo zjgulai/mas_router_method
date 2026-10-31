@@ -182,7 +182,7 @@
     <main>
       <div class="crumb"><a href="./">总览</a> / 提示词库</div>
       <h1>提示词库</h1>
-<p class="lede">可以直接复制的会话提示词。按阶段分类，每条都标明：<b>什么时候用、以及为什么这么写</b>。<br>更系统的 36 张战斗卡片见 <a href="cheatsheet.html">实战作战手卡</a>。</p>
+<p class="lede">可以直接复制的会话提示词。按阶段分类，每条都标明：<b>什么时候用、以及为什么这么写</b>。<br>更系统的 37 张战斗卡片见 <a href="cheatsheet.html">实战作战手卡</a>。</p>
 <div class="note">这些提示词的共同点：<b>都在要求一个具体动作，而不是一个结论。</b>
 "帮我检查一下"会让它给你一段看起来认真的话；"造一个会让它失败的情况，跑一次，把结果原样贴给我"会让它给你证据。
 <br><br>把 <code>___</code> 换成你的内容。带 <code>&lt;b&gt;</code> 的地方是强调，复制时可以去掉。</div>
@@ -206,6 +206,11 @@
 <h3>诊断卡住</h3>
 <pre>用 diagnosing-bugs 查这个 bug：先建一个能变红的反馈回路，再谈假设。</pre>
 <div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">有 bug 但不知道在哪</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">不能变红的复现不算复现。</span></div></div>
+</div>
+<div class="card">
+<h3>按格赖斯四准则自检回答</h3>
+<pre>回答之前先过一遍格赖斯合作原则的四条准则，不合格就自己重写，然后再给我：<b>量</b>——只提供我还缺的信息，不把我已知的常识再科普一遍；<b>质</b>——证据不足的直接说不知道，不许编；<b>关系</b>——只回答我问的这件事，不发散、不强行升华；<b>方式</b>——不要前置寒暄、不要复述我的问题、不要车轱辘话。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">回答开始出现废话文学、幻觉、答非所问或"这是一个很好的问题！"式开场时</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">格赖斯四准则（量、质、关系、方式）各压住一类 LLM 典型缺陷，且把默认动作从"字面语法匹配"换成"推断提问背后的真实意图"。</span></div></div>
 </div>
 <h2>需求</h2>
 <div class="card">
@@ -475,7 +480,7 @@
 <pre>这条结论被证伪了。别改原件。按三句话给我：<b>旧结论主张什么</b>、<b>什么条件触发了</b>、<b>新结论是什么</b>。然后告诉我这张旧卡该标成什么状态。</pre>
 <div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">证伪检查报红之后</span></div><div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">删掉旧结论会失去「我们曾经相信过什么、为什么信错了」的记录，而那份记录是唯一能让下次判断更快的东西。</span></div></div>
 </div>
-<h2>实战战斗 Prompt 专区（36 条原则精选）</h2>
+<h2>实战战斗 Prompt 专区（37 条原则精选）</h2>
 <p class="h2sub">精选自 6 大实战作战主题。详见 <a href="cheatsheet.html">完整作战手卡与验收判定 →</a></p>
 <h3>01 Agent 工程：从会做，到可持续运行</h3>
 <div class="card">
@@ -600,6 +605,11 @@
 <h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-06</span> UI 不是堆功能 / 是任务与层级</h3>
 <pre>请按用户任务重构这个页面：先列层级、关键状态和操作路径，再决定组件、动效和视觉风格。</pre>
 <div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">页面看起来完整，却没有清晰任务路径，AI 带来无意义装饰和默认组件。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">每个视觉元素都要服务理解、操作或反馈。</span></div></div>
+</div>
+<div class="card">
+<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-07</span> 回答四准则 / 量·质·关系·方式</h3>
+<pre>回答之前先过一遍格赖斯合作原则的四条准则，不合格就自己重写，然后再给我：<b>量</b>——只提供我还缺的信息，不把我已知的常识再科普一遍；<b>质</b>——证据不足的直接说不知道，不许编；<b>关系</b>——只回答我问的这件事，不发散、不强行升华；<b>方式</b>——不要前置寒暄、不要复述我的问题、不要车轱辘话。</pre>
+<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)"><div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">废话文学、幻觉、答非所问、"这是一个很好的问题！"式寒暄——四类 LLM 典型缺陷各自由一条语用准则压住。</span></div><div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">答案里没有与提问无关的展开、没有证据不足的断言、没有寒暄和复述。</span></div></div>
 </div>
 <h3>05 Product & Growth：从有人感兴趣，到有人付费</h3>
 <div class="card">
