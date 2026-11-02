@@ -8,4 +8,4 @@
 
 - [x] spec.md 回填复验结果与成本（round1 $0.76 + round2 $0.55；累计验证花费 ~$4.0 含基线 $2.68）
 - [x] commit `fix(evals): ...`（fixture + prompt + tool description + 台账）
-- [ ] 基线决策：4/4 PASS 已达成，全量重跑 ~$2.7 刷新 current.json 待用户批准
+- [x] 基线决策：用户批准两次刷新——第一次（$3.18）抓到 audio-rights guardrail 方差 → 修复 bbbeb5e + 单案例 PASS（$0.30）→ 第二次 clean-baseline 全量重刷获批开跑

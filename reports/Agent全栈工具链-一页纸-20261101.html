@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<!-- ==================================================================
+     ONE-PAGER TEMPLATE · parchment design system
+     单页 A4 方案/报告/执行摘要
+     改完跑：python3 -c "from weasyprint import HTML; HTML('one-pager.html').write_pdf('out.pdf')"
+     目标：页数必须 == 1
+     ================================================================== -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Agent 全栈工具链一页纸</title>
+<meta name="author" content="lute">
+<meta name="description" content="Lody 管派活，Magpie 管模型，Nowledge Mem 管记忆：三件套的分工、三个衔接点、六步 SOP 与两条红线。">
+<meta name="keywords" content="Agent 全栈, Lody, Magpie, Nowledge Mem, 工具链, SOP">
+<meta name="generator" content="Kami">
+<style>
+  /* Regular weight */
+  @font-face {
+    font-family: "TsangerJinKai02";
+    src: url("../fonts/TsangerJinKai02-W04.ttf") format("truetype"),
+       url("https://cdn.jsdelivr.net/gh/tw93/Kami@main/assets/fonts/TsangerJinKai02-W04.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  /* Bold weight - W05 for all bold variants */
+  @font-face {
+    font-family: "TsangerJinKai02";
+    src: url("../fonts/TsangerJinKai02-W05.ttf") format("truetype"),
+       url("https://cdn.jsdelivr.net/gh/tw93/Kami@main/assets/fonts/TsangerJinKai02-W05.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm 18mm 15mm 18mm;
+    background: #f5f4ed;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --parchment: #f5f4ed;
+    --ivory:     #faf9f5;
+    --near-black:#141413;
+    --dark-warm: #3d3d3a;
+    --olive:     #504e49;
+    --stone:     #6b6a64;
+    --brand:     #1B365D;
+    --border:    #e8e6dc;
+    --border-soft:#e5e3d8;
+    --tag-bg:    #E4ECF5;
+    --serif: "TsangerJinKai02", "Source Han Serif SC", "Source Han Serif CN", "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", "STSong", "SimSun", Georgia, serif;
+    --sans: var(--serif);
+  }
+
+  html, body { background: var(--parchment); }
+
+  @media screen {
+    body { max-width: 210mm; margin: 0 auto; padding: 15mm 18mm; }
+  }
+
+  body {
+    color: var(--near-black);
+    font-family: var(--serif);
+    font-size: 10pt;
+    line-height: 1.45;
+    letter-spacing: 0.3pt;
+  }
+
+  .serif {
+    font-family: var(--serif);
+  }
+
+  /* ========== HEADER ========== */
+  .header {
+    margin-bottom: 16pt;
+    padding-bottom: 12pt;
+    border-bottom: 0.5pt solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20pt;
+  }
+  .title-block {
+    flex: 1;
+  }
+  .eyebrow {
+    font-size: 9pt;
+    color: var(--brand);
+    letter-spacing: 1.5pt;
+    text-transform: uppercase;
+    margin-bottom: 7pt;
+    font-weight: 500;
+  }
+  /* CN locale tuning: TsangerJinKai glyphs are wider per character, so H1 sits
+     slightly smaller (24pt vs EN 26pt) with looser leading (1.15 vs EN 1.12)
+     to keep optical density aligned across the two locales. */
+  h1 {
+    font-family: var(--serif);
+    font-size: 24pt;
+    font-weight: 500;
+    color: var(--near-black);
+    line-height: 1.15;
+    margin-bottom: 5pt;
+  }
+  .subtitle {
+    font-size: 11pt;
+    color: var(--olive);
+    line-height: 1.4;
+  }
+  .meta {
+    font-size: 9pt;
+    color: var(--stone);
+    text-align: right;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+  /* 品牌 logo 槽(可选,来自 brand profile;默认无 logo,样式仅在取消注释后生效)。 */
+  .brand-logo {
+    height: 44px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    align-self: flex-start;
+  }
+
+  /* ========== METRICS ========== */
+  /* 横向 baseline 布局 - -  和 resume.html 一致的 kami native 姿态。
+     背景透明、无边框，用 typography 本身承担层次，不加容器。 */
+  .metrics {
+    display: flex;
+    gap: 14pt;
+    margin-bottom: 18pt;
+    padding: 4pt 0 6pt 0;
+    border-bottom: 0.3pt dotted var(--border);
+  }
+  .metric {
+    flex: 1;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 4pt;
+    break-inside: avoid;
+  }
+  .metric-value {
+    font-family: var(--serif);
+    font-size: 20pt;
+    font-weight: 500;
+    color: var(--brand);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    letter-spacing: -0.2pt;
+  }
+  .metric-label {
+    font-size: 9pt;
+    color: var(--olive);
+    line-height: 1.3;
+  }
+
+  /* ========== SECTIONS ========== */
+  /* PRODUCT SHOT (optional) - one real screenshot as the page's visual anchor.
+     Uncomment the <figure> in the body, point src at a local image, and tune
+     .frame height to fill the page. object-fit trims dead margin, not the window. */
+  .product-shot { margin-bottom: 16pt; break-inside: avoid; }
+  .product-shot .frame {
+    height: 110mm;
+    overflow: hidden;
+    border-radius: 5pt;
+  }
+  .product-shot .frame img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center; display: block;
+  }
+  .product-shot figcaption {
+    margin-top: 7pt; font-size: 8.5pt;
+    color: var(--stone); line-height: 1.45; text-align: center;
+  }
+  .product-shot figcaption .hl { color: var(--brand); font-weight: 500; }
+
+  section { margin-bottom: 18pt; break-inside: avoid; }
+  section:last-of-type { margin-bottom: 0; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 16pt;
+    font-weight: 500;
+    color: var(--near-black);
+    margin-bottom: 6pt;
+  }
+  h2 .sub {
+    font-size: 9pt;
+    color: var(--stone);
+    font-weight: 400;
+    margin-left: 6pt;
+  }
+
+  p { margin-bottom: 6pt; line-height: 1.45; }
+  p:last-child { margin-bottom: 0; }
+
+  .lead {
+    font-size: 12pt;
+    line-height: 1.5;
+    color: var(--dark-warm);
+    margin-bottom: 14pt;
+  }
+
+  .hl { color: var(--brand); font-weight: 500; }
+
+  /* ========== 2-column grid ========== */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18pt;
+  }
+
+  /* ========== 短横线 list（代替默认 bullet） ========== */
+  ul.dash {
+    margin: 0;
+    padding-left: 16pt;
+  }
+  ul.dash li {
+    margin-bottom: 5pt;
+    line-height: 1.45;
+  }
+  ul.dash li:last-child { margin-bottom: 0; }
+  ul.dash li::marker { color: var(--brand); }
+
+  /* ========== Timeline (横向进度点) ========== */
+  .timeline {
+    display: flex;
+    gap: 12pt;
+    margin-top: 6pt;
+  }
+  .tl-step {
+    flex: 1;
+    break-inside: avoid;
+  }
+  .tl-year {
+    font-family: var(--serif);
+    font-size: 11pt;
+    font-weight: 500;
+    color: var(--brand);
+    margin-bottom: 2pt;
+  }
+  .tl-head {
+    font-size: 10pt;
+    font-weight: 500;
+    color: var(--near-black);
+    margin-bottom: 2pt;
+  }
+  .tl-body {
+    font-size: 9pt;
+    color: var(--olive);
+    line-height: 1.4;
+  }
+
+  /* ========== Tag ========== */
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);    /* 实色！不要 rgba */
+    color: var(--brand);
+    font-size: 9pt;
+    font-weight: 500;
+    padding: 1pt 5pt;
+    border-radius: 3pt;
+    letter-spacing: 0.3pt;
+    margin-right: 3pt;
+  }
+
+  /* ========== Callout / 高亮块 ========== */
+  /* 和 long-doc / equity-report 的 .callout 同形：ivory 填充与文字承担强调，
+     只有 padding 按各自密度收紧。 */
+  .callout {
+    background: var(--ivory);
+    border-radius: 3pt;
+    padding: 8pt 12pt;
+    margin: 10pt 0;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: var(--olive);
+    break-inside: avoid;
+  }
+  .callout .hl, .callout .em-brand { color: var(--brand); }
+
+  /* ========== TABLE (kami-table) ========== */
+  table, .kami-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin: 8pt 0;
+    break-inside: avoid;
+  }
+  table th, .kami-table th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--dark-warm);
+    padding: 5pt 6pt;
+    border-bottom: 0.6pt solid var(--border);
+    background: transparent;
+  }
+  table td, .kami-table td {
+    padding: 4pt 6pt;
+    border-bottom: 0.25pt solid var(--border);
+    vertical-align: top;
+  }
+  table.compact th, .kami-table.compact th { padding: 3pt 5pt; font-size: 8pt; }
+  table.compact td, .kami-table.compact td { padding: 2.5pt 5pt; font-size: 8pt; line-height: 1.4; }
+  table.financial td:not(:first-child), .kami-table.financial td:not(:first-child) {
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  table.financial th:not(:first-child), .kami-table.financial th:not(:first-child) { text-align: right; }
+  table.striped tbody tr:nth-child(even) td, .kami-table.striped tbody tr:nth-child(even) td {
+    background: var(--ivory);
+  }
+  table .total td, .kami-table .total td {
+    font-weight: 500; border-top: 0.6pt solid var(--border); border-bottom: none; color: var(--near-black);
+  }
+  /* Outer columns sit on the text edge, so a table lines up with the heading above it.
+     Striped rows keep their inset: the ivory fill needs room around the text. */
+  table:not(.striped) th:first-child, table:not(.striped) td:first-child { padding-left: 0; }
+  table:not(.striped) th:last-child, table:not(.striped) td:last-child { padding-right: 0; }
+
+  /* ========== FOOTER ========== */
+  .footer {
+    margin-top: 18pt;
+    padding-top: 6pt;
+    border-top: 0.3pt dotted var(--border);
+    font-size: 9pt;
+    color: var(--stone);
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.3pt;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<div class="header">
+  <div class="title-block">
+    <div class="eyebrow">工具链总结</div>
+    <h1>Agent 全栈工具链一页纸</h1>
+    <div class="subtitle">Lody 管派活，Magpie 管模型，Nowledge Mem 管记忆：三件套接成一条开发流水线</div>
+  </div>
+  <div class="meta">
+    lute<br>
+    2026.11.01<br>
+    v1 · 已上线验证
+  </div>
+  <!-- 品牌 logo 槽(可选,来自 brand profile 的 logo 字段)。无 logo 时保持注释,勿插破图。
+       有 logo 时取消注释,把 src 换成已展开的本地绝对路径:
+  <img class="brand-logo" src="/absolute/path/to/logo.svg" alt=""> -->
+</div>
+
+<!-- ========== METRICS（可选，3-4 卡最佳） ========== -->
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-value">3 工具</div>
+    <div class="metric-label">调度·路由·记忆</div>
+  </div>
+  <div class="metric">
+    <div class="metric-value">3 衔接点</div>
+    <div class="metric-label">注水·导入·回写</div>
+  </div>
+  <div class="metric">
+    <div class="metric-value">6 步 SOP</div>
+    <div class="metric-label">查账·派活·验收</div>
+  </div>
+</div>
+
+<!-- ========== LEAD（导语，一段） ========== -->
+<p class="lead">
+  三个工具的分工一句话说清：<span class="hl">模型从哪来</span>（Magpie 本地网关，127.0.0.1:3425，协议互转+路由组容灾）、<span class="hl">活怎么派</span>（Lody 多机控制平面，worktree 隔离+异步回执）、<span class="hl">昨天学到的怎么带到今天</span>（Nowledge Mem 会话注水+持久记忆）。互不依赖，接起来却是一条完整流水线：记忆注水 → 调度派活 → 路由降本 → 验收回流 → 记忆沉淀。
+</p>
+
+<!-- ========== 核心内容（两栏） ========== -->
+
+<div class="two-col">
+  <section>
+    <h2>三个衔接点</h2>
+    <p>每个都很薄，薄到一条命令或一个协议。这正是它们能长期共存的原因。</p>
+    <ul class="dash">
+      <li><b>① 记忆注水</b>：Nowledge Mem 的 hook 独立工作，任何会话（含 Lody 派发的）启动即拿到简报+规则</li>
+      <li><b>② 模型导入</b>：<code>lody agent-config import-magpie</code>，Lody 模型选择器里直接出现 magpie/* 全部路由组</li>
+      <li><b>③ 经验回写</b>：验收会话里的决策用 <code>nmem m add</code> 写回，下次注水就有了</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>六步 SOP</h2>
+    <p>以"给 Agent 加一个新工具"为例，每步标谁在场。</p>
+    <ul class="dash">
+      <li><b>1 开工</b>（Mem）：<code>nmem m search</code> 查旧账：做过没有？为什么放弃？</li>
+      <li><b>2 想清楚</b>（人）：写 spec，关键决策当场 <code>nmem m add</code></li>
+      <li><b>3 派活</b>（Lody）：<code>session_create</code> 派到远程 worktree，不阻塞</li>
+      <li><b>4 选模型</b>（Magpie）：探索用 free 组，正式生成切 opus 组</li>
+      <li><b>5 验收</b>（人+Lody）：Diff 行级批注回传；数字对不对跑 eval</li>
+      <li><b>6 沉淀</b>（Mem）：合并后蒸馏本线程，教训写回记忆</li>
+    </ul>
+  </section>
+</div>
+
+
+<!-- ========== EVIDENCE（论据） ========== -->
+<section>
+  <h2>为什么是这三件</h2>
+  <ul class="dash">
+    <li>Magpie：所有 Agent 请求统一走本地 3425 端口；<span class="hl">group/* 路由组遇 429 自动切换</span>，探索用 free 组、正式生成用 opus 组，同一份工作 token 成本差一个数量级</li>
+    <li>Lody：把多台机器池化成一个执行池，每个并行会话独立 worktree 互不污染；长任务返回 operationId 即结束回合，后台跑完自动回执唤醒</li>
+    <li>Nowledge Mem：会话启动自动注入工作记忆简报与 Space 规则；nmem m add 沉淀带类型的决策记忆，写前先检索去重</li>
+    <li>验收用 Lody Diff 行级批注直接回传给 Agent 当下一轮输入；人只出现在派活和验收两头，中间全是机器</li>
+  </ul>
+</section>
+
+<!-- ========== CALLOUT（可选）========== -->
+<div class="callout">
+  <b>两条红线</b>：开工第 1 步的检索不能省，记忆里的旧决策不查就等于不存在；第 6 步写记忆前先去重，重复记忆会让检索退化，最终整条链失灵。<b>什么时候别用这套</b>：单人单机单任务直接跑 claude；生产环境订阅桥接有 ToS 风险且本机单点，走正规 API + 企业网关。
+</div>
+
+<!-- ========== FOOTER ========== -->
+<div class="footer">
+  <span>内部 · Agent Native Builder</span>
+  <span>完整调研：main.luteos.com/toolchain.html</span>
+</div>
+
+</body>
+</html>

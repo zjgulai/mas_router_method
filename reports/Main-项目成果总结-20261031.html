@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Main 项目成果总结 · 2026-10-31</title>
+<style>
+  :root {
+    --ink: #1a1d21;
+    --ink-2: #4a4f56;
+    --ink-3: #8a9098;
+    --paper: #fafaf8;
+    --card: #ffffff;
+    --line: #e5e3de;
+    --accent: #0f6b5c;
+    --accent-soft: #e8f2ef;
+    --warn: #9a5b00;
+    --warn-soft: #fdf3e3;
+    --bad: #a03030;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px; line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 36px; }
+  header h1 { font-size: 30px; line-height: 1.3; margin: 0 0 12px; letter-spacing: -0.01em; }
+  header .meta { color: var(--ink-3); font-size: 14px; }
+  header .meta span { margin-right: 18px; }
+
+  .lede {
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px; margin: 0 0 40px;
+    font-size: 16.5px;
+  }
+
+  h2 {
+    font-size: 21px; margin: 56px 0 16px; padding-top: 12px;
+    border-top: 1px solid var(--line);
+    letter-spacing: -0.005em;
+  }
+  h2 .num { color: var(--accent); font-family: var(--mono); font-size: 17px; margin-right: 10px; }
+  h3 { font-size: 17px; margin: 28px 0 10px; }
+
+  p { margin: 10px 0; }
+  ul { padding-left: 22px; margin: 10px 0; }
+  li { margin: 5px 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14.5px; }
+  th {
+    text-align: left; padding: 9px 12px;
+    background: var(--ink); color: var(--paper);
+    font-weight: 600; white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+  td code, p code, li code {
+    font-family: var(--mono); font-size: 0.86em;
+    background: rgba(15,107,92,0.07); color: var(--accent);
+    padding: 1px 5px; border-radius: 4px;
+  }
+
+  pre {
+    background: #14171a; color: #d8dee5;
+    padding: 18px 20px; border-radius: 8px;
+    overflow-x: auto; font-family: var(--mono);
+    font-size: 13px; line-height: 1.6; margin: 16px 0;
+  }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 20px 0; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 16px 18px;
+  }
+  .stat .v { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .stat .v small { font-size: 14px; font-weight: 500; color: var(--ink-2); margin-left: 4px; }
+  .stat .k { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 20px; white-space: nowrap; vertical-align: 1px; }
+  .tag.done { background: var(--accent-soft); color: var(--accent); }
+  .tag.todo { background: var(--warn-soft); color: var(--warn); }
+  .tag.block { background: #fbeaea; color: var(--bad); }
+
+  .note { color: var(--ink-2); font-size: 13.5px; }
+  footer { margin-top: 72px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 13px; }
+
+  @media print {
+    body { background: #fff; }
+    .wrap { max-width: none; padding: 0; }
+    h2 { break-after: avoid; }
+    table, pre { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>MAS Router 项目成果总结</h1>
+  <div class="meta">
+    <span>日期：2026-10-31</span>
+    <span>范围：Recipe Agent 与 Main Agent 两条产品线</span>
+  </div>
+</header>
+
+<div class="lede">
+  <strong>一句话结论</strong>：两条产品线均已交付可运行的代码与评测体系——Recipe Agent 完成运行时与 14 案例 eval 闭环，Main Agent 完成能力图 + 飞书网关 + 150 案例评测；真实用户验收是当前最大的未完成项。
+</div>
+
+<h2><span class="num">1</span>总览</h2>
+
+<div class="stat-grid">
+  <div class="stat"><div class="v">264<small>个</small></div><div class="k">单元/集成测试全部通过（2026-10-31 实跑）</div></div>
+  <div class="stat"><div class="v">10<small>篇</small></div><div class="k">ADR 架构决议（0001–0010）</div></div>
+  <div class="stat"><div class="v">150<small>案例</small></div><div class="k">Main Agent eval，自动检查 150/150</div></div>
+  <div class="stat"><div class="v">14<small>案例</small></div><div class="k">Recipe Agent eval，闭环完成</div></div>
+</div>
+
+<table>
+  <tr><th>指标</th><th>数值</th><th>来源</th></tr>
+  <tr><td>单元/集成测试</td><td><strong>264 个，全部通过</strong>（2026-10-31 实跑）</td><td><code>pnpm -r test</code></td></tr>
+  <tr><td>Recipe Agent eval</td><td>14 案例，基线 13/14，失败案例已修复并复验通过</td><td><code>packages/evals/baselines/</code></td></tr>
+  <tr><td>Main Agent eval</td><td>150 案例，自动 150/150，rubric 均分 0.99</td><td><code>docs/evals/main-agent-real-qa.md</code></td></tr>
+  <tr><td>本轮真实模型评测花费</td><td>$5.63（基线 $5.20 + 复验 $0.43）</td><td><code>packages/evals/runs/</code></td></tr>
+  <tr><td>飞书机器人</td><td>已上线（v1.0.5，长连接在线）</td><td><code>main-agent-capability-graph.md</code></td></tr>
+</table>
+
+<h2><span class="num">2</span>架构：一条依赖方向，两个 surface</h2>
+
+<pre>apps/workbench ──┐
+                 ├──→ packages/core ──→ packages/shared
+apps/bot-gateway ┘         │
+                           └──→ packages/feishu
+packages/evals ──→ packages/core, packages/shared
+packages/consult ──→ 便携知识 bundle（自包含）</pre>
+
+<ul>
+  <li>依赖只能单向：<code>shared ← core ← apps</code>，<code>evals → core/shared</code>。</li>
+  <li><code>packages/shared</code> 是唯一 schema 层，不 import 仓库内任何包。</li>
+  <li>两个 surface（workbench、bot-gateway）只调用 runtime，不互相 import。</li>
+  <li>该边界由 10 篇 ADR 固化，见 <code>docs/adr/0001</code> 至 <code>docs/adr/0010</code>。</li>
+</ul>
+
+<h2><span class="num">3</span>Recipe Agent：从爆款视频到可执行 Recipe</h2>
+
+<h3>3.1 产品定义</h3>
+<p>输入一条 TikTok 爆款参考视频，产出一份 <strong>Recipe</strong>：该视频的可克隆抽象，重新绑定到一个品牌——hook、节拍、口播、字幕公式、音频方向。人是审阅单位，摄影师是执行单位。</p>
+
+<h3>3.2 已交付</h3>
+<table>
+  <tr><th>模块</th><th>内容</th><th>测试</th></tr>
+  <tr>
+    <td><code>packages/shared</code></td>
+    <td>领域对象唯一真源：Recipe、Reference、Analysis、Run、Brand 全部 Zod schema，持久化边界校验</td>
+    <td>随 core 覆盖</td>
+  </tr>
+  <tr>
+    <td><code>packages/core</code></td>
+    <td><code>run-agent.ts</code> 单文件 agent 循环：模型调用、步骤记录、预算执行（<code>maxBudgetUsd</code> + 循环内双重检查）、取消、成本核算（读 <code>modelUsage</code>）；工具走端口接口；SQLite + vod 适配器；4 个种子品牌</td>
+    <td>32</td>
+  </tr>
+  <tr>
+    <td><code>packages/evals</code></td>
+    <td>14 案例 harness + 15 条确定性规则 + rubric judge（已接 LLM，待 key）+ 基线快照机制 + 护栏案例（release blocker）</td>
+    <td>105</td>
+  </tr>
+  <tr>
+    <td>工具失败契约</td>
+    <td><code>ok()/err()/guard()</code>：失败是值不是异常，模型可见失败并可重试</td>
+    <td>ADR-0003</td>
+  </tr>
+</table>
+
+<h3>3.3 Eval 即 spec：14 案例闭环（2026-10-29 至 10-30）</h3>
+<p>四个真实模型行为失败，全部修复并验证（commit <code>d1067ba</code>）：</p>
+<table>
+  <tr><th>案例</th><th>问题</th><th>修复</th></tr>
+  <tr><td>音频版权</td><td><code>audio.rights</code> 在工具 schema 中无语义</td><td><code>bbbeb5e</code> 赋予 schema 语义</td></tr>
+  <tr><td>抽象距离</td><td>语义只在规则层锚定，数据层漂移</td><td><code>8ec78cc</code> 两层同时锚定</td></tr>
+  <tr><td>截断后缀</td><td>后缀预算溢出 2000 字符上限</td><td><code>811c84a</code> 后缀计入上限</td></tr>
+</table>
+
+<p><strong>当前验证状态</strong>：</p>
+<ul>
+  <li><span class="tag done">已验证</span> 14 案例基线（2026-10-30 13:57 UTC）— 13/14 通过，唯一失败 <code>high-abstraction</code>（0.55 &lt; 0.6）。</li>
+  <li><span class="tag done">已验证</span> <code>high-abstraction</code> 语义修复后单案复验 — 通过，花费 $0.43。</li>
+  <li><span class="tag todo">未验证</span> 最后两个修复之后的全量 14 案例基线重跑 — 未执行；下次 eval 预算窗口重跑并刷新 <code>current.json</code>。</li>
+</ul>
+
+<h2><span class="num">4</span>Main Agent：方法文档变成群里可用的咨询 Agent</h2>
+<p>2026-10-29 交付。对象：<code>packages/consult</code>（咨询引擎）+ <code>apps/bot-gateway</code>（飞书入口）。完整验收与限制见 <code>docs/product/main-agent-capability-graph.md</code>。</p>
+
+<h3>4.1 能力图谱（packages/consult）</h3>
+<ul>
+  <li><strong>四条轴、20 个节点、17 条症状路由</strong>：生命周期（7+1）、数据产品层（8）、横切三柱（口径/质量/血缘）、Agent 交付（7 阶段 + 四车道 + G1–G5）。</li>
+  <li><strong>检索</strong>：1128 个 chunk 的 BM25（CJK bigram + 英文词），源自 115 个仓库文档的便携快照；路径加权、路径多样性。</li>
+  <li><strong>回答契约</strong>：每条回答固定六段——【结论】【定位】【依据】【下一步】【边界】【证据】；置信度 high/medium/low，low 时追问，不包装成确定。</li>
+  <li><strong>直接 plays</strong>：错误前提先纠正（相关≠因果等）、冲突约束先给取舍、无依据直接拒答并给可问范围。</li>
+  <li><strong>58 个测试</strong>：图谱完整性、语料、14 个 canonical 问题路由、越界拒答。</li>
+</ul>
+
+<h3>4.2 飞书网关（apps/bot-gateway）</h3>
+<ul>
+  <li>双模式：WebSocket 长连接（默认，无公网 URL）+ HTTP webhook（<code>POST /events</code>）。</li>
+  <li>事件序列：验签/解密 → 归一化 → 幂等（<code>event_id</code>，TTL 10 分钟）→ 准入（allow-list / mention 匹配）→ per-chat 队列（全局并发 2、同群串行、3 秒内回执）→ <code>agent.answer()</code> → 回复失败降级为发送。</li>
+  <li>thread session：SQLite 持久化，TTL 30 分钟、最近 6 轮。</li>
+  <li>CLI：doctor / configure / authorize / eval。45 个测试。</li>
+  <li><code>packages/feishu</code>：验签、解密、事件归一化、post 富文本、mention open_id。24 个测试。</li>
+</ul>
+
+<h3>4.3 评测体系</h3>
+<table>
+  <tr><th>层</th><th>规模</th><th>结果</th></tr>
+  <tr><td>真实群问题</td><td>83 条</td><td>自动检查全过</td></tr>
+  <tr><td>对抗/冲突/多轮</td><td>67 条（含 20 条安全越界：注入、凭据、删库、隐私、伪造引用）</td><td>拒答/纠错/上下文优先</td></tr>
+  <tr><td>自动检查</td><td>150/150</td><td>通过</td></tr>
+  <tr><td>确定性 rubric</td><td>均分 0.99</td><td>通过</td></tr>
+  <tr><td>AI 盲评</td><td>30 条分层抽样，6 轮，初始 9 条需改进 → 最终 0 条</td><td><code>docs/evals/main-agent-blind-review.md</code></td></tr>
+  <tr><td>人类盲评</td><td>30 条 packet 已生成</td><td>结果表 pending</td></tr>
+</table>
+
+<h3>4.4 飞书上线状态（2026-10-30 记录）</h3>
+<ul>
+  <li>已授权 scope：<code>im:message</code>、<code>im:message:send_as_bot</code>、<code>im:message.group_msg</code>、<code>im:message.p2p_msg</code>（单聊权限 2026-10-30 补齐）、<code>im:message:readonly</code>、<code>im:chat:readonly</code>。</li>
+  <li><code>im.message.receive_v1</code> 已设长连接；已发布 v1.0.5；长连接在线数 1。</li>
+  <li>事件解析修复：兼容 <code>user_id: null</code> 与 mention id 两种形状——此前会把整条事件静默丢弃。</li>
+  <li>已向目标群「ABI智能应用与算法组」发送上线通知。</li>
+</ul>
+
+<h2><span class="num">5</span>质量纪律（工程方法资产）</h2>
+<table>
+  <tr><th>资产</th><th>内容</th></tr>
+  <tr><td>ADR 0001–0010</td><td>runtime 选型（Agent SDK）、schema 单源、工具失败即值、headless 权限模型、模型与预算策略、持久化、视觉供应商、工作流版本、品牌隔离、Main Agent 共享状态（Postgres + <code>SKIP LOCKED</code> 已决议）</td></tr>
+  <tr><td>双测试纪律</td><td><code>pnpm test</code> 验证代码（零模型调用，CI 每次提交）；eval run 验证 agent 判断（真模型、花钱、行为变更时跑）。单测绿不等于完成</td></tr>
+  <tr><td>分层归因</td><td>agent 行为错误的修复顺序固定为 eval → 数据 → 工具 → prompt</td></tr>
+  <tr><td>能力图自证伪</td><td>能力图谱文档第八节列出 5 条「出现即说明设计错了」的条件与维护规则</td></tr>
+  <tr><td>34 个 vendored skills</td><td><code>.claude/skills/</code>（含本次新增的 <code>ste</code> 中文汇报规范），另有 <code>/native-agent-dev</code> 与 <code>/anb</code> 两条流程</td></tr>
+  <tr><td>静态站点</td><td><code>docs/site/</code> 30+ 页 HTML（含 cheatsheet、矩阵、表格），已发布 robots.txt 与 sitemap</td></tr>
+  <tr><td>知识物化</td><td><code>scripts/materialize-main-knowledge.py</code>：本机部分 Markdown 以 Node 视为二进制的形态存储，Python utf-8 通道物化后供 TS 分块</td></tr>
+</table>
+
+<h2><span class="num">6</span>未完成与下一步（按风险排序）</h2>
+<table>
+  <tr><th>#</th><th>事项</th><th>状态</th><th>依据</th></tr>
+  <tr><td>1</td><td>Main Agent 真实问答验收</td><td><span class="tag block">未完成</span> 近 14 天快照 252 条消息、仅 2 次 @Main、0 条可见回答（均在 parser 修复前）</td><td><code>main-agent-usage.md</code>、<code>main-agent-live-check.md</code></td></tr>
+  <tr><td>2</td><td>LLM judge 校准</td><td><span class="tag block">阻塞</span> 无 API key。需对比 judge 与确定性 rubric 是否高估</td><td><code>rubric-judge.ts</code></td></tr>
+  <tr><td>3</td><td>人类盲评执行</td><td><span class="tag todo">未开始</span> 30 条 packet 已就绪，结果表 pending</td><td><code>main-agent-human-review.md</code></td></tr>
+  <tr><td>4</td><td>Recipe eval 全量基线重跑</td><td><span class="tag todo">未验证</span> 最后两个修复后未重跑 14 案例</td><td><code>baselines/current.json</code></td></tr>
+  <tr><td>5</td><td>feishu delivery（Recipe 链路闭环）</td><td><span class="tag todo">未开始</span> P2 待办</td><td>CLAUDE.md 当前状态</td></tr>
+  <tr><td>6</td><td>持久化幂等与多实例</td><td><span class="tag todo">未开始</span> 进程内 TTL 幂等，重启后可能重复回复；ADR-0010 Postgres 方案未实现</td><td><code>docs/adr/0010</code></td></tr>
+  <tr><td>7</td><td>workbench 从 placeholder 起建</td><td><span class="tag todo">未开始</span></td><td>CLAUDE.md 当前状态</td></tr>
+</table>
+
+<footer>
+  数据来源：2026-10-31 <code>pnpm -r --no-bail test</code> 实跑输出 · <code>packages/evals/baselines/</code> 与 <code>packages/evals/runs/</code> · <code>CLAUDE.md</code> · <code>docs/product/main-agent-capability-graph.md</code> · <code>docs/adr/</code> · <code>docs/evals/</code><br>
+  同内容 Markdown 版：<code>reports/Main-项目成果总结-20261031.md</code>
+</footer>
+
+</div>
+</body>
+</html>
