@@ -5,11 +5,20 @@
  * Feishu retries and duplicate spend.
  *
  * The runtime dependency is deliberately narrow (one method). The handler
- * wires createRuntime().run behind it in ticket 04; tests use fakes. Card
- * formatting lands in ticket 03 — delivery here is a plain text payload.
+ * wires createRuntime().run behind it in ticket 04; tests use fakes.
  */
+import type { Recipe } from '@mas/shared';
+import { formatRecipeResult } from './feishu/recipe-format.js';
+import type { MessagePayload } from './feishu/client.js';
 export type RecipeRunOutcome =
-  | { status: 'succeeded'; recipeId: string; summary: string; costUsd: number }
+  | {
+      status: 'succeeded';
+      recipeId: string;
+      summary: string;
+      costUsd: number;
+      /** The saved draft. Absent only when the store lookup failed post-save. */
+      recipe?: Recipe;
+    }
   | { status: 'failed'; reason: string; retryable: boolean };
 
 export interface RecipeRuntime {
@@ -22,7 +31,7 @@ export interface RecipeSubmission {
   prompt: string;
   actorId?: string;
   ack: (text: string) => Promise<void>;
-  deliver: (text: string) => Promise<void>;
+  deliver: (payloads: [MessagePayload, ...MessagePayload[]]) => Promise<void>;
 }
 
 export class RecipeRunner {
@@ -50,17 +59,31 @@ export class RecipeRunner {
         });
       } catch (cause) {
         const reason = cause instanceof Error ? cause.message : String(cause);
-        await submission.deliver(`拆解没跑完：${reason}\n请稍后重试，或换一条参考视频。`);
+        await submission.deliver([
+          {
+            msgType: 'text',
+            content: JSON.stringify({ text: `拆解没跑完：${reason}\n请稍后重试，或换一条参考视频。` }),
+          },
+        ]);
         return;
       }
 
       if (outcome.status === 'succeeded') {
         await submission.deliver(
-          `拆解完成（recipe ${outcome.recipeId}，成本 $${outcome.costUsd.toFixed(2)}）。\n${outcome.summary}`,
+          formatRecipeResult(outcome.recipe, {
+            costUsd: outcome.costUsd,
+            fallbackSummary: outcome.summary,
+            recipeId: outcome.recipeId,
+          }),
         );
       } else {
         const hint = outcome.retryable ? '可以重试。' : '这条不建议重试，换一条参考。';
-        await submission.deliver(`拆解失败：${outcome.reason}\n${hint}`);
+        await submission.deliver([
+          {
+            msgType: 'text',
+            content: JSON.stringify({ text: `拆解失败：${outcome.reason}\n${hint}` }),
+          },
+        ]);
       }
     };
 

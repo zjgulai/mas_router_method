@@ -243,8 +243,10 @@ export class MainAgentHandler {
       ack: async (text) => {
         await this.safeReply(message, formatError(text), log);
       },
-      deliver: async (text) => {
-        await this.deps.client.send(message.chatId, formatError(text));
+      deliver: async (payloads) => {
+        for (const p of payloads) {
+          await this.deps.client.send(message.chatId, p);
+        }
       },
     });
   }

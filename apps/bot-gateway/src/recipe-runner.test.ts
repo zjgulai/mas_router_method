@@ -5,6 +5,11 @@ function ok(recipeId = 'rec_1'): RecipeRunOutcome {
   return { status: 'succeeded', recipeId, summary: 'hook + 4 beats', costUsd: 0.4 };
 }
 
+/** Extract the text of every payload in a delivery, card or text. */
+function textsOf(deliveries: [unknown, ...unknown[]][]): string[] {
+  return deliveries.flat().map((p) => JSON.stringify(p));
+}
+
 describe('RecipeRunner', () => {
   it('acks before the run starts, then delivers the result', async () => {
     const events: string[] = [];
@@ -26,8 +31,8 @@ describe('RecipeRunner', () => {
         events.push('ack');
         return Promise.resolve();
       },
-      deliver: (text) => {
-        seen.push(`deliver:${text}`);
+      deliver: (payloads) => {
+        seen.push(`deliver:${JSON.stringify(payloads)}`);
         return Promise.resolve();
       },
     });
@@ -50,8 +55,8 @@ describe('RecipeRunner', () => {
       brandId: 'brd_1',
       prompt: '/recipe 拆一条',
       ack: () => Promise.resolve(),
-      deliver: (text) => {
-        seen.push(text);
+      deliver: (payloads) => {
+        seen.push(JSON.stringify(payloads));
         return Promise.resolve();
       },
     });
@@ -71,8 +76,8 @@ describe('RecipeRunner', () => {
       brandId: 'brd_1',
       prompt: '/recipe 拆一条',
       ack: () => Promise.resolve(),
-      deliver: (text) => {
-        seen.push(text);
+      deliver: (payloads) => {
+        seen.push(JSON.stringify(payloads));
         return Promise.resolve();
       },
     });

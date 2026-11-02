@@ -11,4 +11,10 @@
 - [ ] 同 chat 第二单排队，ack 报队列深度（「前面还有 1 单」）
 - [ ] 全程不打真模型（fake runtime），bot-gateway 测试全绿 + typecheck
 
-**Status:** in progress
+**Status:** done (2026-11-03, commit 89b32f9)
+
+- [x] ack 先于 run（事件序列断言）
+- [x] run 成功 → 含 recipeId 结果消息
+- [x] run 失败（resolve failed / throw 两种形态）→ 含原因消息
+- [x] 同 chat 第二单排队，ack 含深度
+- [x] 全 fake 无模型，58 测试 + typecheck 绿
