@@ -38,8 +38,16 @@ description: Triage a real-model eval failure to the right layer before touching
 - **历史依赖案例必须 preset**。terse-request 修复方式：EvalCase 加 `preset` 可选字段，runner 在 run 前写入 fake env。否则测的是 store 的空，不是 agent 的判断。
 - **模板串里别用反引号**。prompt 文本内的 backtick 截断 JS 模板串（TS1005）。TS 文件里写 prompt 用字符串拼接或避免围栏。
 - **二轮修很正常**。4 个失败里 2 个需要第二轮：第一轮修完复验，看新失败形态再定位下一层。不要指望一次修对。
+- **自报数值的硬阈值会打自己的契约**（2026-11-02 实证）。tool describe 教模型「结构保留不计距离、只算换掉的层」，high-abstraction 案例又要求「keep the structure」——诚实读数落在 0.4–0.55，与 0.6 硬阈值天然冲突。两轮 FAIL（0.55→0.45）且修复后变差是期望层 bug 的信号：此时用 rubric 维度（transferability）判质量，硬阈值只保留「是否申报」的诚实检查。裁决方法：把产物喂给 judge 拿维度分，judge 说「距离属实」即证模型无错。
+- **修改后的文件报 TS1490 'File appears to be binary' 但磁盘内容干净**：换 inode（`cat f > f.new && mv f.new f`）。esbuild/tsc 的读取缓存会记住旧 inode 的坏读数。
 
 ## 成本纪律
 
 - 单案例复验 ~$0.3–0.5；全量基线 ~$2.7–5.2。花前批准，花后记账进 spec。
 - 诊断（try-one）也走真模型，计入验证预算。
+
+## 环境坑（本机实证 2026-11-02）
+
+- **run-evals/try-one 在后台 shell 可能零 TCP 挂起**：进程活着、无网络连接、输出为 0 字节。10 分钟无输出即杀，不要等。基线跑能成功、单案例反复挂，原因未明（疑似长连接被环境代理静默丢弃）。绕法：用 `tsx -e` 内联调 judge 评已存产物，一次几十秒、几分钱。
+- **judge 需要 `EVAL_RUBRIC=on` + `ANTHROPIC_API_KEY` 两个条件**，`--rubric` flag 只管 runner 不管 judge 凭证。
+- runner 要的是 `ANTHROPIC_API_KEY`；本机只有 `ANTHROPIC_AUTH_TOKEN` 时显式映射 `ANTHROPIC_API_KEY=$ANTHROPIC_AUTH_TOKEN`。
