@@ -300,6 +300,43 @@ describe('MainAgentHandler', () => {
     expect(client.replies[0]?.payload.content).toContain('recipe');
   });
 
+  it('with a runner wired, acks first and delivers the recipe result to the chat', async () => {
+    const agent = new FakeAgent(() => answer());
+    const client = new FakeClient();
+    const { RecipeRunner } = await import('./recipe-runner.js');
+    const runner = new RecipeRunner({
+      runtime: {
+        run: () =>
+          Promise.resolve({
+            status: 'succeeded' as const,
+            recipeId: 'rec_42',
+            summary: 'hook + 4 beats',
+            costUsd: 0.4,
+          }),
+      },
+      maxQueueDepth: 3,
+    });
+    const handler = new MainAgentHandler({
+      config: testConfig(),
+      client,
+      agent,
+      identity: { openId: 'ou_main', name: 'Main' },
+      logger: createLogger('error'),
+      recipeRunner: runner,
+    });
+
+    handler.handlePayload(
+      payload({ text: '@_user_1 拆一条 https://www.tiktok.com/@x/video/7301' }),
+    );
+    await handler.drain();
+    // the recipe pipeline runs its own chain; drain the runner's promise too
+    await new Promise((r) => setTimeout(r, 30));
+
+    expect(agent.questions).toHaveLength(0);
+    expect(client.replies.some((r) => r.payload.content.includes('开始拆解'))).toBe(true);
+    expect(client.sends.some((s) => s.payload.content.includes('rec_42'))).toBe(true);
+  });
+
   it('keeps a plain question on the consult path', async () => {
     const agent = new FakeAgent(() => answer());
     const client = new FakeClient();

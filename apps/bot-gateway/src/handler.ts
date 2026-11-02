@@ -14,6 +14,7 @@ import {
   type NormalisedMessage,
 } from './feishu/normalize.js';
 import { isRecipeIntent } from './router.js';
+import type { RecipeRunner } from './recipe-runner.js';
 
 export interface AnswerAgent {
   answer(question: string, options?: { history?: ConversationTurn[] }): Promise<ConsultAnswer>;
@@ -26,6 +27,8 @@ export interface HandlerDeps {
   identity: BotIdentity;
   logger: Logger;
   sessions?: SessionStoreLike;
+  /** Present once the recipe pipeline is wired (ticket 04). Absent = stub. */
+  recipeRunner?: RecipeRunner;
 }
 
 export class MainAgentHandler {
@@ -215,17 +218,35 @@ export class MainAgentHandler {
   }
 
   /**
-   * Recipe branch. Ticket 01 ships only the route: the async run pipeline
-   * (ack → queue → run → card delivery) lands in ticket 02. Until then the
-   * user gets an honest stub, not silence.
+   * Recipe branch. With a runner wired, submit to the async pipeline (ack now,
+   * result later); without one the user gets an honest stub, not silence.
    */
   private async processRecipe(message: NormalisedMessage, log: Logger): Promise<void> {
-    log.info('recipe intent routed', { chars: message.text.length });
-    await this.safeReply(
-      message,
-      formatError('收到，recipe 拆解功能即将上线（当前版本暂未启用）。'),
-      log,
-    );
+    const runner = this.deps.recipeRunner;
+    if (runner === undefined) {
+      log.info('recipe intent routed to stub (no runner wired)', { chars: message.text.length });
+      await this.safeReply(
+        message,
+        formatError('收到，recipe 拆解功能即将上线（当前版本暂未启用）。'),
+        log,
+      );
+      return;
+    }
+
+    log.info('recipe intent submitted', { chars: message.text.length });
+    await runner.submit({
+      chatId: message.chatId,
+      // Brand selection is ticket 04's wiring problem; the runner interface
+      // takes it explicitly so multi-brand routing lands in one place.
+      brandId: 'brd_00000000000001',
+      prompt: message.text,
+      ack: async (text) => {
+        await this.safeReply(message, formatError(text), log);
+      },
+      deliver: async (text) => {
+        await this.deps.client.send(message.chatId, formatError(text));
+      },
+    });
   }
 
   private async safeReply(

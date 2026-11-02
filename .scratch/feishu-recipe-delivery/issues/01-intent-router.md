@@ -10,4 +10,9 @@
 - [ ] recipe 分支 stub 消息可达（fake client 断言收到了 stub 回复）
 - [ ] `pnpm --filter @mas/bot-gateway test` 与 typecheck 全绿
 
-**Status:** in progress
+**Status:** done (2026-11-02, commit f2cb913)
+
+- [x] router.ts 单测 6 形态全绿
+- [x] handler 分流后 consult 路径不变（45 原有测试全绿）
+- [x] recipe 分支 stub 可达（fake client 断言）
+- [x] bot-gateway 53 测试 + typecheck 全绿
