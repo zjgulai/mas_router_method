@@ -279,6 +279,45 @@ describe('MainAgentHandler', () => {
     ]);
   });
 
+  it('routes a tiktok url to the recipe stub and never calls the consult agent', async () => {
+    const agent = new FakeAgent(() => answer());
+    const client = new FakeClient();
+    const handler = new MainAgentHandler({
+      config: testConfig(),
+      client,
+      agent,
+      identity: { openId: 'ou_main', name: 'Main' },
+      logger: createLogger('error'),
+    });
+
+    handler.handlePayload(
+      payload({ text: '@_user_1 给 Sunday Press 拆一条 https://www.tiktok.com/@x/video/7301' }),
+    );
+    await handler.drain();
+
+    expect(agent.questions).toHaveLength(0);
+    expect(client.replies).toHaveLength(1);
+    expect(client.replies[0]?.payload.content).toContain('recipe');
+  });
+
+  it('keeps a plain question on the consult path', async () => {
+    const agent = new FakeAgent(() => answer());
+    const client = new FakeClient();
+    const handler = new MainAgentHandler({
+      config: testConfig(),
+      client,
+      agent,
+      identity: { openId: 'ou_main', name: 'Main' },
+      logger: createLogger('error'),
+    });
+
+    handler.handlePayload(payload());
+    await handler.drain();
+
+    expect(agent.questions).toHaveLength(1);
+    expect(client.replies[0]?.payload.content).not.toContain('recipe 拆解功能即将上线');
+  });
+
   it('reports stats for health checks', async () => {
     const { handler } = setup();
     handler.handlePayload(payload());

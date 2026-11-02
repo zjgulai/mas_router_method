@@ -13,6 +13,7 @@ import {
   normaliseWsEvent,
   type NormalisedMessage,
 } from './feishu/normalize.js';
+import { isRecipeIntent } from './router.js';
 
 export interface AnswerAgent {
   answer(question: string, options?: { history?: ConversationTurn[] }): Promise<ConsultAnswer>;
@@ -156,6 +157,12 @@ export class MainAgentHandler {
     }
 
     try {
+      if (isRecipeIntent(message.text)) {
+        await this.processRecipe(message, log);
+        this.counts.processed += 1;
+        return;
+      }
+
       const sessionKey = sessionKeyFor(message);
       const history = sessionKey === undefined ? [] : this.sessions.get(sessionKey);
       log.info('question received', {
@@ -205,6 +212,20 @@ export class MainAgentHandler {
         log,
       );
     }
+  }
+
+  /**
+   * Recipe branch. Ticket 01 ships only the route: the async run pipeline
+   * (ack → queue → run → card delivery) lands in ticket 02. Until then the
+   * user gets an honest stub, not silence.
+   */
+  private async processRecipe(message: NormalisedMessage, log: Logger): Promise<void> {
+    log.info('recipe intent routed', { chars: message.text.length });
+    await this.safeReply(
+      message,
+      formatError('收到，recipe 拆解功能即将上线（当前版本暂未启用）。'),
+      log,
+    );
   }
 
   private async safeReply(
