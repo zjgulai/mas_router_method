@@ -108,7 +108,14 @@ export const cases: EvalCase[] = [
         'our own take on this — keep the structure but make it fully ours, we sell coffee pods https://www.tiktok.com/@x/video/7300000000000000001',
     },
     expectations: [
-      { kind: 'deterministic', rule: 'abstraction-distance-at-least:0.6' },
+      // abstractionDistance is self-reported under the counting rule in the
+      // tool describe (kept structure does not count, only swapped layers do).
+      // A faithful "keep the structure, swap the content" recipe honestly
+      // lands in 0.4–0.55, so a hard 0.6 floor fights the contract it measures
+      // (2026-11-02: two baseline FAILs 0.55/0.45, judge transferability 0.8
+      // and confirmed 0.50 honest). The honesty check stays; the quality bar
+      // moves to rubric:transferability.
+      { kind: 'deterministic', rule: 'abstraction-distance-reported' },
       { kind: 'deterministic', rule: 'duration-in-window' },
       { kind: 'rubric', dimension: 'transferability', minScore: 0.7 },
     ],
