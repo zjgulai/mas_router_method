@@ -22,7 +22,12 @@ export type RecipeRunOutcome =
   | { status: 'failed'; reason: string; retryable: boolean };
 
 export interface RecipeRuntime {
-  run(request: { brandId: string; prompt: string; actorId: string }): Promise<RecipeRunOutcome>;
+  run(request: {
+    brandId: string;
+    prompt: string;
+    actorId: string;
+    chatType?: 'p2p' | 'group';
+  }): Promise<RecipeRunOutcome>;
 }
 
 export interface RecipeSubmission {
@@ -30,6 +35,7 @@ export interface RecipeSubmission {
   brandId: string;
   prompt: string;
   actorId?: string;
+  chatType?: 'p2p' | 'group';
   ack: (text: string) => Promise<void>;
   deliver: (payloads: [MessagePayload, ...MessagePayload[]]) => Promise<void>;
 }
@@ -56,6 +62,7 @@ export class RecipeRunner {
           brandId: submission.brandId,
           prompt: submission.prompt,
           actorId: submission.actorId ?? 'feishu-user',
+          ...(submission.chatType !== undefined ? { chatType: submission.chatType } : {}),
         });
       } catch (cause) {
         const reason = cause instanceof Error ? cause.message : String(cause);

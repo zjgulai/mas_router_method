@@ -9,7 +9,10 @@
  * consulting logic lives in `@mas/consult`, so the same agent can be reused by
  * the workbench or a CLI without reimplementation.
  */
-import { MainConsultAgent } from '@mas/consult';
+import { MainConsultAgent, findRepoRoot } from '@mas/consult';
+import { createRuntime, type VisionAnalyzer } from '@mas/core';
+import { SqliteStore } from '@mas/core/adapters/sqlite';
+import { createVodVisionAnalyzer } from '@mas/core/adapters/vod';
 import { loadConfig } from './config.js';
 import { createLogger } from './logger.js';
 import { LarkGatewayClient } from './feishu/client.js';
@@ -20,6 +23,8 @@ import { startWebSocket, type WebSocketHandle } from './ws.js';
 import { createSessionStore } from './session.js';
 import { createTelemetryStore } from './telemetry.js';
 import { createRecipeActionRegistry } from './card-action.js';
+import { RecipeRunner } from './recipe-runner.js';
+import { createRecipeRuntime } from './recipe-runtime.js';
 import type { Server } from 'node:http';
 
 async function main(): Promise<void> {
@@ -56,6 +61,39 @@ async function main(): Promise<void> {
   });
 
   const sessions = createSessionStore(config.sessionDbPath);
+
+  let recipeStore: SqliteStore | undefined;
+  let recipeRunner: RecipeRunner | undefined;
+  if (config.recipeAgentEnabled) {
+    const store = new SqliteStore(config.sessionDbPath);
+    store.seedBrands();
+    const vodKey = process.env['VOD_API_KEY'];
+    const vision: VisionAnalyzer =
+      vodKey === undefined || vodKey.length === 0
+        ? {
+            async analyze() {
+              throw new Error('视频分析未配置（缺少 VOD_API_KEY）');
+            },
+          }
+        : createVodVisionAnalyzer({ apiKey: vodKey });
+    const runtime = createRuntime({
+      brands: store,
+      references: store,
+      recipes: store,
+      runs: store,
+      vision,
+      cwd: findRepoRoot(),
+    });
+    recipeStore = store;
+    recipeRunner = new RecipeRunner({
+      runtime: createRecipeRuntime({
+        run: (request) => runtime.run(request),
+        listRecipes: (brandId, limit) => store.listRecipes(brandId, limit),
+      }),
+      maxQueueDepth: 3,
+    });
+  }
+
   const telemetry = config.telemetryEnabled
     ? createTelemetryStore(config.telemetryDbPath)
     : undefined;
@@ -67,6 +105,7 @@ async function main(): Promise<void> {
     logger,
     sessions,
     cardActions: createRecipeActionRegistry(),
+    ...(recipeRunner !== undefined ? { recipeRunner } : {}),
     ...(telemetry !== undefined ? { telemetry } : {}),
   });
 
@@ -79,6 +118,7 @@ async function main(): Promise<void> {
     llm: process.env['MAIN_AGENT_LLM'] ?? 'auto',
     sessionStore: sessions.constructor.name,
     sessionDbPath: config.sessionDbPath,
+    recipeAgent: config.recipeAgentEnabled ? 'enabled' : 'disabled',
     telemetryStore: telemetry?.constructor.name ?? 'disabled',
     telemetryDbPath: config.telemetryDbPath,
   });
@@ -103,6 +143,7 @@ async function main(): Promise<void> {
       await new Promise<void>((resolve) => server?.close(() => resolve()));
     }
     await handler.drain();
+    recipeStore?.close();
     telemetry?.close?.();
     sessions.close?.();
     logger.info('shutdown complete', { stats: handler.stats() });

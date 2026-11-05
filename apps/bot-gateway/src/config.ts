@@ -38,6 +38,8 @@ export interface MainAgentConfig {
   telemetryDbPath: string;
   /** Set false to run without a local evidence file. */
   telemetryEnabled: boolean;
+  /** Enable the recipe agent. Off by default; requires ANTHROPIC_API_KEY. */
+  recipeAgentEnabled: boolean;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): MainAgentConfig {
@@ -87,6 +89,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): MainAgentConfi
     telemetryDbPath:
       env['MAIN_AGENT_TELEMETRY_DB'] ?? join(findRepoRoot(), '.data', 'main-agent-telemetry.db'),
     telemetryEnabled: env['MAIN_AGENT_TELEMETRY'] !== 'false',
+    recipeAgentEnabled: env['RECIPE_AGENT_ENABLED'] === 'true',
   };
 }
 

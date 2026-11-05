@@ -1,5 +1,6 @@
 import { normaliseMessageEvent } from '@mas/feishu';
 import { normalizeCardAction, type CardActionEvent } from '@larksuiteoapi/node-sdk';
+import { DEFAULT_BRAND_ID } from '@mas/core';
 import type { ConsultAnswer, ConversationTurn } from '@mas/consult';
 import type { MainAgentConfig } from './config.js';
 import { TtlSet } from './dedupe.js';
@@ -380,8 +381,10 @@ export class MainAgentHandler {
       chatId: message.chatId,
       // Brand selection is ticket 04's wiring problem; the runner interface
       // takes it explicitly so multi-brand routing lands in one place.
-      brandId: 'brd_00000000000001',
+      brandId: DEFAULT_BRAND_ID,
       prompt: message.text,
+      actorId: message.senderOpenId,
+      chatType: message.chatType,
       ack: async (text) => {
         await this.safeReply(message, formatError(text), log);
       },

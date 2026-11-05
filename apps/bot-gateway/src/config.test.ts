@@ -41,6 +41,11 @@ describe('loadConfig', () => {
     expect(config.allowUnverifiedHttp).toBe(true);
   });
 
+  it('keeps the recipe agent off unless explicitly enabled', () => {
+    expect(loadConfig({ ...base }).recipeAgentEnabled).toBe(false);
+    expect(loadConfig({ ...base, RECIPE_AGENT_ENABLED: 'true' }).recipeAgentEnabled).toBe(true);
+  });
+
   it('parses allow-lists and numeric overrides', () => {
     const config = loadConfig({
       ...base,

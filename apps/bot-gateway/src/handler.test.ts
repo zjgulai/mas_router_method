@@ -31,6 +31,7 @@ function testConfig(overrides: Partial<MainAgentConfig> = {}): MainAgentConfig {
     sessionDbPath: ':memory:',
     telemetryDbPath: ':memory:',
     telemetryEnabled: false,
+    recipeAgentEnabled: false,
     ...overrides,
   };
 }
