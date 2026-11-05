@@ -71,3 +71,43 @@ node /tmp/content.mjs <目录>
 ## 什么时候可以关闭
 
 当挂载行为改变、或所有会写后跨进程读的验证都改在 `/tmp` 或 CI 上做时。
+
+
+## 根因（2026-11-05 定位，已收敛）
+
+触发点不是“所有写入”，而是**编辑器 Write/Edit 工具在这台主机上的写入路径**。
+同一目录、同一文件系统，30 次复写的结果：
+
+| 写入方式 | 损坏数 |
+| --- | --- |
+| Write / Edit 工具 | 3/3（每次 +4096） |
+| Node `fs.writeFileSync` | 0/30 |
+| Node 临时文件 + `rename` | 0/30 |
+| Python `open().write()` | 0/30 |
+| Python 临时文件 + `os.replace` | 0/30 |
+| shell `cat > file` | 0/30 |
+
+签名每次完全一致：
+
+- Node `stat.size` / `/usr/bin/stat` / `dd` = `data_len + 4096`；
+- Python `read_bytes()` / `cat` / Git blob = `data_len`；
+- `SEEK_HOLE` = `data_len`；`st_blocks` 多 8 个块（多一页已分配）；
+- 多出的页不是零，是高熵未初始化数据（含 `feff`、NUL），每次内容不同。
+  这不是“读到了别的文件”，是**未初始化页被写到磁盘**，属于信息泄露级缺陷。
+
+## 处置（已验证）
+
+- **归一化**：122 个已跟踪文件 + 2 个未跟踪文件的干净视图与 Git `HEAD` blob
+  逐一 SHA-256 相等，证明尾巴是唯一差异；用 Python 临时文件 + `os.replace`
+  重写后，`node scripts/check-padded.mjs --all` = 0。
+- **门禁**：`scripts/check-padded.mjs` 用 Node 读 `st_size`、Python 读真实字节，
+  差值 4096 即红；`--fix` 原子重写；4 个测试通过。
+- **验证**：7 个包 typecheck exit 0；280 个单测全过。
+- **CI 的边界**：`git add` 存的是干净 blob（实测 1131 字节），CI 检出看不到尾巴。
+  因此门禁必须跑在工作树/提交前（本地 pre-commit），不能只放 CI。
+
+## 仍未解释
+
+- Write/Edit 工具为何走这条写入路径（预分配一页、不初始化、数据长度与逻辑长度分离），
+  属于宿主写入实现，不在本仓库。
+- 建议向宿主工具上游报告：这是未初始化内存落盘，不只是格式损坏。

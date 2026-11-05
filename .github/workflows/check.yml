@@ -119,3 +119,10 @@ jobs:
       # the site rebuild silently restored a page the facts test had just corrupted.
       - name: The tooling's own tests
         run: node --test --test-concurrency=1 "scripts/**/*.test.mjs"
+
+      # INC-002: the editor tooling on the mount can attach one 4096-byte
+      # preallocated page to a written file. Git stores the clean data-length
+      # blob, so a checkout cannot see it; this is a record check. The local
+      # pre-commit run is the actual defense.
+      - name: No file carries a page of uninitialized tail
+        run: node scripts/check-padded.mjs --all --quiet
