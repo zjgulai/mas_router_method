@@ -34,6 +34,10 @@ export interface MainAgentConfig {
   allowUnverifiedHttp: boolean;
   /** SQLite file for thread sessions; survives a restart on one host. */
   sessionDbPath: string;
+  /** SQLite file for Stage 3 evidence: questions, answers, card actions. */
+  telemetryDbPath: string;
+  /** Set false to run without a local evidence file. */
+  telemetryEnabled: boolean;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): MainAgentConfig {
@@ -80,6 +84,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): MainAgentConfi
     allowUnverifiedHttp,
     sessionDbPath:
       env['MAIN_AGENT_SESSION_DB'] ?? join(findRepoRoot(), '.data', 'main-agent-sessions.db'),
+    telemetryDbPath:
+      env['MAIN_AGENT_TELEMETRY_DB'] ?? join(findRepoRoot(), '.data', 'main-agent-telemetry.db'),
+    telemetryEnabled: env['MAIN_AGENT_TELEMETRY'] !== 'false',
   };
 }
 

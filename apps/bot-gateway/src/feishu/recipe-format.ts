@@ -57,6 +57,28 @@ function buildCardPayload(recipe: Recipe, costUsd: number): MessagePayload {
           },
         ],
       },
+      {
+        tag: 'action',
+        actions: [
+          {
+            tag: 'button',
+            text: { tag: 'plain_text', content: '采纳' },
+            type: 'primary',
+            value: { action_id: 'recipe.adopt', recipe_id: recipe.id },
+          },
+          {
+            tag: 'button',
+            text: { tag: 'plain_text', content: '要改' },
+            value: { action_id: 'recipe.revise', recipe_id: recipe.id },
+          },
+          {
+            tag: 'button',
+            text: { tag: 'plain_text', content: '不用' },
+            type: 'danger',
+            value: { action_id: 'recipe.reject', recipe_id: recipe.id },
+          },
+        ],
+      },
     ],
   };
   return { msgType: 'interactive', content: JSON.stringify(card) };

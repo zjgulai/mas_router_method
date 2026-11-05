@@ -29,6 +29,8 @@ function config(overrides: Partial<MainAgentConfig> = {}): MainAgentConfig {
     answerTimeoutMs: 1000,
     allowUnverifiedHttp: false,
     sessionDbPath: ':memory:',
+    telemetryDbPath: ':memory:',
+    telemetryEnabled: false,
     ...overrides,
   };
 }
@@ -41,6 +43,14 @@ describe('http gateway', () => {
   const handler = {
     handlePayload(payload: unknown) {
       handled.push(payload);
+      if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        (payload as { header?: { event_type?: string } }).header?.event_type ===
+          'card.action.trigger'
+      ) {
+        return { toast: { type: 'success', content: '已记录' } };
+      }
       return { code: 0 };
     },
     stats() {
@@ -101,6 +111,24 @@ describe('http gateway', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ code: 0 });
     expect(handled).toHaveLength(1);
+  });
+
+  it('returns the card callback body', async () => {
+    const response = await fetch(`${baseUrl}/events`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        token: 'verify_me',
+        header: { event_id: 'ev_card', event_type: 'card.action.trigger' },
+        event: {
+          operator: { open_id: 'ou_1' },
+          action: { value: { action_id: 'recipe.adopt' }, tag: 'button' },
+          context: { open_message_id: 'om_1', open_chat_id: 'oc_1' },
+        },
+      }),
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ toast: { type: 'success', content: '已记录' } });
   });
 
   it('serves a health endpoint', async () => {

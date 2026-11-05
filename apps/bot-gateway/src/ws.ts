@@ -26,7 +26,7 @@ export async function startWebSocket(
     readyResolve = resolve;
   });
 
-  const dispatcher = new lark.EventDispatcher({}).register({
+  const handles = {
     'im.message.receive_v1': (data: unknown) => {
       const record =
         typeof data === 'object' && data !== null
@@ -52,7 +52,13 @@ export async function startWebSocket(
       // Returning synchronously is deliberate: the SDK must answer Feishu now.
       return undefined;
     },
-  });
+    // The SDK accepts this callback at runtime but its IHandles type does not
+    // list it in this version. The resolved value is the callback response.
+    'card.action.trigger': (data: unknown) => handler.handleWsCardAction(data),
+  };
+  const dispatcher = new lark.EventDispatcher({}).register(
+    handles as unknown as Parameters<lark.EventDispatcher['register']>[0],
+  );
 
   const client = new lark.WSClient({
     appId: config.appId,

@@ -25,6 +25,8 @@ function config(overrides: Partial<MainAgentConfig> = {}): MainAgentConfig {
     answerTimeoutMs: 1000,
     allowUnverifiedHttp: false,
     sessionDbPath: ':memory:',
+    telemetryDbPath: ':memory:',
+    telemetryEnabled: false,
     ...overrides,
   };
 }

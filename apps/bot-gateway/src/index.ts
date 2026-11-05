@@ -18,6 +18,8 @@ import { MainAgentHandler } from './handler.js';
 import { startHttpServer } from './http.js';
 import { startWebSocket, type WebSocketHandle } from './ws.js';
 import { createSessionStore } from './session.js';
+import { createTelemetryStore } from './telemetry.js';
+import { createRecipeActionRegistry } from './card-action.js';
 import type { Server } from 'node:http';
 
 async function main(): Promise<void> {
@@ -54,6 +56,9 @@ async function main(): Promise<void> {
   });
 
   const sessions = createSessionStore(config.sessionDbPath);
+  const telemetry = config.telemetryEnabled
+    ? createTelemetryStore(config.telemetryDbPath)
+    : undefined;
   const handler = new MainAgentHandler({
     config,
     client,
@@ -61,6 +66,8 @@ async function main(): Promise<void> {
     identity,
     logger,
     sessions,
+    cardActions: createRecipeActionRegistry(),
+    ...(telemetry !== undefined ? { telemetry } : {}),
   });
 
   logger.info('main agent ready', {
@@ -72,6 +79,8 @@ async function main(): Promise<void> {
     llm: process.env['MAIN_AGENT_LLM'] ?? 'auto',
     sessionStore: sessions.constructor.name,
     sessionDbPath: config.sessionDbPath,
+    telemetryStore: telemetry?.constructor.name ?? 'disabled',
+    telemetryDbPath: config.telemetryDbPath,
   });
 
   let ws: WebSocketHandle | undefined;
@@ -94,6 +103,7 @@ async function main(): Promise<void> {
       await new Promise<void>((resolve) => server?.close(() => resolve()));
     }
     await handler.drain();
+    telemetry?.close?.();
     sessions.close?.();
     logger.info('shutdown complete', { stats: handler.stats() });
     process.exit(0);

@@ -3,6 +3,7 @@ import type { ConsultAnswer } from '@mas/consult';
 import type { MainAgentConfig } from './config.js';
 import { createLogger } from './logger.js';
 import { MainAgentHandler, type AnswerAgent } from './handler.js';
+import { SqliteTelemetryStore } from './telemetry.js';
 import type { BotIdentity, FeishuGatewayClient, MessagePayload } from './feishu/client.js';
 
 function testConfig(overrides: Partial<MainAgentConfig> = {}): MainAgentConfig {
@@ -28,6 +29,8 @@ function testConfig(overrides: Partial<MainAgentConfig> = {}): MainAgentConfig {
     answerTimeoutMs: 1000,
     allowUnverifiedHttp: false,
     sessionDbPath: ':memory:',
+    telemetryDbPath: ':memory:',
+    telemetryEnabled: false,
     ...overrides,
   };
 }
@@ -113,11 +116,34 @@ function payload(
   };
 }
 
+function cardPayload(
+  options: { eventId?: string; actionId?: string; recipeId?: string } = {},
+): unknown {
+  return {
+    header: {
+      event_id: options.eventId ?? 'ev_card_1',
+      event_type: 'card.action.trigger',
+    },
+    event: {
+      operator: { open_id: 'ou_sender' },
+      action: {
+        value: {
+          action_id: options.actionId ?? 'recipe.adopt',
+          recipe_id: options.recipeId ?? 'rec_1',
+        },
+        tag: 'button',
+      },
+      context: { open_message_id: 'om_card', open_chat_id: 'oc_1' },
+    },
+  };
+}
+
 function setup(
   options: {
     config?: Partial<MainAgentConfig>;
     agent?: FakeAgent;
     client?: FakeClient;
+    telemetry?: SqliteTelemetryStore;
   } = {},
 ) {
   const client = options.client ?? new FakeClient();
@@ -128,6 +154,7 @@ function setup(
     agent,
     identity: { openId: 'ou_main', name: 'Main' },
     logger: createLogger('error'),
+    ...(options.telemetry !== undefined ? { telemetry: options.telemetry } : {}),
   });
   return { client, agent, handler };
 }
@@ -170,6 +197,66 @@ describe('MainAgentHandler', () => {
     handler.handlePayload(payload({ chatType: 'p2p', mentions: [] }));
     await handler.drain();
     expect(client.replies).toHaveLength(1);
+  });
+
+  it('records a card action and returns a toast', async () => {
+    const telemetry = new SqliteTelemetryStore(':memory:');
+    try {
+      const { handler } = setup({ telemetry });
+      const response = (await handler.handlePayload(cardPayload())) as {
+        toast?: { type: string; content: string };
+      };
+      expect(response.toast?.type).toBe('success');
+      expect(telemetry.stats(0).cardActions).toBe(1);
+    } finally {
+      telemetry.close();
+    }
+  });
+
+  it('answers a duplicate card action without a second row', async () => {
+    const telemetry = new SqliteTelemetryStore(':memory:');
+    try {
+      const { handler } = setup({ telemetry });
+      await handler.handlePayload(cardPayload());
+      const second = (await handler.handlePayload(cardPayload())) as { toast?: { type: string } };
+      expect(second.toast?.type).toBe('info');
+      expect(telemetry.stats(0).cardActions).toBe(1);
+    } finally {
+      telemetry.close();
+    }
+  });
+
+  it('handles the WS event-object shape and records the click', async () => {
+    const telemetry = new SqliteTelemetryStore(':memory:');
+    try {
+      const { handler } = setup({ telemetry });
+      const response = await handler.handleWsCardAction({
+        event_id: 'ev_ws',
+        operator: { open_id: 'ou_sender' },
+        action: { value: { action_id: 'recipe.revise', recipe_id: 'rec_2' }, tag: 'button' },
+        context: { open_message_id: 'om_ws', open_chat_id: 'oc_2' },
+      });
+      expect(response?.toast?.type).toBe('info');
+      expect(telemetry.stats(0).cardActions).toBe(1);
+    } finally {
+      telemetry.close();
+    }
+  });
+
+  it('records the question and the answer', async () => {
+    const telemetry = new SqliteTelemetryStore(':memory:');
+    try {
+      const { handler } = setup({ telemetry });
+      await handler.handlePayload(payload());
+      await handler.drain();
+      expect(telemetry.stats(0)).toMatchObject({
+        messages: 1,
+        answers: 1,
+        distinctQuestions: 1,
+      });
+    } finally {
+      telemetry.close();
+    }
   });
 
   it('deduplicates a Feishu retry by event id', async () => {

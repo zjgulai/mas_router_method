@@ -98,7 +98,7 @@ export function createHttpServer(
 
     // Return immediately. Feishu retries when the handler exceeds its timeout, and
     // the agent routinely takes longer than that.
-    const result = handler.handlePayload(payload);
+    const result = await handler.handlePayload(payload);
     json(res, 200, result);
   }
 

@@ -1,4 +1,5 @@
 import { normaliseMessageEvent } from '@mas/feishu';
+import { normalizeCardAction, type CardActionEvent } from '@larksuiteoapi/node-sdk';
 import type { ConsultAnswer, ConversationTurn } from '@mas/consult';
 import type { MainAgentConfig } from './config.js';
 import { TtlSet } from './dedupe.js';
@@ -15,6 +16,15 @@ import {
 } from './feishu/normalize.js';
 import { isRecipeIntent } from './router.js';
 import type { RecipeRunner } from './recipe-runner.js';
+import {
+  CardActionRegistry,
+  actionIdFor,
+  cardActionBody,
+  createRecipeActionRegistry,
+  isCardActionPayload,
+  type CardActionResponse,
+} from './card-action.js';
+import type { TelemetryStats, TelemetryStoreLike } from './telemetry.js';
 
 export interface AnswerAgent {
   answer(question: string, options?: { history?: ConversationTurn[] }): Promise<ConsultAnswer>;
@@ -29,6 +39,10 @@ export interface HandlerDeps {
   sessions?: SessionStoreLike;
   /** Present once the recipe pipeline is wired (ticket 04). Absent = stub. */
   recipeRunner?: RecipeRunner;
+  /** Optional Stage 3 evidence store. Absent = answers still work, nothing is recorded. */
+  telemetry?: TelemetryStoreLike;
+  /** Inbound card actions. Defaults to the recipe registry. */
+  cardActions?: CardActionRegistry;
 }
 
 export class MainAgentHandler {
@@ -36,19 +50,38 @@ export class MainAgentHandler {
   private readonly queue: ChatQueue;
   private readonly sessions: SessionStoreLike;
   private readonly counts = { received: 0, ignored: 0, processed: 0, failed: 0 };
+  private readonly telemetry: TelemetryStoreLike | undefined;
+  private readonly cardActions: CardActionRegistry;
   private lastError: string | undefined;
 
   constructor(private readonly deps: HandlerDeps) {
     this.queue = new ChatQueue(deps.config.concurrency);
     this.sessions = deps.sessions ?? new SessionStore();
+    this.telemetry = deps.telemetry;
+    this.cardActions = deps.cardActions ?? createRecipeActionRegistry();
   }
 
-  /** HTTP webhook path. Returns immediately; the queue does the work. */
-  handlePayload(payload: unknown): { code: number } {
+  /**
+   * HTTP webhook path. Messages return immediately and the queue does the work;
+   * card callbacks return the toast/card body Feishu expects within three seconds.
+   */
+  async handlePayload(payload: unknown): Promise<unknown> {
+    if (isCardActionPayload(payload)) {
+      return this.handleCardAction(cardActionBody(payload), eventIdOf(payload));
+    }
     const message = normaliseMessageEvent(payload);
     if (message === null) return { code: 0 };
     this.handleMessage(message);
     return { code: 0 };
+  }
+
+  /**
+   * Long-connection card callback. The SDK sends the resolved value back to
+   * Feishu as the callback response, so this must not be enqueued.
+   */
+  async handleWsCardAction(data: unknown): Promise<CardActionResponse | undefined> {
+    if (!isCardActionPayload(data) && !looksLikeCardAction(data)) return undefined;
+    return this.handleCardAction(cardActionBody(data), eventIdOf(data));
   }
 
   /** Long-connection path. */
@@ -116,6 +149,80 @@ export class MainAgentHandler {
     });
   }
 
+  private async handleCardAction(
+    raw: unknown,
+    eventId: string | undefined,
+  ): Promise<CardActionResponse> {
+    let event: CardActionEvent | null = null;
+    try {
+      event = normalizeCardAction(raw as Parameters<typeof normalizeCardAction>[0]);
+    } catch (cause) {
+      this.deps.logger.warn('card action normalisation failed', {
+        error: cause instanceof Error ? cause.message : String(cause),
+      });
+    }
+    if (event === null) {
+      return { toast: { type: 'error', content: '无法识别这次操作。' } };
+    }
+
+    const value = isRecord(event.action.value) ? event.action.value : {};
+    const actionId = actionIdFor(event, value);
+    const recipeId = typeof value['recipe_id'] === 'string' ? value['recipe_id'] : undefined;
+    const key = eventId ?? `card:${event.messageId}:${event.operator.openId}:${actionId}`;
+
+    if (this.dedupe.seen(`card:${key}`)) {
+      return { toast: { type: 'info', content: '这次操作已处理。' } };
+    }
+
+    let first = true;
+    try {
+      first =
+        this.telemetry?.recordCardAction({
+          eventId: key,
+          actionId,
+          ...(recipeId !== undefined ? { recipeId } : {}),
+          chatId: event.chatId,
+          messageId: event.messageId,
+          operatorOpenId: event.operator.openId,
+          payload: value,
+        }) ?? true;
+    } catch (cause) {
+      this.deps.logger.warn('card action ledger write failed', {
+        error: cause instanceof Error ? cause.message : String(cause),
+      });
+    }
+    if (!first) {
+      return { toast: { type: 'info', content: '这次操作已处理。' } };
+    }
+
+    const response = await this.cardActions.dispatch(event);
+    this.record({
+      kind: 'card_action',
+      ...(eventId !== undefined ? { eventId } : {}),
+      chatId: event.chatId,
+      messageId: event.messageId,
+      senderOpenId: event.operator.openId,
+      actionId,
+      ...(recipeId !== undefined ? { recipeId } : {}),
+    });
+    this.deps.logger.info('card action handled', {
+      actionId,
+      messageId: event.messageId,
+      ...(recipeId !== undefined ? { recipeId } : {}),
+    });
+    return response;
+  }
+
+  private record(event: Parameters<TelemetryStoreLike['record']>[0]): void {
+    try {
+      this.telemetry?.record(event);
+    } catch (cause) {
+      this.deps.logger.warn('telemetry write failed', {
+        error: cause instanceof Error ? cause.message : String(cause),
+      });
+    }
+  }
+
   async drain(): Promise<void> {
     await this.queue.drain();
   }
@@ -129,6 +236,7 @@ export class MainAgentHandler {
     lastError?: string;
     dedupeSize: number;
     sessions: number;
+    telemetry?: TelemetryStats;
   } {
     return {
       ...this.counts,
@@ -136,6 +244,9 @@ export class MainAgentHandler {
       ...(this.lastError !== undefined ? { lastError: this.lastError } : {}),
       dedupeSize: this.dedupe.size,
       sessions: this.sessions.size,
+      ...(this.telemetry !== undefined
+        ? { telemetry: this.telemetry.stats(Date.now() - 86_400_000) }
+        : {}),
     };
   }
 
@@ -145,6 +256,17 @@ export class MainAgentHandler {
       chatId: message.chatId,
       messageId: message.messageId,
       sender: message.senderOpenId,
+    });
+
+    const intent = isRecipeIntent(message.text) ? 'recipe' : 'consult';
+    this.record({
+      kind: 'message',
+      eventId: message.eventId,
+      chatId: message.chatId,
+      messageId: message.messageId,
+      senderOpenId: message.senderOpenId,
+      questionText: message.text,
+      intent,
     });
 
     let ackTimer: ReturnType<typeof setTimeout> | undefined;
@@ -160,7 +282,7 @@ export class MainAgentHandler {
     }
 
     try {
-      if (isRecipeIntent(message.text)) {
+      if (intent === 'recipe') {
         await this.processRecipe(message, log);
         this.counts.processed += 1;
         return;
@@ -192,6 +314,18 @@ export class MainAgentHandler {
         this.sessions.append(sessionKey, { role: 'assistant', text: answer.text });
       }
 
+      this.record({
+        kind: 'answer',
+        eventId: message.eventId,
+        chatId: message.chatId,
+        messageId: message.messageId,
+        senderOpenId: message.senderOpenId,
+        ...(answer.nodeId !== undefined ? { nodeId: answer.nodeId } : {}),
+        ...(answer.routeId !== undefined ? { routeId: answer.routeId } : {}),
+        confidence: answer.confidence,
+        outOfScope: answer.outOfScope,
+      });
+
       this.counts.processed += 1;
       log.info('answer delivered', {
         nodeId: answer.nodeId,
@@ -206,6 +340,14 @@ export class MainAgentHandler {
       this.counts.failed += 1;
       const reason = cause instanceof Error ? cause.message : String(cause);
       this.lastError = reason;
+      this.record({
+        kind: 'error',
+        eventId: message.eventId,
+        chatId: message.chatId,
+        messageId: message.messageId,
+        senderOpenId: message.senderOpenId,
+        reason,
+      });
       log.error('answer failed', { error: reason, ms: Date.now() - startedAt });
       await this.safeReply(
         message,
@@ -294,4 +436,23 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 function shorten(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
+}
+
+function eventIdOf(payload: unknown): string | undefined {
+  if (!isRecord(payload)) return undefined;
+  const header = payload['header'];
+  if (isRecord(header) && typeof header['event_id'] === 'string' && header['event_id'].length > 0) {
+    return header['event_id'];
+  }
+  const id = payload['event_id'];
+  return typeof id === 'string' && id.length > 0 ? id : undefined;
+}
+
+function looksLikeCardAction(data: unknown): boolean {
+  if (!isRecord(data)) return false;
+  return isRecord(data['action']) && (isRecord(data['operator']) || isRecord(data['context']));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

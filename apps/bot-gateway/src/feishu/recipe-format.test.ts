@@ -62,6 +62,20 @@ describe('formatRecipeResult', () => {
     expect(text).toContain('One pod, one button, done.');
   });
 
+  it('carries the three review buttons with their action ids', () => {
+    const [card] = formatRecipeResult(recipe(), { costUsd: 0.42 });
+    const content = JSON.parse(card!.content) as {
+      elements: { tag: string; actions?: { value: { action_id: string; recipe_id: string } }[] }[];
+    };
+    const action = content.elements.find((element) => element.tag === 'action');
+    expect(action?.actions?.map((button) => button.value.action_id)).toEqual([
+      'recipe.adopt',
+      'recipe.revise',
+      'recipe.reject',
+    ]);
+    expect(action?.actions?.every((button) => button.value.recipe_id === 'rec_42')).toBe(true);
+  });
+
   it('truncates the full text at a boundary when over budget', () => {
     const big = recipe();
     big.beats = Array.from({ length: 12 }, (_, i) => ({
