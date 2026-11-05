@@ -14,10 +14,11 @@
  *   node scripts/work.mjs check       validate every record; exit 1 on problems
  *   node scripts/work.mjs timeline    newest first
  */
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { loadSchema, stateDir, flatDir, WORK } from './schema.mjs';
 import { sections, findTable } from './markdown.mjs';
+import { readText } from './read-text.mjs';
 
 const DIM = '\x1b[2m', BOLD = '\x1b[1m', RED = '\x1b[31m',
       GREEN = '\x1b[32m', YELLOW = '\x1b[33m', CYAN = '\x1b[36m', RESET = '\x1b[0m';
@@ -50,7 +51,7 @@ function parseFrontmatter(text) {
 
 async function readRecord(kind, dirName, state, file) {
   const path = join(dirName, file);
-  const [{ data }, s] = await Promise.all([readFile(path, 'utf8').then(parseFrontmatter), stat(path)]);
+  const [{ data }, s] = await Promise.all([readText(path).then(parseFrontmatter), stat(path)]);
   return {
     kind, state, file, path,
     id: data.id ?? file.replace(/\.md$/, ''),
@@ -110,7 +111,7 @@ async function collect(schema) {
       for (const f of files.filter((x) => x.endsWith('.md'))) {
         const rec = await readRecord(kind, dir, 'flat', f);
         list.push({ ...rec, state: rec.state === 'flat' ? 'unknown' : rec.state });
-        const text = await readFile(join(dir, f), 'utf8');
+        const text = await readText(join(dir, f));
         const fmStatus = /^status:\s*(.*)$/m.exec(text);
         if (fmStatus !== null) list[list.length - 1].state = fmStatus[1].trim();
       }
@@ -380,7 +381,7 @@ async function cmdCheck() {
     // 一律要求四块齐全。
     const answering = bucket === 'drafting';
     for (const r of found.design?.[bucket] ?? []) {
-      const text = await readFile(r.path, 'utf8');
+      const text = await readText(r.path);
       const secs = sections(text);
 
       for (const block of DESIGN_BLOCKS) {

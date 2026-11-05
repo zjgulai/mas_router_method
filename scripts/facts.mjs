@@ -11,9 +11,10 @@
  * the documents agree. Documents should either read from here or be checked
  * against it — quoting a number twice is the same failure as writing a rule twice.
  */
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ROOT, WORK, loadSchema } from './schema.mjs';
+import { readText } from './read-text.mjs';
 
 const RED = '\x1b[31m', GREEN = '\x1b[32m', DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
 
@@ -30,7 +31,7 @@ async function count(dir, pattern = null) {
 /** Count rows in the generated skill table, the number the page states. */
 async function skillTableRows() {
   try {
-    const html = await readFile(join(ROOT, 'docs/site/skills.html'), 'utf8');
+    const html = await readText(join(ROOT, 'docs/site/skills.html'));
     const bodies = html.match(/<tbody>[\s\S]*?<\/tbody>/g) ?? [];
     return bodies.reduce((n, b) => n + (b.match(/<tr/g) ?? []).length, 0);
   } catch {
@@ -42,7 +43,7 @@ async function skillTableRows() {
 /** Count prompt cards in the generated page — the artifact, not the generator. */
 async function promptCount() {
   try {
-    const html = await readFile(join(ROOT, 'docs/site/prompts.html'), 'utf8');
+    const html = await readText(join(ROOT, 'docs/site/prompts.html'));
     // One prompt per <pre> block: each entry is exactly one code block, whereas
     // "card" also appears in stylesheet rules.
     return (html.match(/<pre>/g) ?? []).length;
@@ -56,7 +57,7 @@ async function atlasClasses() {
   try {
     // originals/ 是手写原件的新家。旧路径读不到时这里曾静默返回 0，
     // 而 0 和「真的没有」长得一样。
-    const html = await readFile(join(ROOT, 'docs/site/originals/failure-atlas.html'), 'utf8');
+    const html = await readText(join(ROOT, 'docs/site/originals/failure-atlas.html'));
     // Each class opens with <span class="fn">N</span>; the checklist and appendix
     // use the same markup but are not classes, so exclude them by their heading.
     const sections = [...html.matchAll(/<span class="fn">[一二三四五六七八九十]<\/span><h2 class="fam">([^<]+)/g)];
@@ -145,7 +146,7 @@ if (process.argv.includes('--check')) {
   for (const claim of CLAIMS) {
     let text;
     try {
-      text = await readFile(join(ROOT, claim.file), 'utf8');
+      text = await readText(join(ROOT, claim.file));
     } catch {
       // 之前这里是 `continue`：断言引用的文件一旦被移动或改名，这条断言就
       // 静默停止工作，而 --check 仍然报绿。一个不再检查任何东西的断言，

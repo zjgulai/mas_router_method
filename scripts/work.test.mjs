@@ -728,3 +728,95 @@ test('cross-block: the check is scoped — prose outside the table is not scanne
     assert.equal(code, 0, `prose is not a rule:\n${stdout}`);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The mount quirk (INC-001 family): some .md files reach Node as binary garbage
+// while Python reads the real UTF-8. Before scripts/read-text.mjs existed, the
+ // garbage decoded into "no frontmatter" and a done ticket with real evidence
+// failed as "records no evidence" — 7 tests red, all reporting the wrong thing.
+// These two tests are what keep the fix honest in both directions.
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('mount quirk: a done ticket readable only via Python still passes check', async () => {
+  // Stage "Node sees binary" honestly: a preload probe patches fs/promises
+  // readFile to return binary bytes for ONE real done-ticket in the tree, then
+  // passthrough for everything else. The real ticket keeps its evidence — the
+  // check must still find it through the Python channel, on any machine,
+  // without depending on this mount actually misbehaving.
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+  // A real done ticket with a real evidence reference (verified against
+  // work/evidence/ by rule 5 below).
+  const tickets = join(WORK, 'tickets/done');
+  const real = (await import('node:fs/promises')).readdir(tickets)
+    .then((fs2) => fs2.find((f) => f.startsWith('T-') && f.endsWith('.md')));
+  assert.ok(await real, 'this test needs one real done ticket to stage the quirk against');
+  const target = join(tickets, await real);
+
+  const dir = await mkdtemp(join(tmpdir(), 'mount-probe-'));
+  try {
+    const marker = join(dir, 'marker');
+    const probe = join(dir, 'probe.cjs');
+    await writeFile(probe, [
+      'const fsp = require("node:fs/promises");',
+      'const orig = fsp.readFile;',
+      'fsp.readFile = function (p, ...rest) {',
+      '  if (String(p) === process.env.PROBE_TARGET && (rest.length === 0 || rest[0] === null)) {',
+      '    require("node:fs").appendFileSync(process.env.PROBE_MARKER, "x");',
+      '    return Promise.resolve(Buffer.from([0xff, 0x00, 0x81, 0x9d, 0x00, 0x42]));',
+      '  }',
+      '  return orig.apply(this, arguments);',
+      '};',
+      '',
+    ].join('\n'));
+
+    const out = await promisify(execFile)(process.execPath,
+      ['--require', probe, resolve(root, 'scripts/work.mjs'), 'check'],
+      { env: { ...process.env, PROBE_TARGET: target, PROBE_MARKER: marker } })
+      .then((r) => r.stdout).catch((e) => e.stdout);
+
+    // The probe must have fired — otherwise this test proves nothing.
+    assert.ok((await readFile(marker, 'utf8').catch(() => '')).length > 0,
+      'the binary-read probe never fired; the staging is broken');
+    assert.match(out, /no problems/,
+      `a ticket whose bytes arrive binary must still be checked on real content:\n${out}`);
+    assert.doesNotMatch(out, /records no evidence/,
+      `binary bytes must never masquerade as missing evidence:\n${out}`);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('mount quirk: a done ticket that truly records no evidence still fails', async () => {
+  // The anti-overcorrection guard. The reader fix must not weaken rule 2:
+  // a done ticket whose evidence list is genuinely empty is a real problem,
+  // whatever the mount is doing to bytes.
+  const { execFile } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const { resolve, dirname } = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const { writeFile, unlink } = await import('node:fs/promises');
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  const probe = join(WORK, 'tickets/done/T-998-no-evidence-probe.md');
+
+  const body = ['---', 'id: T-998', 'title: no evidence probe', 'evidence: []', '---',
+    'a done ticket with no evidence must not pass'].join('\n');
+  await writeAndConfirm(probe, body);
+  try {
+    let code = 0, stdout = '';
+    try {
+      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      stdout = r.stdout;
+    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    assert.equal(code, 1, 'a done ticket with genuinely no evidence must still fail');
+    assert.match(stdout, /T-998 is done but records no evidence/);
+  } finally {
+    await unlink(probe).catch(() => {});
+  }
+});
