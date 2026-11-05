@@ -11,19 +11,52 @@ export default async function Home() {
   const session = await getSession();
 
   return (
-    <main style={{ fontFamily: 'ui-sans-serif, system-ui', padding: '4rem', maxWidth: 640 }}>
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Recipe workbench</h1>
+    <main className="wb-main">
+      <h1 className="wb-h1">Recipe workbench</h1>
+      <p className="wb-lede">
+        Operator surface for reviewing brand-adapted TikTok recipes, inspecting agent execution
+        traces, and editing brand guardrails.
+      </p>
+
       {session === null ? (
-        <p style={{ color: '#666' }}>
-          Not signed in. Feishu OAuth arrives with milestone 3; until then set
-          DEV_SESSION_USER_ID and DEV_SESSION_BRAND_IDS in .env to work locally.
-        </p>
+        <div className="wb-banner">
+          <span className="wb-badge wb-badge-warn">UNAUTHENTICATED</span>
+          <strong>Not signed in.</strong> Feishu OAuth arrives with milestone 3; until then set{' '}
+          <code>DEV_SESSION_USER_ID</code> and <code>DEV_SESSION_BRAND_IDS</code> in{' '}
+          <code>.env</code> to work locally.
+        </div>
       ) : (
-        <p style={{ color: '#666' }}>
-          Signed in as {session.displayName} with {session.brandIds.length} brand(s). The review
-          queue, run inspector, and guardrail editor are specified in docs/roadmap.md.
-        </p>
+        <div className="wb-banner">
+          <span className="wb-badge wb-badge-ok">ACTIVE SESSION</span>
+          <strong>Signed in as {session.displayName}</strong> with {session.brandIds.length}{' '}
+          brand(s). The review queue, run inspector, and guardrail editor are specified in{' '}
+          <code>docs/roadmap.md</code>.
+        </div>
       )}
+
+      <section className="wb-grid" aria-label="Workbench modules">
+        <div className="wb-panel">
+          <h2>Review Queue</h2>
+          <p>
+            Inspect generated recipes validated against <code>@mas/shared</code> Zod schemas before
+            shooters receive them.
+          </p>
+        </div>
+        <div className="wb-panel">
+          <h2>Run Inspector</h2>
+          <p>
+            Audit every step, tool call, and cumulative <code>modelUsage</code> budget check from{' '}
+            <code>run-agent.ts</code>.
+          </p>
+        </div>
+        <div className="wb-panel">
+          <h2>Brand Guardrails</h2>
+          <p>
+            Maintain the single source of truth for brand profiles and refusal boundaries shared
+            with <code>@mas/evals</code>.
+          </p>
+        </div>
+      </section>
     </main>
   );
 }
