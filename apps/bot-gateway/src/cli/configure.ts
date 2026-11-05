@@ -40,6 +40,21 @@ async function main(): Promise<void> {
     process.exitCode = 1;
   }
 
+  // Card callbacks are a separate subscription from message events. The patch
+  // shape differs between tenants; a failure here is a manual step, not a boot
+  // failure, because the gateway answers messages either way.
+  try {
+    await client.patchAppConfig({
+      callback: { callback_type: 'websocket', add_callbacks: ['card.action.trigger'] },
+    });
+    console.log('✓ card.action.trigger callback added');
+  } catch (cause) {
+    console.warn(`Could not add the card callback automatically: ${describe(cause)}`);
+    console.warn(
+      `Add it manually: https://open.feishu.cn/app/${config.appId}/event → 回调 → card.action.trigger`,
+    );
+  }
+
   if (canRead) {
     try {
       const info = await client.getAppInfo();
