@@ -11,4 +11,10 @@
 - [ ] RecipeRunner outcome 扩展为携带 Recipe 对象（succeeded 分支），格式化失败时降级为纯文本摘要不丢投递
 - [ ] 快照/断言测试全绿，bot-gateway 全套 + typecheck 绿
 
-**Status:** in progress
+**Status:** done (2026-11-03, commit 309060c)
+
+- [x] interactive 卡片先行（标题/hook/recipeId/beats 数/距离/成本）
+- [x] 全文含 beats(script/visual/onScreenText)/caption/audio/exclusions
+- [x] 超 maxChars 按行边界截断 + workbench 指引
+- [x] runner outcome 携带 Recipe；recipe 缺失时降级摘要文本不丢投递
+- [x] 61 测试 + typecheck 绿；修正了测试夹具误用不存在字段 description（实为 kind）
