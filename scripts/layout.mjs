@@ -18,7 +18,7 @@ import { ROOT, WORK } from './schema.mjs';
 const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
       DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
 
-const SKIP_DIRS = new Set(['node_modules', '.git', '.turbo', 'dist', '.next', '.agent-runs', 'outputs']);
+const SKIP_DIRS = new Set(['node_modules', '.git', '.turbo', 'dist', '.next', '.agent-runs', 'outputs', 'worktrees']);
 
 /**
  * Where a given kind of file is allowed to be. `pattern` matches the top-level or
@@ -129,6 +129,9 @@ const declared = new Set([
   // 由 9274430 引入；声明在这里以免每个新顶层目录都开一次例外。
   'tools',
   'artifacts',
+  // 架构全景图（@rokoai/arch-diagram 规约目录）与周复盘/一页纸报告目录
+  'architecture',
+  'reports',
 ]);
 // 构建产物（dist/outputs 等）不是信息分类，用同一份 SKIP_DIRS 排除；
 // 否则跑完一次 deploy/pack-context.sh 就会把 layout 检查打红。

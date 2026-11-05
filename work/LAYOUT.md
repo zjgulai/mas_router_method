@@ -89,12 +89,14 @@ ADR 接受后不改，所以没有状态。设计记录会变——起草、确�
 这一件事的固定工具。放在顶层是因为部署脚本要在仓库根执行；声明在这里是为了让
 `layout.mjs` 不必为一个有意的目录开例外。
 
-### `tools/` 与 `artifacts/` — 记忆底座（Nowledge Mem）
+### `tools/`、`artifacts/`、`architecture/` 与 `reports/` — 记忆底座、架构全景图与阶段报告
 
 | 路径 | 放什么 | 说明 |
 |---|---|---|
 | `tools/dev/` | 记忆蒸馏脚本（工作记忆 → 知识图谱） | 一次性工具，改版走 git 历史 |
 | `artifacts/` | 本体补丁（对象/关系类型定义） | 应用到 Nowledge Mem space 的一次性补丁，应用后原地保留 |
+| `architecture/` | 全产品架构全景图（`.spec.json` + `.html` + `.png` + `.md`） | 由 `@rokoai/arch-diagram` 生成与校验 |
+| `reports/` | 周复盘与一页纸阶段汇总报告 | 静态交付快照 |
 
 由记忆底座提交（9274430）引入。`work/artifacts/` 是**运行寄存器**（ART- 编号、
 有过期时间），与顶层 `artifacts/` 无关——后者只是“补丁文件的住处”。
