@@ -1,7 +1,7 @@
 """工具链页：Lody × Magpie × Nowledge Mem 三件套的调研与 Playbook。
 
 调研底稿在 .scratch/anb-toolchain/research/（三份完整报告，各带来源 URL）。
-这页只放结论——功能板块、对比、衔接关系、SOP、Playbook。写法跟别的页一样：
+这页只放结论：功能板块、对比、衔接关系、SOP、Playbook。写法跟别的页一样：
 每条论断都要能回溯到调研报告；站点语言是"说人话"，不堆形容词。
 """
 import os
@@ -14,7 +14,7 @@ def toolchain_page():
     b = ['<h1>Agent 全栈工具链</h1>']
     b.append('<p class="lede">三件本地工具，各管一段：<b>Lody</b> 管多机多 Agent 调度，'
              '<b>Magpie</b> 管模型路由与降本，<b>Nowledge Mem</b> 管跨会话记忆。'
-             '它们互不依赖——但按下面的方式接起来，一条链就通了：'
+             '它们互不依赖，但按下面的方式接起来，一条链就通了：'
              '<b>记忆注水 → 调度派活 → 路由降本 → 验收回流 → 记忆沉淀</b>。</p>')
 
     # ── 定位 ─────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ def toolchain_page():
         out.append('<div class="grid two">')
         out.append('<div class="card"><h3>独特优势</h3><ul>'
                    + ''.join(f'<li>{s}</li>' for s in strengths) + '</ul></div>')
-        out.append('<div class="card"><h3>坑，先说清</h3><ul>'
+        out.append('<div class="card"><h3>使用边界与风险</h3><ul>'
                    + ''.join(f'<li>{l}</li>' for l in limits) + '</ul></div>')
         out.append('</div>')
         return out
@@ -119,7 +119,7 @@ def toolchain_page():
             '零成本零抽成：软件免费，账单就是你自己的 API 账单',
         ],
         [
-            '订阅桥接在 ToS 灰色地带，高频批量分发有封号风险——生产环境用正规 API Key',
+            '订阅桥接在 ToS 灰色地带，高频批量分发有封号风险（生产环境请用正规 API Key）',
             '本机单点：Magpie 一挂，所有走它的 Agent 全部断连',
             '企业级鉴权/审计/多节点高可用没有，那类场景换 LiteLLM',
             '协议转换会磨损厂商特有参数（如超长 Thinking 预算的细节）',
@@ -140,7 +140,7 @@ def toolchain_page():
              '多数记忆插件只存不炼，记忆库越用越脏'),
             ('branch', 'P1', '规则与技能', 'Space 级 Rules 注入纪律；技能匹配闭环（匹配→使用→反馈结果）。',
              'CLAUDE.md 是单文件静态注入，没有匹配和反馈'),
-            ('plain', 'P2', '虚拟文件系统 / 远程访问 / 启动器', 'Nowledge FS、跨机器取记忆、⌘⇧K 全局唤起。',
+            ('plain', 'P2', '虚拟文件系统 / 远程访问 / 启动器', 'Nowledge FS、跨机器取记忆、全局快捷键唤起。',
              '加分项，非刚需'),
         ],
         [
@@ -158,24 +158,24 @@ def toolchain_page():
 
     # ── 衔接关系 ─────────────────────────────────────────────────
     b.append('<h2 id="chain">三个怎么接成一条链</h2>')
-    b.append('<p class="h2sub">衔接点只有三个，每个都很薄——薄到一条命令或一个协议。'
+    b.append('<p class="h2sub">衔接点只有三个，每个都很薄，薄到一条命令或一个协议。'
              '这正是它们能长期共存的原因：谁也不改造谁。</p>')
     b.append('<pre>    Nowledge Mem（记忆层）\n'
-             '      │ ① 注水：会话启动，简报+规则自动进入上下文\n'
-             '      ▼\n'
+             '      │ [01] 注水：会话启动，简报+规则自动进入上下文\n'
+             '      ↓\n'
              '    Lody（调度层）\n'
-             '      │ ② 派活：主 Agent 把子任务派到多机的 worktree\n'
-             '      │ ⑤ 验收：Diff 行级批注 → 回传 → 重跑\n'
-             '      ▼\n'
+             '      │ [02] 派活：主 Agent 把子任务派到多机的 worktree\n'
+             '      │ [05] 验收：Diff 行级批注 → 回传 → 重跑\n'
+             '      ↓\n'
              '    Magpie（路由层）\n'
-             '      │ ③ 降本：探索用 free 组，正式生成用 opus 组\n'
-             '      │ ④ 保活：429 自动切换，长任务不中断\n'
-             '      ▼\n'
+             '      │ [03] 降本：探索用 free 组，正式生成用 opus 组\n'
+             '      │ [04] 保活：429 自动切换，长任务不中断\n'
+             '      ↓\n'
              '    上游模型（Claude / DeepSeek / GLM / 订阅）</pre>')
     b.append('<div class="note"><b>三个衔接点。</b>'
-             '① <b>记忆注水</b>：Nowledge Mem 的 hook 独立于 Lody 工作，任何 Agent 会话（包括 Lody 派发的）启动时都拿到简报。'
-             '② <b>模型导入</b>：<code>lody agent-config import-magpie</code> 一条命令，Lody 的模型选择器里直接出现 magpie/* 全部路由组。'
-             '③ <b>经验沉淀</b>：验收会话里产生的决策（为什么这么做、哪个坑踩过）用 <code>nmem m add</code> 写回记忆，下次注水就有了。</div>')
+             '[01] <b>记忆注水</b>：Nowledge Mem 的 hook 独立于 Lody 工作，任何 Agent 会话（包括 Lody 派发的）启动时都拿到简报。'
+             '[02] <b>模型导入</b>：<code>lody agent-config import-magpie</code> 一条命令，Lody 的模型选择器里直接出现 magpie/* 全部路由组。'
+             '[03] <b>经验沉淀</b>：验收会话里产生的决策（为什么这么做、哪个坑踩过）用 <code>nmem m add</code> 写回记忆，下次注水就有了。</div>')
     b.append('<p>反过来说，三个<b>不要</b>接的地方：不要让 Nowledge Mem 存业务数据（它是开发记忆，不是产品数据库）；'
              '不要让 Lody 管生产部署（它是开发态平台，产物走 Git PR 进 CI）；'
              '不要在生产环境依赖 Magpie 的订阅桥接（ToS 风险 + 本机单点）。</p>')
@@ -184,33 +184,33 @@ def toolchain_page():
     b.append('<h2 id="sop">SOP：一个特性从想法到合并</h2>')
     b.append('<p class="h2sub">以"给 Agent 加一个新工具"为例。每一步标了谁在场。</p>')
     sop = [
-        ('1', '开工', 'Nowledge Mem',
+        ('01', '开工', 'Nowledge Mem',
          '<code>nmem m search "相关主题"</code> 先查旧账：有没有做过、为什么放弃、当时的决策是什么。',
          '避免重复造轮子，避免推翻三个月前有理由的决策'),
-        ('2', '想清楚', '人 + 任意 Agent',
+        ('02', '想清楚', '人 + 任意 Agent',
          '写 spec：改哪个动作、怎么验收。关键决策当场 <code>nmem m add</code>，带 importance 0.8+。',
          '决策不落盘，两周后必然重新争论一遍'),
-        ('3', '派活', 'Lody',
+        ('03', '派活', 'Lody',
          '主会话 <code>lody_session_create</code> 派子任务到远程机器的 worktree；批量任务用 <code>chat_many</code>。立即返回，不阻塞当前会话。',
          '并行 3 个修复互不污染；笔记本合盖也不影响远程跑'),
-        ('4', '选模型', 'Magpie',
+        ('04', '选模型', 'Magpie',
          '探索/讨论会话用 <code>magpie/group/auto-*free</code>；正式生成切 opus 组。Magpie 负责 429 时自动换道。',
          '探索阶段烧的是免费/便宜 token，正式生成才用贵的'),
-        ('5', '验收', '人 + Lody',
+        ('05', '验收', '人 + Lody',
          'Diff 页逐行看，意见写在具体行上回传。Agent 拿着行级上下文重跑。数字对不对，跑 eval（这是本仓库的铁律：单测绿不算完）。',
          '验收意见不再是一句"改一下"，而是带行号的精确输入'),
-        ('6', '沉淀', 'Nowledge Mem',
+        ('06', '沉淀', 'Nowledge Mem',
          '合并后蒸馏本线程：<code>nmem t search</code> 可查全程；重要教训 <code>nmem m add</code>（含"下次别怎么做"）。',
          '下次同类任务的第 1 步自动命中这次的教训'),
     ]
     rows = ''.join(f'<tr><td>{n}</td><td><b>{t}</b></td><td>{w}</td><td>{h}</td><td>{why}</td></tr>'
                    for n, t, w, h, why in sop)
-    b.append('<table><thead><tr><th style="width:5%">#</th><th style="width:9%">步</th>'
-             '<th style="width:12%">谁在场</th><th style="width:44%">做什么</th><th>为什么</th>'
+    b.append('<table><thead><tr><th style="width:6%">步序</th><th style="width:9%">阶段</th>'
+             '<th style="width:13%">谁在场</th><th style="width:42%">做什么</th><th>为什么</th>'
              f'</tr></thead><tbody>{rows}</tbody></table>')
     b.append('<div class="note warn"><b>SOP 的两条红线。</b>'
-             '① 第 1 步的检索不能省——记忆库里的旧决策不查就是不存在，这是"找不到≠不存在"的镜像错误。'
-             '② 第 6 步写记忆前先检索去重——重复记忆会让第 1 步的检索质量退化，最终整条链失灵。</div>')
+             '[1] 第 1 步的检索不能省：记忆库里的旧决策不查就是不存在，这是"找不到≠不存在"的镜像错误。'
+             '[2] 第 6 步写记忆前先检索去重：重复记忆会让第 1 步的检索质量退化，最终整条链失灵。</div>')
 
     # ── Playbook ─────────────────────────────────────────────────
     b.append('<h2 id="playbook">Playbook：组合技与场景</h2>')

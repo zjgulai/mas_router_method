@@ -15,15 +15,16 @@ DOCS = [
 
 def docs_page():
     b = ['<h1>原始文档</h1>']
-    b.append('<p class="lede">八份 HTML，<b>未改一字</b>。它们是这套方法的原始产物，页面结构各不相同——因为写的时候是在解决具体问题，不是在设计一个站点。</p>')
+    b.append('<p class="lede">八份 HTML，<b>未改一字</b>。它们是这套方法的原始产物，页面结构各不相同，因为写的时候是在解决具体问题，不是在设计一个站点。</p>')
     b.append('''<div class="note">这八份文档<b>不遵循本站的导航结构</b>，它们是独立的单页。你打开后会看到和下面列表不同的排版，这是有意的：
 改它们会让「原文」变成「改编」，而这套方法的全部价值建立在可追溯上。<br><br>每份文档都在仓库里，路径见页脚。</div>''')
 
+    b.append('<h2>八份原始档案</h2>')
     b.append('<div class="grid two">')
     for fn, title, desc in DOCS:
         # id carries the filename so other pages can deep-link to a specific document
         b.append(f'<a class="card" id="{fn}" href="originals/{fn}" style="display:block;text-decoration:none;color:inherit">'
-                 f'<h3 style="margin-top:0">{title} <span style="font-family:var(--mono);font-size:.74rem;color:var(--faint);font-weight:400">{fn}</span></h3>'
+                 f'<h3 style="margin-top:0">{title} <span style="font-family:var(--mono);font-size:.76rem;color:var(--faint);font-weight:400">{fn}</span></h3>'
                  f'<p style="margin:0;font-size:.9rem;color:var(--muted)">{desc}</p></a>')
     b.append('</div>')
 
@@ -41,7 +42,5 @@ def docs_page():
     return page('docs', '原始文档', '\n'.join(b), '<a href="./">总览</a> / 原始文档')
 
 if __name__ == '__main__':
-    # 原件是仓库里的源文件（docs/site/originals/），不是生成物，所以这里不复制任何东西。
-    # 早先版本把它们复制到 out/docs/ —— 那是更早一套嵌套布局留下的废弃步骤。
     open(os.path.join(out_dir(), 'docs.html'), 'w', encoding='utf-8').write(docs_page())
     print('docs.html 生成')

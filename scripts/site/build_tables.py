@@ -118,7 +118,12 @@ def load():
 
 
 def esc(v):
-    return html.escape(str(v))
+    s = str(v).replace('——', '：')
+    for i, ch in enumerate('①②③④⑤⑥⑦⑧⑨⑩', 1):
+        s = s.replace(ch, f'[{i}] ')
+    if s.strip() == '—':
+        s = '待采集'
+    return html.escape(s)
 
 
 def br(v):
@@ -204,13 +209,12 @@ def table_page(name, rows, stage_label, stage_slug):
 
 def stage_page(slug, label, oneline, tables, data):
     names = STAGE_TABLES.get(slug, [])
-    b = [f'<h1>{esc(label)} <span style="font-size:.5em;color:var(--faint);'
-         f'font-family:var(--sans);font-weight:400">{len(names)} 张表</span></h1>']
+    b = [f'<h1>{esc(label)} <span style="font-size:.82rem;color:var(--faint);'
+         f'font-family:var(--sans);font-weight:500;margin-left:.4rem">{len(names)} 张表</span></h1>']
     b.append(f'<p class="lede">{esc(oneline)}</p>')
 
     missing = [n for n in names if n not in data]
     if missing:
-        # 静默少一页的站点看起来是完整的。所以缺表直接写进页面正文，不吞掉。
         b.append('<div class="note warn"><b>数据里没有这几张表：</b>'
                  + '、'.join(esc(m) for m in missing)
                  + '。页面照常生成，但下面少的是内容，不是排版。</div>')
@@ -228,8 +232,6 @@ def stage_page(slug, label, oneline, tables, data):
     links = ' · '.join(
         f'<a href="tables-{s}.html">{esc(l)}</a>' for s, l in others)
     b.append(f'<div class="nextprev"><div><span class="lbl">其它阶段的表</span>{links}</div></div>')
-    # 二级导航就是这几张表本身——这一页的内容形状就是「几张表依次展开」，
-    # 所以小节天然等于表名，不需要另外起名字。
     sections = [(f'{slug}-{n.replace(" ", "-")}', n) for n in names]
     return page(f'tables-{slug}', f'{label} · 表', ''.join(b),
                 crumb=f'表格 · <a href="tables.html">全部</a>',
@@ -238,8 +240,8 @@ def stage_page(slug, label, oneline, tables, data):
 
 
 def index_page(data):
-    b = ['<h1>十三个表 <span style="font-size:.5em;color:var(--faint);font-family:var(--sans);'
-         'font-weight:400">七个阶段 + 一个管理</span></h1>']
+    b = ['<h1>十三个表 <span style="font-size:.82rem;color:var(--faint);font-family:var(--sans);'
+         'font-weight:500;margin-left:.4rem">七个阶段 + 一个管理</span></h1>']
     b.append('<p class="lede">这套方法走到今天，每一步都要写下来一点东西。'
              '它们最后长成了十三张表——按阶段分，按层分，按它回答的问题分。</p>')
 
@@ -266,7 +268,8 @@ def index_page(data):
 
     b.append('<h2>按阶段</h2>')
     b.append('<div class="grid two">')
-    for slug, label, oneline in STAGES:
+    all_stages = list(STAGES) + [('manage', '管理', '横跨七阶段的记录层：每一种信息只有一个家')]
+    for slug, label, oneline in all_stages:
         names = STAGE_TABLES.get(slug, [])
         if not names:
             continue

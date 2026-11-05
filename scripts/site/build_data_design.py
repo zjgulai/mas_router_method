@@ -13,12 +13,12 @@ def data_design_page():
 
     b.append('<h2 id="discoveries">一、三个关键的前置发现</h2>')
     discoveries = [
-        ('F1 缺少预算自变量', '决策是分配资源，但当前只有 GMV + 声量数据。', '能算出「声量 → GMV 弹性」，但算不出「预算 → 声量成本」。决策者拿到弹性依然不知道往哪投——因为弹性高可能获客成本极高。<b>解决：必须补齐按区域×渠道的花费数据才能做 C4 边际回报</b>。'),
+        ('F1 缺少预算自变量', '决策是分配资源，但当前只有 GMV + 声量数据。', '能算出「声量 → GMV 弹性」，但算不出「预算 → 声量成本」。决策者拿到弹性依然不知道往哪投，因为弹性高可能获客成本极高。<b>解决：必须补齐按区域×渠道的花费数据才能做 C4 边际回报</b>。'),
         ('F2 面板固定效应吸收趋势', '声量与 GMV 均随时间上升，单序列必然产生 0.9 的假相关。', '决策单位是「区域」，问题转化为<b>区域 × 周的面板数据</b>。引入周固定效应整体吸收全球增长趋势与算法变动，识别变异集中在「同周内 A 区域声量超常增长是否带来 GMV 超常增长」。'),
         ('F3 全球效应不可识别', '周固定效应消除了伪相关，但也吸收了全球共性变化。', '一次全球品牌大事件或平台大促的影响无法被模型归因到特定区域声量上。这是模型的前提约束，必须在结论卡中明确声明。'),
     ]
-    b.append('<div class="grid two">'
-             + ''.join(f'<div class="card" id="f-{i+1}"><h3>{title}</h3><p style="font-size:.85rem;color:var(--alert);margin-bottom:.4rem"><b>痛点：</b>{issue}</p><p style="font-size:.88rem;color:var(--muted);margin:0">{sol}</p></div>' for i, (title, issue, sol) in enumerate(discoveries))
+    b.append('<div class="grid three">'
+             + ''.join(f'<div class="card" id="f-{i+1}"><h3>{title}</h3><p style="font-size:.86rem;color:var(--alert);margin-bottom:.45rem"><b>痛点：</b>{issue}</p><p style="font-size:.88rem;color:var(--muted);margin:0">{sol}</p></div>' for i, (title, issue, sol) in enumerate(discoveries))
              + '</div>')
 
     b.append('<h2 id="conclusions">二、四级结论卡体系 (C1–C4)</h2>')

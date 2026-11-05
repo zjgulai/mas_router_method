@@ -9,9 +9,9 @@ def data_layers_page():
              '<b>每一层要么有一个可执行的命令级检查器，要么它只是一句愿望。</b></p>')
 
     b.append('''<div class="note"><b>三条不变量铁律：</b><br>
-1. <code>first_seen_at</code> 不是可被修改的列，而是读侧计算的 <code>min()</code>——历史不可改写。<br>
-2. 空抓必须留存显式日志记录——区分「数据为空」与「抓取失败」。<br>
-3. 数据迁移是读侧的（追加 migration 规则）——旧数据永远保持原样可查。</div>''')
+1. <code>first_seen_at</code> 不是可被修改的列，而是读侧计算的 <code>min()</code>，历史不可改写。<br>
+2. 空抓必须留存显式日志记录，明确区分「数据为空」与「抓取失败」。<br>
+3. 数据迁移是读侧的（追加 migration 规则），旧数据永远保持原样可查。</div>''')
 
     b.append('<h2 id="invariants">一、链 A：采集与存储的基础契约</h2>')
     invariants = [

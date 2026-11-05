@@ -3,44 +3,47 @@ from build_shell import page, STAGES
 from map import MAP
 from paths import out_dir, SKILLS
 
-# 表里的行数，从归属表数出来——不在文档里写死数字，那是会过时的声明。
+# 表里的行数，从归属表数出来：不在文档里写死数字，那是会过时的声明。
 N_ROWS = len(MAP)
 
-# 八个模块：七个阶段，加上管理。管理不是阶段（它横跨全部七个），但它是一个归属单位，
-# 而技能表按归属单位分组——不这样做，anb-manage 在技能目录页上就不存在。
-# 数据产品是第二套流程（8 层 + 3 柱），不是第 8 个阶段。它有自己的 skill 归属单位，
-# 否则 anb-data-metric 这一类的 skill 在技能表上就没有位置，只能被硬塞进「设计」——
-# 而它的判据（换一个人能不能算出同一个数）与设计阶段的判据不是同一件事。
 MODULES = list(STAGES) + [('manage', '管理', '横跨七阶段'),
                           ('data', '数据产品', '8 层 + 3 柱，与七阶段并行')]
 
-# map.py 用中文名给每个 skill 标归属。它不再自己列举这份清单（那是第二份会过时的声明），
-# 改为在这里校验：标了一个不存在的模块就报错，而不是安静地不显示。
 _MODULE_LABELS = {label for _, label, _ in MODULES}
 _bad = sorted({v[0] for v in MAP.values()} - _MODULE_LABELS)
 if _bad:
     raise SystemExit(f'map.py assigns skills to modules that do not exist: {_bad}')
 
-# 三层来源
+# 三层来源。
+# pstack 也装在客户端插件里，但它是这一套方法的核心依赖，把它单列一层，
+# 否则「客户端插件」那一格会把 67 个 skill 和 pstack 混成一句"要看运气"。
+# 判据只有一处：map.py 里的 tag 带 'pstack'。不在第二个地方重复维护名单。
+PSTACK = {k for k, v in MAP.items() if 'pstack' in v[1]}
+
 repo_dirs = {d for d in os.listdir(SKILLS) if os.path.isdir(os.path.join(SKILLS, d))}
 anb = {d for d in repo_dirs if d.startswith('anb')}
 vendored = repo_dirs - anb
 
-# 反向检查，必须放在 anb 定义之后：仓库里属于自己的 skill 必须出现在表上，
-# 否则它会从技能目录页上凭空消失，而页面看起来完好无损。
-# 这条是补上的——anb-manage 此前就不在 MAP 里，16 个 anb skill 只列出了 15 个。
 _unlisted = sorted(anb - set(MAP))
 if _unlisted:
     raise SystemExit(f'these repo skills are in .claude/skills/ but not in map.py: {_unlisted}')
 
+# 同名冲突：插件与仓库都提供 tdd / teach。仓库版本胜出，所以它们不进 pstack 那一层。
+# 这条检查存在的理由：一个 skill 名在两处都有定义时，调用 /tdd 到底走哪一份是个
+# 静默行为差异，而不是报错——没人会注意到自己在用另一套 TDD。
+_shadowed = sorted(PSTACK & vendored)
+if _shadowed:
+    raise SystemExit(f'pstack skills shadow repo skills of the same name: {_shadowed}')
+
 def source_of(name):
     if name in anb: return ('anb', '本方法新增')
     if name in vendored: return ('repo', '仓库自带')
+    if name in PSTACK: return ('pstack', 'pstack 插件')
     return ('plugin', '客户端插件')
 
 def skills_page():
     b = ['<h1>Skill 全表</h1>']
-    b.append(f'<p class="lede">{N_ROWS} 个 skill，按八个模块归属（七阶段 + 管理）。每个都标注了来源、用在哪一步、以及<b>它坏了会怎样</b>——最后一项才是你真正要用的。</p>')
+    b.append(f'<p class="lede">{N_ROWS} 个 skill，按八个模块归属（七阶段 + 管理）。每个都标注了来源、用在哪一步、以及<b>它坏了会怎样</b>，最后一项才是你真正要用的。</p>')
 
     b.append('''<div class="note warn"><b>先说清一件事：同一件事有三种"没有"。</b>
 「<code>.claude/skills/</code> 里没有」不等于「不存在」，也不等于「你调不到」。这三个问题的解法完全不同。
@@ -52,15 +55,14 @@ def skills_page():
     b.append('<h2>按阶段分布</h2>')
     b.append('<div class="grid three">')
     for slug, sname, one in MODULES:
-        # 管理没有阶段页，它的落点是 manage.html；数据产品的落点是矩阵页——
-        # 它是唯一一张按层而不是按阶段组织的视图，也正是这批 skill 的归属单位。
-        # 第一版直接拼了 data.html，而那个页面不存在，links.mjs 当场抓出来了。
         LANDING = {'manage': 'manage.html',
                    'data': 'matrix.html'}
         href = LANDING.get(slug, f'{slug}.html#skills')
-        b.append(f'<a class="card" href="{href}" style="display:block;text-decoration:none;color:inherit">'
-                 f'<div style="font-family:var(--serif);color:var(--accent);font-size:1.3rem">{per_stage[sname]}</div>'
-                 f'<div style="font-size:.9rem">{sname}</div></a>')
+        b.append(f'<a class="card" href="{href}" style="display:block;text-decoration:none;color:inherit;padding:1rem 1.25rem">'
+                 f'<div style="display:flex;justify-content:space-between;align-items:baseline">'
+                 f'<span style="font-weight:650;font-size:.95rem;color:var(--ink)">{sname}</span>'
+                 f'<span style="font-family:var(--mono);color:var(--accent);font-weight:700;font-size:1.1rem">{per_stage[sname]}</span>'
+                 f'</div></a>')
     b.append('</div>')
 
     # 全表
@@ -76,7 +78,7 @@ def skills_page():
         rows = []
         for name, (stage, tags, note) in items:
             src, label = source_of(name)
-            cls = {'repo': 't-must', 'plugin': 't-plain', 'anb': 't-branch'}[src]
+            cls = {'repo': 't-must', 'plugin': 't-plain', 'anb': 't-branch', 'pstack': 't-pstack'}[src]
             tagstr = ''.join(f'<span class="tag t-must">{t}</span>' for t in tags if t in ('必用', '硬门', '入口', '路由'))
             rows.append(f'<tr id="{name}"><td><code>{name}</code>{tagstr}</td>'
                         f'<td><span class="tag {cls}">{label}</span></td>'
@@ -103,16 +105,14 @@ def branches_page():
                        for c, a, note in d['branches'])
         b.append(f'<table><thead><tr><th style="width:40%">如果</th><th style="width:16%">处理</th><th>为什么</th></tr></thead><tbody>{rows}</tbody></table>')
 
-    # 管理横跨七阶段，不是第八个阶段，所以它在这里和阶段并列、单独一节。
-    # 之前它只出现在顶部导航里：一个卡住的人从路由表或分支总表出发都到不了它。
     b.append('<h2><a href="manage.html" style="text-decoration:none">管理</a>'
-             '<span style="font-size:.6em;color:var(--faint);font-family:var(--sans);font-weight:400">'
+             '<span style="font-size:.75rem;color:var(--faint);font-family:var(--sans);font-weight:400">'
              '　横跨以上全部，不是第八个阶段</span></h2>')
     b.append('<p class="h2sub">提问的对象是<b>项目自己的记录</b>而不是产品时，走这里。'
              '票据在需求时开，证据在验收时落，事故可能发生在任何一刻。</p>')
     mgmt = [
         ('你打算做一件事，而且不止这一次会话', '#m-file',
-         '开一张票。一次会话内做完并验证的不要开——否则票据会变成流水账，流水账没人看。'),
+         '开一张票。一次会话内做完并验证的不要开，否则票据会变成流水账，流水账没人看。'),
         ('发生了一件你没计划的事', '#m-file',
          '那是事故，不是票。分开记，因为触发方式不同：票是你打算做，事故是发生了。'),
         ('文档里的数字和实际对不上', '#m-commands',

@@ -1,0 +1,488 @@
+{
+  "lang": "zh-CN",
+  "width": 1280,
+  "pageTitle": "MAS Router Method 全产品架构全景图",
+  "title": "MAS Router Method · 全产品架构全景图 · {gr:Recipe Agent} + {cy:Main Agent} + {am:ANB 方法论} + {pu:开发工具链}",
+  "subtitle": "依赖铁律：单向不可逆 (apps → core/consult → shared/feishu) · 零 Emoji · 单源真源 (packages/shared + brands.ts + work/schema.yml)",
+  "layers": [
+    {
+      "id": "surface",
+      "label": "交互入口 (Surfaces)",
+      "color": "blue"
+    },
+    {
+      "id": "engine",
+      "label": "核心运行时与咨询引擎 (Engines)",
+      "color": "green"
+    },
+    {
+      "id": "contract",
+      "label": "契约、评测与适配底座 (Contracts & Gates)",
+      "color": "cyan"
+    },
+    {
+      "id": "method",
+      "label": "ANB 方法论与生成站点 (Methodology & Site)",
+      "color": "amber"
+    },
+    {
+      "id": "toolchain",
+      "label": "本地开发工具链 (Agent Toolchain)",
+      "color": "purple"
+    }
+  ],
+  "flows": [
+    {
+      "id": "call",
+      "label": "运行时调用 / 协议转发",
+      "color": "green"
+    },
+    {
+      "id": "dep",
+      "label": "单向模块依赖 / 契约约束",
+      "color": "cyan",
+      "dash": true
+    },
+    {
+      "id": "gate",
+      "label": "门禁校验 / 站点生成",
+      "color": "amber"
+    },
+    {
+      "id": "dev",
+      "label": "开发态注入 / 路由代理",
+      "color": "purple",
+      "dash": true
+    }
+  ],
+  "groups": [
+    {
+      "id": "g-surfaces",
+      "label": "双交付面 + 知识门户 · 严禁互相 import · 共享底座",
+      "color": "blue",
+      "x": 16,
+      "y": 182,
+      "w": 896,
+      "h": 176
+    },
+    {
+      "id": "g-engines",
+      "label": "核心双引擎 · Recipe Agent + Main Agent",
+      "color": "green",
+      "solid": true,
+      "labelRight": true,
+      "x": 16,
+      "y": 424,
+      "w": 896,
+      "h": 244
+    },
+    {
+      "id": "g-contracts",
+      "label": "Schema 边界 + 飞书协议 + 评测底座",
+      "color": "cyan",
+      "labelRight": true,
+      "x": 16,
+      "y": 734,
+      "w": 896,
+      "h": 212
+    },
+    {
+      "id": "g-governance",
+      "label": "ANB 治理与数据矩阵 · 单一真源驱动站点与检查器",
+      "color": "amber",
+      "x": 16,
+      "y": 1012,
+      "w": 896,
+      "h": 172
+    },
+    {
+      "id": "g-toolchain",
+      "label": "开发态三件套 · 记忆 → 调度 → 路由",
+      "color": "purple",
+      "x": 936,
+      "y": 182,
+      "w": 328,
+      "h": 1002
+    }
+  ],
+  "nodes": [
+    {
+      "id": "workbench",
+      "short": "workbench",
+      "layer": "surface",
+      "x": 32,
+      "y": 208,
+      "w": 272,
+      "h": 134,
+      "title": "apps/workbench",
+      "sub": "Operator 审查台 · Next.js",
+      "lines": [
+        "Recipe 审查队列 · Run 轨迹回放",
+        "品牌护栏编辑 · 评测分数对账"
+      ],
+      "status": "dev"
+    },
+    {
+      "id": "bot-gw",
+      "short": "bot-gateway",
+      "layer": "surface",
+      "x": 328,
+      "y": 208,
+      "w": 272,
+      "h": 134,
+      "title": "apps/bot-gateway",
+      "sub": "飞书交付面 · WS 长连接 + HTTP",
+      "lines": [
+        "事件去重 · 3s 回执 · 会话分桶队列",
+        "分流 /recipe 生成与群内咨询提问"
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "anb-site",
+      "short": "docs/site",
+      "layer": "method",
+      "x": 624,
+      "y": 208,
+      "w": 272,
+      "h": 134,
+      "title": "docs/site · ANB 知识门户",
+      "sub": "29 生成页 + 8 原始档案",
+      "lines": [
+        "7 阶段 + 管理 · 8×8 矩阵 · 13 表",
+        "作战手卡 36 条 · 工具链 · 图谱"
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "core",
+      "short": "@mas/core",
+      "layer": "engine",
+      "x": 32,
+      "y": 452,
+      "w": 424,
+      "h": 200,
+      "title": "packages/core · Recipe Agent",
+      "sub": "run-agent.ts 单文件主循环 · createRuntime()",
+      "rows": [
+        {
+          "name": "run-agent.ts",
+          "desc": "步数记录 · 预算双保险 · 累计计费"
+        },
+        {
+          "name": "tools/brand.ts",
+          "desc": "Brand · Reference · Recipe · Vision"
+        },
+        {
+          "name": "tools/result.ts",
+          "desc": "ok / err / guard · 失败即值"
+        },
+        {
+          "name": "seed/brands.ts",
+          "desc": "4 品牌画像唯一真源"
+        }
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "consult",
+      "short": "@mas/consult",
+      "layer": "engine",
+      "x": 476,
+      "y": 452,
+      "w": 420,
+      "h": 200,
+      "title": "packages/consult · Main Agent",
+      "sub": "20 能力节点 · 17 路由 · 150 评测集 (0.99)",
+      "rows": [
+        {
+          "name": "capability-graph",
+          "desc": "4 轴定位 · 首检路由 · 假前提拦截"
+        },
+        {
+          "name": "BM25 + 知识包",
+          "desc": "物理化知识库 · 严格引文校验"
+        },
+        {
+          "name": "answer-composer",
+          "desc": "结论 · 定位 · 依据 · 下一步"
+        },
+        {
+          "name": "LLM Synthesis",
+          "desc": "可选合成 · 禁编造仓库外路径"
+        }
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "feishu",
+      "short": "@mas/feishu",
+      "layer": "contract",
+      "x": 32,
+      "y": 760,
+      "w": 272,
+      "h": 160,
+      "title": "packages/feishu",
+      "sub": "飞书协议适配层 · 24 单测",
+      "lines": [
+        "事件验签与解密 · post 富文本抽取",
+        "mention 解析 · 话题 thread 追踪",
+        "Recipe 卡片格式化与投递契约"
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "shared",
+      "short": "@mas/shared",
+      "layer": "contract",
+      "x": 328,
+      "y": 760,
+      "w": 272,
+      "h": 160,
+      "title": "packages/shared",
+      "sub": "Schema 唯一真源 · 零内部依赖",
+      "lines": [
+        "Brand · Reference · Recipe",
+        "持久化边界 Zod 强校验",
+        "禁止任何包二次定义同名类型"
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "evals",
+      "short": "@mas/evals",
+      "layer": "contract",
+      "x": 624,
+      "y": 760,
+      "w": 272,
+      "h": 160,
+      "title": "packages/evals",
+      "sub": "评测即 Spec · 14 Cases + 15 规则",
+      "lines": [
+        "Store 契约套件 · Fake 端口注入",
+        "EVAL_RUBRIC=on 激活真实模型裁判",
+        "归因：eval → data → tool"
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "work-gov",
+      "short": "work/ + scripts/",
+      "layer": "method",
+      "x": 32,
+      "y": 1038,
+      "w": 424,
+      "h": 132,
+      "title": "work/ · 8 寄存器与机器门禁",
+      "sub": "状态即目录 (ls 即看板) · 零手工编号",
+      "lines": [
+        "work/schema.yml 唯一阶段源 · 8 类 ID 寄存器",
+        "work.mjs check · layout.mjs · facts.mjs"
+      ]
+    },
+    {
+      "id": "data-gov",
+      "short": "matrix + tables",
+      "layer": "method",
+      "x": 476,
+      "y": 1038,
+      "w": 420,
+      "h": 132,
+      "title": "docs/product/ · 8×8 矩阵与 13 张表",
+      "sub": "数据产品契约 (Momcozy) + 站点构建器",
+      "lines": [
+        "matrix.json (matrix-check) · tables.json (xref)",
+        "build.mjs 驱动 13 个 Python 生成器 + links.mjs"
+      ]
+    },
+    {
+      "id": "nowledge",
+      "short": "Nowledge Mem",
+      "layer": "toolchain",
+      "x": 952,
+      "y": 212,
+      "w": 296,
+      "h": 254,
+      "title": "Nowledge Mem",
+      "sub": "记忆层 · Space: mas-router",
+      "rows": [
+        {
+          "name": "SessionStart",
+          "desc": "注入简报 + 守门规则"
+        },
+        {
+          "name": "8 类持久记忆",
+          "desc": "BM25 + 向量混合检索"
+        },
+        {
+          "name": "Thread 蒸馏",
+          "desc": "对话存证 → 结论沉淀"
+        },
+        {
+          "name": "红线守门",
+          "desc": "单向依赖 · 单源真源"
+        }
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "lody",
+      "short": "Lody",
+      "layer": "toolchain",
+      "x": 952,
+      "y": 532,
+      "w": 296,
+      "h": 254,
+      "title": "Lody 控制平面",
+      "sub": "多机调度 · Worktree 隔离",
+      "rows": [
+        {
+          "name": "跨机执行池",
+          "desc": "4 台机器并行会话"
+        },
+        {
+          "name": "Git Worktree",
+          "desc": "分支隔离 · 零冷启动"
+        },
+        {
+          "name": "持久任务总线",
+          "desc": "operationId 异步回执"
+        },
+        {
+          "name": "Diff 评审",
+          "desc": "行级批注回传下一轮"
+        }
+      ],
+      "status": "ok"
+    },
+    {
+      "id": "magpie",
+      "short": "Magpie",
+      "layer": "toolchain",
+      "x": 952,
+      "y": 852,
+      "w": 296,
+      "h": 254,
+      "title": "Magpie 路由网关",
+      "sub": "127.0.0.1:3425 · 单二进制",
+      "rows": [
+        {
+          "name": "协议转换",
+          "desc": "三套主流协议互转"
+        },
+        {
+          "name": "group/* 容灾",
+          "desc": "free 探索 / opus 生成"
+        },
+        {
+          "name": "订阅桥接",
+          "desc": "官方 CLI 子进程管道"
+        },
+        {
+          "name": "本地账本",
+          "desc": "usage.jsonl · 脱敏"
+        }
+      ],
+      "status": "ok"
+    }
+  ],
+  "edges": [
+    {
+      "flow": "call",
+      "from": "workbench.b@240px",
+      "to": "core.t@240px",
+      "label": "createRuntime()",
+      "labelPos": [210, 384]
+    },
+    {
+      "flow": "call",
+      "from": "bot-gw.b@76px",
+      "to": "core.t@372px",
+      "label": "/recipe 生成",
+      "labelPos": [448, 384]
+    },
+    {
+      "flow": "call",
+      "from": "bot-gw.b@210px",
+      "to": "consult.t@62px",
+      "label": "群内方法咨询",
+      "labelPos": [592, 384]
+    },
+    {
+      "flow": "dep",
+      "from": "core.b@64px",
+      "to": "feishu.t@64px",
+      "label": "飞书端口适配",
+      "labelPos": [148, 690]
+    },
+    {
+      "flow": "dep",
+      "from": "core.b@340px",
+      "to": "shared.t@44px",
+      "label": "Zod 边界校验",
+      "labelSide": "left"
+    },
+    {
+      "flow": "dep",
+      "from": "evals.t@16px",
+      "to": "core.b@414px",
+      "mid": 698,
+      "label": "Fake 端口 + brands.ts",
+      "labelPos": [540, 690]
+    },
+    {
+      "flow": "dep",
+      "from": "evals.l",
+      "to": "shared.r"
+    },
+    {
+      "flow": "gate",
+      "from": "work-gov.b@212px",
+      "to": "data-gov.b@210px",
+      "rail": "y:1202",
+      "label": "schema.yml + 寄存器门禁校验",
+      "labelPos": [464, 1198]
+    },
+    {
+      "flow": "gate",
+      "from": "data-gov.r",
+      "to": "anb-site.r",
+      "rail": "x:922",
+      "label": "build.mjs",
+      "labelPos": [858, 384]
+    },
+    {
+      "flow": "dev",
+      "from": "nowledge.b",
+      "to": "lody.t",
+      "label": "[1] 会话注水 + 规则",
+      "labelSide": "right"
+    },
+    {
+      "flow": "dev",
+      "from": "lody.b",
+      "to": "magpie.t",
+      "label": "[2] import-magpie",
+      "labelSide": "right"
+    },
+    {
+      "flow": "dev",
+      "from": "magpie.l@54px",
+      "to": "evals.r@146px",
+      "mid": 928,
+      "label": "[3] 代理模型",
+      "labelPos": [878, 964]
+    }
+  ],
+  "log": {
+    "title": "live trace · 全产品运行与治理信号流",
+    "live": {
+      "rows": 6
+    }
+  },
+  "footer": {
+    "cwd": "~/Project/mas_router_method",
+    "cmd": "pnpm test && pnpm --filter @mas/evals eval && node scripts/site/build.mjs",
+    "note": "单测验代码 · Eval 验 Agent 判断 · build.mjs 零孤儿页生成站点"
+  }
+}

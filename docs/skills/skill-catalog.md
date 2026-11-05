@@ -4,20 +4,34 @@
 
 配套文档：流程编排见 [`skill-sop.md`](./skill-sop.md)，阶段与 gate 见 [`skill-chain.md`](./skill-chain.md)。
 
-## 先读这个：三种来源，不是一种
+## 先读这个：四种来源，不是一种
 
-这份清单里的 skill 来自三个地方，**它们的安装位置不同，不能混为一谈**。之前这份文档没写清楚，导致一次盘点把它误判成「42 个 skill 不存在」。
+这份清单里的 skill 来自四个地方，**它们的安装位置不同，不能混为一谈**。之前这份文档没写清楚，导致一次盘点把它误判成「42 个 skill 不存在」。
 
 | 来源 | 数量 | 装在哪 | 怎么验证它可用 |
 |---|---|---|---|
-| **这个清单里列出的** | 63 | —— | 见下表逐个标注 |
-| **仓库自带（git 跟踪）** | 34 | `.claude/skills/`，随仓库走 | `ls .claude/skills/` |
-| **随客户端提供的插件** | 38 | 不在仓库里，由客户端提供 | 调用需带前缀，如 `anthropic-skills:agent-browser` |
+| **仓库自带（git 跟踪）** | 36 | `.claude/skills/`，随仓库走 | `ls .claude/skills/` |
 | **本方法新增** | 19 | `.claude/skills/anb*` | `ls -d .claude/skills/anb*` |
+| **pstack 插件** | 63 | 客户端插件缓存，由客户端提供 | `claude plugin details pstack@pstack-claude` |
+| **其它客户端插件** | 其余 | 不在仓库里，由客户端提供 | 调用需带前缀，如 `anthropic-skills:agent-browser` |
 
-仓库实际共 53 个 skill 目录 = 34 个自带 + 19 个新增。
+仓库实际共 55 个 skill 目录 = 36 个自带 + 19 个新增。
 
-**仓库自带的 34 个**：`ask-matt`、`code-review`、`codebase-design`、`diagnosing-bugs`、`domain-modeling`、`grill-me`、`grill-with-docs`、`grilling`、`handoff`、`implement`、`implement-spec`、`improve-codebase-architecture`、`native-agent-dev`（含 6 个阶段 skill）、`pr`、`prototype`、`research`、`retro`、`setup-matt-pocock-skills`、`tdd`、`teach`、`to-questionnaire`、`to-spec`、`to-tickets`、`triage`、`wait-what`、`wayfinder`、`wizard`、`writing-for-agents`。
+**pstack 为什么单列一层，而不是并进「客户端插件」**：它是这套方法的核心依赖，装不装决定了「证据先于声明」和「多方案并排」到底有没有落实。混在「要看运气」的那一格，等于把最该被检查的东西藏起来了。全表条目数不写死在这份文档里，以 `scripts/site/map.py` 为准——数字写两遍就会有一遍是错的。
+
+**pstack 装法**（Claude Code 2.1.292+）：
+
+```bash
+claude plugin marketplace add michael-denyer/pstack-claude
+claude plugin install pstack@pstack-claude
+claude plugin details pstack@pstack-claude   # 确认 67 个 skill 装上了
+```
+
+上游是 Lauren Tan（poteto）的 Cursor 版 pstack，`michael-denyer/pstack-claude` 是把它翻译成 Claude Code 的移植。第三方 marketplace **默认不开自动更新**，升级要手动 `claude plugin update pstack@pstack-claude`。
+
+**两个同名冲突，必须知道**：插件里也提供 `tdd` 和 `teach`，与仓库自带同名。**仓库版本胜出**——你打 `/tdd` 走的是仓库那套（先失败测试 + 最小实现），插件版的前提不同（只在明确要求 TDD 或有便宜测试目标时才用）。要用插件版得显式写全名。`build_skills.py` 里有一条检查专门拦这个：pstack 名单与仓库目录重叠就构建失败，因为这类覆盖是**静默的行为差异**，不报错，没人会发现自己用的是另一套 TDD。
+
+**仓库自带的 36 个**：`ask-matt`、`code-review`、`codebase-design`、`diagnosing-bugs`、`domain-modeling`、`eval-triage`、`grill-me`、`grill-with-docs`、`grilling`、`handoff`、`implement`、`implement-spec`、`improve-codebase-architecture`、`native-agent-dev`（含 6 个阶段 skill）、`pr`、`prototype`、`research`、`retro`、`setup-matt-pocock-skills`、`ste`、`tdd`、`teach`、`to-questionnaire`、`to-spec`、`to-tickets`、`triage`、`wait-what`、`wayfinder`、`wizard`、`writing-for-agents`。
 
 **新增的 19 个**（Agent Native Builder，见 `ANB-README.md`）：`anb`、`anb-idea`、`anb-design`、`anb-runnable`、`anb-judgeable`、`anb-shipable`、`anb-observable`、`anb-reusable`、`anb-manage`，以及七个检查 `anb-check-break`、`anb-check-offline`、`anb-check-readback`、`anb-check-otherdevice`、`anb-check-output`、`anb-check-reconcile`、`anb-check-count`，以及数据产品侧的 `anb-data-metric`、`anb-data-label`、`anb-data-conclude`。
 
@@ -71,7 +85,9 @@
 | `writing-plans` | `插件` | 规格已批准，需要一份别人能照着执行的计划 | spec + ADR + 代码结构 | 实施计划：文件清单、接口、逐步测试、全局约束、自查 | `用 writing-plans 把这份 spec 变成可执行计划，每步都要有验证命令。` |
 | `to-tickets` | `仓库` | 计划需要拆成可并行、可验收的纵向切片 | 计划或 spec | 带 blocking edges 的 tracer-bullet 票据 | `用 to-tickets 把计划拆成纵向切片，标清每张票被谁阻塞。` |
 | `triage` | `仓库` | 票/issue 堆积，需要分类、验证、补信息或写 agent brief | 未处理的 issue / PR | 每个 issue 一个状态角色 + 分类 + 可执行的 brief | `用 triage 过一遍待处理 issue，先给我需要我注意的三类。` |
-| `prototype` | `仓库` | 某个交互或状态模型光靠讨论判断不了 | 一个具体设计问题 | 一次性原型（逻辑演示 HTML 或 UI 变体），验证后丢弃 | `用 prototype 做一个一次性原型，只回答 ___ 这个问题，验证完就丢。` |
+| `prototype` | `仓库` | 某个交互或状态模型光靠讨论判断不了 | 一个具体设计问题 + 它的否定条件（什么观察会推翻当前倾向） | 2–3 套并排变体 + 同口径证据（截图 / 时序 / 状态面板）+ 对比表 + 推荐结论；演示件丢弃 | `用 prototype 做 2–3 套并排变体回答 ___ 这个问题，每套给同口径证据，最后给对比表和推荐结论，验证完就丢。` |
+
+`prototype` 有两层：`SKILL.md`/`UI.md`/`LOGIC.md` 管**怎么把变体造出来**，`EVIDENCE.md` 管**怎么把变体变成一个决定**——先写决定与否证条件、变体只在被决策的那条轴上不同、在决策将发生的真实界面上观测（而不是读代码想象）、先排除"证据其实测的是别的东西"（数据不同、视口不同、冷启动、噪声底大于差异），最后回一份对比而非一份菜单。证据一边倒时直接决定并开工，把已经做完的判断重新抛回给人是浪费。
 
 ## 五、执行编排与跟踪（6）
 

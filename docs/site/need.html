@@ -5,134 +5,160 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>需求 · Agent Native Builder</title>
 <meta name="description" content="需求 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23191a17'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23f2f1ec' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23211015'/%3E%3Ctext x='32' y='44' font-size='32' font-weight='700' text-anchor='middle' fill='%23f4dce3' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:light;
-    --ground:#f2f1ec;--surface:#fbfaf6;--sunk:#e7e6df;--deep:#d6d5cc;
-    --ink:#191a17;--muted:#54564f;--faint:#5f6159;
-    --accent:#0d5a51;--accent2:#d9e6e2;
-    --alert:#782c2c;--alert2:#eedcd8;
-    --warn:#6b5312;--warn2:#f0e8d2;
-    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
-    --serif:ui-serif,Georgia,"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
-    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+    /* 暖粉色品牌基底：暖雾粉、陶土深莓与温润黑檀 */
+    --ground:#f7f1f2;--surface:#fcf8f9;--surface-elev:#ffffff;
+    --sunk:#efe3e6;--deep:#d8c1c7;
+    --ink:#211216;--muted:#4d3139;--faint:#6b4953;
+    --accent:#8c2a4b;--accent-hover:#6b1d37;--accent2:#f4dce3;--accent-soft:#f9eef1;
+    --alert:#8a1f24;--alert2:#f8dada;
+    --warn:#6b460a;--warn2:#f5e6cc;
+    --side-bg:#211015;--side-border:#3b2029;--side-text:#efe2e6;--side-muted:#b5949e;
+    --sans:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",-apple-system,BlinkMacSystemFont,"Microsoft YaHei",system-ui,sans-serif;
+    --serif:"Source Han Serif SC","Noto Serif CJK SC","Songti SC",Georgia,ui-serif,serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-8:48px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.64 var(--sans);-webkit-font-smoothing:antialiased}
-  a{color:var(--accent)}
+  ::selection{background:var(--accent2);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.75 var(--sans);
+       -webkit-font-smoothing:antialiased;accent-color:var(--accent)}
+  a{color:var(--accent);text-underline-offset:.24em;text-decoration-color:var(--deep);transition:color .12s,text-decoration-color .12s}
+  a:hover{color:var(--accent-hover);text-decoration-color:var(--accent)}
   /* ── 左栏布局 ──────────────────────────────────────────────────────
      左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
      右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
-  .layout{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
-  .side{background:var(--ink);color:#e9e7e0;position:sticky;top:0;height:100vh;overflow-y:auto;
-        padding:1.1rem 0 2rem}
+  .layout{display:grid;grid-template-columns:256px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--side-bg);color:var(--side-text);position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.5rem 0 2.5rem;border-right:1px solid var(--side-border)}
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
-  .nav-toggle{display:none}
-  .brand{display:block;padding:0 .9rem 1rem;border-bottom:1px solid #33352f;margin-bottom:.7rem}
-  .brand .home{display:flex;align-items:center;min-height:26px;color:#f2f1ec;text-decoration:none;
-               font:650 1.15rem/1.2 var(--serif);letter-spacing:-.02em}
-  .brand-sub{display:block;font-size:.68rem;color:#8d8f86;letter-spacing:.04em;margin-top:.2rem}
-  .nav{padding:0 .5rem}
-  .nav-g{margin-bottom:.9rem}
-  .nav-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;padding:.2rem .62rem .3rem;
-         text-transform:uppercase}
-  .nav a{display:block;color:#c9c7bf;text-decoration:none;font-size:.845rem;padding:.3rem .62rem;
-         border-radius:2px;line-height:1.35}
-  .nav a:hover{background:#2a2c26;color:#fff}
-  .nav a.on{background:#f2f1ec;color:var(--ink);font-weight:640}
-  .subnav{border-top:1px solid #33352f;margin:.4rem .9rem 0;padding-top:.7rem}
-  .sub-h{display:block;font-size:.66rem;letter-spacing:.13em;color:#8f9188;margin-bottom:.3rem}
-  .subnav a{display:block;color:#a9a79f;text-decoration:none;font-size:.79rem;
-            padding:.3rem 0 .3rem .55rem;
-            border-left:1px solid #3d3f38;line-height:1.35}
-  .subnav a:hover{color:#fff;border-left-color:#8d8f86}
+  .nav-toggle{display:none;font-size:.82rem;color:var(--side-text);padding:.35rem .95rem}
+  .brand{display:block;padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--side-border);margin-bottom:1.1rem}
+  .brand .home{display:flex;align-items:center;gap:.5rem;min-height:28px;color:#faf4f5;text-decoration:none;
+               font:650 1.24rem/1.2 var(--serif);letter-spacing:-.02em}
+  .brand .home::before{content:'';display:inline-block;width:8px;height:8px;background:#c45a7c;border-radius:1px}
+  .brand-sub{display:block;font-size:.76rem;color:var(--side-muted);letter-spacing:.03em;margin-top:.32rem}
+  .nav{padding:0 .75rem}
+  .nav-g{margin-bottom:1.3rem}
+  .nav-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);
+         padding:.3rem .75rem .42rem}
+  .nav a{display:block;color:var(--side-text);text-decoration:none;font-size:.88rem;padding:.42rem .75rem;
+         border-radius:3px;line-height:1.42;border-left:2px solid transparent}
+  .nav a:hover{background:#301820;color:#fff}
+  .nav a.on{background:var(--accent2);color:var(--ink);font-weight:650;border-left-color:var(--accent)}
+  .subnav{border-top:1px solid var(--side-border);margin:.75rem 1.25rem 0;padding-top:1rem}
+  .sub-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);margin-bottom:.45rem}
+  .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.83rem;
+            padding:.38rem 0 .38rem .75rem;
+            border-left:1px solid var(--side-border);line-height:1.42}
+  .subnav a:hover{color:#fff;border-left-color:#c45a7c}
   .content{display:flex;flex-direction:column;min-width:0}
-  .content main{flex:1;padding:clamp(2rem,4vw,3.2rem) clamp(16px,4vw,52px) 4rem;
-                max-width:min(56rem,100%)}
-  .content footer{margin:0 clamp(16px,4vw,52px) 0;padding:1.1rem 1.3rem;background:var(--sunk);
-                  font-size:.8rem;color:var(--muted);line-height:1.7;max-width:min(56rem,100%)}
+  .content main{flex:1;padding:clamp(2.8rem,4.8vw,4.5rem) clamp(24px,5vw,76px) 5.2rem;
+                max-width:min(86rem,100%);width:100%}
+  .content footer{margin:0 clamp(24px,5vw,76px) 0;padding:1.6rem 1.8rem;background:var(--sunk);
+                  border-top:1px solid var(--deep);font-size:.84rem;color:var(--muted);line-height:1.78;max-width:min(86rem,100%)}
 
-  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。禁用 JS 时它默认展开，
-     退化成一张普通的纵向导航列表——内容一个不少。 */
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。纯 CSS 几何箭头，禁用任何字符图标。 */
   @media(max-width:760px){
     .layout{grid-template-columns:1fr}
-    .side{position:static;height:auto;padding:.6rem 0}
-    .side summary{cursor:pointer;padding-right:1.1rem}
-    .nav-toggle::after{content:' ▾';color:#8d8f86}
-    .nav-toggle{display:block}
+    .side{position:static;height:auto;padding:.7rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-toggle::after{content:'';display:inline-block;width:6px;height:6px;
+                       border-right:1.5px solid var(--side-muted);border-bottom:1.5px solid var(--side-muted);
+                       transform:rotate(45deg);margin-left:.4rem}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
-    .nav,.subnav{margin-top:.4rem}
+    .nav,.subnav{margin-top:.45rem}
   }
-  .crumb{font-size:.82rem;color:var(--faint);margin-bottom:.6rem}
+  .crumb{font-size:.84rem;color:var(--faint);margin-bottom:1rem;font-variant-numeric:tabular-nums}
   .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
-  h1{font-family:var(--serif);font-weight:600;letter-spacing:-.022em;line-height:1.06;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0 0 .7rem}
-  h1 .num{color:var(--accent);margin-right:.5rem}
-  .lede{font-size:clamp(1rem,1.7vw,1.14rem);color:var(--muted);max-width:44rem;margin:0 0 1.6rem;line-height:1.6}
-  .lede strong{color:var(--ink)}
-  h2{font-family:var(--serif);font-size:clamp(1.25rem,2.6vw,1.62rem);font-weight:600;letter-spacing:-.018em;margin:2.4rem 0 .3rem}
-  h2:first-of-type{margin-top:1.4rem}
-  .h2sub{font-size:.9rem;color:var(--faint);margin:0 0 1rem;max-width:42rem}
-  h3{font-size:1.02rem;font-weight:650;margin:1.8rem 0 .5rem}
-  p{margin:0 0 .9rem}
-  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);padding:.05em .3em}
-  pre{margin:.6rem 0;background:#20211d;color:#e6e4dc;padding:.8rem 1rem;overflow-x:auto;font-family:var(--mono);font-size:.79rem;line-height:1.55}
-  .card{background:var(--surface);padding:1.3rem 1.4rem 1.4rem;margin-bottom:1px}
+  h1{font-family:var(--serif);font-weight:650;letter-spacing:-.022em;line-height:1.15;
+     font-size:clamp(2rem,4.4vw,2.9rem);margin:0 0 1.05rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h1 .num{color:var(--accent);margin-right:.55rem;font-variant-numeric:tabular-nums}
+  .lede{font-size:clamp(1.04rem,1.6vw,1.16rem);color:var(--muted);max-width:76ch;margin:0 0 2.3rem;line-height:1.76;text-wrap:pretty}
+  .lede strong,.lede b{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.35rem,2.5vw,1.72rem);font-weight:650;letter-spacing:-.016em;
+     margin:3.6rem 0 .65rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h2:first-of-type{margin-top:2.4rem}
+  .h2sub{font-size:.95rem;color:var(--faint);margin:0 0 1.45rem;max-width:76ch;line-height:1.7}
+  h3{font-size:1.06rem;font-weight:650;margin:2rem 0 .6rem;text-wrap:balance}
+  p{margin:0 0 1.15rem;max-width:76ch;text-wrap:pretty}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
+  pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
+      font-family:var(--mono);font-size:.84rem;line-height:1.68;border:1px solid var(--side-border);border-radius:2px}
+  .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
   .card h3{margin-top:0}
-  .grid{display:grid;gap:1px;background:var(--deep)}
-  .grid.two{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-  .grid.three{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.4rem 0 0}
+  .card p{max-width:none;line-height:1.7}
+  a.card{transition:border-color .14s,background-color .14s}
+  a.card:hover{border-color:var(--accent);background:#fff}
+  main>.card{margin:1.15rem 0}
+  .grid{display:grid;gap:1.15rem;margin:1.25rem 0 1.8rem}
+  .grid .card{margin:0}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.85rem 0 1.6rem;
+        border:1px solid var(--deep);font-variant-numeric:tabular-nums}
   .tablewrap{overflow-x:auto;max-width:100%}
-  thead th{font-size:.76rem;font-weight:650;color:var(--faint);text-align:left;padding:.7rem .8rem .58rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
-  tbody td{font-size:.87rem;color:var(--muted);padding:.66rem .8rem;border-bottom:1px solid var(--sunk);vertical-align:top}
+  thead th{font-size:.82rem;font-weight:650;color:var(--muted);background:var(--accent-soft);
+           text-align:left;padding:.95rem 1.2rem .85rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.91rem;color:var(--muted);padding:.92rem 1.2rem;border-bottom:1px solid var(--sunk);vertical-align:top;line-height:1.68}
   tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:var(--accent-soft)}
   tbody td:first-child{color:var(--ink);font-weight:600}
-  .tag{display:inline-block;font-size:.72rem;font-weight:650;padding:.08rem .4rem;margin-right:.25rem;white-space:nowrap}
+  .tag{display:inline-block;font-size:.76rem;font-weight:650;padding:.14rem .52rem;margin-right:.35rem;
+       white-space:nowrap;border-radius:2px;font-variant-numeric:tabular-nums}
   .t-must{background:var(--accent2);color:var(--accent)}
   .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-pstack{background:#e8e0f2;color:#4a2c6b}
   .t-alert{background:var(--alert2);color:var(--alert)}
   .t-plain{background:var(--sunk);color:var(--muted)}
   .t-gap{background:var(--alert2);color:var(--alert)}
-  .note{background:var(--surface);padding:1.1rem 1.3rem;border-left:3px solid var(--accent);margin:1rem 0;font-size:.93rem;color:var(--muted)}
-  .note.warn{border-left-color:var(--alert);background:var(--alert2);color:#4a1e1e}
-  .note.warn b{color:#2e1111}
+  /* 告别廉价的 3px 粗左边框套路，采用 1px 精密玫瑰陶框 + 浅雾粉底色 */
+  .note{background:var(--accent-soft);padding:1.4rem 1.7rem;border:1px solid var(--deep);
+        margin:1.6rem 0 2rem;font-size:.95rem;color:var(--muted);line-height:1.74}
+  .note.warn{border-color:#d9a6a6;background:var(--alert2);color:#4a1818}
+  .note.warn b{color:#2e0d0d}
   .note b{color:var(--ink)}
-  .cover{background:var(--surface);padding:1.2rem 1.4rem;margin:1rem 0}
-  .cover .row{display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:.9rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid var(--sunk)}
+  .cover{background:var(--surface);border:1px solid var(--deep);padding:1.5rem 1.8rem;margin:1.6rem 0 2.2rem}
+  .cover .row{display:flex;gap:1.25rem;align-items:baseline;flex-wrap:wrap;font-size:.94rem;color:var(--muted);
+              padding:.6rem 0;border-bottom:1px solid var(--sunk);line-height:1.68}
   .cover .row:last-child{border:0}
-  .cover .k{flex:0 0 7rem;color:var(--faint);font-size:.82rem}
-  .cover .v{flex:1;min-width:200px}
-  .nextprev{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--deep);font-size:.9rem}
-  .nextprev a{text-decoration:none}
-  .nextprev .lbl{display:block;font-size:.76rem;color:var(--faint)}
-  footer{margin-top:3rem;padding:1.1rem 1.3rem;background:var(--sunk);font-size:.8rem;color:var(--muted);line-height:1.7}
+  .cover .k{flex:0 0 8.5rem;color:var(--faint);font-size:.84rem;font-weight:600}
+  .cover .v{flex:1;min-width:220px}
+  .nextprev{display:flex;justify-content:space-between;gap:1.5rem;margin-top:4rem;padding-top:1.6rem;
+            border-top:1px solid var(--deep);font-size:.94rem}
+  .nextprev a{text-decoration:none;font-weight:600}
+  .nextprev .lbl{display:block;font-size:.78rem;color:var(--faint);font-weight:400;margin-bottom:.2rem}
+  footer{margin-top:3.5rem;padding:1.5rem 1.8rem;background:var(--sunk);font-size:.84rem;color:var(--muted);line-height:1.78}
   footer code{background:transparent;padding:0}
-  ul,ol{padding-left:1.2rem;margin:.4rem 0 .9rem}
-  li{margin-bottom:.35rem;font-size:.93rem;color:var(--muted)}
+  ul,ol{padding-left:1.35rem;margin:.6rem 0 1.4rem}
+  li{margin-bottom:.52rem;font-size:.95rem;color:var(--muted);line-height:1.72;max-width:76ch}
   li b{color:var(--ink)}
-  /* 表格页：一行 = 一条记录，字段全部展开。 */
-  .tb-index{background:var(--surface);padding:.75rem .9rem;margin:1rem 0 1.2rem;font-size:.86rem}
-  .tb-index a{display:flex;gap:.7rem;align-items:baseline;text-decoration:none;color:var(--muted);
-    padding:.22rem 0;border-bottom:1px solid var(--sunk)}
+  /* 表格页：一行 = 一条记录，字段全部展开。空字段保持可读对比度 >= 4.5:1 */
+  .tb-index{background:var(--surface);border:1px solid var(--deep);padding:1.15rem 1.45rem;margin:1.4rem 0 1.8rem;font-size:.9rem}
+  .tb-index a{display:flex;gap:.9rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.42rem 0;border-bottom:1px solid var(--sunk)}
   .tb-index a:last-child{border-bottom:0}
   .tb-index a:hover{color:var(--accent)}
-  .tb-index a:hover code{background:var(--accent)}
-  .tb-index code{background:transparent;padding:0;color:var(--accent);font-weight:650;
-    flex:0 0 4.6rem;border-bottom:1px solid var(--deep)}
-  .tb-row{margin:1.6rem 0 2rem}
-  .tb-row h3{margin:0 0 .5rem;font-family:var(--mono);font-size:.92rem}
-  .tb-row h3 code{background:var(--ink);color:var(--surface);padding:.1rem .45rem;font-size:.86rem}
+  .tb-index a:hover code{background:var(--accent);color:#fff}
+  .tb-index code{background:var(--accent2);padding:.1rem .48rem;color:var(--accent);font-weight:650;
+    flex:0 0 5.5rem;text-align:center}
+  .tb-row{margin:2.4rem 0 2.8rem}
+  .tb-row h3{margin:0 0 .7rem;font-family:var(--mono);font-size:.95rem}
+  .tb-row h3 code{background:var(--accent);color:#fff;padding:.18rem .65rem;font-size:.88rem}
   table.tb-fields{margin:0}
   table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
-  table.tb-fields td:first-child{width:9.5rem;color:var(--faint);font-weight:600;font-size:.8rem}
-  table.tb-fields td:last-child{font-size:.89rem;color:var(--ink)}
-  table.tb-fields tr.tb-empty td:first-child{color:var(--deep)}
-  .tb-no{color:var(--deep);font-style:italic}
+  table.tb-fields td:first-child{width:12rem;color:var(--muted);font-weight:600;font-size:.84rem}
+  table.tb-fields td:last-child{font-size:.92rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--faint)}
+  .tb-no{color:var(--faint);font-style:italic;font-size:.84rem}
   @media(max-width:620px){
-    table.tb-fields td:first-child{width:6.5rem;font-size:.76rem}
+    table.tb-fields td:first-child{width:7rem;font-size:.78rem}
   }
   @media print{
     body{background:#fff}.top{display:none}
@@ -149,7 +175,7 @@
       <span class="brand-sub">Agent Native Builder</span>
     </div>
     <details open>
-      <summary class="nav-toggle">导航</summary>
+      <summary class="nav-toggle">站点导航</summary>
       <nav class="nav">
         <div class="nav-g"><span class="nav-h">流程</span>
       <a href="./">总览</a>
@@ -163,6 +189,7 @@
       <a href="manage.html">管理</a>
       </div>
       <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="architecture.html">架构全景</a>
       <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="toolchain.html">工具链</a>
@@ -177,9 +204,9 @@
       </div>
       </nav>
       <div class="subnav"><span class="sub-h">本页</span>
-      <a href="#battle-tips">实战避坑 (Battle Tips)</a>
       <a href="#branches">走哪条路</a>
       <a href="#verify">谁来验怎么验</a>
+      <a href="#battle-tips">实战避坑</a>
       <a href="#skills">用到哪些 skill</a>
       <a href="#docs">原文与依据</a>
       </div>
@@ -191,24 +218,19 @@
       <h1><span class="num">01</span>需求</h1>
 <p class="lede">把「我想做个 X」变成一句话：谁在什么情况下用、用完他能做什么以前做不到的事。</p>
 <div class="note"><span class="tag t-must">方法论已覆盖</span>　这一步由 <code>anb-idea</code> 覆盖，完整。<br><br><b>为什么这一步重要：</b>这一步决定后面所有事。写错方向，后面每一步都在加固一个错误假设，而且越往后返工越贵。</div>
-<h2 id="battle-tips">实战避坑与作战原则 (Battle Tips)</h2>
-<p class="h2sub">来自 6 大作战面板中归属于<b>需求</b>阶段的实战守则。详见 <a href="cheatsheet.html">作战手卡全表 →</a></p>
-<div class="grid two"><div class="card" id="bt-agent-eng-01"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">01-01</span> 先配问题放回系统</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>Agent 直接动手，往往连目标、边界和依赖都没有对齐。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>先确认真实目标，再看系统结构：把问题放回它所属的层。</li><li>区分用户看见的结果和内部工程对象：先剪错误逻辑，再增加新逻辑。</li><li>复杂任务先拆成产物链：intent → spec → tickets → implementation → verification。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请先不要改代码：先确认真正目标、扫描系统结构、列出边界与依赖，再给出最小可行执行计划。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>计划必须指标输入、输出、验收和阻塞回退点。</div></div><div class="card" id="bt-creative-flow-02"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">04-02</span> 视频从想法到成片 / 先管前 2 秒和镜头</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>旁白塞太满、方向没定、细节越改越重，成片反而失去重点。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>先确定钩子、节奏和镜头功能，再写逐拍时间线。</li><li>每个镜头只承担一个信息或情绪任务。</li><li>用参考图、角色设定和镜头语言保持镜头一致。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请先给出前 2 秒钩子、镜头时间线、每镜头的动作与转场，再生成完整视频 Prompt。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>删掉不能服务主题、节奏或转化的镜头。</div></div><div class="card" id="bt-product-growth-01"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-01</span> 早期验证 / 不要把兴趣当需求</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>点赞、浏览和口头喜欢很容易，真实付出才能接近购买意愿。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>按用户付出排序：看过 → 收藏 → 留邮箱 → 回消息 → 试用 → 验收 → 预付 → 续费。</li><li>为每一级信号设最小样本和下一步动作。</li><li>把“有人感兴趣”与“有人愿买单”分成两个结论。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请把这个想法拆成信号阶梯：每一级需要用户付出什么、如何观察、什么结果才允许进入下一步？</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>没有最高成本信号前，不要把曝光写成 PMF。</div></div><div class="card" id="bt-product-growth-02"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">05-02</span> 竞品调研 / 先找切入口再做功能</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>资料很多，但没有形成目标用户、替代方案和可交付缺口。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>从真实用户问题出发，再翻译成用户会搜索的关键词。</li><li>按场景、价格、分发、交付和留存比较竞品。</li><li>把观察写成可验证假设，而不是一份链接堆。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请做竞品调研：用户任务 → 搜索词 → 竞品替代 → 未满足需求 → 可测试切入口，并标注证据源。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>每个结论都要能回到用户行为或公开证据。</div></div><div class="card" id="bt-data-research-04"><h3 style="margin-top:0"><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">06-04</span> 陌生领域 / 先建地图再深入</h3><p style="font-size:.86rem;color:var(--alert);margin:0 0 .5rem"><b>痛点：</b>资料散落，概念、人物、项目和来源互相混淆，学习路径不可见。</p><ul style="margin:0 0 .6rem;padding-left:1.1rem;font-size:.85rem;color:var(--muted)"><li>先建立实体页、概念页、来源页和关系页。</li><li>把读过的内容沉淀成问题清单和下一步研究动作。</li><li>为每个结论保留来源和时间，定期清理过期信息。</li></ul><pre style="margin:.4rem 0;padding:.6rem .8rem;font-size:.78rem;background:#20211d;color:#e6e4dc">请把这些资料整理成知识地图：实体、概念、关系、来源、证据等级和待验证问题。</pre><div style="background:var(--sunk);padding:.4rem .6rem;font-size:.8rem;border-left:3px solid var(--accent)"><b>验收判定：</b>地图要能指导下一次搜索，而不是只做漂亮目录。</div></div></div>
 <h2 id="branches">什么情况走哪条路</h2>
 <p class="h2sub">按<b>代价</b>排序，不按发生概率。先做便宜且能推翻结论的。点击跳到对应处理。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:36%">如果</th><th style="width:20%">去</th><th>为什么</th></tr></thead><tbody><tr><td>你说的是功能清单（"要有登录、能导出"）</td><td><a href="#b-func">功能清单不是问题</a></td><td>功能是解决方案，不是问题。跳过它会让你在验收时无从判断好坏。</td></tr><tr><td>你说的是品类（"用 AI 做内容"）</td><td><a href="#b-cat">品类不是用途</a></td><td>品类不是用途。问：谁、在哪一天、用它做什么。</td></tr><tr><td>你已经有一句话，但说不清"什么情况说明不该做"</td><td><a href="#b-falsify">缺一个可证伪的否定条件</a></td><td>缺这一句，你后面无法判断自己是不是错了。</td></tr><tr><td>你说得清用途和对象，但说不清"它给你什么"</td><td><a href="#b-hands-back">说得清用途，说不清产出</a></td><td>第五句问的是他能做什么，不是这东西还给他什么。这两个不一样，而第二个没人会主动写。</td></tr><tr><td>你的否定条件写着"做不出来就别做"，而你说"但人能判断出来"</td><td><a href="#b-human-vs-product">「人能判断出来」不等于「产品能判断」</a></td><td>"人能判断"不等于"产品能判断"。这两个一个听起来像另一个，而它们决定产品存不存在。</td></tr><tr><td>你有清晰的一句话，且否定条件可测</td><td><a href="#b-next">这一步过了</a></td><td>进入设计。</td></tr></tbody></table></div>
-<div class="card" id="b-func"><h3>功能清单不是问题</h3><p>「要有登录」是解决方案。要问的是：登录是为了让谁做什么？如果答案是"让每一个用户只能看到自己的数据"，那么真正的问题是隔离，而隔离可以用别的方式解决。<br><br><b>怎么改</b>：每个功能后面追问一句"它让用户能做什么以前做不到的事"。答不上来的功能，先不做。</p></div>
-<div class="card" id="b-cat"><h3>品类不是用途</h3><p>「用 AI 做内容」等于没说。它可以是任何人做任何事。<br><br><b>怎么改</b>：问三个具体问题——谁、在什么情况下、他今天没有更好的办法是因为什么。第三个问题是关键，它决定了这个产品有没有存在理由。</p></div>
-<div class="card" id="b-falsify"><h3>缺一个可证伪的否定条件</h3><p>「如果没人用」不是否定条件，那是任何产品都成立的废话。<br><br><b>怎么改</b>：写一个可以被测量的事件。例："如果五个指标拼出来的结论，和资深从业者凭经验判断的不一致超过三成，那这些指标不承载判断。"这句话在产品做出来之后能被验证。</p></div>
-<div class="card" id="b-hands-back"><h3>说得清用途，说不清产出</h3><p>六句里最容易漏的一句：<b>「它给你什么」</b>。<br><br>第四句问的是「他能做什么以前做不到的事」——那是<b>能力</b>；而「打开之后我拿到手的是什么」是<b>产物</b>，两个不同的槽位。<br><br>这不是吹毛求疵。<b>实测过</b>：让一个 agent 扮演陌生人、只看这一页，它准确复述出了用途和对象（exit test 按字面是通过的），然后说——「不知道打开之后它给我的是什么」。<br><br><b>怎么改</b>：写成一个<b>能用手的名词</b>。「一份每句都标了依据哪条政策的回复草稿」，不是「更好的回答」。</p></div>
-<div class="card" id="b-human-vs-product"><h3>「人能判断出来」不等于「产品能判断」</h3><p>否定条件最容易在这里失效。<br><br>实测里第二轮的信号是「如果归因做不了，就别做」。问到实际数据，第一反应是——<b>「平台数据里没有，但运营判断得出来」</b>。<br><br>那句话听起来像安慰。它不是：运营靠的是<b>经验</b>，而产品继承不了经验，经验也写不成规则。<b>信号已经触发，是那个回答把它盖住了。</b><br><br><b>怎么查</b>：问「他凭哪一条信息判断」。<br>· 指向另一个系统（仓库记录、承运商网站、往来邮件）→ 信号没触发，第一步是换输入<br>· 指向一次要去问人的沟通 → 产品只能做一半，说清是哪一半<br>· 指向经验（「看多了就知道」）→ <b>停机</b></p></div>
-<div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件——因为三个月后你会需要它。</p></div>
+<div class="grid two"><div class="card" id="b-func"><h3>功能清单不是问题</h3><p>「要有登录」是解决方案。要问的是：登录是为了让谁做什么？如果答案是"让每一个用户只能看到自己的数据"，那么真正的问题是隔离，而隔离可以用别的方式解决。<br><br><b>怎么改</b>：每个功能后面追问一句"它让用户能做什么以前做不到的事"。答不上来的功能，先不做。</p></div><div class="card" id="b-cat"><h3>品类不是用途</h3><p>「用 AI 做内容」等于没说。它可以是任何人做任何事。<br><br><b>怎么改</b>：问三个具体问题：谁、在什么情况下、他今天没有更好的办法是因为什么。第三个问题是关键，它决定了这个产品有没有存在理由。</p></div><div class="card" id="b-falsify"><h3>缺一个可证伪的否定条件</h3><p>「如果没人用」不是否定条件，那是任何产品都成立的废话。<br><br><b>怎么改</b>：写一个可以被测量的事件。例："如果五个指标拼出来的结论，和资深从业者凭经验判断的不一致超过三成，那这些指标不承载判断。"这句话在产品做出来之后能被验证。</p></div><div class="card" id="b-hands-back"><h3>说得清用途，说不清产出</h3><p>六句里最容易漏的一句：<b>「它给你什么」</b>。<br><br>第四句问的是「他能做什么以前做不到的事」，那是<b>能力</b>；而「打开之后我拿到手的是什么」是<b>产物</b>，两个不同的槽位。<br><br>这不是吹毛求疵。<b>实测过</b>：让一个 agent 扮演陌生人、只看这一页，它准确复述出了用途和对象（exit test 按字面是通过的），然后说「不知道打开之后它给我的是什么」。<br><br><b>怎么改</b>：写成一个<b>能用手的名词</b>。「一份每句都标了依据哪条政策的回复草稿」，不是「更好的回答」。</p></div><div class="card" id="b-human-vs-product"><h3>「人能判断出来」不等于「产品能判断」</h3><p>否定条件最容易在这里失效。<br><br>实测里第二轮的信号是「如果归因做不了，就别做」。问到实际数据，第一反应是<b>「平台数据里没有，但运营判断得出来」</b>。<br><br>那句话听起来像安慰。它不是：运营靠的是<b>经验</b>，而产品继承不了经验，经验也写不成规则。<b>信号已经触发，是那个回答把它盖住了。</b><br><br><b>怎么查</b>：问「他凭哪一条信息判断」。<br>· 指向另一个系统（仓库记录、承运商网站、往来邮件）→ 信号没触发，第一步是换输入<br>· 指向一次要去问人的沟通 → 产品只能做一半，说清是哪一半<br>· 指向经验（「看多了就知道」）→ <b>停机</b></p></div><div class="card" id="b-next"><h3>这一步过了</h3><p>进入下一步。如果这是一个大产品，建议在这里停下来，把这一步的产出写成文件，因为三个月后你会需要它。</p></div></div>
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>把六句念给一个不做这行的人，他能复述出用途、对象、以及它会还给他什么</td><td>他能说出"所以你是在帮谁解决什么"，以及"所以你拿到手的是什么"</td></tr><tr><td>你的否定条件是一个可以被测量的事件</td><td>不是"如果没人用"，而是"如果 X 和 Y 不一致超过三成"</td></tr><tr><td>否定条件里说的是"产品能做到",不是"人能做到"</td><td>问一句：这个判断凭哪一条信息？说得出具体来源，条件没触发；只能答"经验"，条件已经触发了</td></tr><tr><td>写下了"这一步需要谁参与"</td><td>如果需要别人而你找不到，现在就记成未通过</td></tr></tbody></table></div>
+<h2 id="battle-tips">实战避坑守则 (Battle Tips)</h2>
+<p class="h2sub">归属于<b>需求</b>阶段的实战守则摘要。完整复制口令见 <a href="cheatsheet.html">作战手卡全表</a>。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:26%">守则与手卡入口</th><th style="width:37%">典型痛点</th><th>验收判定</th></tr></thead><tbody><tr id="bt-agent-eng-01"><td><a href="cheatsheet.html#agent-eng-01"><code>01-01</code></a> <b>先配问题放回系统</b></td><td>Agent 直接动手，往往连目标、边界和依赖都没有对齐。</td><td>计划必须指标输入、输出、验收和阻塞回退点。</td></tr><tr id="bt-creative-flow-02"><td><a href="cheatsheet.html#creative-flow-02"><code>04-02</code></a> <b>视频从想法到成片 / 先管前 2 秒和镜头</b></td><td>旁白塞太满、方向没定、细节越改越重，成片反而失去重点。</td><td>删掉不能服务主题、节奏或转化的镜头。</td></tr><tr id="bt-product-growth-01"><td><a href="cheatsheet.html#product-growth-01"><code>05-01</code></a> <b>早期验证 / 不要把兴趣当需求</b></td><td>点赞、浏览和口头喜欢很容易，真实付出才能接近购买意愿。</td><td>没有最高成本信号前，不要把曝光写成 PMF。</td></tr><tr id="bt-product-growth-02"><td><a href="cheatsheet.html#product-growth-02"><code>05-02</code></a> <b>竞品调研 / 先找切入口再做功能</b></td><td>资料很多，但没有形成目标用户、替代方案和可交付缺口。</td><td>每个结论都要能回到用户行为或公开证据。</td></tr><tr id="bt-data-research-04"><td><a href="cheatsheet.html#data-research-04"><code>06-04</code></a> <b>陌生领域 / 先建地图再深入</b></td><td>资料散落，概念、人物、项目和来源互相混淆，学习路径不可见。</td><td>地图要能指导下一次搜索，而不是只做漂亮目录。</td></tr></tbody></table></div>
 <h2 id="skills">这一步用到哪些 skill</h2>
-<ul><li><a href="skills.html#interview-me"><code>interview-me</code></a> — 把一句话想法问成可验收的意图。需求阶段的内核。</li><li><a href="skills.html#anb-idea"><code>anb-idea</code></a> — 五句话写成想法，含可证伪的否定条件。</li><li><a href="skills.html#grilling"><code>grilling</code></a> — 攻击已有草稿，把含糊处问空。</li><li><a href="skills.html#grill-me"><code>grill-me</code></a> — 七行壳，转调 grilling。</li><li><a href="skills.html#grill-with-docs"><code>grill-with-docs</code></a> — 拷问同时沉淀术语表与 ADR。</li><li><a href="skills.html#wayfinder"><code>wayfinder</code></a> — 目标大到一个会话装不下时，先画决策地图。</li><li><a href="skills.html#agent-delivery-router"><code>agent-delivery-router</code></a> — 先定车道：incident/exploration/capability/fast。</li></ul>
-<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="tables-need.html">看 需求 的表 →</a></div>
+<ul><li><a href="skills.html#interview-me"><code>interview-me</code></a>：把一句话想法问成可验收的意图。需求阶段的内核。</li><li><a href="skills.html#anb-idea"><code>anb-idea</code></a>：五句话写成想法，含可证伪的否定条件。</li><li><a href="skills.html#grilling"><code>grilling</code></a>：攻击已有草稿，把含糊处问空。</li><li><a href="skills.html#grill-me"><code>grill-me</code></a>：七行壳，转调 grilling。</li><li><a href="skills.html#grill-with-docs"><code>grill-with-docs</code></a>：拷问同时沉淀术语表与 ADR。</li><li><a href="skills.html#wayfinder"><code>wayfinder</code></a>：目标大到一个会话装不下时，先画决策地图。</li><li><a href="skills.html#agent-delivery-router"><code>agent-delivery-router</code></a>：先定车道：incident/exploration/capability/fast。</li><li><a href="skills.html#poteto-mode"><code>poteto-mode</code></a>：插件总入口：按任务类型转具体 playbook。总开销约 4.2k token/会话。</li><li><a href="skills.html#sharpen"><code>sharpen</code></a>：把任务改深而不是改大，然后重写 prompt。</li><li><a href="skills.html#in-your-own-words"><code>in-your-own-words</code></a>：复述目标与问题，强制暴露理解偏差。</li><li><a href="skills.html#principle-never-block-on-the-human"><code>principle-never-block-on-the-human</code></a>：可逆的事别问"我可以做 X 吗"。能靠跑一次回答的，不占用人。</li></ul>
+<div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="tables-need.html">查看 需求 的样张表</a></div>
 <h2 id="docs">原文与依据</h2>
 <ul><li><a href="docs.html#decision-tree.html">决策树：三个问题定位到阶段</a></li><li><a href="docs.html#failure-atlas.html">失败图鉴：第五类「找不到≠不存在」在这里最常见</a></li></ul>
       <div class="nextprev">

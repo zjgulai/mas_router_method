@@ -111,3 +111,21 @@ test('build: goes red on an uppercase .HTML orphan', async () => {
     await rm(site, { recursive: true, force: true });
   }
 });
+
+test('build: generated pages contain zero emoji or decorative unicode glyphs', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const siteDir = join(ROOT, 'docs', 'site');
+  const files = (await readdir(siteDir, { withFileTypes: true }))
+    .filter((e) => e.isFile() && e.name.endsWith('.html'))
+    .map((e) => e.name);
+  const emojiRe = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2460}-\u{24FF}]/u;
+  for (const name of files) {
+    const html = await readFile(join(siteDir, name), 'utf8');
+    // architecture.html embeds the arch-diagram engine inside an iframe srcdoc;
+    // inspect the outer page shell and prose outside srcdoc.
+    const withoutSrcdoc = html.replace(/srcdoc="[^"]*"/g, '');
+    const m = emojiRe.exec(withoutSrcdoc);
+    assert.equal(m, null, `docs/site/${name} contains banned emoji/symbol: ${m ? m[0] : ''}`);
+  }
+});
+

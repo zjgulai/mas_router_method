@@ -1,0 +1,1428 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全产品架构全景图 · Agent Native Builder</title>
+<meta name="description" content="MAS Router Method 全产品架构全景图：Recipe Agent、Main Agent、ANB 方法论与本地开发工具链的五层拓扑与单向依赖契约。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23211015'/%3E%3Ctext x='32' y='44' font-size='32' font-weight='700' text-anchor='middle' fill='%23f4dce3' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme:light;
+    /* 暖粉色品牌基底：暖雾粉、陶土深莓与温润黑檀 */
+    --ground:#f7f1f2;--surface:#fcf8f9;--surface-elev:#ffffff;
+    --sunk:#efe3e6;--deep:#d8c1c7;
+    --ink:#211216;--muted:#4d3139;--faint:#6b4953;
+    --accent:#8c2a4b;--accent-hover:#6b1d37;--accent2:#f4dce3;--accent-soft:#f9eef1;
+    --alert:#8a1f24;--alert2:#f8dada;
+    --warn:#6b460a;--warn2:#f5e6cc;
+    --side-bg:#211015;--side-border:#3b2029;--side-text:#efe2e6;--side-muted:#b5949e;
+    --sans:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",-apple-system,BlinkMacSystemFont,"Microsoft YaHei",system-ui,sans-serif;
+    --serif:"Source Han Serif SC","Noto Serif CJK SC","Songti SC",Georgia,ui-serif,serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-8:48px;
+  }
+  *{box-sizing:border-box}
+  ::selection{background:var(--accent2);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.75 var(--sans);
+       -webkit-font-smoothing:antialiased;accent-color:var(--accent)}
+  a{color:var(--accent);text-underline-offset:.24em;text-decoration-color:var(--deep);transition:color .12s,text-decoration-color .12s}
+  a:hover{color:var(--accent-hover);text-decoration-color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:256px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--side-bg);color:var(--side-text);position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.5rem 0 2.5rem;border-right:1px solid var(--side-border)}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none;font-size:.82rem;color:var(--side-text);padding:.35rem .95rem}
+  .brand{display:block;padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--side-border);margin-bottom:1.1rem}
+  .brand .home{display:flex;align-items:center;gap:.5rem;min-height:28px;color:#faf4f5;text-decoration:none;
+               font:650 1.24rem/1.2 var(--serif);letter-spacing:-.02em}
+  .brand .home::before{content:'';display:inline-block;width:8px;height:8px;background:#c45a7c;border-radius:1px}
+  .brand-sub{display:block;font-size:.76rem;color:var(--side-muted);letter-spacing:.03em;margin-top:.32rem}
+  .nav{padding:0 .75rem}
+  .nav-g{margin-bottom:1.3rem}
+  .nav-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);
+         padding:.3rem .75rem .42rem}
+  .nav a{display:block;color:var(--side-text);text-decoration:none;font-size:.88rem;padding:.42rem .75rem;
+         border-radius:3px;line-height:1.42;border-left:2px solid transparent}
+  .nav a:hover{background:#301820;color:#fff}
+  .nav a.on{background:var(--accent2);color:var(--ink);font-weight:650;border-left-color:var(--accent)}
+  .subnav{border-top:1px solid var(--side-border);margin:.75rem 1.25rem 0;padding-top:1rem}
+  .sub-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);margin-bottom:.45rem}
+  .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.83rem;
+            padding:.38rem 0 .38rem .75rem;
+            border-left:1px solid var(--side-border);line-height:1.42}
+  .subnav a:hover{color:#fff;border-left-color:#c45a7c}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2.8rem,4.8vw,4.5rem) clamp(24px,5vw,76px) 5.2rem;
+                max-width:min(86rem,100%);width:100%}
+  .content footer{margin:0 clamp(24px,5vw,76px) 0;padding:1.6rem 1.8rem;background:var(--sunk);
+                  border-top:1px solid var(--deep);font-size:.84rem;color:var(--muted);line-height:1.78;max-width:min(86rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。纯 CSS 几何箭头，禁用任何字符图标。 */
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.7rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-toggle::after{content:'';display:inline-block;width:6px;height:6px;
+                       border-right:1.5px solid var(--side-muted);border-bottom:1.5px solid var(--side-muted);
+                       transform:rotate(45deg);margin-left:.4rem}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.45rem}
+  }
+  .crumb{font-size:.84rem;color:var(--faint);margin-bottom:1rem;font-variant-numeric:tabular-nums}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:650;letter-spacing:-.022em;line-height:1.15;
+     font-size:clamp(2rem,4.4vw,2.9rem);margin:0 0 1.05rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h1 .num{color:var(--accent);margin-right:.55rem;font-variant-numeric:tabular-nums}
+  .lede{font-size:clamp(1.04rem,1.6vw,1.16rem);color:var(--muted);max-width:76ch;margin:0 0 2.3rem;line-height:1.76;text-wrap:pretty}
+  .lede strong,.lede b{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.35rem,2.5vw,1.72rem);font-weight:650;letter-spacing:-.016em;
+     margin:3.6rem 0 .65rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h2:first-of-type{margin-top:2.4rem}
+  .h2sub{font-size:.95rem;color:var(--faint);margin:0 0 1.45rem;max-width:76ch;line-height:1.7}
+  h3{font-size:1.06rem;font-weight:650;margin:2rem 0 .6rem;text-wrap:balance}
+  p{margin:0 0 1.15rem;max-width:76ch;text-wrap:pretty}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
+  pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
+      font-family:var(--mono);font-size:.84rem;line-height:1.68;border:1px solid var(--side-border);border-radius:2px}
+  .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
+  .card h3{margin-top:0}
+  .card p{max-width:none;line-height:1.7}
+  a.card{transition:border-color .14s,background-color .14s}
+  a.card:hover{border-color:var(--accent);background:#fff}
+  main>.card{margin:1.15rem 0}
+  .grid{display:grid;gap:1.15rem;margin:1.25rem 0 1.8rem}
+  .grid .card{margin:0}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.85rem 0 1.6rem;
+        border:1px solid var(--deep);font-variant-numeric:tabular-nums}
+  .tablewrap{overflow-x:auto;max-width:100%}
+  thead th{font-size:.82rem;font-weight:650;color:var(--muted);background:var(--accent-soft);
+           text-align:left;padding:.95rem 1.2rem .85rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.91rem;color:var(--muted);padding:.92rem 1.2rem;border-bottom:1px solid var(--sunk);vertical-align:top;line-height:1.68}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:var(--accent-soft)}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.76rem;font-weight:650;padding:.14rem .52rem;margin-right:.35rem;
+       white-space:nowrap;border-radius:2px;font-variant-numeric:tabular-nums}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-pstack{background:#e8e0f2;color:#4a2c6b}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  /* 告别廉价的 3px 粗左边框套路，采用 1px 精密玫瑰陶框 + 浅雾粉底色 */
+  .note{background:var(--accent-soft);padding:1.4rem 1.7rem;border:1px solid var(--deep);
+        margin:1.6rem 0 2rem;font-size:.95rem;color:var(--muted);line-height:1.74}
+  .note.warn{border-color:#d9a6a6;background:var(--alert2);color:#4a1818}
+  .note.warn b{color:#2e0d0d}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);border:1px solid var(--deep);padding:1.5rem 1.8rem;margin:1.6rem 0 2.2rem}
+  .cover .row{display:flex;gap:1.25rem;align-items:baseline;flex-wrap:wrap;font-size:.94rem;color:var(--muted);
+              padding:.6rem 0;border-bottom:1px solid var(--sunk);line-height:1.68}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 8.5rem;color:var(--faint);font-size:.84rem;font-weight:600}
+  .cover .v{flex:1;min-width:220px}
+  .nextprev{display:flex;justify-content:space-between;gap:1.5rem;margin-top:4rem;padding-top:1.6rem;
+            border-top:1px solid var(--deep);font-size:.94rem}
+  .nextprev a{text-decoration:none;font-weight:600}
+  .nextprev .lbl{display:block;font-size:.78rem;color:var(--faint);font-weight:400;margin-bottom:.2rem}
+  footer{margin-top:3.5rem;padding:1.5rem 1.8rem;background:var(--sunk);font-size:.84rem;color:var(--muted);line-height:1.78}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.35rem;margin:.6rem 0 1.4rem}
+  li{margin-bottom:.52rem;font-size:.95rem;color:var(--muted);line-height:1.72;max-width:76ch}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。空字段保持可读对比度 >= 4.5:1 */
+  .tb-index{background:var(--surface);border:1px solid var(--deep);padding:1.15rem 1.45rem;margin:1.4rem 0 1.8rem;font-size:.9rem}
+  .tb-index a{display:flex;gap:.9rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.42rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent);color:#fff}
+  .tb-index code{background:var(--accent2);padding:.1rem .48rem;color:var(--accent);font-weight:650;
+    flex:0 0 5.5rem;text-align:center}
+  .tb-row{margin:2.4rem 0 2.8rem}
+  .tb-row h3{margin:0 0 .7rem;font-family:var(--mono);font-size:.95rem}
+  .tb-row h3 code{background:var(--accent);color:#fff;padding:.18rem .65rem;font-size:.88rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:12rem;color:var(--muted);font-weight:600;font-size:.84rem}
+  table.tb-fields td:last-child{font-size:.92rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--faint)}
+  .tb-no{color:var(--faint);font-style:italic;font-size:.84rem}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:7rem;font-size:.78rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
+    <details open>
+      <summary class="nav-toggle">站点导航</summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="architecture.html" class="on">架构全景</a>
+      <a href="cheatsheet.html">作战手卡</a>
+      <a href="agent-graph.html">Agent 图谱</a>
+      <a href="toolchain.html">工具链</a>
+      <a href="data-design.html">数据产品设计</a>
+      <a href="data-layers.html">8+3 层契约</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
+      </div>
+      </nav>
+      <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#blueprint">交互式架构蓝图</a>
+      <a href="#layers">五层职责与护栏</a>
+      <a href="#relations">跨模块调用流向</a>
+      </div>
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb"><a href="./">总览</a> / 架构全景</div>
+      <style>.arch-frame-wrap{background:#190c11;border:1px solid var(--deep);border-radius:2px;margin:1.5rem 0 2.6rem;overflow:hidden}.arch-frame-bar{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.25rem;background:var(--side-bg);color:var(--side-text);font-size:.82rem;border-bottom:1px solid var(--side-border)}.arch-frame-bar code{background:#301820;color:#f4dce3;padding:.12rem .48rem}.arch-frame{display:block;width:100%;height:1220px;border:0;background:#190c11}@media(max-width:1100px){.arch-frame{height:980px}}@media(max-width:760px){.arch-frame{height:760px}}</style>
+<h1>全产品架构全景图</h1>
+<p class="lede">本仓库承载两条核心 Agent 产品线（<b>Recipe Agent</b> 品牌视频克隆生成与 <b>Main Agent</b> 方法论与数据咨询）、一套可执行的方法论门禁（<b>ANB 7+1 阶段与 8×8 数据矩阵</b>），以及本地开发态三件套（<b>Nowledge Mem + Lody + Magpie</b>）。</p>
+<div class="note"><b>架构三条死律。</b><br>1. <b>依赖单向不可逆</b>：<code>apps/workbench</code> 与 <code>apps/bot-gateway</code> 严禁互相 import，只能单向调用 <code>packages/core</code> 或 <code>packages/consult</code>；<code>packages/shared</code> 零内部依赖。<br>2. <b>三大唯一真源</b>：领域对象唯一真源在 <code>packages/shared</code>（Zod 边界强校验）；四个品牌护栏唯一真源在 <code>packages/core/src/seed/brands.ts</code>；生命周期阶段唯一真源在 <code>work/schema.yml</code>。<br>3. <b>分层归因铁律</b>：修复 Agent 质量问题严格按 <code>eval → data → tool → prompt</code> 顺序排查，严禁跳过底层数据与工具契约直接改提示词。</div>
+<h2 id="blueprint">一、交互式终端蓝图 (@rokoai/arch-diagram)</h2>
+<p class="h2sub">支持悬停高亮上下游链路与实时信号追踪（Live Trace）。定义源：<code>architecture/mas-router-panorama.spec.json</code>。</p>
+<div class="arch-frame-wrap"><div class="arch-frame-bar"><span>MAS Router Method · 13 核心节点 · 12 条类型化数据流</span><code>architecture/mas-router-panorama.spec.json</code></div><iframe class="arch-frame" title="MAS Router Method 全产品架构全景图" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;zh-CN&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;title&gt;MAS Router Method 全产品架构全景图&lt;/title&gt;
+&lt;style&gt;
+:root {
+  --bg: #0b0f14;
+  --panel: #0e141b;
+  --text: #c9d1d9;
+  --head: #e6edf3;
+  --dim: #7d8590;
+  --faint: #3a4450;
+  --cyan: #5ad1e6;
+  --blue: #79a8ff;
+  --green: #6fdc8c;
+  --purple: #b48cff;
+  --amber: #e8b25d;
+  --orange: #ff9e3d;
+  --red: #ff7b72;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body {
+  font: 13px/1.55 &quot;JetBrains Mono&quot;, &quot;SF Mono&quot;, Menlo, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, monospace;
+  padding: 24px 16px;
+}
+#fit { margin: 0 auto; overflow: hidden; }
+#stage { position: relative; transform-origin: 0 0; }
+svg#wires { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+
+.abs { position: absolute; }
+.box {
+  position: absolute; background: var(--panel);
+  border: 1.5px solid var(--c, var(--faint)); padding: 10px 14px;
+  transition: background-color .18s ease, box-shadow .18s ease;
+}
+.box:hover {
+  background: color-mix(in srgb, var(--c, var(--faint)) 12%, var(--panel));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--c, var(--faint)) 35%, transparent), 0 0 18px color-mix(in srgb, var(--c, var(--faint)) 18%, transparent);
+}
+.box.dash, .box.is-none, .box.is-off, .box.is-dev { border-style: dashed; }
+.box.is-none &gt; :not(.st) { opacity: .6; }
+.ttl { text-align: center; font-weight: 700; color: var(--head); }
+.sub { text-align: center; color: var(--c); }
+.c { text-align: center; }
+.dim { color: var(--dim); }
+.b { font-weight: 700; }
+.w { color: var(--head); }
+.cy { color: var(--cyan); } .bl { color: var(--blue); } .gr { color: var(--green); }
+.pu { color: var(--purple); } .am { color: var(--amber); } .rd { color: var(--red); }
+.tag { display: inline-block; padding: 0 6px; border: 1px solid currentColor; color: var(--c); font-size: 11px; line-height: 17px; }
+
+/* header */
+#head { left: 0; right: 0; top: 0; text-align: center; letter-spacing: .5px; }
+#head .t { font-weight: 700; color: var(--head); }
+#head .rule { border-top: 1px dashed var(--faint); margin: 12px 0 10px; }
+.sq { display: inline-block; width: 9px; height: 9px; margin-right: 6px; vertical-align: 0; }
+.lg { margin: 0 12px; color: var(--dim); white-space: nowrap; }
+
+/* groups: fieldset-like outline with the legend cutting the border */
+.group { position: absolute; border: 1px dashed var(--c, var(--faint)); }
+.group.solid { border-style: solid; }
+.group .glg { position: absolute; top: -10px; left: 16px; padding: 0 8px; background: var(--bg); color: var(--c); font-size: 12px; line-height: 18px; white-space: nowrap; }
+.note { font-size: 12px; }
+
+/* module table */
+.mods { margin-top: 8px; width: 100%; border-collapse: collapse; }
+.mods td { padding: 0 4px; height: 26px; white-space: nowrap; }
+.mods td.n { color: var(--head); }
+.mods td.p { color: var(--dim); font-size: 11px; }
+.mods td.d { text-align: right; }
+.bar { display: inline-block; height: 9px; vertical-align: 0; margin-right: 6px; }
+.hr { border-top: 1px dashed var(--faint); margin: 8px 0 6px; }
+
+/* pipeline chips */
+.pipe { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px 0 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--c); padding: 2px 7px; color: var(--c); font-size: 12px; white-space: nowrap; }
+.chip.q { border-style: dashed; }
+.arr { color: var(--dim); }
+
+/* rail: side panel whose items line up with the rows they talk to */
+.rail .item { position: absolute; left: 14px; right: 12px; }
+.rail .vl { position: absolute; left: 19px; top: 64px; bottom: 20px; border-left: 1px dashed var(--faint); }
+.rail .ind { padding-left: 16px; }
+.dia { color: var(--c); }
+.hl { background: color-mix(in srgb, var(--c) 16%, var(--panel)); margin: 0 -12px 0 -14px; padding: 2px 12px 2px 14px; }
+
+/* status badges sit on the top border */
+.st { position: absolute; top: -10px; right: 10px; padding: 0 6px; background: var(--bg);
+      font-size: 11px; line-height: 18px; white-space: nowrap; }
+.st::before { content: &quot;●&quot;; margin-right: 4px; display: inline-block; }
+.st.ok { color: var(--green); } .st.ok::before { animation: pulse 1.6s ease-in-out infinite; }
+.st.warn { color: var(--orange); } .st.warn::before { content: &quot;▲&quot;; animation: pulse .8s ease-in-out infinite; }
+.st.dev { color: var(--amber); } .st.dev::before { content: &quot;◐&quot;; }
+.st.off { color: var(--red); } .st.off::before { content: &quot;■&quot;; }
+.st.none { color: var(--dim); } .st.none::before { content: &quot;○&quot;; }
+.st.done { color: var(--green); opacity: .75; } .st.done::before { content: &quot;✓&quot;; }
+.stl { position: static; background: none; margin: 0 10px; font-size: 12px; }
+@keyframes pulse { 50% { opacity: .25; } }
+
+/* log + terminal footer */
+#log { border: 1px solid var(--faint); padding: 14px 16px 10px; }
+#log .legend { position: absolute; top: -10px; left: 20px; background: var(--bg); padding: 0 8px; color: var(--dim); }
+#log .row { display: grid; white-space: nowrap; }
+#log .row &gt; span:last-child { overflow: hidden; text-overflow: ellipsis; }
+#log .live { overflow: hidden; }
+#log .live .row { height: 20px; line-height: 20px; }
+#log .row.new { animation: flash 1s ease-out; }
+@keyframes flash { from { background: #1d2a1f; } to { background: transparent; } }
+.livedot { color: var(--green); animation: pulse 1s ease-in-out infinite; }
+.cursor { display: inline-block; width: 9px; height: 15px; background: var(--green); vertical-align: -2px; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.flow { animation: flow .6s linear infinite; }
+@keyframes flow { from { stroke-dashoffset: 18; } to { stroke-dashoffset: 0; } }
+.lbl { font: 11px &quot;JetBrains Mono&quot;, &quot;SF Mono&quot;, Menlo, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, monospace; }
+
+@media (prefers-reduced-motion: reduce) { .flow, .cursor, .st::before { animation: none !important; } }
+.check .flow, .check .cursor, .check .st::before { animation: none !important; }
+/* ?loop=4: every CSS period divides 4s so recordings repeat without a seam */
+.loop .flow { animation-duration: .5s; }
+.loop .cursor { animation-duration: 1s; }
+.loop .st.ok::before { animation-duration: 2s; }
+.check .box { transition: none; }
+
+/* per-language CJK / Thai fonts (html lang comes from spec.lang) */
+html:lang(ja) body, html:lang(ja) .lbl { font-family: &quot;JetBrains Mono&quot;, &quot;SF Mono&quot;, Menlo, &quot;Hiragino Sans&quot;, &quot;Yu Gothic&quot;, &quot;Noto Sans JP&quot;, monospace; }
+html:lang(ko) body, html:lang(ko) .lbl { font-family: &quot;JetBrains Mono&quot;, &quot;SF Mono&quot;, Menlo, &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;Noto Sans KR&quot;, monospace; }
+html:lang(th) body, html:lang(th) .lbl { font-family: &quot;JetBrains Mono&quot;, &quot;SF Mono&quot;, Menlo, Thonburi, &quot;Leelawadee UI&quot;, &quot;Noto Sans Thai&quot;, monospace; }
+
+&lt;/style&gt;
+&lt;style&gt;:root{--bg:#190c11;--panel:#241219;--text:#efe2e6;--head:#faf4f5;--dim:#b5949e;--faint:#593843;--cyan:#e899b1;--blue:#f0b6c8;--green:#7ad6a6;--purple:#d4a5f5;--amber:#f2c17d;}&lt;/style&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;script id=&quot;spec&quot; type=&quot;application/json&quot;&gt;
+{
+ &quot;lang&quot;: &quot;zh-CN&quot;,
+ &quot;width&quot;: 1280,
+ &quot;pageTitle&quot;: &quot;MAS Router Method 全产品架构全景图&quot;,
+ &quot;title&quot;: &quot;MAS Router Method · 全产品架构全景图 · {gr:Recipe Agent} + {cy:Main Agent} + {am:ANB 方法论} + {pu:开发工具链}&quot;,
+ &quot;subtitle&quot;: &quot;依赖铁律：单向不可逆 (apps → core/consult → shared/feishu) · 零 Emoji · 单源真源 (packages/shared + brands.ts + work/schema.yml)&quot;,
+ &quot;layers&quot;: [
+  {
+   &quot;id&quot;: &quot;surface&quot;,
+   &quot;label&quot;: &quot;交互入口 (Surfaces)&quot;,
+   &quot;color&quot;: &quot;blue&quot;
+  },
+  {
+   &quot;id&quot;: &quot;engine&quot;,
+   &quot;label&quot;: &quot;核心运行时与咨询引擎 (Engines)&quot;,
+   &quot;color&quot;: &quot;green&quot;
+  },
+  {
+   &quot;id&quot;: &quot;contract&quot;,
+   &quot;label&quot;: &quot;契约、评测与适配底座 (Contracts &amp; Gates)&quot;,
+   &quot;color&quot;: &quot;cyan&quot;
+  },
+  {
+   &quot;id&quot;: &quot;method&quot;,
+   &quot;label&quot;: &quot;ANB 方法论与生成站点 (Methodology &amp; Site)&quot;,
+   &quot;color&quot;: &quot;amber&quot;
+  },
+  {
+   &quot;id&quot;: &quot;toolchain&quot;,
+   &quot;label&quot;: &quot;本地开发工具链 (Agent Toolchain)&quot;,
+   &quot;color&quot;: &quot;purple&quot;
+  }
+ ],
+ &quot;flows&quot;: [
+  {
+   &quot;id&quot;: &quot;call&quot;,
+   &quot;label&quot;: &quot;运行时调用 / 协议转发&quot;,
+   &quot;color&quot;: &quot;green&quot;
+  },
+  {
+   &quot;id&quot;: &quot;dep&quot;,
+   &quot;label&quot;: &quot;单向模块依赖 / 契约约束&quot;,
+   &quot;color&quot;: &quot;cyan&quot;,
+   &quot;dash&quot;: true
+  },
+  {
+   &quot;id&quot;: &quot;gate&quot;,
+   &quot;label&quot;: &quot;门禁校验 / 站点生成&quot;,
+   &quot;color&quot;: &quot;amber&quot;
+  },
+  {
+   &quot;id&quot;: &quot;dev&quot;,
+   &quot;label&quot;: &quot;开发态注入 / 路由代理&quot;,
+   &quot;color&quot;: &quot;purple&quot;,
+   &quot;dash&quot;: true
+  }
+ ],
+ &quot;groups&quot;: [
+  {
+   &quot;id&quot;: &quot;g-surfaces&quot;,
+   &quot;label&quot;: &quot;双交付面 + 知识门户 · 严禁互相 import · 共享底座&quot;,
+   &quot;color&quot;: &quot;blue&quot;,
+   &quot;x&quot;: 16,
+   &quot;y&quot;: 182,
+   &quot;w&quot;: 896,
+   &quot;h&quot;: 176
+  },
+  {
+   &quot;id&quot;: &quot;g-engines&quot;,
+   &quot;label&quot;: &quot;核心双引擎 · Recipe Agent + Main Agent&quot;,
+   &quot;color&quot;: &quot;green&quot;,
+   &quot;solid&quot;: true,
+   &quot;labelRight&quot;: true,
+   &quot;x&quot;: 16,
+   &quot;y&quot;: 424,
+   &quot;w&quot;: 896,
+   &quot;h&quot;: 244
+  },
+  {
+   &quot;id&quot;: &quot;g-contracts&quot;,
+   &quot;label&quot;: &quot;Schema 边界 + 飞书协议 + 评测底座&quot;,
+   &quot;color&quot;: &quot;cyan&quot;,
+   &quot;labelRight&quot;: true,
+   &quot;x&quot;: 16,
+   &quot;y&quot;: 734,
+   &quot;w&quot;: 896,
+   &quot;h&quot;: 212
+  },
+  {
+   &quot;id&quot;: &quot;g-governance&quot;,
+   &quot;label&quot;: &quot;ANB 治理与数据矩阵 · 单一真源驱动站点与检查器&quot;,
+   &quot;color&quot;: &quot;amber&quot;,
+   &quot;x&quot;: 16,
+   &quot;y&quot;: 1012,
+   &quot;w&quot;: 896,
+   &quot;h&quot;: 172
+  },
+  {
+   &quot;id&quot;: &quot;g-toolchain&quot;,
+   &quot;label&quot;: &quot;开发态三件套 · 记忆 → 调度 → 路由&quot;,
+   &quot;color&quot;: &quot;purple&quot;,
+   &quot;x&quot;: 936,
+   &quot;y&quot;: 182,
+   &quot;w&quot;: 328,
+   &quot;h&quot;: 1002
+  }
+ ],
+ &quot;nodes&quot;: [
+  {
+   &quot;id&quot;: &quot;workbench&quot;,
+   &quot;short&quot;: &quot;workbench&quot;,
+   &quot;layer&quot;: &quot;surface&quot;,
+   &quot;x&quot;: 32,
+   &quot;y&quot;: 208,
+   &quot;w&quot;: 272,
+   &quot;h&quot;: 134,
+   &quot;title&quot;: &quot;apps/workbench&quot;,
+   &quot;sub&quot;: &quot;Operator 审查台 · Next.js&quot;,
+   &quot;lines&quot;: [
+    &quot;Recipe 审查队列 · Run 轨迹回放&quot;,
+    &quot;品牌护栏编辑 · 评测分数对账&quot;
+   ],
+   &quot;status&quot;: &quot;dev&quot;
+  },
+  {
+   &quot;id&quot;: &quot;bot-gw&quot;,
+   &quot;short&quot;: &quot;bot-gateway&quot;,
+   &quot;layer&quot;: &quot;surface&quot;,
+   &quot;x&quot;: 328,
+   &quot;y&quot;: 208,
+   &quot;w&quot;: 272,
+   &quot;h&quot;: 134,
+   &quot;title&quot;: &quot;apps/bot-gateway&quot;,
+   &quot;sub&quot;: &quot;飞书交付面 · WS 长连接 + HTTP&quot;,
+   &quot;lines&quot;: [
+    &quot;事件去重 · 3s 回执 · 会话分桶队列&quot;,
+    &quot;分流 /recipe 生成与群内咨询提问&quot;
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;anb-site&quot;,
+   &quot;short&quot;: &quot;docs/site&quot;,
+   &quot;layer&quot;: &quot;method&quot;,
+   &quot;x&quot;: 624,
+   &quot;y&quot;: 208,
+   &quot;w&quot;: 272,
+   &quot;h&quot;: 134,
+   &quot;title&quot;: &quot;docs/site · ANB 知识门户&quot;,
+   &quot;sub&quot;: &quot;29 生成页 + 8 原始档案&quot;,
+   &quot;lines&quot;: [
+    &quot;7 阶段 + 管理 · 8×8 矩阵 · 13 表&quot;,
+    &quot;作战手卡 36 条 · 工具链 · 图谱&quot;
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;core&quot;,
+   &quot;short&quot;: &quot;@mas/core&quot;,
+   &quot;layer&quot;: &quot;engine&quot;,
+   &quot;x&quot;: 32,
+   &quot;y&quot;: 452,
+   &quot;w&quot;: 424,
+   &quot;h&quot;: 200,
+   &quot;title&quot;: &quot;packages/core · Recipe Agent&quot;,
+   &quot;sub&quot;: &quot;run-agent.ts 单文件主循环 · createRuntime()&quot;,
+   &quot;rows&quot;: [
+    {
+     &quot;name&quot;: &quot;run-agent.ts&quot;,
+     &quot;desc&quot;: &quot;步数记录 · 预算双保险 · 累计计费&quot;
+    },
+    {
+     &quot;name&quot;: &quot;tools/brand.ts&quot;,
+     &quot;desc&quot;: &quot;Brand · Reference · Recipe · Vision&quot;
+    },
+    {
+     &quot;name&quot;: &quot;tools/result.ts&quot;,
+     &quot;desc&quot;: &quot;ok / err / guard · 失败即值&quot;
+    },
+    {
+     &quot;name&quot;: &quot;seed/brands.ts&quot;,
+     &quot;desc&quot;: &quot;4 品牌画像唯一真源&quot;
+    }
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;consult&quot;,
+   &quot;short&quot;: &quot;@mas/consult&quot;,
+   &quot;layer&quot;: &quot;engine&quot;,
+   &quot;x&quot;: 476,
+   &quot;y&quot;: 452,
+   &quot;w&quot;: 420,
+   &quot;h&quot;: 200,
+   &quot;title&quot;: &quot;packages/consult · Main Agent&quot;,
+   &quot;sub&quot;: &quot;20 能力节点 · 17 路由 · 150 评测集 (0.99)&quot;,
+   &quot;rows&quot;: [
+    {
+     &quot;name&quot;: &quot;capability-graph&quot;,
+     &quot;desc&quot;: &quot;4 轴定位 · 首检路由 · 假前提拦截&quot;
+    },
+    {
+     &quot;name&quot;: &quot;BM25 + 知识包&quot;,
+     &quot;desc&quot;: &quot;物理化知识库 · 严格引文校验&quot;
+    },
+    {
+     &quot;name&quot;: &quot;answer-composer&quot;,
+     &quot;desc&quot;: &quot;结论 · 定位 · 依据 · 下一步&quot;
+    },
+    {
+     &quot;name&quot;: &quot;LLM Synthesis&quot;,
+     &quot;desc&quot;: &quot;可选合成 · 禁编造仓库外路径&quot;
+    }
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;feishu&quot;,
+   &quot;short&quot;: &quot;@mas/feishu&quot;,
+   &quot;layer&quot;: &quot;contract&quot;,
+   &quot;x&quot;: 32,
+   &quot;y&quot;: 760,
+   &quot;w&quot;: 272,
+   &quot;h&quot;: 160,
+   &quot;title&quot;: &quot;packages/feishu&quot;,
+   &quot;sub&quot;: &quot;飞书协议适配层 · 24 单测&quot;,
+   &quot;lines&quot;: [
+    &quot;事件验签与解密 · post 富文本抽取&quot;,
+    &quot;mention 解析 · 话题 thread 追踪&quot;,
+    &quot;Recipe 卡片格式化与投递契约&quot;
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;shared&quot;,
+   &quot;short&quot;: &quot;@mas/shared&quot;,
+   &quot;layer&quot;: &quot;contract&quot;,
+   &quot;x&quot;: 328,
+   &quot;y&quot;: 760,
+   &quot;w&quot;: 272,
+   &quot;h&quot;: 160,
+   &quot;title&quot;: &quot;packages/shared&quot;,
+   &quot;sub&quot;: &quot;Schema 唯一真源 · 零内部依赖&quot;,
+   &quot;lines&quot;: [
+    &quot;Brand · Reference · Recipe&quot;,
+    &quot;持久化边界 Zod 强校验&quot;,
+    &quot;禁止任何包二次定义同名类型&quot;
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;evals&quot;,
+   &quot;short&quot;: &quot;@mas/evals&quot;,
+   &quot;layer&quot;: &quot;contract&quot;,
+   &quot;x&quot;: 624,
+   &quot;y&quot;: 760,
+   &quot;w&quot;: 272,
+   &quot;h&quot;: 160,
+   &quot;title&quot;: &quot;packages/evals&quot;,
+   &quot;sub&quot;: &quot;评测即 Spec · 14 Cases + 15 规则&quot;,
+   &quot;lines&quot;: [
+    &quot;Store 契约套件 · Fake 端口注入&quot;,
+    &quot;EVAL_RUBRIC=on 激活真实模型裁判&quot;,
+    &quot;归因：eval → data → tool&quot;
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;work-gov&quot;,
+   &quot;short&quot;: &quot;work/ + scripts/&quot;,
+   &quot;layer&quot;: &quot;method&quot;,
+   &quot;x&quot;: 32,
+   &quot;y&quot;: 1038,
+   &quot;w&quot;: 424,
+   &quot;h&quot;: 132,
+   &quot;title&quot;: &quot;work/ · 8 寄存器与机器门禁&quot;,
+   &quot;sub&quot;: &quot;状态即目录 (ls 即看板) · 零手工编号&quot;,
+   &quot;lines&quot;: [
+    &quot;work/schema.yml 唯一阶段源 · 8 类 ID 寄存器&quot;,
+    &quot;work.mjs check · layout.mjs · facts.mjs&quot;
+   ]
+  },
+  {
+   &quot;id&quot;: &quot;data-gov&quot;,
+   &quot;short&quot;: &quot;matrix + tables&quot;,
+   &quot;layer&quot;: &quot;method&quot;,
+   &quot;x&quot;: 476,
+   &quot;y&quot;: 1038,
+   &quot;w&quot;: 420,
+   &quot;h&quot;: 132,
+   &quot;title&quot;: &quot;docs/product/ · 8×8 矩阵与 13 张表&quot;,
+   &quot;sub&quot;: &quot;数据产品契约 (Momcozy) + 站点构建器&quot;,
+   &quot;lines&quot;: [
+    &quot;matrix.json (matrix-check) · tables.json (xref)&quot;,
+    &quot;build.mjs 驱动 13 个 Python 生成器 + links.mjs&quot;
+   ]
+  },
+  {
+   &quot;id&quot;: &quot;nowledge&quot;,
+   &quot;short&quot;: &quot;Nowledge Mem&quot;,
+   &quot;layer&quot;: &quot;toolchain&quot;,
+   &quot;x&quot;: 952,
+   &quot;y&quot;: 212,
+   &quot;w&quot;: 296,
+   &quot;h&quot;: 254,
+   &quot;title&quot;: &quot;Nowledge Mem&quot;,
+   &quot;sub&quot;: &quot;记忆层 · Space: mas-router&quot;,
+   &quot;rows&quot;: [
+    {
+     &quot;name&quot;: &quot;SessionStart&quot;,
+     &quot;desc&quot;: &quot;注入简报 + 守门规则&quot;
+    },
+    {
+     &quot;name&quot;: &quot;8 类持久记忆&quot;,
+     &quot;desc&quot;: &quot;BM25 + 向量混合检索&quot;
+    },
+    {
+     &quot;name&quot;: &quot;Thread 蒸馏&quot;,
+     &quot;desc&quot;: &quot;对话存证 → 结论沉淀&quot;
+    },
+    {
+     &quot;name&quot;: &quot;红线守门&quot;,
+     &quot;desc&quot;: &quot;单向依赖 · 单源真源&quot;
+    }
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;lody&quot;,
+   &quot;short&quot;: &quot;Lody&quot;,
+   &quot;layer&quot;: &quot;toolchain&quot;,
+   &quot;x&quot;: 952,
+   &quot;y&quot;: 532,
+   &quot;w&quot;: 296,
+   &quot;h&quot;: 254,
+   &quot;title&quot;: &quot;Lody 控制平面&quot;,
+   &quot;sub&quot;: &quot;多机调度 · Worktree 隔离&quot;,
+   &quot;rows&quot;: [
+    {
+     &quot;name&quot;: &quot;跨机执行池&quot;,
+     &quot;desc&quot;: &quot;4 台机器并行会话&quot;
+    },
+    {
+     &quot;name&quot;: &quot;Git Worktree&quot;,
+     &quot;desc&quot;: &quot;分支隔离 · 零冷启动&quot;
+    },
+    {
+     &quot;name&quot;: &quot;持久任务总线&quot;,
+     &quot;desc&quot;: &quot;operationId 异步回执&quot;
+    },
+    {
+     &quot;name&quot;: &quot;Diff 评审&quot;,
+     &quot;desc&quot;: &quot;行级批注回传下一轮&quot;
+    }
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  },
+  {
+   &quot;id&quot;: &quot;magpie&quot;,
+   &quot;short&quot;: &quot;Magpie&quot;,
+   &quot;layer&quot;: &quot;toolchain&quot;,
+   &quot;x&quot;: 952,
+   &quot;y&quot;: 852,
+   &quot;w&quot;: 296,
+   &quot;h&quot;: 254,
+   &quot;title&quot;: &quot;Magpie 路由网关&quot;,
+   &quot;sub&quot;: &quot;127.0.0.1:3425 · 单二进制&quot;,
+   &quot;rows&quot;: [
+    {
+     &quot;name&quot;: &quot;协议转换&quot;,
+     &quot;desc&quot;: &quot;三套主流协议互转&quot;
+    },
+    {
+     &quot;name&quot;: &quot;group/* 容灾&quot;,
+     &quot;desc&quot;: &quot;free 探索 / opus 生成&quot;
+    },
+    {
+     &quot;name&quot;: &quot;订阅桥接&quot;,
+     &quot;desc&quot;: &quot;官方 CLI 子进程管道&quot;
+    },
+    {
+     &quot;name&quot;: &quot;本地账本&quot;,
+     &quot;desc&quot;: &quot;usage.jsonl · 脱敏&quot;
+    }
+   ],
+   &quot;status&quot;: &quot;ok&quot;
+  }
+ ],
+ &quot;edges&quot;: [
+  {
+   &quot;flow&quot;: &quot;call&quot;,
+   &quot;from&quot;: &quot;workbench.b@240px&quot;,
+   &quot;to&quot;: &quot;core.t@240px&quot;,
+   &quot;label&quot;: &quot;createRuntime()&quot;,
+   &quot;labelPos&quot;: [
+    210,
+    384
+   ]
+  },
+  {
+   &quot;flow&quot;: &quot;call&quot;,
+   &quot;from&quot;: &quot;bot-gw.b@76px&quot;,
+   &quot;to&quot;: &quot;core.t@372px&quot;,
+   &quot;label&quot;: &quot;/recipe 生成&quot;,
+   &quot;labelPos&quot;: [
+    448,
+    384
+   ]
+  },
+  {
+   &quot;flow&quot;: &quot;call&quot;,
+   &quot;from&quot;: &quot;bot-gw.b@210px&quot;,
+   &quot;to&quot;: &quot;consult.t@62px&quot;,
+   &quot;label&quot;: &quot;群内方法咨询&quot;,
+   &quot;labelPos&quot;: [
+    592,
+    384
+   ]
+  },
+  {
+   &quot;flow&quot;: &quot;dep&quot;,
+   &quot;from&quot;: &quot;core.b@64px&quot;,
+   &quot;to&quot;: &quot;feishu.t@64px&quot;,
+   &quot;label&quot;: &quot;飞书端口适配&quot;,
+   &quot;labelPos&quot;: [
+    148,
+    690
+   ]
+  },
+  {
+   &quot;flow&quot;: &quot;dep&quot;,
+   &quot;from&quot;: &quot;core.b@340px&quot;,
+   &quot;to&quot;: &quot;shared.t@44px&quot;,
+   &quot;label&quot;: &quot;Zod 边界校验&quot;,
+   &quot;labelSide&quot;: &quot;left&quot;
+  },
+  {
+   &quot;flow&quot;: &quot;dep&quot;,
+   &quot;from&quot;: &quot;evals.t@16px&quot;,
+   &quot;to&quot;: &quot;core.b@414px&quot;,
+   &quot;mid&quot;: 698,
+   &quot;label&quot;: &quot;Fake 端口 + brands.ts&quot;,
+   &quot;labelPos&quot;: [
+    540,
+    690
+   ]
+  },
+  {
+   &quot;flow&quot;: &quot;dep&quot;,
+   &quot;from&quot;: &quot;evals.l&quot;,
+   &quot;to&quot;: &quot;shared.r&quot;
+  },
+  {
+   &quot;flow&quot;: &quot;gate&quot;,
+   &quot;from&quot;: &quot;work-gov.b@212px&quot;,
+   &quot;to&quot;: &quot;data-gov.b@210px&quot;,
+   &quot;rail&quot;: &quot;y:1202&quot;,
+   &quot;label&quot;: &quot;schema.yml + 寄存器门禁校验&quot;,
+   &quot;labelPos&quot;: [
+    464,
+    1198
+   ]
+  },
+  {
+   &quot;flow&quot;: &quot;gate&quot;,
+   &quot;from&quot;: &quot;data-gov.r&quot;,
+   &quot;to&quot;: &quot;anb-site.r&quot;,
+   &quot;rail&quot;: &quot;x:922&quot;,
+   &quot;label&quot;: &quot;build.mjs&quot;,
+   &quot;labelPos&quot;: [
+    858,
+    384
+   ]
+  },
+  {
+   &quot;flow&quot;: &quot;dev&quot;,
+   &quot;from&quot;: &quot;nowledge.b&quot;,
+   &quot;to&quot;: &quot;lody.t&quot;,
+   &quot;label&quot;: &quot;[1] 会话注水 + 规则&quot;,
+   &quot;labelSide&quot;: &quot;right&quot;
+  },
+  {
+   &quot;flow&quot;: &quot;dev&quot;,
+   &quot;from&quot;: &quot;lody.b&quot;,
+   &quot;to&quot;: &quot;magpie.t&quot;,
+   &quot;label&quot;: &quot;[2] import-magpie&quot;,
+   &quot;labelSide&quot;: &quot;right&quot;
+  },
+  {
+   &quot;flow&quot;: &quot;dev&quot;,
+   &quot;from&quot;: &quot;magpie.l@54px&quot;,
+   &quot;to&quot;: &quot;evals.r@146px&quot;,
+   &quot;mid&quot;: 928,
+   &quot;label&quot;: &quot;[3] 代理模型&quot;,
+   &quot;labelPos&quot;: [
+    878,
+    964
+   ]
+  }
+ ],
+ &quot;log&quot;: {
+  &quot;title&quot;: &quot;live trace · 全产品运行与治理信号流&quot;,
+  &quot;live&quot;: {
+   &quot;rows&quot;: 6
+  }
+ },
+ &quot;footer&quot;: {
+  &quot;cwd&quot;: &quot;~/Project/mas_router_method&quot;,
+  &quot;cmd&quot;: &quot;pnpm test &amp;&amp; pnpm --filter @mas/evals eval &amp;&amp; node scripts/site/build.mjs&quot;,
+  &quot;note&quot;: &quot;单测验代码 · Eval 验 Agent 判断 · build.mjs 零孤儿页生成站点&quot;
+ }
+}
+&lt;/script&gt;
+&lt;script&gt;
+// arch-diagram engine: renders the JSON spec in #spec into a terminal-blueprint diagram,
+// draws orthogonal wires, then self-checks the layout (?check writes results to #__diag).
+(function () {
+  const S = JSON.parse(document.getElementById(&#x27;spec&#x27;).textContent);
+  const CHECK = /[?&amp;]check\b/.test(location.search);
+  if (CHECK) document.documentElement.classList.add(&#x27;check&#x27;);
+  const STILL = CHECK || matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches;
+  // ?loop=P makes every animation periodic in P seconds, so a P-second recording repeats seamlessly
+  const LOOP = +(new URLSearchParams(location.search).get(&#x27;loop&#x27;) || 0);
+  if (LOOP) document.documentElement.classList.add(&#x27;loop&#x27;);
+  const W = S.width || 1080;
+  const NS = &#x27;http://www.w3.org/2000/svg&#x27;;
+  const SHORT = { bl: &#x27;blue&#x27;, cy: &#x27;cyan&#x27;, gr: &#x27;green&#x27;, am: &#x27;amber&#x27;, pu: &#x27;purple&#x27;, rd: &#x27;red&#x27;, or: &#x27;orange&#x27; };
+  // only palette names ever reach markup or CSS: an unknown color (or one carrying quotes/markup) falls back to faint
+  const COLORS = new Set([&#x27;blue&#x27;, &#x27;cyan&#x27;, &#x27;green&#x27;, &#x27;amber&#x27;, &#x27;purple&#x27;, &#x27;red&#x27;, &#x27;orange&#x27;, &#x27;text&#x27;, &#x27;dim&#x27;, &#x27;faint&#x27;]);
+  const badColors = new Set();
+  const col = c =&gt; {
+    if (c == null || c === &#x27;&#x27;) return &#x27;faint&#x27;;
+    const k = Object.prototype.hasOwnProperty.call(SHORT, c) ? SHORT[c] : c;
+    if (typeof k === &#x27;string&#x27; &amp;&amp; COLORS.has(k)) return k;
+    badColors.add(String(c));
+    return &#x27;faint&#x27;;
+  };
+  const cssv = n =&gt; getComputedStyle(document.documentElement).getPropertyValue(&#x27;--&#x27; + n).trim();
+  // UI words follow spec.lang (zh, en, ja, ko, es, th; anything else falls back to English)
+  const UI = {
+    zh: { elements: &#x27;元素：&#x27;, flows: &#x27;流向：&#x27;, status: &#x27;状态：&#x27;, wires: &#x27;连线：── 同步 ╌╌ 异步&#x27;, live: &#x27;live trace · 模块之间的数据交换&#x27;,
+      st: { ok: &#x27;运行正常&#x27;, warn: &#x27;运行异常&#x27;, dev: &#x27;开发中&#x27;, off: &#x27;已关闭&#x27;, none: &#x27;未创建&#x27;, done: &#x27;已完成&#x27; } },
+    en: { elements: &#x27;elements: &#x27;, flows: &#x27;flows: &#x27;, status: &#x27;status: &#x27;, wires: &#x27;wires: ── sync ╌╌ async&#x27;, live: &#x27;live trace · data moving between modules&#x27;,
+      st: { ok: &#x27;running&#x27;, warn: &#x27;degraded&#x27;, dev: &#x27;in progress&#x27;, off: &#x27;stopped&#x27;, none: &#x27;not built&#x27;, done: &#x27;done&#x27; } },
+    ja: { elements: &#x27;要素：&#x27;, flows: &#x27;フロー：&#x27;, status: &#x27;状態：&#x27;, wires: &#x27;線：── 同期 ╌╌ 非同期&#x27;, live: &#x27;live trace · モジュール間のデータ交換&#x27;,
+      st: { ok: &#x27;稼働中&#x27;, warn: &#x27;異常あり&#x27;, dev: &#x27;開発中&#x27;, off: &#x27;停止中&#x27;, none: &#x27;未作成&#x27;, done: &#x27;完了&#x27; } },
+    ko: { elements: &#x27;요소: &#x27;, flows: &#x27;흐름: &#x27;, status: &#x27;상태: &#x27;, wires: &#x27;연결: ── 동기 ╌╌ 비동기&#x27;, live: &#x27;live trace · 모듈 간 데이터 교환&#x27;,
+      st: { ok: &#x27;정상 동작&#x27;, warn: &#x27;이상 발생&#x27;, dev: &#x27;개발 중&#x27;, off: &#x27;중지됨&#x27;, none: &#x27;미생성&#x27;, done: &#x27;완료&#x27; } },
+    es: { elements: &#x27;elementos: &#x27;, flows: &#x27;flujos: &#x27;, status: &#x27;estado: &#x27;, wires: &#x27;líneas: ── síncrono ╌╌ asíncrono&#x27;, live: &#x27;live trace · datos entre módulos&#x27;,
+      st: { ok: &#x27;en marcha&#x27;, warn: &#x27;con fallos&#x27;, dev: &#x27;en desarrollo&#x27;, off: &#x27;detenido&#x27;, none: &#x27;sin crear&#x27;, done: &#x27;hecho&#x27; } },
+    th: { elements: &#x27;องค์ประกอบ: &#x27;, flows: &#x27;การไหล: &#x27;, status: &#x27;สถานะ: &#x27;, wires: &#x27;เส้น: ── ซิงก์ ╌╌ อะซิงก์&#x27;, live: &#x27;live trace · ข้อมูลที่ไหลระหว่างโมดูล&#x27;,
+      st: { ok: &#x27;ทำงานปกติ&#x27;, warn: &#x27;ผิดปกติ&#x27;, dev: &#x27;กำลังพัฒนา&#x27;, off: &#x27;หยุดแล้ว&#x27;, none: &#x27;ยังไม่สร้าง&#x27;, done: &#x27;เสร็จแล้ว&#x27; } },
+  };
+  const T = UI[String(S.lang || &#x27;zh-CN&#x27;).slice(0, 2).toLowerCase()] || UI.en;
+  const LABEL = Object.assign({}, T.st, S.statusLabels || {});
+  const issues = [], warnings = [];
+
+  const esc = s =&gt; String(s).replace(/[&amp;&lt;&gt;&quot;]/g, c =&gt; ({ &#x27;&amp;&#x27;: &#x27;&amp;amp;&#x27;, &#x27;&lt;&#x27;: &#x27;&amp;lt;&#x27;, &#x27;&gt;&#x27;: &#x27;&amp;gt;&#x27;, &#x27;&quot;&#x27;: &#x27;&amp;quot;&#x27; })[c]);
+  // inline markup: {cy:text} colors, {b:text} bold, {w:text} bright, {dim:text}; \n breaks the line
+  function fmt(s) {
+    if (s == null) return &#x27;&#x27;;
+    if (Array.isArray(s)) return s.map(fmt).join(&#x27;&lt;br&gt;&#x27;);
+    let h = esc(s), prev;
+    do { prev = h; h = h.replace(/\{(bl|cy|gr|am|pu|rd|dim|b|w):([^{}]*)\}/g, &#x27;&lt;span class=&quot;$1&quot;&gt;$2&lt;/span&gt;&#x27;); } while (h !== prev);
+    return h.replace(/\n/g, &#x27;&lt;br&gt;&#x27;);
+  }
+  const plain = s =&gt; String(s == null ? &#x27;&#x27; : s).replace(/\{\w+:([^{}]*)\}/g, &#x27;$1&#x27;);
+  function el(tag, cls, html, parent) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function place(e, o) {
+    if (o.x != null) e.style.left = o.x + &#x27;px&#x27;;
+    if (o.y != null) e.style.top = o.y + &#x27;px&#x27;;
+    if (o.w != null) e.style.width = o.w + &#x27;px&#x27;;
+    if (o.h != null) e.style.height = o.h + &#x27;px&#x27;;
+  }
+  const tint = (e, c) =&gt; e.style.setProperty(&#x27;--c&#x27;, `var(--${col(c)})`);
+
+  // ---------- stage ----------
+  const fit = el(&#x27;div&#x27;, null, null, document.body); fit.id = &#x27;fit&#x27;; fit.style.maxWidth = W + &#x27;px&#x27;;
+  const stage = el(&#x27;div&#x27;, null, null, fit); stage.id = &#x27;stage&#x27;; stage.style.width = W + &#x27;px&#x27;;
+  const svg = document.createElementNS(NS, &#x27;svg&#x27;); svg.id = &#x27;wires&#x27;; stage.appendChild(svg);
+
+  // ---------- header ----------
+  const head = el(&#x27;div&#x27;, &#x27;abs&#x27;, null, stage); head.id = &#x27;head&#x27;;
+  el(&#x27;div&#x27;, &#x27;t&#x27;, fmt(S.title || &#x27;&#x27;), head);
+  if (S.subtitle) el(&#x27;div&#x27;, &#x27;dim&#x27;, fmt(S.subtitle), head);
+  el(&#x27;div&#x27;, &#x27;rule&#x27;, null, head);
+  // flows: typed wires ({id, label, color, dash}); an edge with &quot;flow&quot; inherits its color and dash
+  const FLOW = {};
+  for (const f of S.flows || []) FLOW[f.id] = f;
+  const hasFlows = (S.flows || []).length &gt; 0;
+  const lgLine = (title, html) =&gt; {
+    const d = el(&#x27;div&#x27;, null, (title ? `&lt;span class=&quot;dim&quot;&gt;${title}&lt;/span&gt;` : &#x27;&#x27;) + html, head);
+    d.style.marginTop = &#x27;6px&#x27;;
+  };
+  if (S.layers &amp;&amp; S.layers.length) {
+    lgLine(hasFlows ? T.elements : &#x27;&#x27;, S.layers.map(l =&gt;
+      `&lt;span class=&quot;lg&quot;&gt;&lt;span class=&quot;sq&quot; style=&quot;background:var(--${col(l.color)})&quot;&gt;&lt;/span&gt;${fmt(l.label)}&lt;/span&gt;`).join(&#x27;&#x27;));
+  }
+  if (hasFlows) {
+    lgLine(T.flows, S.flows.map(f =&gt;
+      `&lt;span class=&quot;lg&quot;&gt;&lt;svg width=&quot;28&quot; height=&quot;8&quot; style=&quot;vertical-align:1px;margin-right:6px&quot;&gt;&lt;line x1=&quot;0&quot; y1=&quot;4&quot; x2=&quot;28&quot; y2=&quot;4&quot; stroke=&quot;var(--${col(f.color)})&quot; stroke-width=&quot;1.6&quot;${f.dash ? &#x27; stroke-dasharray=&quot;5 4&quot;&#x27; : &#x27;&#x27;}/&gt;&lt;/svg&gt;${fmt(f.label)}&lt;/span&gt;`).join(&#x27;&#x27;));
+  }
+  const used = [&#x27;ok&#x27;, &#x27;warn&#x27;, &#x27;dev&#x27;, &#x27;off&#x27;, &#x27;none&#x27;, &#x27;done&#x27;].filter(s =&gt; (S.nodes || []).some(n =&gt; n.status === s));
+  const lineLg = [];
+  if (used.length) lineLg.push(`&lt;span class=&quot;dim&quot;&gt;${T.status}&lt;/span&gt;` +
+    used.map(s =&gt; `&lt;span class=&quot;st stl ${s}&quot;&gt;${esc(LABEL[s])}&lt;/span&gt;`).join(&#x27;&#x27;));
+  if (!hasFlows &amp;&amp; S.wireLegend !== false) lineLg.push(`&lt;span class=&quot;dim&quot;&gt;${T.wires}&lt;/span&gt;`);
+  if (lineLg.length) lgLine(&#x27;&#x27;, lineLg.join(&#x27;&amp;nbsp;&amp;nbsp;&amp;nbsp;&#x27;));
+
+  // ---------- groups (drawn first, underneath) ----------
+  for (const g of S.groups || []) {
+    const d = el(&#x27;div&#x27;, &#x27;group&#x27; + (g.solid ? &#x27; solid&#x27; : &#x27;&#x27;), null, stage);
+    if (g.id) d.id = g.id;
+    tint(d, g.color); place(d, g);
+    if (g.label) {
+      const lg = el(&#x27;div&#x27;, &#x27;glg&#x27;, fmt(g.label), d);
+      if (g.labelRight) { lg.style.left = &#x27;auto&#x27;; lg.style.right = &#x27;16px&#x27;; }
+    }
+  }
+
+  // ---------- nodes ----------
+  const layerColor = id =&gt; ((S.layers || []).find(l =&gt; l.id === id) || {}).color;
+  const rails = [];
+  for (const n of S.nodes || []) {
+    const d = el(&#x27;div&#x27;, &#x27;box&#x27; + (n.dashed ? &#x27; dash&#x27; : &#x27;&#x27;) + (n.status ? &#x27; is-&#x27; + n.status : &#x27;&#x27;) + (n.kind === &#x27;rail&#x27; ? &#x27; rail&#x27; : &#x27;&#x27;), null, stage);
+    d.id = n.id;
+    tint(d, n.color || layerColor(n.layer)); place(d, n);
+    if (n.status) el(&#x27;span&#x27;, &#x27;st &#x27; + n.status, fmt(n.statusText || LABEL[n.status] || n.status), d);
+    if (n.title) el(&#x27;div&#x27;, &#x27;ttl&#x27;, fmt(n.title), d);
+    if (n.sub) el(&#x27;div&#x27;, &#x27;sub&#x27;, fmt(n.sub), d);
+    if (n.text) el(&#x27;div&#x27;, &#x27;c&#x27;, fmt(n.text), d);
+    if (n.rows) {
+      const t = el(&#x27;table&#x27;, &#x27;mods&#x27;, null, d), refs = n.rows.some(r =&gt; r.ref);
+      for (const r of n.rows) {
+        const tr = el(&#x27;tr&#x27;, null, null, t);
+        if (r.id) tr.id = r.id;
+        const nm = el(&#x27;td&#x27;, &#x27;n&#x27;, fmt(r.name), tr);
+        if (r.color) nm.style.color = `var(--${col(r.color)})`;
+        if (refs) el(&#x27;td&#x27;, &#x27;p&#x27;, fmt(r.ref || &#x27;&#x27;), tr);
+        el(&#x27;td&#x27;, &#x27;d&#x27; + (r.bright ? &#x27;&#x27; : &#x27; dim&#x27;),
+          (r.bar ? `&lt;span class=&quot;bar&quot; style=&quot;width:${+r.bar}px;background:var(--c)&quot;&gt;&lt;/span&gt;` : &#x27;&#x27;) +
+          fmt(r.desc || &#x27;&#x27;) + (r.tag ? ` &lt;span class=&quot;tag&quot;&gt;${fmt(r.tag)}&lt;/span&gt;` : &#x27;&#x27;), tr);
+      }
+    }
+    if (n.pipeline) {
+      const p = el(&#x27;div&#x27;, &#x27;pipe&#x27;, null, d);
+      n.pipeline.forEach((s, i) =&gt; {
+        if (i) el(&#x27;span&#x27;, &#x27;arr&#x27;, &#x27;→&#x27;, p);
+        const q = String(s).startsWith(&#x27;~&#x27;);
+        el(&#x27;span&#x27;, &#x27;chip&#x27; + (q ? &#x27; q&#x27; : &#x27;&#x27;), fmt(q ? s.slice(1) : s), p);
+      });
+    }
+    if (n.lines) for (const l of [].concat(n.lines)) el(&#x27;div&#x27;, &#x27;c dim&#x27;, fmt(l), d);
+    if (n.footer) { el(&#x27;div&#x27;, &#x27;hr&#x27;, null, d); el(&#x27;div&#x27;, &#x27;c&#x27;, fmt(n.footer), d); }
+    if (n.kind === &#x27;rail&#x27;) {
+      el(&#x27;div&#x27;, &#x27;vl&#x27;, null, d);
+      const items = (n.items || []).map(it =&gt; {
+        const e = el(&#x27;div&#x27;, &#x27;item&#x27;, null, d);
+        e.innerHTML = (it.title ? `&lt;div class=&quot;${it.hl ? &#x27;hl&#x27; : &#x27;&#x27;}&quot;&gt;&lt;span class=&quot;dia&quot;&gt;${esc(it.icon || &#x27;◇&#x27;)}&lt;/span&gt; ${fmt(it.title)}&lt;/div&gt;` : &#x27;&#x27;) +
+          (it.lines ? `&lt;div class=&quot;dim ind&quot;&gt;${fmt(it.lines)}&lt;/div&gt;` : &#x27;&#x27;);
+        return { e, it };
+      });
+      rails.push({ d, n, items });
+    }
+  }
+
+  // ---------- free notes ----------
+  for (const n of S.notes || []) {
+    const d = el(&#x27;div&#x27;, &#x27;abs note&#x27; + (n.dim ? &#x27; dim&#x27; : &#x27;&#x27;), fmt(n.text), stage);
+    if (n.id) d.id = n.id;
+    place(d, n);
+    d.style.textAlign = n.align || &#x27;center&#x27;;
+    if (n.color) d.style.color = `var(--${col(n.color)})`;
+  }
+
+  // ---------- geometry (stage coordinates, measured before scaling) ----------
+  function R(e) {
+    const s = stage.getBoundingClientRect(), b = e.getBoundingClientRect();
+    const r = { l: b.left - s.left, t: b.top - s.top, r: b.right - s.left, b: b.bottom - s.top };
+    r.cx = (r.l + r.r) / 2; r.cy = (r.t + r.b) / 2;
+    return r;
+  }
+  const byId = id =&gt; document.getElementById(id);
+
+  // rail items: align to a row (alignTo), sit at a fixed top, or stack under the previous item
+  for (const { d, n, items } of rails) {
+    const dr = R(d);
+    let next = 64;
+    for (const { e, it } of items) {
+      let top = it.top != null ? it.top : next;
+      if (it.alignTo) {
+        const row = byId(it.alignTo);
+        if (row) top = R(row).cy - dr.t - 11;
+        else issues.push(`rail ${n.id}: alignTo &quot;${it.alignTo}&quot; not found`);
+      }
+      e.style.top = top + &#x27;px&#x27;;
+      next = top + e.offsetHeight + 18;
+    }
+    if (n.h == null) d.style.height = (next + 2) + &#x27;px&#x27;;
+  }
+
+  const bottomOf = () =&gt; Math.max(0, ...[...stage.children].filter(c =&gt; c !== svg).map(c =&gt; R(c).b));
+
+  // ---------- session log + terminal footer ----------
+  // live: the log streams one row per packet arrival instead of showing fixed rows
+  let LIVE = null;
+  if (S.log) {
+    const lg = el(&#x27;div&#x27;, &#x27;abs&#x27;, null, stage); lg.id = &#x27;log&#x27;;
+    lg.style.left = &#x27;16px&#x27;; lg.style.right = &#x27;16px&#x27;;
+    lg.style.top = (S.log.y != null ? S.log.y : bottomOf() + 44) + &#x27;px&#x27;;
+    const live = S.log.live;
+    const title = S.log.title || (live ? T.live : &#x27;session log&#x27;);
+    el(&#x27;div&#x27;, &#x27;legend&#x27;, &#x27;─┤ &#x27; + fmt(title) + (live ? &#x27; &lt;span class=&quot;livedot&quot;&gt;●&lt;/span&gt; &lt;span class=&quot;gr&quot;&gt;live&lt;/span&gt;&#x27; : &#x27;&#x27;), lg);
+    const cols = S.log.cols || (live ? &#x27;96px 64px 380px 1fr&#x27; : &#x27;80px 90px 300px 1fr&#x27;);
+    if (live) {
+      const max = (live === true ? 0 : live.rows) || 7;
+      const box = el(&#x27;div&#x27;, &#x27;live&#x27;, null, lg);
+      box.style.height = (max * 20) + &#x27;px&#x27;;
+      LIVE = { box, max, cols };
+    }
+    for (const r of live ? [] : S.log.rows || []) {
+      const row = el(&#x27;div&#x27;, &#x27;row&#x27;, null, lg);
+      row.style.gridTemplateColumns = cols;
+      const [t, who, c, what, detail] = Array.isArray(r) ? r : [r.t, r.who, r.color, r.what, r.detail];
+      row.innerHTML = `&lt;span class=&quot;dim&quot;&gt;${fmt(t)}&lt;/span&gt;&lt;span class=&quot;b&quot; style=&quot;color:var(--${col(c || &#x27;text&#x27;)})&quot;&gt;${fmt(who)}&lt;/span&gt;` +
+        `&lt;span&gt;${fmt(what)}&lt;/span&gt;&lt;span class=&quot;dim&quot;&gt;${fmt(detail)}&lt;/span&gt;`;
+    }
+  }
+  if (S.footer) {
+    const f = el(&#x27;div&#x27;, &#x27;abs&#x27;, null, stage); f.id = &#x27;status&#x27;;
+    f.style.left = &#x27;16px&#x27;; f.style.right = &#x27;16px&#x27;;
+    f.style.top = (bottomOf() + 24) + &#x27;px&#x27;;
+    if (S.footer.cmd) el(&#x27;div&#x27;, null, `&lt;span class=&quot;gr&quot;&gt;${fmt(S.footer.cwd || &#x27;~&#x27;)}&lt;/span&gt; $ ${fmt(S.footer.cmd)} &lt;span class=&quot;cursor&quot;&gt;&lt;/span&gt;`, f);
+    if (S.footer.note) el(&#x27;div&#x27;, &#x27;dim&#x27;, fmt(S.footer.note), f).style.marginTop = &#x27;4px&#x27;;
+  }
+
+  const H = Math.ceil(bottomOf() + 24);
+  stage.style.height = H + &#x27;px&#x27;;
+  svg.setAttribute(&#x27;width&#x27;, W); svg.setAttribute(&#x27;height&#x27;, H);
+
+  // ---------- wires ----------
+  const defs = document.createElementNS(NS, &#x27;defs&#x27;);
+  const markers = new Set();
+  function marker(k) {
+    if (markers.has(k)) return; markers.add(k);
+    const m = document.createElementNS(NS, &#x27;marker&#x27;);
+    m.setAttribute(&#x27;id&#x27;, &#x27;a-&#x27; + k); m.setAttribute(&#x27;viewBox&#x27;, &#x27;0 0 10 10&#x27;);
+    m.setAttribute(&#x27;refX&#x27;, 9); m.setAttribute(&#x27;refY&#x27;, 5);
+    m.setAttribute(&#x27;markerWidth&#x27;, 7); m.setAttribute(&#x27;markerHeight&#x27;, 7); m.setAttribute(&#x27;orient&#x27;, &#x27;auto-start-reverse&#x27;);
+    const p = document.createElementNS(NS, &#x27;path&#x27;);
+    p.setAttribute(&#x27;d&#x27;, &#x27;M0,0 L10,5 L0,10 z&#x27;); p.setAttribute(&#x27;fill&#x27;, cssv(k));
+    m.appendChild(p); defs.appendChild(m);
+  }
+  svg.appendChild(defs);
+
+  // anchor syntax: &quot;id&quot;, &quot;id.side&quot;, &quot;id.side@0.3&quot; (fraction along the side), &quot;id.side@40px&quot; / &quot;@-22px&quot; (from start / end),
+  // or a raw point [x, y] / [x, y, side]. Row ids (table rows) anchor on their box&#x27;s left/right edge.
+  function centerOf(ref) {
+    if (Array.isArray(ref)) return { cx: ref[0], cy: ref[1] };
+    const e = byId(String(ref).split(/[.@]/)[0]);
+    return e ? R(e) : null;
+  }
+  function anchor(ref, other, label) {
+    if (Array.isArray(ref)) return { x: ref[0], y: ref[1], side: ref[2] || null, box: null };
+    const m = /^([\w-]+)(?:\.([tblr]))?(?:@(-?[\d.]+)(px)?)?$/.exec(String(ref));
+    if (!m) { issues.push(`${label}: bad anchor &quot;${ref}&quot;`); return null; }
+    const e = byId(m[1]);
+    if (!e) { issues.push(`${label}: anchor id &quot;${m[1]}&quot; not found`); return null; }
+    const own = e.classList.contains(&#x27;box&#x27;) ? e : (e.closest(&#x27;.box&#x27;) || e);
+    const b = R(e), ob = R(own);
+    let side = m[2];
+    if (!side) {
+      const o = other || { cx: b.cx, cy: b.b + 1 };
+      const dx = o.cx - b.cx, dy = o.cy - b.cy;
+      side = Math.abs(dy) &gt;= Math.abs(dx) ? (dy &gt; 0 ? &#x27;b&#x27; : &#x27;t&#x27;) : (dx &gt; 0 ? &#x27;r&#x27; : &#x27;l&#x27;);
+    }
+    const v = m[3] != null ? +m[3] : null, px = !!m[4];
+    const along = (lo, hi) =&gt; v == null ? (lo + hi) / 2 : px ? (v &gt;= 0 ? lo + v : hi + v) : lo + v * (hi - lo);
+    let x, y;
+    if (side === &#x27;l&#x27; || side === &#x27;r&#x27;) { x = side === &#x27;l&#x27; ? ob.l : ob.r; y = along(b.t, b.b); }
+    else { y = side === &#x27;t&#x27; ? b.t : b.b; x = along(b.l, b.r); }
+    return { x, y, side, box: own };
+  }
+  const V = s =&gt; s === &#x27;t&#x27; || s === &#x27;b&#x27;;
+  function route(a, z, e) {
+    const A = [a.x, a.y], Z = [z.x, z.y];
+    if (e.via) {
+      const pts = [A, ...e.via, Z], out = [A];
+      let vert = a.side ? V(a.side) : true;
+      for (let i = 1; i &lt; pts.length; i++) {
+        const p = out[out.length - 1], q = pts[i];
+        if (Math.abs(p[0] - q[0]) &gt; .5 &amp;&amp; Math.abs(p[1] - q[1]) &gt; .5) out.push(vert ? [p[0], q[1]] : [q[0], p[1]]);
+        out.push(q);
+        const s0 = out[out.length - 2], s1 = out[out.length - 1];
+        vert = !(Math.abs(s0[0] - s1[0]) &lt; .5);
+      }
+      return out;
+    }
+    if (e.rail != null) {
+      const [k, v] = String(e.rail).split(&#x27;:&#x27;), n = +v;
+      return k === &#x27;x&#x27; ? [A, [n, A[1]], [n, Z[1]], Z] : [A, [A[0], n], [Z[0], n], Z];
+    }
+    const va = a.side ? V(a.side) : V(z.side || &#x27;t&#x27;), vz = z.side ? V(z.side) : va;
+    if (va &amp;&amp; vz) {
+      if (Math.abs(A[0] - Z[0]) &lt; 1.5) return [A, [A[0], Z[1]]];
+      const y = e.mid != null ? e.mid : (A[1] + Z[1]) / 2;
+      return [A, [A[0], y], [Z[0], y], Z];
+    }
+    if (!va &amp;&amp; !vz) {
+      if (Math.abs(A[1] - Z[1]) &lt; 1.5) return [A, [Z[0], A[1]]];
+      const x = e.mid != null ? e.mid : (A[0] + Z[0]) / 2;
+      return [A, [x, A[1]], [x, Z[1]], Z];
+    }
+    return va ? [A, [A[0], Z[1]], Z] : [A, [Z[0], A[1]], Z];
+  }
+  function dot(x, y, k, hollow) {
+    const c = document.createElementNS(NS, &#x27;circle&#x27;);
+    c.setAttribute(&#x27;cx&#x27;, x); c.setAttribute(&#x27;cy&#x27;, y); c.setAttribute(&#x27;r&#x27;, hollow ? 4 : 3.5);
+    c.setAttribute(&#x27;fill&#x27;, hollow ? cssv(&#x27;bg&#x27;) : cssv(k));
+    c.setAttribute(&#x27;stroke&#x27;, cssv(k)); c.setAttribute(&#x27;stroke-width&#x27;, 1.5);
+    svg.appendChild(c);
+  }
+  // a small glowing packet travelling along each wire
+  function packet(pts, k) {
+    let len = 0;
+    for (let i = 1; i &lt; pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    const c = document.createElementNS(NS, &#x27;circle&#x27;);
+    c.setAttribute(&#x27;r&#x27;, 2.6); c.setAttribute(&#x27;fill&#x27;, cssv(k)); c.style.filter = `drop-shadow(0 0 3px ${cssv(k)})`;
+    const m = document.createElementNS(NS, &#x27;animateMotion&#x27;);
+    m.setAttribute(&#x27;path&#x27;, &#x27;M&#x27; + pts.map(q =&gt; q.join(&#x27;,&#x27;)).join(&#x27; L&#x27;));
+    let dur = Math.max(0.8, len / 110);
+    if (LOOP) dur = LOOP / Math.max(1, Math.round(LOOP / dur));
+    m.setAttribute(&#x27;dur&#x27;, dur.toFixed(4) + &#x27;s&#x27;);
+    const begin = +(Math.random() * 1.5).toFixed(2);
+    m.setAttribute(&#x27;begin&#x27;, begin + &#x27;s&#x27;);
+    m.setAttribute(&#x27;repeatCount&#x27;, &#x27;indefinite&#x27;);
+    c.setAttribute(&#x27;opacity&#x27;, 0);
+    const on = document.createElementNS(NS, &#x27;set&#x27;);
+    on.setAttribute(&#x27;attributeName&#x27;, &#x27;opacity&#x27;); on.setAttribute(&#x27;to&#x27;, 1);
+    on.setAttribute(&#x27;begin&#x27;, m.getAttribute(&#x27;begin&#x27;)); on.setAttribute(&#x27;fill&#x27;, &#x27;freeze&#x27;);
+    c.appendChild(m); c.appendChild(on); svg.appendChild(c);
+    // arrivals happen at begin + n·dur on the SVG timeline; the live log keys off this
+    return { begin, dur: +dur.toFixed(4) };
+  }
+  const labels = [], segs = [];
+  function label(pts, e, k, name) {
+    let bi = 1, best = -1;
+    for (let i = 1; i &lt; pts.length; i++) {
+      const L = Math.abs(pts[i][0] - pts[i - 1][0]) + Math.abs(pts[i][1] - pts[i - 1][1]);
+      if (L &gt; best) { best = L; bi = i; }
+    }
+    if (e.labelSeg != null) bi = Math.min(pts.length - 1, Math.max(1, e.labelSeg));
+    const p = pts[bi - 1], q = pts[bi], horiz = Math.abs(p[1] - q[1]) &lt; .5;
+    const lines = String(e.label).split(&#x27;\n&#x27;).map(plain);
+    const side = e.labelSide || (horiz ? &#x27;above&#x27; : &#x27;right&#x27;);
+    let x = (p[0] + q[0]) / 2, y = (p[1] + q[1]) / 2, anchorTo = &#x27;middle&#x27;;
+    if (side === &#x27;above&#x27;) y -= 7 + (lines.length - 1) * 15;
+    else if (side === &#x27;below&#x27;) y += 15;
+    else { x += side === &#x27;left&#x27; ? -7 : 7; anchorTo = side === &#x27;left&#x27; ? &#x27;end&#x27; : &#x27;start&#x27;; y += 4 - (lines.length - 1) * 7.5; }
+    if (e.labelPos) [x, y] = e.labelPos;
+    if (e.labelOffset) { x += e.labelOffset[0]; y += e.labelOffset[1]; }
+    const t = document.createElementNS(NS, &#x27;text&#x27;);
+    t.setAttribute(&#x27;class&#x27;, &#x27;lbl&#x27;); t.setAttribute(&#x27;text-anchor&#x27;, e.labelAnchor || anchorTo);
+    t.setAttribute(&#x27;fill&#x27;, cssv(col(e.labelColor || &#x27;dim&#x27;)));
+    lines.forEach((s, i) =&gt; {
+      const sp = document.createElementNS(NS, &#x27;tspan&#x27;);
+      sp.setAttribute(&#x27;x&#x27;, x); sp.setAttribute(&#x27;y&#x27;, y + i * 15); sp.textContent = s;
+      t.appendChild(sp);
+    });
+    svg.appendChild(t);
+    labels.push({ t, name });
+  }
+
+  // ---------- live trace: one log row each time a packet reaches the end of its wire ----------
+  const NAMES = {};
+  for (const n of S.nodes || []) {
+    NAMES[n.id] = n.short || plain(n.title || n.id).split(&#x27; · &#x27;)[0];
+    for (const r of n.rows || []) if (r.id) NAMES[r.id] = plain(r.name);
+  }
+  for (const g of S.groups || []) NAMES[g.id] = g.short || plain(g.label || g.id).split(&#x27; · &#x27;)[0];
+  const nameOf = ref =&gt; Array.isArray(ref) ? null : NAMES[String(ref).split(/[.@]/)[0]];
+  const liveEdges = [];
+  function liveEntry(e, k, timing) {
+    if (e.log === false) return;
+    const o = typeof e.log === &#x27;string&#x27; ? { detail: e.log } : e.log || {};
+    const A = nameOf(e.from), Z = nameOf(e.to);
+    if (!o.what &amp;&amp; (!A || !Z)) return;
+    const f = FLOW[e.flow] || {};
+    liveEdges.push({
+      who: o.who || e.flow || &#x27;·&#x27;, color: col(o.color || k),
+      what: o.what || `${A} ${e.arrow === &#x27;both&#x27; ? &#x27;⇄&#x27; : &#x27;→&#x27;} ${Z}`,
+      detail: o.detail || (e.label ? plain(e.label).replace(/\n/g, &#x27; &#x27;) : plain(f.label || &#x27;&#x27;)),
+      timing,
+    });
+  }
+  function startLive() {
+    const { box, max, cols } = LIVE;
+    const add = (t, x, fresh) =&gt; {
+      const row = el(&#x27;div&#x27;, &#x27;row&#x27; + (fresh ? &#x27; new&#x27; : &#x27;&#x27;), null, box);
+      row.style.gridTemplateColumns = cols;
+      row.innerHTML = `&lt;span class=&quot;dim&quot;&gt;${esc(t)}&lt;/span&gt;&lt;span class=&quot;b&quot; style=&quot;color:var(--${x.color})&quot;&gt;${fmt(x.who)}&lt;/span&gt;` +
+        `&lt;span&gt;${fmt(x.what)}&lt;/span&gt;&lt;span class=&quot;dim&quot;&gt;${fmt(x.detail)}&lt;/span&gt;`;
+      while (box.children.length &gt; max) box.firstChild.remove();
+    };
+    const timed = liveEdges.filter(x =&gt; x.timing);
+    // a still render (check / PNG / reduced motion) shows the first rows as a static sample
+    if (STILL || !timed.length) { liveEdges.slice(0, max).forEach((x, i) =&gt; add(`t+${(i * 0.4).toFixed(2)}s`, x)); return; }
+    const t0 = Date.now();
+    const clock = tt =&gt; {
+      if (LOOP) return `t+${(tt % LOOP).toFixed(2)}s`;
+      const d = new Date(t0 + tt * 1000);
+      return d.toTimeString().slice(0, 8) + &#x27;.&#x27; + String(d.getMilliseconds()).padStart(3, &#x27;0&#x27;);
+    };
+    const next = timed.map(x =&gt; x.timing.begin + x.timing.dur);
+    // each wire logs one arrival per period P, the one nearest its own slot, so rows come
+    // evenly spaced and readable; with ?loop the pattern repeats exactly every P seconds
+    const P = LOOP || 4, n = timed.length;
+    const logs = (tt, i, d) =&gt; {
+      const off = Math.abs((tt % P) - (i + 0.5) / n * P);
+      return Math.min(off, P - off) &lt; d / 2;
+    };
+    (function tick() {
+      const now = svg.getCurrentTime(), due = [];
+      timed.forEach((x, i) =&gt; {
+        while (next[i] &lt;= now) {
+          if (logs(next[i], i, x.timing.dur)) due.push([next[i], x]);
+          next[i] += x.timing.dur;
+        }
+      });
+      // a background tab catching up only shows the latest rows
+      due.sort((p, q) =&gt; p[0] - q[0]).slice(-max).forEach(([tt, x]) =&gt; add(clock(tt), x, true));
+      requestAnimationFrame(tick);
+    })();
+  }
+
+  (S.edges || []).forEach((e0, i) =&gt; {
+    const f = FLOW[e0.flow] || {};
+    if (e0.flow &amp;&amp; !FLOW[e0.flow]) issues.push(`edge#${i}: unknown flow &quot;${e0.flow}&quot;`);
+    const e = Object.assign({ color: f.color, dash: f.dash }, e0);
+    if (e0.color == null) e.color = f.color;
+    if (e0.dash == null) e.dash = f.dash;
+    const name = e.id || `edge#${i} ${Array.isArray(e.from) ? &#x27;pt&#x27; : e.from}→${Array.isArray(e.to) ? &#x27;pt&#x27; : e.to}`;
+    let a = anchor(e.from, centerOf(e.to), name), z = anchor(e.to, centerOf(e.from), name);
+    if (!a || !z) return;
+    // straight: slide the start along its side so the wire runs straight into the target
+    if (e.straight) { if (V(a.side)) a.x = z.x; else a.y = z.y; }
+    const pts = route(a, z, e).map(p =&gt; [Math.round(p[0] * 2) / 2, Math.round(p[1] * 2) / 2]);
+    const k = col(e.color || &#x27;dim&#x27;);
+    const p = document.createElementNS(NS, &#x27;polyline&#x27;);
+    p.setAttribute(&#x27;points&#x27;, pts.map(q =&gt; q.join(&#x27;,&#x27;)).join(&#x27; &#x27;));
+    p.setAttribute(&#x27;fill&#x27;, &#x27;none&#x27;); p.setAttribute(&#x27;stroke&#x27;, cssv(k)); p.setAttribute(&#x27;stroke-width&#x27;, 1.4);
+    if (e.dash) { p.setAttribute(&#x27;stroke-dasharray&#x27;, &#x27;5 4&#x27;); if (!STILL) p.classList.add(&#x27;flow&#x27;); }
+    if (e.arrow !== false) { marker(k); p.setAttribute(&#x27;marker-end&#x27;, `url(#a-${k})`); }
+    if (e.arrow === &#x27;both&#x27;) p.setAttribute(&#x27;marker-start&#x27;, `url(#a-${k})`);
+    svg.appendChild(p);
+    const timing = !STILL &amp;&amp; e.packet !== false ? packet(pts, k) : null;
+    if (LIVE) liveEntry(e, k, timing);
+    if (e.joint &amp;&amp; pts.length &gt; 2) dot(pts[pts.length - 2][0], pts[pts.length - 2][1], k, e.joint === &#x27;hollow&#x27;);
+    if (e.startDot) dot(pts[0][0], pts[0][1], k, e.startDot === &#x27;hollow&#x27;);
+    if (e.label) label(pts, e, k, name);
+    for (let j = 1; j &lt; pts.length; j++) segs.push({ name, a: pts[j - 1], b: pts[j], skip: [a.box, z.box] });
+  });
+  for (const d of S.dots || []) {
+    const c = Array.isArray(d.at) ? { x: d.at[0], y: d.at[1] } : anchor(d.at, null, &#x27;dot&#x27;);
+    if (c) dot(c.x, c.y, col(d.color || &#x27;dim&#x27;), d.hollow);
+  }
+  if (LIVE) startLive();
+
+  // ---------- self-check ----------
+  const tag = e =&gt; e.id ? &#x27;#&#x27; + e.id : (e.className || e.tagName);
+  const solids = [...stage.querySelectorAll(&#x27;.box, .note, #log, #head, .group &gt; .glg&#x27;)].map(e =&gt; ({ e, r: R(e) }));
+  if (!solids.every(s =&gt; s.e.id)) solids.filter(s =&gt; s.e.classList.contains(&#x27;glg&#x27;)).forEach(s =&gt; { s.e.id ||= (s.e.parentElement.id || &#x27;group&#x27;) + &#x27;-legend&#x27;; });
+  const inter = (p, q, pad = 0) =&gt; Math.min(p.r, q.r) - Math.max(p.l, q.l) &gt; pad &amp;&amp; Math.min(p.b, q.b) - Math.max(p.t, q.t) &gt; pad;
+  for (let i = 0; i &lt; solids.length; i++) for (let j = i + 1; j &lt; solids.length; j++) {
+    const A = solids[i], B = solids[j];
+    if (A.e.contains(B.e) || B.e.contains(A.e)) continue;
+    if (inter(A.r, B.r, 2)) issues.push(`overlap: ${tag(A.e)} and ${tag(B.e)}`);
+  }
+  for (const { e, r } of solids) {
+    if (e.classList.contains(&#x27;box&#x27;)) {
+      if (e.scrollHeight &gt; e.clientHeight + 2) issues.push(`${tag(e)}: content is ${e.scrollHeight - e.clientHeight}px taller than the box — raise h or cut text`);
+      if (e.scrollWidth &gt; e.clientWidth + 2) issues.push(`${tag(e)}: content is ${e.scrollWidth - e.clientWidth}px wider than the box — widen it or shorten a line`);
+    }
+    if (r.l &lt; -1 || r.r &gt; W + 1) issues.push(`${tag(e)}: outside the ${W}px canvas (l=${Math.round(r.l)}, r=${Math.round(r.r)})`);
+  }
+  for (const rl of rails) {
+    const its = rl.items.map((x, i) =&gt; ({ i: i + 1, r: R(x.e) })).sort((p, q) =&gt; p.r.t - q.r.t);
+    for (let i = 1; i &lt; its.length; i++) {
+      if (its[i].r.t &lt; its[i - 1].r.b + 4) issues.push(`rail #${rl.n.id}: item ${its[i].i} collides with item ${its[i - 1].i} — move it or set top`);
+    }
+    const last = its[its.length - 1];
+    if (last &amp;&amp; last.r.b &gt; R(rl.d).b - 4) issues.push(`rail #${rl.n.id}: items run past the bottom — raise h`);
+  }
+  const boxes = solids.filter(s =&gt; [&#x27;box&#x27;, &#x27;note&#x27;, &#x27;glg&#x27;].some(c =&gt; s.e.classList.contains(c)));
+  for (const s of segs) {
+    const hz = Math.abs(s.a[1] - s.b[1]) &lt; .5;
+    const sl = Math.min(s.a[0], s.b[0]), sr = Math.max(s.a[0], s.b[0]), st = Math.min(s.a[1], s.b[1]), sb = Math.max(s.a[1], s.b[1]);
+    for (const { e, r } of boxes) {
+      if (s.skip.includes(e)) continue;
+      const hit = hz ? (s.a[1] &gt; r.t + 2 &amp;&amp; s.a[1] &lt; r.b - 2 &amp;&amp; sr &gt; r.l + 2 &amp;&amp; sl &lt; r.r - 2)
+                     : (s.a[0] &gt; r.l + 2 &amp;&amp; s.a[0] &lt; r.r - 2 &amp;&amp; sb &gt; r.t + 2 &amp;&amp; st &lt; r.b - 2);
+      if (hit) issues.push(`${s.name}: wire passes through ${tag(e)} — use rail/mid/via to route around it`);
+    }
+  }
+  for (const { t, name } of labels) {
+    const b = t.getBBox(), lr = { l: b.x, t: b.y, r: b.x + b.width, b: b.y + b.height };
+    for (const { e, r } of solids) if (inter(lr, r, 1)) issues.push(`${name}: label &quot;${t.textContent}&quot; sits on ${tag(e)} — use labelSide/labelOffset`);
+    if (lr.l &lt; -1 || lr.r &gt; W + 1) issues.push(`${name}: label &quot;${t.textContent}&quot; leaves the canvas`);
+    const hits = new Set();
+    for (const s of segs) {
+      if (s.name === name) continue;
+      const sl = Math.min(s.a[0], s.b[0]), sr = Math.max(s.a[0], s.b[0]), st = Math.min(s.a[1], s.b[1]), sb = Math.max(s.a[1], s.b[1]);
+      if (sr &gt; lr.l + 1 &amp;&amp; sl &lt; lr.r - 1 &amp;&amp; sb &gt; lr.t + 1 &amp;&amp; st &lt; lr.b - 1) hits.add(s.name);
+    }
+    for (const h of hits) issues.push(`${name}: label &quot;${t.textContent}&quot; is crossed by ${h} — use labelSide/labelPos`);
+  }
+  let crossings = 0;
+  for (let i = 0; i &lt; segs.length; i++) for (let j = i + 1; j &lt; segs.length; j++) {
+    const s = segs[i], u = segs[j];
+    if (s.name === u.name) continue;
+    const sh = Math.abs(s.a[1] - s.b[1]) &lt; .5, uh = Math.abs(u.a[1] - u.b[1]) &lt; .5;
+    if (sh === uh) continue;
+    const h = sh ? s : u, v = sh ? u : s;
+    const x = v.a[0], y = h.a[1];
+    if (x &gt; Math.min(h.a[0], h.b[0]) + 1 &amp;&amp; x &lt; Math.max(h.a[0], h.b[0]) - 1 &amp;&amp;
+        y &gt; Math.min(v.a[1], v.b[1]) + 1 &amp;&amp; y &lt; Math.max(v.a[1], v.b[1]) - 1) crossings++;
+  }
+  for (const c of badColors) issues.push(`unknown color ${JSON.stringify(c)} — use one of: ${[...COLORS].join(&#x27; &#x27;)} (or ${Object.keys(SHORT).join(&#x27; &#x27;)})`);
+  if (crossings) warnings.push(`${crossings} wire crossing(s) — fine if unavoidable, but try reordering boxes first`);
+
+  const pre = el(&#x27;pre&#x27;, null, null, document.body);
+  pre.id = &#x27;__diag&#x27;; pre.hidden = true;
+  pre.textContent = JSON.stringify({ width: W, height: H, issues, warnings });
+  if (issues.length) console.warn(&#x27;[arch-diagram]&#x27;, issues);
+
+  // ---------- scale to fit narrow screens ----------
+  // zoom re-lays out at the smaller size so text stays crisp; transform blurs in narrow windows
+  const useZoom = CSS.supports(&#x27;zoom&#x27;, &#x27;0.5&#x27;);
+  function scale() {
+    const k = Math.min(1, fit.clientWidth / W);
+    if (useZoom) stage.style.zoom = k; else stage.style.transform = `scale(${k})`;
+    fit.style.height = (H * k) + &#x27;px&#x27;;
+  }
+  addEventListener(&#x27;resize&#x27;, scale); scale();
+})();
+
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div>
+<h2 id="layers">二、五层架构职责与边界对账</h2>
+<p class="h2sub">每一层只做自己的事，跨层越界（如在评测夹具里复制品牌档案、在工具 handler 里抛异常）一律视为架构缺陷。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:18%">架构层级</th><th style="width:22%">核心包 / 目录</th><th style="width:34%">核心职责</th><th>硬性护栏与禁令</th></tr></thead><tbody><tr><td><b>L1 交互入口层 (Surfaces)</b></td><td><code>apps/bot-gateway · apps/workbench · docs/site</code></td><td>飞书长连接/Webhook 异步回执与会话分桶；Operator 审查台（Next.js）；ANB 静态知识门户（29 生成页 + 8 原始档案）。</td><td>严禁任何 Surface 直接调用大模型 API，所有执行必须经过底层 Runtime；Surface 之间严禁互相引用。</td></tr><tr><td><b>L2 核心双引擎层 (Engines)</b></td><td><code>packages/core · packages/consult</code></td><td>core：run-agent.ts 单文件主循环（步数记录、双层预算熔断、modelUsage 累计计费、ok/err/guard 值语义工具）；consult：20 节点 + 17 路由能力图谱、BM25 物理化知识包与五段式 grounded 合成。</td><td>run-agent.ts 的主循环严禁拆碎到多模块；工具 handler 严禁 throw 异常，失败必须返回 isError: true 的值。</td></tr><tr><td><b>L3 契约、适配与评测底座</b></td><td><code>packages/shared · packages/feishu · packages/evals</code></td><td>shared：Zod 领域模型（BrandProfile / ReferenceVideo / Recipe / AgentRun）；feishu：事件验签解密、post 富文本与卡片格式化；evals：14 用例 + 15 确定性规则 + Rubric 裁判。</td><td>packages/shared 不得 import 仓内任何包；新增工具必须同步写入 createBrandTools 与 brandToolNames() 白名单。</td></tr><tr><td><b>L4 ANB 治理与数据矩阵层</b></td><td><code>work/ · docs/product/ · scripts/</code></td><td>work/ 八个寄存器（状态即目录，ls 即看板）；matrix.json（8×8 数据产品矩阵）与 tables.json（13 张样张表）；build.mjs 零孤儿页生成器。</td><td>无检查器的契约只能标「约」不能标「验」；文档引用的数字必须通过 facts.mjs --check 对账。</td></tr><tr><td><b>L5 本地开发工具链</b></td><td><code>Nowledge Mem · Lody · Magpie</code></td><td>Nowledge Mem 负责跨会话记忆注水与红线守门；Lody 负责 4 机执行池、Git Worktree 隔离与异步任务回执；Magpie 负责 127.0.0.1:3425 三协议互转与 group/* 429 容灾。</td><td>开发态工具链不介入生产部署运行时；不在 Nowledge Mem 存业务数据。</td></tr></tbody></table></div>
+<h2 id="relations">三、核心跨模块调用与数据流向</h2>
+<div class="tablewrap"><table><thead><tr><th style="width:22%">业务流场景</th><th style="width:32%">调用路径</th><th>契约保障</th></tr></thead><tbody><tr><td><b>飞书群提问 / TikTok 链接</b></td><td><code>apps/bot-gateway → packages/core | packages/consult</code></td><td>网关识别 TikTok 链接或 /recipe 指令走 core 异步生成管道（3s 回执 + 队列投递）；识别方法论/数据提问走 consult 引擎返回五段式结论。</td></tr><tr><td><b>Operator 人工审查与重跑</b></td><td><code>apps/workbench → packages/core</code></td><td>审查台调用同一个 createRuntime().run() 接口，与飞书端共享完全一致的系统提示词、工具契约与 Zod 持久化边界。</td></tr><tr><td><b>离线确定性评测与模型裁判</b></td><td><code>packages/evals → packages/core + packages/shared</code></td><td>评测台注入 Fake 端口实现（与生产端口签名 100% 一致），直接从 core/src/seed/brands.ts 读取四品牌护栏，杜绝夹具漂移。</td></tr><tr><td><b>单一真源驱动站点构建</b></td><td><code>work/schema.yml + docs/product/*.json → scripts/site/build.mjs → docs/site/</code></td><td>13 个 Python 生成器从 schema.yml、matrix-check.mjs、tables.json 与 .claude/skills/ 动态计算全部页面，经 links.mjs 校验死链与孤儿页。</td></tr></tbody></table></div>
+      
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+</body>
+</html>

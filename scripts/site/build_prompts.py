@@ -125,6 +125,38 @@ PROMPTS = {
  ('被推翻的时候新增而不是改写', '这条结论被证伪了。别改原件。按三句话给我：<b>旧结论主张什么</b>、<b>什么条件触发了</b>、<b>新结论是什么</b>。然后告诉我这张旧卡该标成什么状态。',
   '证伪检查报红之后', '删掉旧结论会失去「我们曾经相信过什么、为什么信错了」的记录，而那份记录是唯一能让下次判断更快的东西。')
 ],
+'上线审计': [
+ ('发布前对抗式审计', '''以产品上线倒计时为目标，对当前项目做一次发布前深度审查。以真实代码、真实页面、真实用户路径为主要依据，辅助材料是：用户手册、既有审计方案、当前项目文档与测试结果。
+
+按三步执行：
+1. 对每一个页面、交互、闭环、模块做对抗式审查，主动寻找误导、断点、死链、空状态缺口、权限缺口、异常路径和产品承诺落差。
+2. 列出所有不确定点。每一点都写清：不确定什么、为什么重要、需要看什么证据、当前能否判断、下一步怎么确认。
+3. 用高内聚、低耦合检查代码。重点查模块边界、依赖方向、重复类型、重复 schema、重复数据源、沉默代码、僵尸代码、无用依赖和打包浪费。
+
+输出一份 MECE 审计报告，包含：发布前总判断、问题总表、不确定性清单、代码优化清单、上线前行动计划、最终一句话结论。
+
+问题总表每行必须包含：编号、层面、问题、影响范围、严重级别 P0/P1/P2/P3、证据、建议动作、是否阻塞上线、负责人类型。
+
+不要写空泛建议。没有证据的判断标记为不确定。不要只做加法，也要主动提出删除、合并、下沉和收敛。''',
+  '产品上线倒计时前，需要一次跨产品、设计、代码、测试和发布的硬审查时', '它把审查拆成证据、风险、行动和上线判断四层，避免只得到“优化体验”这种无法执行的意见。'),
+ ('网站 UI/UX 逐页重构', '''以网站上线前 UI/UX 全面重构为目标，逐页、逐组件、逐交互审查当前网站。目标不是“更好看”，而是让它有品牌判断、产品秩序和上线完成度。
+
+全站硬规则：禁止 emoji；建立统一品牌色彩系统；去掉 AI 默认模板感；删除卡片套卡片、廉价阴影、重复边框、无意义装饰和泛泛大标题。
+
+按 impeccable 的五个视角执行：
+1. layout：检查页面结构、区块顺序、间距节奏、信息密度和容器嵌套。
+2. typeset：检查字体、标题层级、正文密度、辅助文字、数据文字和文案压缩。
+3. polish：检查颜色、边框、阴影、圆角、动效、上线完成度和视觉噪音。
+4. critique：明确指出哪里一眼假、哪里像 AI 生成、哪里降低信任、哪里影响转化。
+5. distill：主动删除重复说明、无效模块、多余装饰、多余卡片、多余图标和没有产品价值的视觉堆叠。
+
+同时设计一个产品架构全景图方案，说明用户入口、核心页面、核心模块、产品能力、数据来源、数据流转、操作闭环、外部集成、当前缺口和上线风险。
+
+输出《网站 UI/UX 逐页重构优化方案》，包含：总体判断、品牌视觉系统、全站 UI 规则、架构全景图方案、逐页重构方案、组件重构清单、删除和收敛清单、执行计划、验收标准。
+
+每个页面必须给出：页面目标、当前问题、重构方案、需要删除、需要合并、需要新增、组件调整、交互调整、文案调整、视觉调整、上线优先级、验收标准。''',
+  '网站看起来有模板感、需要品牌化、上线前要逐页重构时', '它把“好看点”改成可对峙的设计检查项，并强制做减法，防止页面靠装饰和堆叠假装完成。'),
+],
 '跨阶段': [
  ('会话开始', '用 todo-ledger 读一下当前状态，确认分支和 worktree，告诉我 Now 和下一件事。',
   '每次新会话', '凭记忆开工是万恶之源。'),
@@ -138,38 +170,37 @@ PROMPTS = {
 }
 
 def prompts_page():
-    b = ['<h1>提示词库</h1>']
+    b = ['<style>'
+         '.card pre{white-space:pre-wrap;word-break:break-word}'
+         '.pm-meta{display:grid;grid-template-columns:7.5rem 1fr;gap:.5rem 1rem;margin:1.05rem 0 0;'
+         'padding:1rem 0 0;border-top:1px solid var(--sunk);font-size:.9rem;line-height:1.65}'
+         '.pm-meta dt{color:var(--faint);font-weight:600;font-size:.82rem}'
+         '.pm-meta dd{margin:0;color:var(--muted)}'
+         '</style>']
+    b.append('<h1>提示词库</h1>')
     b.append('<p class="lede">可以直接复制的会话提示词。按阶段分类，每条都标明：<b>什么时候用、以及为什么这么写</b>。<br>'
              '更系统的 36 张战斗卡片见 <a href="cheatsheet.html">实战作战手卡</a>。</p>')
     b.append('''<div class="note">这些提示词的共同点：<b>都在要求一个具体动作，而不是一个结论。</b>
 "帮我检查一下"会让它给你一段看起来认真的话；"造一个会让它失败的情况，跑一次，把结果原样贴给我"会让它给你证据。
 <br><br>把 <code>___</code> 换成你的内容。带 <code>&lt;b&gt;</code> 的地方是强调，复制时可以去掉。</div>''')
 
-    for group in ['跨阶段', '需求', '设计', '开发', '验收', '交付', '运营', '迭代', '数据产品']:
+    for group in ['跨阶段', '上线审计', '需求', '设计', '开发', '验收', '交付', '运营', '迭代', '数据产品']:
         if group not in PROMPTS: continue
         b.append(f'<h2>{group}</h2>')
+        b.append('<div class="grid two">')
         for title, prompt, when, caution in PROMPTS[group]:
             b.append('<div class="card">')
             b.append(f'<h3>{title}</h3>')
             b.append(f'<pre>{prompt}</pre>')
-            b.append(f'<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)">'
-                     f'<div class="row" style="border:0;padding:0"><span class="k">什么时候用</span><span class="v">{when}</span></div>'
-                     f'<div class="row" style="border:0;padding:0"><span class="k">为什么这样写</span><span class="v">{caution}</span></div></div>')
+            b.append(f'<dl class="pm-meta">'
+                     f'<dt>什么时候用</dt><dd>{when}</dd>'
+                     f'<dt>为什么这样写</dt><dd>{caution}</dd></dl>')
             b.append('</div>')
+        b.append('</div>')
 
-    # 实战战斗卡专区（来自 Cheatsheet 6 大板块）
-    b.append('<h2>实战战斗 Prompt 专区（36 条原则精选）</h2>')
-    b.append('<p class="h2sub">精选自 6 大实战作战主题。详见 <a href="cheatsheet.html">完整作战手卡与验收判定 →</a></p>')
-    for t in THEMES:
-        b.append(f'<h3>{t["num"]} {t["title"]}</h3>')
-        for c in t['cards']:
-            b.append('<div class="card">')
-            b.append(f'<h3><span style="font-family:var(--mono);color:var(--accent);font-size:.85rem">{t["num"]}-{c["num"]}</span> {c["title"]}</h3>')
-            b.append(f'<pre>{c["prompt"]}</pre>')
-            b.append(f'<div class="cover" style="margin:.8rem 0 0;padding:.6rem .9rem;background:var(--ground)">'
-                     f'<div class="row" style="border:0;padding:0"><span class="k">解决痛点</span><span class="v">{c["problem"]}</span></div>'
-                     f'<div class="row" style="border:0;padding:0"><span class="k">验收判定</span><span class="v">{c["verdict"]}</span></div></div>')
-            b.append('</div>')
+    b.append('<h2>实战战斗 Prompt 专区（36 条原则）</h2>')
+    b.append('<p class="h2sub">涵盖 Agent 工程、上下文、Eval 评测、创意流、产品增长与数据研究 6 大主题的完整口令与验收判定，已统一收口至单源页面，不再跨页重复拷贝。</p>')
+    b.append('<div class="note"><b>前往单源全表：</b><a href="cheatsheet.html">查看实战作战手卡 · 36 条完整口令与验收判定</a></div>')
 
     return page('prompts', '提示词库', '\n'.join(b), '<a href="./">总览</a> / 提示词库')
 

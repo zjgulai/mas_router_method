@@ -45,9 +45,9 @@ Main Agent 不是通用闲聊机器人。它以仓库中的已验证事实（代
         ('feishu-surface', '飞书网关', '事件验签、3秒异步应答、幂等去重、长连接与 Webhook。'),
         ('long-running-tasks', '长任务处理', '超长任务回执确认、异步队列调度与任务进度通知。'),
     ]
-    b.append('<div class="grid two">'
-             + ''.join(f'<div class="card" id="node-{k}"><h3>{title} <span style="font-family:var(--mono);font-size:.75rem;color:var(--faint);font-weight:400">{k}</span></h3><p style="margin:0;font-size:.88rem;color:var(--muted)">{desc}</p></div>' for k, title, desc in nodes)
-             + '</div>')
+    b.append('<table><thead><tr><th style="width:22%">节点名称</th><th style="width:26%">节点 ID</th><th>主责范围</th></tr></thead><tbody>'
+             + ''.join(f'<tr id="node-{k}"><td><b>{title}</b></td><td><code>{k}</code></td><td>{desc}</td></tr>' for k, title, desc in nodes)
+             + '</tbody></table>')
 
     b.append('<h2 id="routes">三、急诊分诊台：症状 → 首检 → 处方</h2>')
     b.append('<p class="h2sub">用户描述症状时，路由引擎优先匹配首检成本最低的路线。</p>')
