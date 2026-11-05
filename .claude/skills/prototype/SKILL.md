@@ -16,6 +16,20 @@ Identify which question is being answered, using the user's prompt, the surround
 
 The two branches produce very different artifacts, so getting this wrong wastes the whole prototype. If the question is genuinely ambiguous and the user isn't reachable, default to whichever branch better matches the surrounding code (a backend module → logic; a page or component → UI) and state the assumption at the top of the prototype.
 
+## Whatever the branch, the prototype ends in evidence
+
+A prototype whose output is "here are three options, which do you prefer?" has
+handed the decision back to the asker. [EVIDENCE.md](EVIDENCE.md) governs how
+either branch turns into a decision: name the decision and its falsifier before
+building, keep the variants differing only on the decided axis, observe each one on
+the surface the decision will live on, rule out that the observation measured
+something else, and reply with a comparison and a recommendation rather than a
+menu. When the evidence is unambiguous, decide and go build — escalating a settled
+question is work handed back that was already done.
+
+Read it before building, not after. A prototype built without a named falsifier
+usually cannot answer its own question, and no amount of screenshots fixes that.
+
 ## Rules that apply to both
 
 1. **Throwaway from day one, and clearly marked as such.** Locate the prototype code close to where it will actually be used (next to the module or page it's prototyping for) so context is obvious, but name it so a casual reader can see it's a prototype, not production. For throwaway UI routes, obey whatever routing convention the project already uses; don't invent a new top-level structure.
