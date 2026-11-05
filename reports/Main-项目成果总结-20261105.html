@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Main 项目成果总结 · 2026-11-05</title>
+<style>
+  :root {
+    --ink: #1a1d21; --ink-2: #4a4f56; --ink-3: #8a9098;
+    --paper: #fafaf8; --card: #ffffff; --line: #e5e3de;
+    --accent: #0f6b5c; --accent-soft: #e8f2ef;
+    --warn: #9a5b00; --warn-soft: #fdf3e3; --bad: #a03030; --bad-soft: #faeaea;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 36px; }
+  header h1 { font-size: 30px; line-height: 1.3; margin: 0 0 12px; letter-spacing: -0.01em; }
+  header .meta { color: var(--ink-3); font-size: 14px; }
+  header .meta span { margin-right: 18px; }
+  .lede { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 16px 20px; margin: 0 0 16px; font-size: 16.5px; }
+  .alert { background: var(--warn-soft); border-left: 4px solid var(--warn); padding: 14px 20px; margin: 16px 0 40px; font-size: 15px; }
+  .alert strong.bad { color: var(--bad); }
+  .alert strong.ok { color: #0a5c4a; }
+  .alert ul { margin: 8px 0 2px; }
+  h2 { font-size: 21px; margin: 56px 0 16px; padding-top: 12px; border-top: 1px solid var(--line); letter-spacing: -0.005em; }
+  h2 .num { color: var(--accent); font-family: var(--mono); font-size: 17px; margin-right: 10px; }
+  h3 { font-size: 17px; margin: 28px 0 10px; }
+  p { margin: 10px 0; }
+  ul { padding-left: 22px; margin: 10px 0; }
+  li { margin: 5px 0; }
+  pre { background: #f4f3ef; border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14.5px; }
+  th { text-align: left; padding: 9px 12px; background: var(--ink); color: var(--paper); font-weight: 600; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+  td code, p code, li code { font-family: var(--mono); font-size: 0.86em; background: rgba(15,107,92,0.07); color: var(--accent); padding: 1px 5px; border-radius: 4px; }
+  code { word-break: break-all; }
+  .s-done { color: #0a5c4a; font-weight: 600; }
+  .s-warn { color: var(--warn); font-weight: 600; }
+  .s-fail { color: var(--bad); font-weight: 600; }
+  .strike { text-decoration: line-through; color: var(--ink-3); }
+  .footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 13px; }
+  @media (max-width: 640px) {
+    body { font-size: 15px; }
+    .wrap { padding: 28px 16px 64px; }
+    header h1 { font-size: 24px; }
+    th { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Main 项目成果总结</h1>
+  <div class="meta">
+    <span>日期 2026-11-05</span>
+    <span>范围 Recipe Agent + Main Agent</span>
+    <span>每日成果总结 SOP</span>
+  </div>
+</header>
+
+<div class="lede">
+<strong>一句话结论</strong>：当日零新提交，全仓 280 个单元/集成测试实跑全部通过（已验证），Recipe eval 基线维持 14/14（2026-11-02T00:30Z，$4.84，无新运行）；但 <strong>11-04 已修复的二进制形态问题当日复发并实跑验证为失败</strong>——<code>apps/workbench/src/app/layout.tsx</code> 再次被 Node/tsc 视为二进制（<code>TS1490</code>，typecheck 失败），工作树 64 个变更文件中 13 个文本文件 node/python 双侧字节视图不一致。昨日风险表“根因不明则可能复发”的判断在一天内兑现；根因排查仍未开始。
+</div>
+
+<div class="alert">
+<strong class="bad">失败与风险提示（不得写成全部通过）</strong>
+<ul>
+<li><strong class="bad">typecheck 失败：二进制形态问题复发（当日实跑验证为失败）</strong>。11-04 已归一化 12 个文件并复验 exit 0；今日 <code>layout.tsx</code> 再次中招且内容已不同于修复后快照——修复后又被改写、改写后再次损坏，损坏在写入路径。昨日风险表第 1 项当日兑现。</li>
+<li><strong>13 个文本文件处于二进制形态</strong>（64 个被检变更文件中），含 11-04 修复过的文件与 11-04 后新建的文件。</li>
+<li><code>rubric:transferability</code> 等 rubric 维度全部跳过（无 judge 凭据），行为质量<strong>未验证</strong>。</li>
+<li>Recipe 链路 Ticket 04（接线）<strong>未开始</strong>；真实群端到端<strong>未验证</strong>。</li>
+</ul>
+</div>
+
+<h2><span class="num">1</span>总览</h2>
+<table>
+<tr><th>指标</th><th>数值</th><th>来源</th></tr>
+<tr><td>单元/集成测试</td><td><strong class="s-done">280 个，全部通过</strong>（core 32 + feishu 24 + consult 58 + bot-gateway 61 + evals 105；workbench 无测试文件）</td><td><code>pnpm -r --no-bail test</code>（exit 0）</td></tr>
+<tr><td>全仓 typecheck</td><td><strong class="s-fail">失败</strong>：6 包 Done，<code>apps/workbench</code> 报 <code>layout.tsx(1,1): TS1490: File appears to be binary</code>（exit 1）</td><td><code>pnpm -r --no-bail typecheck</code>（2026-11-05 实跑）</td></tr>
+<tr><td>当日新提交</td><td><strong>0 个</strong>；最新提交仍为 2026-11-03 的 <code>309060c</code></td><td><code>git log --since="2026-11-04 00:00"</code>（空）</td></tr>
+<tr><td>未提交变更</td><td><strong>70 个文件</strong>（58 修改 + 12 新增），较昨日 62 继续增长</td><td><code>git status --porcelain</code></td></tr>
+<tr><td>二进制形态文件</td><td><strong>13 个文本文件</strong>双侧不一致（64 个被检变更文件中；真二进制图片排除）</td><td>2026-11-05 双侧扫描实跑</td></tr>
+<tr><td>ADR 决议</td><td>10 篇（0001–0010），无新增</td><td><code>docs/adr/</code></td></tr>
+<tr><td>Recipe Agent eval</td><td>14 案例，基线 <strong>14/14 全通过</strong>；确定性规则全绿；rubric 维度全部跳过</td><td><code>packages/evals/baselines/current.json</code>（ranAt 2026-11-02T00:30:27Z）</td></tr>
+<tr><td>本轮 eval 花费</td><td>$4.84（基线）+ $0.38 + $0.43（11-02 复验）≈ $5.66；<strong>11-03 起无新运行，零花费</strong></td><td><code>packages/evals/runs/</code>（最新 2026-11-02T01-21-09Z）</td></tr>
+<tr><td>Main Agent eval</td><td>150 案例，自动检查 150/150，确定性 rubric 均分 0.99（LLM judge 已接未验证）；真人 @Main 验收仍 0 通过待重测</td><td><code>docs/product/main-agent-capability-graph.md</code></td></tr>
+<tr><td>站点构建自检</td><td><code>node --test scripts/site/build.test.mjs</code> <strong class="s-done">6/6 通过</strong>（2026-11-05 实跑）</td><td><code>scripts/site/build.test.mjs</code></td></tr>
+<tr><td>新增读取层测试</td><td><code>scripts/read-text.test.mjs</code> <strong class="s-done">5/5 通过</strong>（未提交新模块，2026-11-05 实跑）</td><td><code>scripts/read-text.test.mjs</code></td></tr>
+</table>
+
+<h2><span class="num">2</span>架构：一条依赖方向，两个 surface</h2>
+<pre>apps/workbench ──┐
+                 ├──→ packages/core ──→ packages/shared
+apps/bot-gateway ┘         │
+                           └─→ packages/feishu
+packages/evals ──→ packages/core, packages/shared
+packages/consult ──→ 便携知识 bundle（自包含）</pre>
+<ul>
+<li>依赖只能单向：<code>shared ← core ← apps</code>，<code>evals → core/shared</code>；<code>packages/shared</code> 是唯一 schema 层，不 import 仓库内任何包；两个 surface 只调用 runtime，不互相 import。边界由 10 篇 ADR 固化（<code>docs/adr/0001</code>–<code>0010</code>）。当日依赖结构无变更。</li>
+<li><strong>当日工作树变化（均未提交）</strong>：
+  <ul>
+  <li>新增 <code>scripts/read-text.mjs</code>——自称“本工作区 Markdown 的唯一读取器”：合法文本直接返回；<code>.md</code> 带二进制字节时回退 python utf-8 通道并复验；<strong>绝不</strong>为读不到的文件返回空串（头部注释记录第一次事故：<code>work check</code> 读到 Node 垃圾字节，把有证据的 done 票据误报为 "records no evidence"，INC-001/INC-002）。配套测试 5/5 实跑全绿。</li>
+  <li><code>scripts/work.test.mjs</code> 增加约 92 行挂载怪癖 CLI 探针——注释明确这是唯一能诚实复现“Node 对合法文件返回二进制”的位测试点。</li>
+  <li>新增 <code>.claude/skills/prototype/EVIDENCE.md</code>：原型必须“从用户行为读出决策”，不允许“三选一你挑”把决策推回提问者；<code>SKILL.md</code> 同步修改。</li>
+  <li>新增 <code>.scratch/anb-toolchain/onepager/</code> 与 <code>toolchain-full.png</code>：ANB 工具链一页纸资产。</li>
+  <li>11-04 已记录、仍留在工作树：<code>architecture/</code> 全景图、<code>docs/site/architecture.html</code> + 生成器、网站暖粉视觉重构、<code>facts.mjs</code> 的 <code>readText()</code> 兜底。</li>
+  </ul></li>
+</ul>
+
+<h3>二进制形态当日清单（实跑扫描，2026-11-05）</h3>
+<p>扫描方法：对 <code>git status --porcelain</code> 的 64 个非报告变更文件，比较 python3 解码文本与 node 读出文本；不一致即二进制形态。</p>
+<table>
+<tr><th>#</th><th>文件</th><th>python 侧</th><th>node 侧</th></tr>
+<tr><td>1</td><td><code>apps/workbench/src/app/layout.tsx</code></td><td>4768B</td><td>8864B（2177 个 U+FFFD），<strong class="s-fail">tsc TS1490</strong></td></tr>
+<tr><td>2</td><td><code>.claude/skills/prototype/SKILL.md</code></td><td>3765B</td><td>11221B</td></tr>
+<tr><td>3</td><td><code>docs/skills/skill-catalog.md</code></td><td>24091B</td><td>47442B</td></tr>
+<tr><td>4</td><td><code>scripts/site/build_cheatsheet.py</code></td><td>5118B</td><td>13394B</td></tr>
+<tr><td>5</td><td><code>scripts/site/build_matrix.py</code></td><td>18002B</td><td>37086B</td></tr>
+<tr><td>6</td><td><code>scripts/site/build_pages.py</code></td><td>44083B</td><td>83476B</td></tr>
+<tr><td>7</td><td><code>scripts/site/build_prompts.py</code></td><td>25551B</td><td>50613B</td></tr>
+<tr><td>8</td><td><code>scripts/site/build_shell.py</code></td><td>16230B</td><td>33316B</td></tr>
+<tr><td>9</td><td><code>scripts/site/build_skills.py</code></td><td>8582B</td><td>19868B</td></tr>
+<tr><td>10</td><td><code>scripts/site/build_tables.py</code></td><td>17601B</td><td>36099B</td></tr>
+<tr><td>11</td><td><code>scripts/site/map.py</code></td><td>19924B</td><td>40323B</td></tr>
+<tr><td>12</td><td><code>.claude/skills/prototype/EVIDENCE.md</code>（新文件）</td><td>5796B</td><td>14429B</td></tr>
+<tr><td>13</td><td><code>scripts/site/build_architecture.py</code>（新文件）</td><td>8948B</td><td>20422B</td></tr>
+</table>
+<p>观察到的模式（<strong class="s-warn">未确认</strong>，样本 13 个）：11-04 修复后未被再次编辑的文件（ticket 03 台账、<code>work/LAYOUT.md</code>）保持双侧一致；修复后又被编辑的文件（如 <code>layout.tsx</code>，内容与修复后快照不同）再次损坏；11-04 之后新建的文件（<code>EVIDENCE.md</code>、<code>build_architecture.py</code>）一落盘即中招。与“损坏发生在本挂载点写入路径”的判断一致，但写入侧机制<strong>未确认</strong>。</p>
+
+<h2><span class="num">3</span>Recipe Agent：从爆款视频到可执行 Recipe</h2>
+
+<h3>3.1 产品定义</h3>
+<p>输入一条 TikTok 爆款参考视频，产出一份 <strong>Recipe</strong>：该视频的可克隆抽象，重新绑定到一个品牌——hook、节拍、口播、字幕公式、音频方向（<code>GLOSSARY.md</code>）。人是审阅单位，摄影师是执行单位。</p>
+
+<h3>3.2 已交付（<span class="s-done">已验证</span>）</h3>
+<table>
+<tr><th>模块</th><th>内容</th><th>测试</th></tr>
+<tr><td><code>packages/shared</code></td><td>领域对象唯一真源：Recipe、Reference、Analysis、Run、Brand 全部 Zod schema</td><td>随 core 覆盖</td></tr>
+<tr><td><code>packages/core</code></td><td><code>run-agent.ts</code> 单文件 agent 循环：预算执行（<code>maxBudgetUsd</code> + 循环内双重检查）、取消、成本核算（读 <code>modelUsage</code>）；工具走端口接口；SQLite + vod 适配器；4 个种子品牌</td><td>32</td></tr>
+<tr><td><code>packages/evals</code></td><td>14 案例 harness + 15 条确定性规则 + rubric judge（已接 LLM，待 key）+ 基线快照机制</td><td>105</td></tr>
+<tr><td>工具失败契约</td><td><code>ok()/err()/guard()</code>：失败是值不是异常（ADR-0003）</td><td>随 core 覆盖</td></tr>
+</table>
+
+<h3>3.3 Eval 即 spec：14/14 基线（维持，无新运行）</h3>
+<p>基线仍为 2026-11-02T00:30Z 的 14/14 全通过（<code>current.json</code>，$4.84，model <code>opus/claude-opus-4-8:max[1m]</code>）；最新运行记录仍是同日 01:21Z 的 <code>high-abstraction</code> 单案复验通过（$0.43）。11-03 起无任何新 eval 运行——按“行为变了才跑 eval”的纪律，当日无 prompt/工具/schema 变更，不跑是对的；open 项仍是 rubric 维度未验证（见第 1 节）。</p>
+
+<h3>3.4 飞书 Recipe 交付管线（截至 11-03，无当日新变更）</h3>
+<p><code>feishu-recipe-delivery</code> 进度：Ticket 01（intent 路由，<code>f2cb913</code>）<span class="s-done">✅</span> → Ticket 02（异步 ack→队列→投递，<code>89b32f9</code>）<span class="s-done">✅</span> → Ticket 03（卡片 + 全文格式，<code>309060c</code>）<span class="s-done">✅</span> → <strong>Ticket 04（接线，<span class="s-warn">未开始</span>）</strong>。台账三日无漂移：01/02/03 的 <code>Status: done</code> 与提交号一致（2026-11-05 实读复核）。</p>
+<p><strong>验证状态</strong>：单测（bot-gateway 61）已验证；typecheck 今日 bot-gateway 包 Done；真实飞书群端到端投递<strong class="s-warn">未验证</strong>——Ticket 04（RecipeRunner 接入 <code>packages/core</code> 的 <code>run()</code>）是下一步第一优先。</p>
+
+<h2><span class="num">4</span>Main Agent：方法文档变成群里可用的咨询 Agent</h2>
+<p>2026-10-29 交付，当日无代码变更。完整验收与限制见 <code>docs/product/main-agent-capability-graph.md</code>。</p>
+
+<h3>4.1 已交付（<span class="s-done">已验证</span>）</h3>
+<ul>
+<li><strong>能力图谱</strong>（<code>packages/consult</code>）：四条轴、20 个节点、17 条症状路由；1128 chunk BM25 检索；六段固定回答契约（【结论】【定位】【依据】【下一步】【边界】【证据】）；错误前提纠正 / 冲突取舍 / 无依据拒答三类直接 play；58 测试。</li>
+<li><strong>飞书网关</strong>（<code>apps/bot-gateway</code>）：WebSocket 长连接（在线 v1.0.5）+ HTTP webhook 双模式；幂等（<code>event_id</code> TTL 10 分钟，进程内）、per-chat 队列（同群串行、3 秒回执）、thread 会话 SQLite 持久化；61 测试。</li>
+</ul>
+
+<h3>4.2 验收状态（照录 capability doc，未验证项如实列出）</h3>
+<ul>
+<li>自动检查 150/150；人工判定 150 可用 / 0 需改进；确定性 rubric 均分 0.99；AI 盲评 6 轮最终 0 条需改进。</li>
+<li><strong>真实使用</strong>：14 天快照 252 条消息、2 次 @Main、1 个唯一问题、<strong>0 条可见答案</strong>；live check 历史 2 问 0 通过（均在 parser 修复前），等待真人重测；人类盲评包 30 条已生成，结果表 pending。</li>
+<li><strong>未完成清单（照录）</strong>：真实问答验收未完成；生产部署单实例；幂等进程内（重启不保）；LLM judge 无 key；权限静态配置；自写对抗样本占比待分桶；多实例未实现（ADR 0010 Postgres 方案未动工）。</li>
+</ul>
+
+<h2><span class="num">5</span>质量纪律</h2>
+<ul>
+<li><strong>双测试纪律执行</strong>：280 个单测实跑 exit 0（零模型调用）；eval runs 无新增（最近一次 2026-11-02T01:21Z），无 eval 花费发生；当日无行为变更，不跑 eval 符合纪律。</li>
+<li><strong>typecheck 失败如实上报</strong>：11-04 的“已修复并复验全绿”不掩盖今日复发——本报告把复发写进总览与风险表第 1 位，而不是只在产品线小节带过。失败信息完整：包名、文件、行号、错误码、双侧字节证据。</li>
+<li><strong>读取侧防线落地（未提交）</strong>：<code>scripts/read-text.mjs</code>（5 测试全绿）+ <code>work.test.mjs</code> 的挂载探针（+92 行）——把“Node 读到垃圾但不报错”这个最危险的失败模式（静默错误而非异常）变成有测试锚定的单一读取通道。注意：这是<strong>读取侧缓解</strong>；写入侧复发（今日实锤）它管不住。</li>
+<li><strong>单源纪律</strong>：种子品牌仍在 <code>packages/core/src/seed/brands.ts</code>；无第二份 schema；eval fixtures 无种子数据拷贝。</li>
+<li><strong>台账纪律</strong>：三个 ticket 的 Status 字段与提交号实读复核一致；Ticket 04 仍无台账文件（未开始）。</li>
+<li><strong>状态词纪律</strong>：工作状态（已完成/未开始）与验证状态（已验证/未验证/失败/跳过）分列；本报告自身的两个文件在写入后做了 node/python 双侧字节一致性检查（见第 7 节）。</li>
+</ul>
+
+<h2><span class="num">6</span>未完成与下一步（按风险排序）</h2>
+<table>
+<tr><th>#</th><th>事项</th><th>状态</th><th>风险</th><th>来源</th></tr>
+<tr><td>1</td><td><strong>二进制形态写入侧根因排查 + 修复</strong>：11-04 归一化修复今日复发（layout.tsx 等 13 文件），证明按内容重写不是持久修复</td><td><strong class="s-warn">进行中</strong>（复发已验证；根因排查未开始）</td><td><strong class="s-fail">高</strong>——每次编辑任何文件都可能再次损坏，且 Node 侧是静默错误，CI/构建必挂</td><td>2026-11-05 typecheck TS1490 实跑 + 双侧扫描</td></tr>
+<tr><td>2</td><td>双侧字节一致性门禁进 CI：新建/修改文件落盘即比对 node/python 视图，拦在合入前</td><td><span class="s-warn">未开始</span></td><td><strong class="s-fail">高</strong>——#1 根因不明期间，这是唯一可部署的拦截手段</td><td>11-04/11-05 两日报告</td></tr>
+<tr><td>3</td><td>Ticket 04：RecipeRunner 接入真实 runtime（<code>packages/core</code> 的 <code>run()</code>）</td><td><span class="s-warn">未开始</span></td><td><strong class="s-fail">高</strong>——不接线，02/03 交付物只是被测代码，群内不可用</td><td><code>.scratch/feishu-recipe-delivery/issues/</code></td></tr>
+<tr><td>4</td><td>Recipe 链路真实群端到端验收（卡片渲染、3 秒 ack）</td><td><span class="s-warn">未验证</span>（依赖 #3）</td><td><strong class="s-fail">高</strong></td><td>Ticket 02/03 Done-when 条目</td></tr>
+<tr><td>5</td><td>rubric judge 凭据配置，跑 <code>rubric:transferability</code> 等维度</td><td><span class="s-warn">未验证</span>（跳过中）</td><td>中——14/14 只覆盖确定性规则</td><td><code>current.json</code> skipped 字段</td></tr>
+<tr><td>6</td><td>70 文件未提交变更分批入库（读取层防线、EVIDENCE.md、ANB 一页纸、网站重构、架构全景图、四期报告）</td><td><span class="s-warn">进行中</span></td><td>中——长期不提交有丢失与漂移风险；且入库动作本身会经过写路径</td><td><code>git status --porcelain</code></td></tr>
+<tr><td>7</td><td>workbench 审阅队列（占位页功能本身）</td><td><span class="s-warn">未开始</span></td><td>中——全文截断后的 workbench 指引指向占位页</td><td><code>apps/workbench/src/app/page.tsx</code></td></tr>
+<tr><td>8</td><td>Main Agent 真人 @Main 验收 + live check 重测</td><td><span class="s-warn">未验证</span>（等真人操作）</td><td>低</td><td><code>docs/product/main-agent-capability-graph.md</code> 验收节</td></tr>
+<tr><td>9</td><td>feishu 包 HTTP server（webhook 部署形态）</td><td><span class="s-warn">未开始</span></td><td>低——长连接模式已可用</td><td>CLAUDE.md 当前状态节</td></tr>
+</table>
+<p>与昨日相比的变化：#1 从“已关闭（根因未查）”<strong>重新打开并升至首位</strong>（复发已验证）；新增 #2（CI 门禁）作为根因排查期间的工程化拦截。</p>
+
+<h2><span class="num">7</span>数据来源</h2>
+<ul>
+<li>测试：<code>pnpm -r --no-bail test</code>（2026-11-05 实跑，exit 0；core 32 / feishu 24 / consult 58 / bot-gateway 61 / evals 105 = 280；workbench 无测试文件）。</li>
+<li>typecheck：<code>pnpm -r --no-bail typecheck</code>（2026-11-05 实跑，exit 1——6 包 Done，<code>apps/workbench</code> 报 <code>src/app/layout.tsx(1,1): error TS1490: File appears to be binary</code>）。</li>
+<li>二进制形态证据：<code>apps/workbench/src/app/layout.tsx</code>——python3 -I 读 4768 字节（sha256 <code>8e32045c</code>，合法 UTF-8，0 个 NUL，首 8 字节 <code>import t</code>），node 读 8864 字节（sha256 <code>36943e68</code>，2177 个 U+FFFD）；11-04 修复后快照为 4793 字节 / sha256 <code>1178a4b3</code>（见 <code>reports/Main-项目成果总结-20261104.md</code>）。</li>
+<li>双侧扫描：对 64 个非报告变更文件逐一比对 python 解码文本与 node 读出文本，13 个不一致（清单见第 2 节）；<code>toolchain-full.png</code> 为真二进制图片，排除。</li>
+<li>提交：<code>git log --since="2026-11-04 00:00"</code> 空——11-04、11-05 两日 0 新提交；最新 <code>309060c</code>（2026-11-03）。</li>
+<li>工作树：<code>git status --porcelain</code>——58 修改 + 12 新增 = 70 文件。</li>
+<li>Eval 基线：<code>packages/evals/baselines/current.json</code>（ranAt 2026-11-02T00:30:27.020Z，14 案例 14 通过，totalCostUsd 4.8447，model <code>opus/claude-opus-4-8:max[1m]</code>）。</li>
+<li>Eval 运行记录：<code>packages/evals/runs/</code> 最新为 <code>2026-11-02T01-21-09-963Z-w44-ha-fixed.json</code>（high-abstraction 通过，$0.425）；11-03 起 <code>ls -t</code> 首位仍是它，无新运行。</li>
+<li>新增防线：<code>scripts/read-text.mjs</code>（INC-001/INC-002 记录于头部注释）、<code>scripts/read-text.test.mjs</code>（5/5 通过，2026-11-05 实跑）、<code>scripts/work.test.mjs</code>（+92 行挂载探针）。</li>
+<li>站点自检：<code>node --test scripts/site/build.test.mjs</code>（2026-11-05，6/6 通过）。</li>
+<li>文档：<code>CLAUDE.md</code> 当前状态节、<code>docs/product/main-agent-capability-graph.md</code>、<code>docs/adr/0001</code>–<code>0010</code>、<code>GLOSSARY.md</code>、<code>docs/skills/skill-catalog.md</code>、<code>.scratch/feishu-recipe-delivery/issues/01–03</code>（Status 字段实读复核）。</li>
+<li>前期报告：<code>reports/Main-项目成果总结-20261104.md</code>（12 文件修复记录与 4793B/<code>1178a4b3</code> 快照；风险表 #1“根因未查、可能复发”，今日兑现）。</li>
+<li>本报告自检：两个文件写入后经 node/python 双侧字节比对一致（若不一致会以 python 通道归一化重写——11-04 的教训已内建为本报告 SOP 的一步）。</li>
+</ul>
+
+<div class="footer">数据截至 2026-11-05 实跑 · 测试 exit 0 / typecheck exit 1（二进制形态复发）· 本报告由每日成果总结 SOP 生成（真源读取 → 实跑验证 → 固定状态词 → 双侧字节自检）</div>
+
+</div>
+</body>
+</html>

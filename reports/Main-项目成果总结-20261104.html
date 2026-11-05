@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Main 项目成果总结 · 2026-11-04</title>
+<style>
+  :root {
+    --ink: #1a1d21; --ink-2: #4a4f56; --ink-3: #8a9098;
+    --paper: #fafaf8; --card: #ffffff; --line: #e5e3de;
+    --accent: #0f6b5c; --accent-soft: #e8f2ef;
+    --warn: #9a5b00; --warn-soft: #fdf3e3; --bad: #a03030; --bad-soft: #faeaea;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 36px; }
+  header h1 { font-size: 30px; line-height: 1.3; margin: 0 0 12px; letter-spacing: -0.01em; }
+  header .meta { color: var(--ink-3); font-size: 14px; }
+  header .meta span { margin-right: 18px; }
+  .lede { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 16px 20px; margin: 0 0 16px; font-size: 16.5px; }
+  .alert { background: var(--warn-soft); border-left: 4px solid var(--warn); padding: 14px 20px; margin: 16px 0 40px; font-size: 15px; }
+  .alert strong.bad { color: var(--bad); }
+  .alert strong.ok { color: #0a5c4a; }
+  .alert ul { margin: 8px 0 2px; }
+  h2 { font-size: 21px; margin: 56px 0 16px; padding-top: 12px; border-top: 1px solid var(--line); letter-spacing: -0.005em; }
+  h2 .num { color: var(--accent); font-family: var(--mono); font-size: 17px; margin-right: 10px; }
+  h3 { font-size: 17px; margin: 28px 0 10px; }
+  p { margin: 10px 0; }
+  ul { padding-left: 22px; margin: 10px 0; }
+  li { margin: 5px 0; }
+  pre { background: #f4f3ef; border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14.5px; }
+  th { text-align: left; padding: 9px 12px; background: var(--ink); color: var(--paper); font-weight: 600; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+  td code, p code, li code { font-family: var(--mono); font-size: 0.86em; background: rgba(15,107,92,0.07); color: var(--accent); padding: 1px 5px; border-radius: 4px; }
+  code { word-break: break-all; }
+  .s-done { color: #0a5c4a; font-weight: 600; }
+  .s-warn { color: var(--warn); font-weight: 600; }
+  .s-fail { color: var(--bad); font-weight: 600; }
+  .strike { text-decoration: line-through; color: var(--ink-3); }
+  .footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 13px; }
+  @media (max-width: 640px) {
+    body { font-size: 15px; }
+    .wrap { padding: 28px 16px 64px; }
+    header h1 { font-size: 24px; }
+    th { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Main 项目成果总结 · 2026-11-04</h1>
+  <div class="meta">
+    <span>范围：Recipe Agent + Main Agent</span>
+    <span>测试实跑：280 通过</span>
+    <span>typecheck：发现失败→当日修复→复跑全绿</span>
+    <span>当日提交：0</span>
+  </div>
+</header>
+
+<div class="lede">
+<strong>一句话结论</strong>：当日零新提交，全仓 280 个单元/集成测试实跑全部通过；Recipe eval 基线维持 <strong>14/14 全通过</strong>（2026-11-02T00:30Z，$4.84，已验证）。当日实跑 typecheck 发现硬失败——工作树 62 个未提交文件中 12 个以 Node 视为二进制的形态存储（含 <code>apps/workbench/src/app/layout.tsx</code>，tsc 报 <code>TS1490: File appears to be binary</code>）——<strong>已在当日修复</strong>：12 个文件按 python 通道读出的真实内容归一化重写，全仓 7 包 typecheck 与 280 测试复跑全绿（已验证）。
+</div>
+
+<div class="alert">
+<strong class="bad">失败与风险提示（不得写成全部通过）</strong>
+<ul>
+<li><strong class="ok">workbench typecheck 失败→当日修复（已验证）</strong>：当日实跑发现工作树未提交文件中 <strong>12 个</strong>以 Node 视为二进制的形态存储（两侧字节差恒为 4096：<code>layout.tsx</code>、ticket 03 台账、<code>skill-catalog.md</code>、6 个 <code>scripts/site/*.py</code>、<code>work/LAYOUT.md</code>，及本报告 <code>.md</code> 自身）。<code>apps/workbench/src/app/layout.tsx</code> 因此 typecheck 失败：Python 读 4793 字节合法 UTF-8（sha256 <code>1178a4b3…</code>），Node/tsc 读 8889 字节且含非法序列（sha256 <code>520d500d…</code>），tsc 报 <code>layout.tsx(1,1) TS1490: File appears to be binary</code>。<strong>修复</strong>：以 python 通道读出的真实内容归一化写回（<code>.tsx/.py</code> 原位写，3 个 <code>.md</code> 因原位写不生效改用临时文件 + <code>os.replace</code> 换 inode）。<strong>复跑验证</strong>：57 个变更文件 node/python 双侧字节视图全部一致；全仓 7 包 typecheck exit 0；280 测试 exit 0。教训：该现象的暴露面不限于 Markdown，<code>.ts/.tsx/.py</code> 同样中招，新建文件后必须做双侧字节一致性检查。</li>
+<li><code>rubric:transferability</code> 等 rubric 维度在基线中全部 skipped，reason 为 "fast mode: rubric skipped"（无 judge 凭据）；rubric 维度的行为质量<strong>未验证</strong>。</li>
+<li>Recipe 链路（Ticket 02/03）仍未在真实飞书群端到端验证；Ticket 04（接线）未开始。</li>
+</ul>
+</div>
+
+<h2><span class="num">1</span>总览</h2>
+<table>
+<tr><th>指标</th><th>数值</th><th>来源</th></tr>
+<tr><td>单元/集成测试</td><td><strong>280 个，全部通过</strong>（core 32 + feishu 24 + consult 58 + bot-gateway 61 + evals 105；workbench 无测试文件）</td><td><code>pnpm -r --no-bail test</code>（exit 0）</td></tr>
+<tr><td>全仓 typecheck</td><td><span class="s-done">已修复</span>：当日首次实跑失败（workbench <code>TS1490</code>，exit 1）；修复 12 个二进制形态文件后复跑，7 包全部通过（exit 0）</td><td><code>pnpm -r --no-bail typecheck</code>（修复后 exit 0）</td></tr>
+<tr><td>当日新提交</td><td><strong>0 个</strong>；最新提交仍为 2026-11-03 01:53 的 <code>309060c</code></td><td><code>git log</code></td></tr>
+<tr><td>未提交变更</td><td><strong>62 个文件</strong>（54 修改 + 8 新增）：网站暖粉品牌重构、<code>architecture/</code> 架构全景图、workbench 视觉刷新、<code>facts.mjs</code> 二进制读取通道、skill-catalog 34→36</td><td><code>git status --short</code></td></tr>
+<tr><td>ADR 决议</td><td>10 篇（0001–0010），无新增</td><td><code>docs/adr/</code></td></tr>
+<tr><td>Recipe Agent eval</td><td>14 案例，基线 <strong>14/14 全通过</strong>；确定性规则全绿；rubric 维度全部 skipped（无 judge 凭据）</td><td><code>packages/evals/baselines/current.json</code>（ranAt 2026-11-02T00:30:27Z）</td></tr>
+<tr><td>本轮 eval 花费</td><td>$4.84（基线）+ $0.38 + $0.43（两笔复验）≈ $5.66；11-03 / 11-04 无新 eval 运行</td><td><code>packages/evals/runs/</code></td></tr>
+<tr><td>Main Agent eval</td><td>150 案例，自动检查 150/150，确定性 rubric 均分 0.99（LLM judge 已接未验证）；真人 @Main 验收仍 0 通过待重测</td><td><code>docs/product/main-agent-capability-graph.md</code></td></tr>
+<tr><td>站点构建自检</td><td><code>node --test scripts/site/build.test.mjs</code> 6/6 通过（在未提交的工具链改动下仍绿）</td><td>2026-11-04 实跑</td></tr>
+</table>
+
+<h2><span class="num">2</span>架构：一条依赖方向，两个 surface</h2>
+<pre>
+apps/workbench ──┐
+                 ├──→ packages/core ──→ packages/shared
+apps/bot-gateway ┘         │
+                           └──→ packages/feishu
+packages/evals ──→ packages/core, packages/shared
+packages/consult ──→ 便携知识 bundle（自包含）
+</pre>
+<ul>
+<li>依赖只能单向：<code>shared ← core ← apps</code>，<code>evals → core/shared</code>；<code>packages/shared</code> 是唯一 schema 层，不 import 仓库内任何包；两个 surface 只调用 runtime，不互相 import。该边界由 10 篇 ADR 固化（<code>docs/adr/0001</code>–<code>0010</code>）。当日依赖结构无变更。</li>
+<li><strong>当日架构侧变化（均未提交）</strong>：
+<ul>
+<li>新增 <code>architecture/</code> 全产品架构全景图（<code>mas-router-panorama.{spec.json,html,png,md,mmd}</code> 共 5 文件），由 <code>@rokoai/arch-diagram</code> 生成，覆盖 Recipe Agent、Main Agent、ANB 方法论与生成站点、开发工具链五组模块及单向依赖/契约约束关系。</li>
+<li><code>work/LAYOUT.md</code> 更新目录契约：<code>architecture/</code>（全景图住处）与 <code>reports/</code>（阶段报告快照）入表（+3/-1）。</li>
+<li>新增站点页 <code>docs/site/architecture.html</code> 与生成器 <code>scripts/site/build_architecture.py</code>；该生成器写入时曾为二进制形态，本日已随批次归一化修复。</li>
+<li><code>scripts/facts.mjs</code>（+26/-4）：新增 <code>readText()</code>——<code>.md</code> 文件与 Node 读取失败时回退 <code>python3 -I</code> 通道，把二进制形态问题在 facts 校验层工具化兜底。这是读取侧缓解，本日的归一化是第一次写入侧根治。</li>
+</ul></li>
+</ul>
+
+<h2><span class="num">3</span>Recipe Agent：从爆款视频到可执行 Recipe</h2>
+
+<h3>3.1 产品定义</h3>
+<p>输入一条 TikTok 爆款参考视频，产出一份 <strong>Recipe</strong>：该视频的可克隆抽象，重新绑定到一个品牌——hook、节拍、口播、字幕公式、音频方向（<code>GLOSSARY.md</code>）。人是审阅单位，摄影师是执行单位。</p>
+
+<h3>3.2 已交付（已验证）</h3>
+<table>
+<tr><th>模块</th><th>内容</th><th>测试</th></tr>
+<tr><td><code>packages/shared</code></td><td>领域对象唯一真源：Recipe、Reference、Analysis、Run、Brand 全部 Zod schema</td><td>随 core 覆盖</td></tr>
+<tr><td><code>packages/core</code></td><td><code>run-agent.ts</code> 单文件 agent 循环：预算执行（<code>maxBudgetUsd</code> + 循环内双重检查）、取消、成本核算（读 <code>modelUsage</code>）；工具走端口接口；SQLite + vod 适配器；4 个种子品牌</td><td>32</td></tr>
+<tr><td><code>packages/evals</code></td><td>14 案例 harness + 15 条确定性规则 + rubric judge（已接 LLM，待 key）+ 基线快照机制</td><td>105</td></tr>
+<tr><td>工具失败契约</td><td><code>ok()/err()/guard()</code>：失败是值不是异常（ADR-0003）</td><td>随 core 覆盖</td></tr>
+</table>
+
+<h3>3.3 Eval 即 spec：14/14 基线（维持，无新运行）</h3>
+<p><code>high-abstraction</code> 争议已于 2026-11-02 闭环：期望修复（<code>b333536</code>，硬阈值改可迁移性评审）→ 基线重跑 14/14（<code>current.json</code>，2026-11-02T00:30Z，$4.84）→ 单案复验通过（01:21Z，$0.43）。当日及昨日无新 eval 运行；open 项仍是 rubric 维度未验证（见第 1 节）。</p>
+
+<h3>3.4 飞书 Recipe 交付管线（截至 11-03，无当日新变更）</h3>
+<p><code>feishu-recipe-delivery</code> 进度：Ticket 01（intent 路由，<code>f2cb913</code>）<span class="s-done">✅</span> → Ticket 02（异步 ack→队列→投递，<code>89b32f9</code>）<span class="s-done">✅</span> → Ticket 03（卡片 + 全文格式，<code>309060c</code>）<span class="s-done">✅</span> → <strong>Ticket 04（接线，<span class="s-fail">未开始</span>）</strong>。</p>
+<ul>
+<li>Ticket 03 的 <code>Status: done</code> 台账补记在工作树未提交（<code>.scratch/feishu-recipe-delivery/issues/03-recipe-card-format.md</code>，+7/-1；本日随批次归一化修复字节形态）。</li>
+<li><strong>验证状态</strong>：单测（bot-gateway 61）+ typecheck（bot-gateway 通过）已验证；真实飞书群端到端投递<strong>未验证</strong>——Ticket 04（RecipeRunner 接入 <code>packages/core</code> 的 <code>run()</code>）是下一步第一优先。</li>
+</ul>
+
+<h2><span class="num">4</span>Main Agent：方法文档变成群里可用的咨询 Agent</h2>
+<p>2026-10-29 交付，当日无代码变更。完整验收与限制见 <code>docs/product/main-agent-capability-graph.md</code>。</p>
+
+<h3>4.1 已交付（已验证）</h3>
+<ul>
+<li><strong>能力图谱</strong>（<code>packages/consult</code>）：四条轴、20 个节点、17 条症状路由；1128 chunk BM25 检索；六段固定回答契约（【结论】【定位】【依据】【下一步】【边界】【证据】）；错误前提纠正 / 冲突取舍 / 无依据拒答三类直接 play；58 测试。</li>
+<li><strong>飞书网关</strong>（<code>apps/bot-gateway</code>）：WebSocket 长连接（在线 v1.0.5）+ HTTP webhook 双模式；幂等（<code>event_id</code> TTL 10 分钟）、per-chat 队列（同群串行、3 秒回执）、thread 会话 SQLite 持久化；61 测试（含 11-03 新增 recipe 分支 16 个）。</li>
+</ul>
+
+<h3>4.2 验收状态（照录 capability doc，未验证项如实列出）</h3>
+<ul>
+<li>自动检查 150/150；人工判定 150 可用 / 0 需改进；确定性 rubric 均分 0.99；AI 盲评 6 轮最终 0 条需改进。</li>
+<li><strong>真实使用</strong>：14 天快照 252 条消息、2 次 @Main、1 个唯一问题、<strong>0 条可见答案</strong>；live check 历史 2 问 0 通过（均在 parser 修复前），等待真人重测；人类盲评包 30 条已生成，结果表 pending。</li>
+<li><strong>未完成清单（照录）</strong>：真实问答验收未完成；生产部署单实例；幂等进程内（重启不保）；LLM judge 无 key；权限静态配置；自写对抗样本占比待分桶；多实例未实现（ADR 0010 Postgres 方案未动工）。</li>
+</ul>
+
+<h2><span class="num">5</span>质量纪律</h2>
+<ul>
+<li><strong>双测试纪律执行</strong>：280 个单测实跑 exit 0（零模型调用）；eval runs 无新增（最近一次 2026-11-02T01:21Z），无 eval 花费发生。</li>
+<li><strong>typecheck 失败如实上报并当日闭环</strong>：layout.tsx 二进制形态是本工作区已知现象第一次打进 TypeScript 源文件，同批扫出 12 个中招文件并全部归一化修复（见第 1 节）。<code>facts.mjs</code> 的 <code>readText()</code> 兜底与 <code>scripts/materialize-main-knowledge.py</code> 是读取侧缓解；本次是第一次做写入侧根治（把文件修回普通 UTF-8）。</li>
+<li><strong>单源纪律执行一处修正</strong>：<code>docs/skills/skill-catalog.md</code> 仓库自带 skill 数 34 → 36（补记 <code>eval-triage</code>、<code>ste</code>——两者 11-02 已入库但清单漏记），仓库 skill 目录总数 53 → 55（未提交）。</li>
+<li><strong>台账纪律</strong>：Ticket 03 的 done 状态补记在工作树（未提交）；ticket 编号与结论未漂移。</li>
+<li><strong>状态词纪律</strong>：本报告沿用固定状态词；工作状态（已完成/未开始）与验证状态（已验证/未验证/失败）分列。</li>
+</ul>
+
+<h2><span class="num">6</span>未完成与下一步（按风险排序）</h2>
+<table>
+<tr><th>#</th><th>事项</th><th>状态</th><th>风险</th><th>来源</th></tr>
+<tr><td>1</td><td><span class="strike">修复 <code>layout.tsx</code> 二进制形态</span> → <strong>已完成并验证</strong>：12 个二进制形态文件归一化，typecheck/测试复跑全绿；遗留：写入侧为何产生二进制形态的根因未查，建议后续为 CI 增加双侧字节一致性门禁</td><td><span class="s-done">已关闭</span>（根因未查）</td><td>中——根因不明则可能复发</td><td>tsc TS1490（2026-11-04 实跑 + 修复）</td></tr>
+<tr><td>2</td><td>Ticket 04：RecipeRunner 接入真实 runtime（<code>packages/core</code> 的 <code>run()</code>）</td><td><span class="s-fail">未开始</span></td><td>高——不接线，02/03 交付物只是被测代码，群内不可用</td><td><code>.scratch/feishu-recipe-delivery/issues/</code></td></tr>
+<tr><td>3</td><td>Recipe 链路真实群端到端验收（卡片渲染、3 秒 ack）</td><td><span class="s-warn">未验证</span>（依赖 #2）</td><td>高</td><td>Ticket 02/03 Done-when 条目</td></tr>
+<tr><td>4</td><td>rubric judge 凭据配置，跑 <code>rubric:transferability</code> 等维度</td><td><span class="s-warn">未验证</span>（跳过中）</td><td>中——14/14 只覆盖确定性规则</td><td><code>current.json</code> skipped 字段</td></tr>
+<tr><td>5</td><td>62 文件未提交变更分批入库（网站重构、架构全景图、两期成果总结报告；#1 已消除入库阻塞）</td><td><span class="s-warn">进行中</span></td><td>中——长期不提交有丢失与漂移风险</td><td><code>git status --short</code></td></tr>
+<tr><td>6</td><td>workbench 审阅队列（占位页当日做了视觉刷新，队列功能本身未开始）</td><td><span class="s-fail">未开始</span></td><td>中——全文截断后的 workbench 指引指向占位页</td><td><code>apps/workbench/src/app/page.tsx</code></td></tr>
+<tr><td>7</td><td>Main Agent 真人 @Main 验收 + live check 重测</td><td><span class="s-warn">未验证</span>（等真人操作）</td><td>低</td><td><code>docs/product/main-agent-capability-graph.md</code> 验收节</td></tr>
+<tr><td>8</td><td>feishu 包 HTTP server（webhook 部署形态）</td><td><span class="s-fail">未开始</span></td><td>低——长连接模式已可用</td><td>CLAUDE.md 当前状态节</td></tr>
+</table>
+
+<h2><span class="num">7</span>数据来源</h2>
+<ul>
+<li>测试：<code>pnpm -r --no-bail test</code>（2026-11-04 实跑，exit 0；core 32 / feishu 24 / consult 58 / bot-gateway 61 / evals 105 = 280）。</li>
+<li>typecheck：<code>pnpm -r --no-bail typecheck</code>（2026-11-04 实跑两次——修复前 exit 1，apps/workbench 报 <code>src/app/layout.tsx(1,1): error TS1490: File appears to be binary</code>；修复后 exit 0，7 包全过）。</li>
+<li>二进制形态修复记录：12 个文件归一化（<code>layout.tsx</code>、ticket 03、<code>skill-catalog.md</code>、<code>build_{cheatsheet,matrix,pages,prompts,shell,tables,architecture}.py</code>、<code>work/LAYOUT.md</code>、本报告 .md）；<code>layout.tsx</code> 修复前后 sha256 对比 <code>520d500d…</code> → <code>1178a4b3…</code>（4793 字节，与 python 通道一致）。</li>
+<li>提交：<code>git log</code>——2026-11-04 当日 0 个；最新 <code>309060c</code>（2026-11-03 01:53）。</li>
+<li>工作树：<code>git status --short</code>——54 修改 + 8 新增 = 62 文件。</li>
+<li>Eval 基线：<code>packages/evals/baselines/current.json</code>（ranAt 2026-11-02T00:30:27.020Z，14 案例 14 通过，totalCostUsd 4.8447，model <code>opus/claude-opus-4-8:max[1m]</code>）。</li>
+<li>Eval 运行记录：<code>packages/evals/runs/</code> 最新三条——<code>2026-11-02T00-06-25-751Z</code>（无 key 空跑，14 失败全 inconclusive，$0）、<code>…01-04-09-232Z</code>（旧阈值复验失败 0.5&lt;0.6，$0.383）、<code>…01-21-09-963Z</code>（新期望复验通过，$0.425）；11-03 起无新运行。</li>
+<li>站点自检：<code>node --test scripts/site/build.test.mjs</code>（2026-11-04，6/6 通过；生成页与提交的一致性断言在 CI，本地未验证）。</li>
+<li>文档：<code>CLAUDE.md</code> 当前状态节、<code>docs/product/main-agent-capability-graph.md</code>、<code>docs/adr/0001</code>–<code>0010</code>、<code>GLOSSARY.md</code>、<code>work/LAYOUT.md</code>、<code>docs/skills/skill-catalog.md</code>、<code>.scratch/feishu-recipe-delivery/issues/01–03</code>。</li>
+<li>前期报告：<code>reports/Main-项目成果总结-20261103.md</code>（11-03 风险表：Ticket 04 未开始居首，本日维持）。</li>
+</ul>
+
+<div class="footer">数据截至 2026-11-04 实跑 · 测试 exit 0 / typecheck 修复后 exit 0 · 本报告由每日成果总结 SOP 生成（真源读取 → 实跑验证 → 固定状态词）</div>
+
+</div>
+</body>
+</html>
