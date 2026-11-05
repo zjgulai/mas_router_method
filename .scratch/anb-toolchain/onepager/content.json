@@ -1,0 +1,57 @@
+{
+  "type": "one-pager",
+  "lang": "cn",
+  "brief": {
+    "audience": "想用三件本地工具（Lody / Magpie / Nowledge Mem）做 Agent 全栈开发的自己与小团队",
+    "job": "30 秒说清三个工具各管什么、怎么接成一条链、怎么用起来",
+    "template": "one-pager",
+    "formats": [
+      "html",
+      "pdf"
+    ],
+    "page_target": 1,
+    "narrative": "分工 → 衔接链 → SOP → 红线",
+    "required_facts": [
+      "三工具分工",
+      "三个衔接点",
+      "六步 SOP",
+      "两条红线"
+    ],
+    "required_assets": [],
+    "acceptance_checks": [
+      "恰好 1 页",
+      "所有事实来自仓库 toolchain 页与调研底稿"
+    ],
+    "preserve": [],
+    "explicit_deviations": []
+  },
+  "content": {
+    "title": "Agent 全栈工具链一页纸",
+    "subtitle": "Lody 管派活，Magpie 管模型，Nowledge Mem 管记忆：三件套接成一条开发流水线",
+    "metrics": [
+      {
+        "value": "3 工具",
+        "label": "调度·路由·记忆"
+      },
+      {
+        "value": "3 衔接点",
+        "label": "注水·导入·回写"
+      },
+      {
+        "value": "6 步 SOP",
+        "label": "查账·派活·验收"
+      }
+    ],
+    "argument": [
+      "三个工具的分工一句话说清：<span class=\"hl\">模型从哪来</span>（Magpie 本地网关，127.0.0.1:3425，协议互转+路由组容灾）、<span class=\"hl\">活怎么派</span>（Lody 多机控制平面，worktree 隔离+异步回执）、<span class=\"hl\">昨天学到的怎么带到今天</span>（Nowledge Mem 会话注水+持久记忆）。它们互不依赖，接起来却是一条完整流水线：记忆注水 → 调度派活 → 路由降本 → 验收回流 → 记忆沉淀。"
+    ],
+    "evidence": [
+      "Magpie：所有 Agent 请求统一走本地 3425 端口；group/* 路由组遇 429 自动切换，探索用 free 组、正式生成用 opus 组，同一份工作 token 成本差一个数量级",
+      "Lody：把多台机器池化成一个执行池，每个并行会话独立 worktree 互不污染；长任务返回 operationId 即结束回合，后台跑完自动回执唤醒",
+      "Nowledge Mem：会话启动自动注入工作记忆简报与 Space 规则；nmem m add 沉淀带类型的决策记忆，写前先检索去重",
+      "验收用 Lody Diff 行级批注直接回传给 Agent 当下一轮输入；人只出现在派活和验收两头，中间全是机器"
+    ],
+    "next_step": "完整调研与组合 Playbook 见 main.luteos.com/toolchain.html；底稿在仓库 .scratch/anb-toolchain/research/",
+    "contact": "main.luteos.com"
+  }
+}
