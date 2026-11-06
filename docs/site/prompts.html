@@ -262,6 +262,29 @@
 <dl class="pm-meta"><dt>什么时候用</dt><dd>用较便宜的模型做高难度分析或验收时</dd><dt>为什么这样写</dt><dd>压缩省 token 会把诊断质量一起削掉。<b>保留结构，删重复，不删解释</b>。</dd></dl>
 </div>
 </div>
+<h2>流程层</h2>
+<div class="grid two">
+<div class="card">
+<h3>写 stage map 和可失败检查</h3>
+<pre>把这个任务写成带编号的 stage map：每阶段一个预期产物和一个可失败检查。没有可检查产物的阶段合并到下一个。标出哪些阶段可以委派、哪些留在主线程；委派时写清产物路径和 pass condition。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>任务跨多个文件、多个来源或多个会话时</dd><dt>为什么这样写</dt><dd>阶段没有可失败检查，就会变成「看起来做完了」。先写清楚每个阶段怎么失败，再开始做。</dd></dl>
+</div>
+<div class="card">
+<h3>分类并定义完成</h3>
+<pre>先用 Fable Method 分类：这是问句、任务，还是计划优先？用一两句话定义完成和验证。如果写不出验证，先只问我一个关键问题，不要开始做。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>任何非平凡任务开始前</dd><dt>为什么这样写</dt><dd>分类错会用错节奏；完成定义不清，会在最后才发现验收不了。</dd></dl>
+</div>
+<div class="card">
+<h3>拒绝无证据的完成</h3>
+<pre>把这个任务拆成 2 个以上顺序故事，用 goals.py 建账本；每个 checkpoint 写具体证据，最后一个故事必须有 verify 命令和结果。没有证据的故事标 blocked，不标 complete。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>任务有 2 个以上顺序故事时</dd><dt>为什么这样写</dt><dd>「做完了」必须是一条带证据的账本记录，不是一句话。</dd></dl>
+</div>
+<div class="card">
+<h3>调查协议</h3>
+<pre>先复现失败，读真实输出；再列至少 3 个竞争假设，为每个假设写清什么证据会确认或否定它；追完整因果链，别停在第一个 plausible cause；报告里写被否定的假设。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>调试、未知原因、评审时</dd><dt>为什么这样写</dt><dd>第一个 plausible cause 常常不是根因；只移除可见触发器，会把缺陷留在系统里。</dd></dl>
+</div>
+</div>
 <h2>上线审计</h2>
 <div class="grid two">
 <div class="card">
