@@ -11,6 +11,7 @@ build_manage.py 负责把对应阶段的做法嵌回阶段页。
 """
 
 from practices_process_data import PROCESS_PRACTICES
+from practices_orchestration_data import ORCHESTRATION_PRACTICES
 
 LAYERS = [
     {'id': 'behavior', 'num': '01', 'title': '行为层：让模型守规矩',
@@ -211,7 +212,7 @@ PRACTICES = [
         'prompt': '用 VFF v2 的诊断结构回答：第一句给结论；先找能解释所有线索的假设；处方前先给最便宜的测量；没验证前不说完成；不确定的地方标置信度。不要为了短而删掉解释。',
         'effect': '作者报告 Sonnet 加 v2 与裸 Opus 在两次重评中的结果为 87.1 对 86.2、84.8 对 89.4，落在噪声内；输出成本约为 Opus 的 0.30 倍。省下来的主要是输出 token，诊断结构仍然保留。这个结果说明，接近更强模型的一条可行路径是改回答的结构，而不是改回答的长度。作者还报告，v2 删掉压缩强制后，比 v1 高 10.9 分，压缩规则本身就是质量债。',
     },
-] + PROCESS_PRACTICES
+] + PROCESS_PRACTICES + ORCHESTRATION_PRACTICES
 
 if __name__ == '__main__':
     print(f'{len(LAYERS)} 层，{len(PRACTICES)} 条')

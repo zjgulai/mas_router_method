@@ -285,6 +285,29 @@
 <dl class="pm-meta"><dt>什么时候用</dt><dd>调试、未知原因、评审时</dd><dt>为什么这样写</dt><dd>第一个 plausible cause 常常不是根因；只移除可见触发器，会把缺陷留在系统里。</dd></dl>
 </div>
 </div>
+<h2>编排层</h2>
+<div class="grid two">
+<div class="card">
+<h3>写六段 spec</h3>
+<pre>把这个实现任务写成六段 spec：Objective、Files、Interfaces、Constraints、Verification、Reasoning。写不完就说明决策还没做，不要委派。委派时在 Agent description 里写清模型和 effort。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>要把实现交给另一个模型或另一个会话时</dd><dt>为什么这样写</dt><dd>实现 lane 没有你的对话上下文；六段写不全，它就会用猜测填空。</dd></dl>
+</div>
+<div class="card">
+<h3>跑 Fusion panel</h3>
+<pre>把这个难题跑一遍 Fusion：同一 prompt 同时发给多个模型，每个独立作答，不给 persona，不互相看。然后由 Opus 做 judge，输出 Consensus、Contradictions、Partial coverage、Unique insights、Blind spots，再写最终答案。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>高风险研究、设计取舍、容易被自信答错的问题</dd><dt>为什么这样写</dt><dd>独立一致是最高置信度，独立冲突是最有价值的信号；persona 会污染独立性。</dd></dl>
+</div>
+<div class="card">
+<h3>建路由卡选座</h3>
+<pre>先建路由卡：列出本机实际可用的 provider 和 live access，再按 job 选座。settled 行直接用，close call 只问我一次。偏离 settled 行要写允许的理由；premium 模型不要自动用。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>多模型、多 agent、要控成本时</dd><dt>为什么这样写</dt><dd>按感觉选模型会把贵 token 花在便宜工作上；路由卡把成本和能力放在一张表里。</dd></dl>
+</div>
+<div class="card">
+<h3>盲 verifier 验收</h3>
+<pre>为这个改动派一个盲 verifier：给它原始任务原文、diff 和验收标准，不给 worker 的推理或摘要。它只读、只跑检查，不改文件。返回 PASS、FAIL 或 PASS_WITH_NOTES，每条都带命令和输出。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>任何可能改变行为的改动交付前</dd><dt>为什么这样写</dt><dd>worker 的报告是 claim，不是证据；冷验证者没有生产者的盲区。</dd></dl>
+</div>
+</div>
 <h2>上线审计</h2>
 <div class="grid two">
 <div class="card">

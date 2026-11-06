@@ -135,6 +135,16 @@ PROMPTS = {
  ('调查协议', '先复现失败，读真实输出；再列至少 3 个竞争假设，为每个假设写清什么证据会确认或否定它；追完整因果链，别停在第一个 plausible cause；报告里写被否定的假设。',
   '调试、未知原因、评审时', '第一个 plausible cause 常常不是根因；只移除可见触发器，会把缺陷留在系统里。'),
 ],
+'编排层': [
+ ('写六段 spec', '把这个实现任务写成六段 spec：Objective、Files、Interfaces、Constraints、Verification、Reasoning。写不完就说明决策还没做，不要委派。委派时在 Agent description 里写清模型和 effort。',
+  '要把实现交给另一个模型或另一个会话时', '实现 lane 没有你的对话上下文；六段写不全，它就会用猜测填空。'),
+ ('跑 Fusion panel', '把这个难题跑一遍 Fusion：同一 prompt 同时发给多个模型，每个独立作答，不给 persona，不互相看。然后由 Opus 做 judge，输出 Consensus、Contradictions、Partial coverage、Unique insights、Blind spots，再写最终答案。',
+  '高风险研究、设计取舍、容易被自信答错的问题', '独立一致是最高置信度，独立冲突是最有价值的信号；persona 会污染独立性。'),
+ ('建路由卡选座', '先建路由卡：列出本机实际可用的 provider 和 live access，再按 job 选座。settled 行直接用，close call 只问我一次。偏离 settled 行要写允许的理由；premium 模型不要自动用。',
+  '多模型、多 agent、要控成本时', '按感觉选模型会把贵 token 花在便宜工作上；路由卡把成本和能力放在一张表里。'),
+ ('盲 verifier 验收', '为这个改动派一个盲 verifier：给它原始任务原文、diff 和验收标准，不给 worker 的推理或摘要。它只读、只跑检查，不改文件。返回 PASS、FAIL 或 PASS_WITH_NOTES，每条都带命令和输出。',
+  '任何可能改变行为的改动交付前', 'worker 的报告是 claim，不是证据；冷验证者没有生产者的盲区。'),
+],
 '上线审计': [
  ('发布前对抗式审计', '''以产品上线倒计时为目标，对当前项目做一次发布前深度审查。以真实代码、真实页面、真实用户路径为主要依据，辅助材料是：用户手册、既有审计方案、当前项目文档与测试结果。
 
@@ -204,7 +214,7 @@ def prompts_page():
 "帮我检查一下"会让它给你一段看起来认真的话；"造一个会让它失败的情况，跑一次，把结果原样贴给我"会让它给你证据。
 <br><br>把 <code>___</code> 换成你的内容。带 <code>&lt;b&gt;</code> 的地方是强调，复制时可以去掉。</div>''')
 
-    for group in ['跨阶段', '行为层', '流程层', '上线审计', '需求', '设计', '开发', '验收', '交付', '运营', '迭代', '数据产品']:
+    for group in ['跨阶段', '行为层', '流程层', '编排层', '上线审计', '需求', '设计', '开发', '验收', '交付', '运营', '迭代', '数据产品']:
         if group not in PROMPTS: continue
         b.append(f'<h2>{group}</h2>')
         b.append('<div class="grid two">')
