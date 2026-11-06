@@ -223,7 +223,7 @@
 <p class="lede">这里收的是别人已经在用的 agent 产品做法，按四层分开：<b>行为、流程、编排、证据</b>。每一层写清四件事：它解决什么问题、方法长什么样、怎么搬到 ANB 的阶段、以及可以直接复制的提示词。整页分四批上线，当前批次是行为层。</p>
 <h2>四层目录</h2>
 <p class="h2sub">先看哪一层对得上你现在的症状。已经收录的层可以点进去，其余三层会在后续批次补齐。</p>
-<div class="tablewrap"><table><thead><tr><th style="width:28%">层</th><th style="width:56%">这一层管什么</th><th>收录</th></tr></thead><tbody><tr><td><a href="#layer-behavior">01 行为层：让模型守规矩</a></td><td>让模型在每一轮都守住边界：哪些规则常驻，哪些只在事件触发时读，哪些内容不该进入上下文。</td><td>4 条，本批</td></tr><tr><td><a href="#layer-process">02 流程层：让任务走得完</a></td><td>让任务从一句话走到可验收的结果：步骤、状态、交接和失败处理都不靠临场记忆。</td><td>3 条，本批</td></tr><tr><td><a href="#layer-orchestration">03 编排层：让对的人干对的事</a></td><td>让多个角色各干各的强项：谁规划、谁执行、谁评审，以及它们之间怎么交接。</td><td>3 条，本批</td></tr><tr><td>04 证据层：让「做完了」可被检查</td><td>让「做完了」变成可以复查的东西：命令、原始输出，以及它证明不了什么。</td><td>下一批</td></tr></tbody></table></div>
+<div class="tablewrap"><table><thead><tr><th style="width:28%">层</th><th style="width:56%">这一层管什么</th><th>收录</th></tr></thead><tbody><tr><td><a href="#layer-behavior">01 行为层：让模型守规矩</a></td><td>让模型在每一轮都守住边界：哪些规则常驻，哪些只在事件触发时读，哪些内容不该进入上下文。</td><td>4 条，本批</td></tr><tr><td><a href="#layer-process">02 流程层：让任务走得完</a></td><td>让任务从一句话走到可验收的结果：步骤、状态、交接和失败处理都不靠临场记忆。</td><td>3 条，本批</td></tr><tr><td><a href="#layer-orchestration">03 编排层：让对的人干对的事</a></td><td>让多个角色各干各的强项：谁规划、谁执行、谁评审，以及它们之间怎么交接。</td><td>3 条，本批</td></tr><tr><td><a href="#layer-evidence">04 证据层：让「做完了」可被检查</a></td><td>让「做完了」变成可以复查的东西：命令、原始输出，以及它证明不了什么。</td><td>2 条，本批</td></tr></tbody></table></div>
 <h2 id="layer-behavior">01 行为层：让模型守规矩</h2>
 <p class="h2sub">让模型在每一轮都守住边界：哪些规则常驻，哪些只在事件触发时读，哪些内容不该进入上下文。</p>
 <article class="card" id="p-guardrails">
@@ -472,6 +472,58 @@
 <p><b>作者报告的效果</b></p>
 <p>作者报告 15 个行为场景在 runs 6 到 12 全部通过；routing A/B 从 v0.5 的 6/12 到 v0.6 的 12/12；run 4 里 off-family review 抓到了 Claude verifier 放过的两个测试缺口；run 7 里 lead 把 Luna 的 2 个 docstring 自己改了，触发了后来的 micro-fix 规则：最多 5 行，只限测试或文档，fresh verifier 复验。</p>
 <p><b>来源</b>：<a href="https://github.com/olsenbrands/fable-foreman">olsenbrands/fable-foreman</a></p>
+</article>
+<h2 id="layer-evidence">04 证据层：让「做完了」可被检查</h2>
+<p class="h2sub">让「做完了」变成可以复查的东西：命令、原始输出，以及它证明不了什么。</p>
+<article class="card" id="p-system-prompts-leaks">
+<h3>System Prompts Leaks：把系统提示词当成可对照的工程材料</h3>
+<p class="h2sub">18 个厂商、约 1900 份提示词，按产品和版本归档，能看到行为契约的结构和演变。</p>
+<div class="tablewrap"><table class="practice-facts"><tbody><tr><th>覆盖</th><td>18 个顶层目录：Anthropic 666、OpenAI 435、Meta 474、GLM 90、xAI 76、Google 67 等，共约 1900 份文件</td></tr><tr><th>Anthropic 目录</th><td>claude.ai 提示词、Claude Code、artifact types、integrations；每个文件标注产品，不混用</td></tr><tr><th>Claude Code 结构</th><td>System prompt、Harness、Memory、Environment、Context management、Delivering work、Writing for the user、Agents、Skills、Tools</td></tr><tr><th>工具提示词</th><td>每个工具一段：Agent、Artifact、AskUserQuestion、Bash、CronCreate、Edit、Monitor 等；还有 auto mode classifier 和 advisor tool 两侧提示词</td></tr><tr><th>最新条目</th><td>2026-11-03 的 Claude Code auto mode classifier，139 KB，按 Sonnet 5 发送</td></tr><tr><th>引用</th><td>Washington Post、CEPS AI World、Simon Willison 都基于这个仓库做过报道或分析</td></tr></tbody></table></div>
+<p><b>它解决什么</b></p>
+<p>想研究一个 agent 产品为什么这样表现，只看自己的提示词不够；你需要看到同一类行为在不同厂商、不同版本里怎么写。这个仓库把各家的系统提示词逐份归档：Claude、ChatGPT、Gemini、Grok、Cursor、Kimi、DeepSeek、GLM、Meta、Mistral、Perplexity、MiniMax 等。它不是一篇分析文章，是一堆可对照的原始材料；价值在横向和纵向的比较，不在单份提示词本身。</p>
+<p><b>方法长什么样</b></p>
+<ol><li><b>按产品归档</b>：Anthropic 目录先分 claude.ai、Claude Code、artifact types、integrations；文件名标注模型和产品。bare claude-&lt;model&gt;.md 是 claude.ai，claude-code/ 是 CLI harness，不是同一个东西。</li><li><b>分版本</b>：同一产品保留多个版本，比如 Fable 5.1、Fable 5、Opus 5.5、Opus 5、Opus 4.8；能看到行为契约怎么随时间变。</li><li><b>按组件拆</b>：Claude Code 的提示词拆成 system prompt、harness、memory、environment、agents、skills、tools；每个工具单独一份，能看工具接口怎么描述。</li><li><b>标注来源和日期</b>：README 的 recent additions 表写清日期和文件；每份文件保留原文，不改写。</li><li><b>当参考材料用</b>：不整段搬进产品。先对照结构，找出身份、工具、安全、格式、记忆、拒绝、版权这些段，再决定自己产品要保留哪一段。</li></ol>
+<h4>Anthropic 目录为什么先分产品</h4>
+<p>Anthropic/README.md 明确说：bare claude-&lt;model&gt;.md 是 claude.ai 的系统提示词，不是 API 提示词，也不是 Claude Code 提示词；claude-code/ 是 CLI harness；official/ 是 Anthropic 自己发布的短版。这个区分让「同一模型在不同产品里的行为差异」变成可比较的问题，而不是把三份不同的东西混成一份。</p>
+<h4>Claude Code 提示词的骨架</h4>
+<p>Fable 5.1 的 Claude Code 提示词有清晰的段落：System prompt、Harness、Memory、Environment、Context management、Delivering work、Writing for the user、Agents、MCP Server Instructions、Skills、Tools。工具部分每个工具一段，写清什么时候用、什么时候不用、参数和行为。看这个骨架，比看某一句具体措辞更有用。</p>
+<h4>怎么用它做自己的提示词</h4>
+<p>先选一个和自己产品最像的样本，按段对照；把平台实现和行为原则分开；只保留跨模型仍然成立的行为段，平台段用自己的实现替换。不要整段复制，也不要把别人的产品信息、工具接口、内部 UI 带进来。</p>
+<p><b>搬到 ANB 的哪个阶段</b></p>
+<p><a href="design.html">设计</a> · <a href="build.html">开发</a> · <a href="verify.html">验收</a> · <a href="manage.html">管理</a> · <a href="ship.html">交付</a></p>
+<ul><li>design：按段对照同产品、同模型的不同版本，找行为契约的变化。</li><li>build：看工具提示词怎么写「什么时候用、什么时候不用、失败返回什么」。</li><li>verify：用 auto mode classifier 和 advisor tool 的提示词看安全检查和审查契约。</li><li>manage：把参考材料按厂商、产品、版本归档，标注来源和日期。</li><li>ship：只保留跨模型成立的行为段，平台段自己实现。</li></ul>
+<div class="tablewrap"><table><caption>仓库覆盖（顶层目录与文件数）</caption><thead><tr><th>厂商或目录</th><th>文件数</th><th>代表内容</th></tr></thead><tbody><tr><td>Anthropic</td><td>666</td><td>claude.ai、Claude Code、artifact types、integrations</td></tr><tr><td>OpenAI</td><td>435</td><td>ChatGPT、Codex、voice 等</td></tr><tr><td>Meta</td><td>474</td><td>Llama 系列与产品提示词</td></tr><tr><td>GLM</td><td>90</td><td>ZCode Desktop、GLM 系列</td></tr><tr><td>xAI</td><td>76</td><td>Grok、Grok Bot、skills</td></tr><tr><td>Google</td><td>67</td><td>Gemini、Antigravity IDE 和 CLI</td></tr><tr><td>其他</td><td>约 100</td><td>Cursor、Kimi、DeepSeek、Mistral、Perplexity、MiniMax、Qwen、Notion、Pi、Microsoft</td></tr></tbody></table></div>
+<div class="tablewrap"><table><caption>Claude Code 提示词的段落</caption><thead><tr><th>段</th><th>内容</th></tr></thead><tbody><tr><td>System prompt</td><td>身份、总体行为、工具使用原则</td></tr><tr><td>Harness</td><td>运行环境、浏览器自动化、会话规则</td></tr><tr><td>Memory</td><td>记忆文件、索引、环境、会话上下文</td></tr><tr><td>Context management</td><td>上下文管理和压缩</td></tr><tr><td>Delivering work</td><td>怎么交付、怎么写给用户看</td></tr><tr><td>Agents / Skills / Tools</td><td>子代理、技能、每个工具的接口和用法</td></tr></tbody></table></div>
+<p><b>可以直接用的提示词</b></p>
+<pre>把这份系统提示词按段拆开，和同产品的上一个版本对照：哪些段是行为原则，哪些段是平台实现？只保留跨模型仍然成立的行为段，平台段用我们自己的实现替换。不要整段复制别人的产品信息、工具接口或内部 UI。</pre>
+<p><b>作者报告的效果</b></p>
+<p>作者维护了约 1900 份文件、18 个厂商目录；Washington Post、CEPS AI World 和 Simon Willison 都用它做过分析或报道。它的价值不是某一句话，而是让「同一行为在不同厂商、不同版本里怎么写」变成可以逐段对照的材料。</p>
+<p><b>来源</b>：<a href="https://github.com/asgeirtj/system_prompts_leaks">asgeirtj/system_prompts_leaks</a></p>
+</article>
+<article class="card" id="p-claude-directory">
+<h3>claude-directory：用 prompt、成品和录屏证明一个案例真的能跑</h3>
+<p class="h2sub">541 个项目，每个都带 prompt.md、可运行代码、demo.mp4 和 poster.jpg。</p>
+<div class="tablewrap"><table class="practice-facts"><tbody><tr><th>规模</th><td>9 个类别，541 个项目：templates 241、landing-pages 98、shaders 84、hero-sections 41、ui-design 34、components-ui 15、portfolios 14、animations-loaders 12、3d-games 2</td></tr><tr><th>三件套</th><td>prompt.md、可运行的项目代码、demo.mp4；poster.jpg 由脚本生成</td></tr><tr><th>栈</th><td>React、TypeScript、Vite、Tailwind、Three.js、Framer Motion、GSAP，也有纯 HTML/CSS/JS</td></tr><tr><th>贡献规则</th><td>只有两条硬要求：prompt.md 和 demo.mp4；PR 由 Claude Opus 审查合并</td></tr><tr><th>自动检查</th><td>每个项目自带 verify.mjs：390、768、1280 三个宽度，检查标题、canvas、opacity、图片、横向溢出、console error、失败响应、菜单交互</td></tr><tr><th>交付流程</th><td>worktree、分类目录、verbatim prompt.md 先提交、完整构建、CLI 验证、review、录 demo、生成 poster、README 登记、PR、合并、清理</td></tr></tbody></table></div>
+<p><b>它解决什么</b></p>
+<p>一个 AI 生成的页面看起来不错，不等于它能跑、能在手机上用、没有 console error。claude-directory 把每个案例做成一个自包含项目，并且坚持三件套：prompt.md 记录它怎么被生成，完整代码让人能跑，demo.mp4 证明它真的动起来。仓库明说整个目录是 vibe coded，所以它同时给了 verifier 和 auditor：不是让你相信截图，而是让你能重跑检查。</p>
+<p><b>方法长什么样</b></p>
+<ol><li><b>三件套</b>：prompt.md 是原始提示词，保留生成意图；项目代码是完整可运行实现；demo.mp4 是实际运行的录屏；poster.jpg 是视频加载前的占位图。</li><li><b>自包含</b>：每个项目一个文件夹，资源本地化，能克隆后离线跑；分类按产物类型，不按技术栈。</li><li><b>自动验证</b>：verify.mjs 在 390、768、1280 三个宽度跑 headless Chromium，检查标题、canvas 尺寸、opacity、图片数量与破损、横向溢出、console error、4xx 或 5xx 响应；1280 宽度还点开菜单确认交互。</li><li><b>生成流程</b>：.claude/agents/fable-experimenter.md 规定固定交付流程：worktree、查重、选分类、先提交 verbatim prompt.md、完整构建、CLI-only 验证、review、录 demo、生成 poster、README 登记、PR、合并、清理。</li><li><b>审计流程</b>：.claude/agents/template-auditor.md 对 premium clone 做同源审计：读 REFERENCE: URL，抓原站和 clone 的截图、样式、响应式、交互、明暗主题，vision-judge diff，发现 gap 直接修，再录 demo、生成 poster、更新 README。</li><li><b>诚实标注</b>：README 明说整个仓库是 vibe coded，上线前要 review 代码、检查依赖、验证可访问性和响应式、跑本地检查。</li></ol>
+<h4>一个案例的交付长什么样</h4>
+<p>以 3d-games/lovable-webgl-hero 为例：prompt.md 是逐字保留的 uppercase 提示词，项目里有完整的 TanStack Start、React、Tailwind 代码和本地化的 public/vendor/ 资产，demo.mp4 是实际录屏，poster.jpg 是占位图，verify.mjs 在三个宽度跑 headless 检查。任何人克隆后可以重跑，不需要相信作者的截图。</p>
+<h4>verify.mjs 检查什么</h4>
+<p>它打开 390、768、1280 三个宽度，等 network idle 再等 4 秒，读取 h1、canvas 尺寸、hero opacity、图片数量和 broken images、横向溢出；监听 console error 和 4xx 或 5xx 响应；1280 宽度还点开 Solution 和 Resources 菜单，确认 Founders 和 Blog 可见。任何一项失败就非零退出。</p>
+<h4>为什么还要 auditor</h4>
+<p>生成 agent 会漏东西：少一个页面、少一个 section、响应式断点没做、hover 状态不对、明暗主题没切。template-auditor 把原站和 clone 都抓一遍，按页面、section、样式、响应式、交互、主题逐项 diff，发现 gap 直接修，再录 demo、生成 poster、更新 README。它不是只出报告，而是修到 same-to-same。</p>
+<p><b>搬到 ANB 的哪个阶段</b></p>
+<p><a href="design.html">设计</a> · <a href="build.html">开发</a> · <a href="verify.html">验收</a> · <a href="ship.html">交付</a> · <a href="operate.html">运营</a></p>
+<ul><li>design：先写 prompt.md，保留生成意图；按产物类型选分类。</li><li>build：项目自包含，资源本地化，能离线跑。</li><li>verify：用 headless 检查三个宽度、console error、broken images、横向溢出和关键交互；不要只看截图。</li><li>ship：交付三件套：prompt、可运行代码、录屏；poster 作为占位。</li><li>operate：README 计数和 posters.json 要跟目录一致；定期跑 auditor 修 drift。</li></ul>
+<div class="tablewrap"><table><caption>目录规模</caption><thead><tr><th>类别</th><th>项目数</th><th>内容</th></tr></thead><tbody><tr><td>templates</td><td>241</td><td>完整模板，含 premium clone</td></tr><tr><td>landing-pages</td><td>98</td><td>多 section 落地页</td></tr><tr><td>shaders</td><td>84</td><td>GLSL 和 WebGL 视觉</td></tr><tr><td>hero-sections</td><td>41</td><td>首屏 hero</td></tr><tr><td>ui-design</td><td>34</td><td>设计系统与风格探索</td></tr><tr><td>components-ui</td><td>15</td><td>独立组件与 UI 片段</td></tr><tr><td>portfolios</td><td>14</td><td>个人作品集</td></tr><tr><td>animations-loaders</td><td>12</td><td>动画、加载、转场</td></tr><tr><td>3d-games</td><td>2</td><td>3D 场景与可玩游戏</td></tr></tbody></table></div>
+<div class="tablewrap"><table><caption>三件套与检查</caption><thead><tr><th>产物</th><th>证明什么</th><th>怎么验证</th></tr></thead><tbody><tr><td>prompt.md</td><td>生成意图和可复现的输入</td><td>逐字保留，先提交</td></tr><tr><td>完整代码</td><td>项目能跑、能改、能离线</td><td>克隆后安装依赖并运行</td></tr><tr><td>demo.mp4</td><td>它真的动起来、交互可用</td><td>录屏，不是截图</td></tr><tr><td>poster.jpg</td><td>视频加载前的占位</td><td>脚本生成</td></tr><tr><td>verify.mjs</td><td>三个宽度、无 console error、无横向溢出</td><td>headless Chromium 重跑</td></tr></tbody></table></div>
+<p><b>可以直接用的提示词</b></p>
+<pre>把这个案例做成可复查的三件套：prompt.md 逐字保留生成提示词；项目代码完整可运行、资源本地化；demo.mp4 记录实际运行。交付前用 headless 浏览器在 390、768、1280 三个宽度检查标题、关键元素、图片、横向溢出、console error 和关键交互。不要用截图代替运行。</pre>
+<p><b>作者报告的效果</b></p>
+<p>作者维护了 541 个项目、9 个类别；每个项目都有 prompt.md 和 demo.mp4，PR 由 Claude Opus 审查合并；每个项目可以带自己的 verify.mjs，template-auditor 对 premium clone 做同源审计并直接修到 same-to-same。README 明说整个仓库是 vibe coded，上线前要自己 review，这句话本身就是证据层的一部分。</p>
+<p><b>来源</b>：<a href="https://github.com/pulkitxm/claude-directory">pulkitxm/claude-directory</a></p>
 </article>
 <div class="note"><b>怎么用这一页。</b>先读「它解决什么」，判断是不是你现在的症状；再挑方法里一条今天就能做的；提示词可以直接复制，先在一件小事上试，再决定要不要改常驻规则。</div>
       

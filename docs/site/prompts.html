@@ -308,6 +308,29 @@
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何可能改变行为的改动交付前</dd><dt>为什么这样写</dt><dd>worker 的报告是 claim，不是证据；冷验证者没有生产者的盲区。</dd></dl>
 </div>
 </div>
+<h2>证据层</h2>
+<div class="grid two">
+<div class="card">
+<h3>按段对照系统提示词</h3>
+<pre>把这份系统提示词按段拆开，和同产品的上一个版本对照：哪些段是行为原则，哪些段是平台实现？只保留跨模型仍然成立的行为段，平台段用我们自己的实现替换。不要整段复制别人的产品信息、工具接口或内部 UI。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>要给自己的产品定 system prompt，或准备换模型时</dd><dt>为什么这样写</dt><dd>系统提示词的价值在结构和版本差异，不在某一句措辞；整段复制会把别人的平台耦合也带进来。</dd></dl>
+</div>
+<div class="card">
+<h3>做可复查的案例三件套</h3>
+<pre>把这个案例做成可复查的三件套：prompt.md 逐字保留生成提示词；项目代码完整可运行、资源本地化；demo.mp4 记录实际运行。交付前用 headless 浏览器在 390、768、1280 三个宽度检查标题、关键元素、图片、横向溢出、console error 和关键交互。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>要交付一个页面、组件或视觉案例时</dd><dt>为什么这样写</dt><dd>截图只能证明它看起来像；prompt、代码和录屏才能让别人重跑和复查。</dd></dl>
+</div>
+<div class="card">
+<h3>跑 headless 验收</h3>
+<pre>用 headless 浏览器在 390、768、1280 三个宽度打开这个页面：检查标题和关键元素存在、canvas 或视频真的渲染、图片没有破损、没有横向溢出、console 没有 error、没有 4xx 或 5xx 响应；在桌面宽度点开关键菜单确认交互。任何一项失败就非零退出。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>页面或交互改完，准备说完成时</dd><dt>为什么这样写</dt><dd>静态检查只能证明 well-formed；三个宽度的 headless 运行才能抓到布局、资源和运行时错误。</dd></dl>
+</div>
+<div class="card">
+<h3>审计 clone 是否 same-to-same</h3>
+<pre>把这个 clone 和它的 REFERENCE 原站做同源审计：抓原站和 clone 的页面、section、样式、390、768、1280 响应式、hover 和点击状态、明暗主题，逐项 diff。发现 gap 直接修，再重录 demo、生成 poster、更新 README。不要只出报告。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>做完一个复刻或迁移，准备交付时</dd><dt>为什么这样写</dt><dd>生成的结果常常少页面、少 section、漏响应式；只出报告会把修的工作留给别人。</dd></dl>
+</div>
+</div>
 <h2>上线审计</h2>
 <div class="grid two">
 <div class="card">
