@@ -1,6 +1,7 @@
 import sys, os
 from build_shell import page, STAGES
 from paths import out_dir
+from build_pages import practices_block
 
 def manage_page():
     b = ['<h1>管理</h1>']
@@ -68,6 +69,8 @@ def manage_page():
       <p>最后两段是重点。"通过"这个词太容易写，而"这条测试证明了解析器，不能证明供应商可达"是真话。</p>
       <p style="color:var(--faint);font-size:.88rem;margin-bottom:0">票要标 done，<code>work-move</code> 会检查 <code>evidence:</code> 字段；没有就拒绝。</p></div>''')
     b.append('</div>')
+
+    b.extend(practices_block('manage'))
 
     b.append('<h2 id="m-use">怎么用（不需要记命令）</h2>')
     b.append('<p>一个 skill，<code>anb-manage</code>。你说话，它读写目录。</p>')

@@ -193,6 +193,7 @@
       <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="toolchain.html">工具链</a>
+      <a href="practices.html">实战用法</a>
       <a href="data-design.html">数据产品设计</a>
       <a href="data-layers.html">8+3 层契约</a>
       <a href="branches.html">分支总表</a>
@@ -207,6 +208,7 @@
       <a href="#branches">走哪条路</a>
       <a href="#verify">谁来验怎么验</a>
       <a href="#battle-tips">实战避坑</a>
+      <a href="#practices">实战用法</a>
       <a href="#skills">用到哪些 skill</a>
       <a href="#docs">原文与依据</a>
       </div>
@@ -228,6 +230,9 @@
 <h2 id="battle-tips">实战避坑守则 (Battle Tips)</h2>
 <p class="h2sub">归属于<b>交付</b>阶段的实战守则摘要。完整复制口令见 <a href="cheatsheet.html">作战手卡全表</a>。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:26%">守则与手卡入口</th><th style="width:37%">典型痛点</th><th>验收判定</th></tr></thead><tbody><tr id="bt-agent-eng-03"><td><a href="cheatsheet.html#agent-eng-03"><code>01-03</code></a> <b>长任务要可观察、可接管</b></td><td>多个 Agent 并行跑，最怕失忆、卡住、上下文膨胀和没人知道当前状态。</td><td>任何分支都能从最近一次产物恢复，不依赖完整聊天记录。</td></tr><tr id="bt-skills-ctx-06"><td><a href="cheatsheet.html#skills-ctx-06"><code>02-06</code></a> <b>汇报要能让非工程师判断完成度</b></td><td>一堆 commit hash 和工程术语，无法回答到底完成成了什么。</td><td>读者不打开代码，也能判断范围、原因、证据、验证和待确认项。</td></tr><tr id="bt-product-growth-05"><td><a href="cheatsheet.html#product-growth-05"><code>05-05</code></a> <b>SEO / 从真实站点证据开始</b></td><td>套模板写 SEO 报告，容易忽略 robots、跳转、死链和 JS 内容。</td><td>报告必须能定位到页面和规则，不能只写“优化内容”。</td></tr></tbody></table></div>
+<h2 id="practices">这一步的实战用法</h2>
+<p class="h2sub">来自实战项目的做法，按它和本阶段的关系收录。完整案例、方法和提示词见 <a href="practices.html">实战用法</a>。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:34%">项目</th><th style="width:46%">一句话</th><th>来源</th></tr></thead><tbody><tr><td><a href="practices.html#p-clean-prompt">Universal Fable 5：把系统提示词删到只剩行为</a></td><td>把平台细节删到只剩行为原则，按 core、balanced、complete 三档控制预算。</td><td><a href="https://github.com/KinetiNode/claude-fable-5-system-prompt-clean">KinetiNode/claude-fable-5-system-prompt-clean</a></td></tr><tr><td><a href="practices.html#p-moely-zh">Fable 5 中文版：一套可以直接改的系统提示词骨架</a></td><td>不是英文原文的逐字翻译，而是一套能按段替换策略的中文骨架。</td><td><a href="https://github.com/moely-ai/claude-fable-5-prompt">moely-ai/claude-fable-5-prompt</a></td></tr></tbody></table></div>
 <h2 id="skills">这一步用到哪些 skill</h2>
 <ul><li><a href="skills.html#anb-shipable"><code>anb-shipable</code></a>：别人能打开、能用，不需要你在旁边。</li><li><a href="skills.html#anb-check-otherdevice"><code>anb-check-otherdevice</code></a>：换一台设备打开，让另一个人试。</li><li><a href="skills.html#pr"><code>pr</code></a>：PR 正文：最小视图、前后证据、合并风险。</li><li><a href="skills.html#deploy-checklist"><code>deploy-checklist</code></a>：发布前清单与回滚触发条件。</li><li><a href="skills.html#deployment-patterns"><code>deployment-patterns</code></a>：滚动/蓝绿/金丝雀、容器化、CI/CD。</li><li><a href="skills.html#milestone-report"><code>milestone-report</code></a>：一页 HTML 里程碑报告，结论先行。</li><li><a href="skills.html#make-pr-easy-to-review"><code>make-pr-easy-to-review</code></a>：整理提交历史、改 PR 正文、给评审指路，不动行为。</li><li><a href="skills.html#babysit"><code>babysit</code></a>：盯住一个开着的 PR：修 CI、处理直白的评审意见，推到可合并。</li><li><a href="skills.html#blast-radius"><code>blast-radius</code></a>：上线前找"diff 之外会被这次改动弄坏的东西"，并真跑代码证明唯一侥幸成立的前提。</li></ul>
 <div class="note" style="margin:2rem 0 0"><b>这一步要写下来的东西。</b>方法论讲的是「要问什么」，样张讲的是「答案记在哪一列」。<a href="tables-ship.html">查看 交付 的样张表</a></div>

@@ -193,6 +193,7 @@
       <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="toolchain.html">工具链</a>
+      <a href="practices.html">实战用法</a>
       <a href="data-design.html">数据产品设计</a>
       <a href="data-layers.html">8+3 层契约</a>
       <a href="branches.html">分支总表</a>
@@ -236,6 +237,29 @@
 <h3>诊断卡住</h3>
 <pre>用 diagnosing-bugs 查这个 bug：先建一个能变红的反馈回路，再谈假设。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>有 bug 但不知道在哪</dd><dt>为什么这样写</dt><dd>不能变红的复现不算复现。</dd></dl>
+</div>
+</div>
+<h2>行为层</h2>
+<div class="grid two">
+<div class="card">
+<h3>压缩常驻规则</h3>
+<pre>把这段常驻规则压到 60 行以内：只保留 12 条铁律、事件路由表、4 个硬停；其余移到按需文档。每条路由写清触发事件、要读的文件、读完必须产出的标记。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>常驻 CLAUDE.md 或系统提示词超过一屏时</dd><dt>为什么这样写</dt><dd>常驻规则每轮都付一次 token；规则一多，每条的遵守度会被稀释。把长文档改成事件触发，触发时再读。</dd></dl>
+</div>
+<div class="card">
+<h3>生成系统提示词三档</h3>
+<pre>把这份系统提示词里只属于某个平台的部分删掉（XML、工具接口、产品 UI、存储、环境），只保留跨模型仍然成立的行为原则；按 core、balanced、complete 三档输出，并说明每档删了什么。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>要给一个产品定 system prompt，或准备换模型时</dd><dt>为什么这样写</dt><dd>平台细节换模型就失效。先删平台，再按 token 预算留档，<b>不要默认用最长的那一档</b>。</dd></dl>
+</div>
+<div class="card">
+<h3>中文系统提示词骨架</h3>
+<pre>以这份中文系统提示词为骨架，保留策略分段结构，把产品信息、拒绝清单、引用规则、图片规则改成我们产品的版本；不要改变分段顺序。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>中文产品要从一份成熟骨架开始，而不是逐字翻译英文</dd><dt>为什么这样写</dt><dd>策略分段是骨架。按段替换，改一条能对上一条；顺序不变，回归时才能逐段对照。</dd></dl>
+</div>
+<div class="card">
+<h3>VFF 诊断结构</h3>
+<pre>用 VFF v2 的诊断结构回答：第一句给结论；先找能解释所有线索的假设；处方前先给最便宜的测量；没验证前不说完成；不确定的地方标置信度。不要为了短而删掉解释。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>用较便宜的模型做高难度分析或验收时</dd><dt>为什么这样写</dt><dd>压缩省 token 会把诊断质量一起削掉。<b>保留结构，删重复，不删解释</b>。</dd></dl>
 </div>
 </div>
 <h2>上线审计</h2>

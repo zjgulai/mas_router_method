@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实战用法 · Agent Native Builder</title>
+<meta name="description" content="实战用法 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23211015'/%3E%3Ctext x='32' y='44' font-size='32' font-weight='700' text-anchor='middle' fill='%23f4dce3' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme:light;
+    /* 暖粉色品牌基底：暖雾粉、陶土深莓与温润黑檀 */
+    --ground:#f7f1f2;--surface:#fcf8f9;--surface-elev:#ffffff;
+    --sunk:#efe3e6;--deep:#d8c1c7;
+    --ink:#211216;--muted:#4d3139;--faint:#6b4953;
+    --accent:#8c2a4b;--accent-hover:#6b1d37;--accent2:#f4dce3;--accent-soft:#f9eef1;
+    --alert:#8a1f24;--alert2:#f8dada;
+    --warn:#6b460a;--warn2:#f5e6cc;
+    --side-bg:#211015;--side-border:#3b2029;--side-text:#efe2e6;--side-muted:#b5949e;
+    --sans:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",-apple-system,BlinkMacSystemFont,"Microsoft YaHei",system-ui,sans-serif;
+    --serif:"Source Han Serif SC","Noto Serif CJK SC","Songti SC",Georgia,ui-serif,serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-8:48px;
+  }
+  *{box-sizing:border-box}
+  ::selection{background:var(--accent2);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.75 var(--sans);
+       -webkit-font-smoothing:antialiased;accent-color:var(--accent)}
+  a{color:var(--accent);text-underline-offset:.24em;text-decoration-color:var(--deep);transition:color .12s,text-decoration-color .12s}
+  a:hover{color:var(--accent-hover);text-decoration-color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:256px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--side-bg);color:var(--side-text);position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.5rem 0 2.5rem;border-right:1px solid var(--side-border)}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none;font-size:.82rem;color:var(--side-text);padding:.35rem .95rem}
+  .brand{display:block;padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--side-border);margin-bottom:1.1rem}
+  .brand .home{display:flex;align-items:center;gap:.5rem;min-height:28px;color:#faf4f5;text-decoration:none;
+               font:650 1.24rem/1.2 var(--serif);letter-spacing:-.02em}
+  .brand .home::before{content:'';display:inline-block;width:8px;height:8px;background:#c45a7c;border-radius:1px}
+  .brand-sub{display:block;font-size:.76rem;color:var(--side-muted);letter-spacing:.03em;margin-top:.32rem}
+  .nav{padding:0 .75rem}
+  .nav-g{margin-bottom:1.3rem}
+  .nav-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);
+         padding:.3rem .75rem .42rem}
+  .nav a{display:block;color:var(--side-text);text-decoration:none;font-size:.88rem;padding:.42rem .75rem;
+         border-radius:3px;line-height:1.42;border-left:2px solid transparent}
+  .nav a:hover{background:#301820;color:#fff}
+  .nav a.on{background:var(--accent2);color:var(--ink);font-weight:650;border-left-color:var(--accent)}
+  .subnav{border-top:1px solid var(--side-border);margin:.75rem 1.25rem 0;padding-top:1rem}
+  .sub-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);margin-bottom:.45rem}
+  .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.83rem;
+            padding:.38rem 0 .38rem .75rem;
+            border-left:1px solid var(--side-border);line-height:1.42}
+  .subnav a:hover{color:#fff;border-left-color:#c45a7c}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2.8rem,4.8vw,4.5rem) clamp(24px,5vw,76px) 5.2rem;
+                max-width:min(86rem,100%);width:100%}
+  .content footer{margin:0 clamp(24px,5vw,76px) 0;padding:1.6rem 1.8rem;background:var(--sunk);
+                  border-top:1px solid var(--deep);font-size:.84rem;color:var(--muted);line-height:1.78;max-width:min(86rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。纯 CSS 几何箭头，禁用任何字符图标。 */
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.7rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-toggle::after{content:'';display:inline-block;width:6px;height:6px;
+                       border-right:1.5px solid var(--side-muted);border-bottom:1.5px solid var(--side-muted);
+                       transform:rotate(45deg);margin-left:.4rem}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.45rem}
+  }
+  .crumb{font-size:.84rem;color:var(--faint);margin-bottom:1rem;font-variant-numeric:tabular-nums}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:650;letter-spacing:-.022em;line-height:1.15;
+     font-size:clamp(2rem,4.4vw,2.9rem);margin:0 0 1.05rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h1 .num{color:var(--accent);margin-right:.55rem;font-variant-numeric:tabular-nums}
+  .lede{font-size:clamp(1.04rem,1.6vw,1.16rem);color:var(--muted);max-width:76ch;margin:0 0 2.3rem;line-height:1.76;text-wrap:pretty}
+  .lede strong,.lede b{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:clamp(1.35rem,2.5vw,1.72rem);font-weight:650;letter-spacing:-.016em;
+     margin:3.6rem 0 .65rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h2:first-of-type{margin-top:2.4rem}
+  .h2sub{font-size:.95rem;color:var(--faint);margin:0 0 1.45rem;max-width:76ch;line-height:1.7}
+  h3{font-size:1.06rem;font-weight:650;margin:2rem 0 .6rem;text-wrap:balance}
+  p{margin:0 0 1.15rem;max-width:76ch;text-wrap:pretty}
+  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
+  pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
+      font-family:var(--mono);font-size:.84rem;line-height:1.68;border:1px solid var(--side-border);border-radius:2px}
+  .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
+  .card h3{margin-top:0}
+  .card p{max-width:none;line-height:1.7}
+  a.card{transition:border-color .14s,background-color .14s}
+  a.card:hover{border-color:var(--accent);background:#fff}
+  main>.card{margin:1.15rem 0}
+  .grid{display:grid;gap:1.15rem;margin:1.25rem 0 1.8rem}
+  .grid .card{margin:0}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.85rem 0 1.6rem;
+        border:1px solid var(--deep);font-variant-numeric:tabular-nums}
+  .tablewrap{overflow-x:auto;max-width:100%}
+  thead th{font-size:.82rem;font-weight:650;color:var(--muted);background:var(--accent-soft);
+           text-align:left;padding:.95rem 1.2rem .85rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
+  tbody td{font-size:.91rem;color:var(--muted);padding:.92rem 1.2rem;border-bottom:1px solid var(--sunk);vertical-align:top;line-height:1.68}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:var(--accent-soft)}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  .tag{display:inline-block;font-size:.76rem;font-weight:650;padding:.14rem .52rem;margin-right:.35rem;
+       white-space:nowrap;border-radius:2px;font-variant-numeric:tabular-nums}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-pstack{background:#e8e0f2;color:#4a2c6b}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  /* 告别廉价的 3px 粗左边框套路，采用 1px 精密玫瑰陶框 + 浅雾粉底色 */
+  .note{background:var(--accent-soft);padding:1.4rem 1.7rem;border:1px solid var(--deep);
+        margin:1.6rem 0 2rem;font-size:.95rem;color:var(--muted);line-height:1.74}
+  .note.warn{border-color:#d9a6a6;background:var(--alert2);color:#4a1818}
+  .note.warn b{color:#2e0d0d}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);border:1px solid var(--deep);padding:1.5rem 1.8rem;margin:1.6rem 0 2.2rem}
+  .cover .row{display:flex;gap:1.25rem;align-items:baseline;flex-wrap:wrap;font-size:.94rem;color:var(--muted);
+              padding:.6rem 0;border-bottom:1px solid var(--sunk);line-height:1.68}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 8.5rem;color:var(--faint);font-size:.84rem;font-weight:600}
+  .cover .v{flex:1;min-width:220px}
+  .nextprev{display:flex;justify-content:space-between;gap:1.5rem;margin-top:4rem;padding-top:1.6rem;
+            border-top:1px solid var(--deep);font-size:.94rem}
+  .nextprev a{text-decoration:none;font-weight:600}
+  .nextprev .lbl{display:block;font-size:.78rem;color:var(--faint);font-weight:400;margin-bottom:.2rem}
+  footer{margin-top:3.5rem;padding:1.5rem 1.8rem;background:var(--sunk);font-size:.84rem;color:var(--muted);line-height:1.78}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.35rem;margin:.6rem 0 1.4rem}
+  li{margin-bottom:.52rem;font-size:.95rem;color:var(--muted);line-height:1.72;max-width:76ch}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。空字段保持可读对比度 >= 4.5:1 */
+  .tb-index{background:var(--surface);border:1px solid var(--deep);padding:1.15rem 1.45rem;margin:1.4rem 0 1.8rem;font-size:.9rem}
+  .tb-index a{display:flex;gap:.9rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.42rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent);color:#fff}
+  .tb-index code{background:var(--accent2);padding:.1rem .48rem;color:var(--accent);font-weight:650;
+    flex:0 0 5.5rem;text-align:center}
+  .tb-row{margin:2.4rem 0 2.8rem}
+  .tb-row h3{margin:0 0 .7rem;font-family:var(--mono);font-size:.95rem}
+  .tb-row h3 code{background:var(--accent);color:#fff;padding:.18rem .65rem;font-size:.88rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:12rem;color:var(--muted);font-weight:600;font-size:.84rem}
+  table.tb-fields td:last-child{font-size:.92rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--faint)}
+  .tb-no{color:var(--faint);font-style:italic;font-size:.84rem}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:7rem;font-size:.78rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
+    <details open>
+      <summary class="nav-toggle">站点导航</summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="architecture.html">架构全景</a>
+      <a href="cheatsheet.html">作战手卡</a>
+      <a href="agent-graph.html">Agent 图谱</a>
+      <a href="toolchain.html">工具链</a>
+      <a href="practices.html" class="on">实战用法</a>
+      <a href="data-design.html">数据产品设计</a>
+      <a href="data-layers.html">8+3 层契约</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
+      </div>
+      </nav>
+      
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb"><a href="./">总览</a> / 实战用法</div>
+      <style>.card pre{white-space:pre-wrap;word-break:break-word}</style>
+<h1>实战用法</h1>
+<p class="lede">这里收的是别人已经在用的 agent 产品做法，按四层分开：<b>行为、流程、编排、证据</b>。每一层写清四件事：它解决什么问题、方法长什么样、怎么搬到 ANB 的阶段、以及可以直接复制的提示词。整页分四批上线，当前批次是行为层。</p>
+<h2>四层目录</h2>
+<p class="h2sub">先看哪一层对得上你现在的症状。已经收录的层可以点进去，其余三层会在后续批次补齐。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:28%">层</th><th style="width:56%">这一层管什么</th><th>收录</th></tr></thead><tbody><tr><td><a href="#layer-behavior">01 行为层：让模型守规矩</a></td><td>让模型在每一轮都守住边界：哪些规则常驻，哪些只在事件触发时读，哪些内容不该进入上下文。</td><td>4 条，本批</td></tr><tr><td>02 流程层：让任务走得完</td><td>让任务从一句话走到可验收的结果：步骤、状态、交接和失败处理都不靠临场记忆。</td><td>下一批</td></tr><tr><td>03 编排层：让对的人干对的事</td><td>让多个角色各干各的强项：谁规划、谁执行、谁评审，以及它们之间怎么交接。</td><td>下一批</td></tr><tr><td>04 证据层：让「做完了」可被检查</td><td>让「做完了」变成可以复查的东西：命令、原始输出，以及它证明不了什么。</td><td>下一批</td></tr></tbody></table></div>
+<h2 id="layer-behavior">01 行为层：让模型守规矩</h2>
+<p class="h2sub">让模型在每一轮都守住边界：哪些规则常驻，哪些只在事件触发时读，哪些内容不该进入上下文。</p>
+<article class="card" id="p-guardrails">
+<h3>Guardrails Kit：把常驻规则拆成事件触发的 playbook</h3>
+<p class="h2sub">常驻上下文是恒定和税；核心压到 45 行，长文档只在触发时读。</p>
+<p><b>它解决什么</b></p>
+<p>常驻 CLAUDE.md 越写越长，模型对每条规则的遵守度被稀释；真正需要的长文档又没人读。规则堆在同一个文件里，还会让每一轮上下文都为它们付一次 token。作者把「每次都必须生效的少数规则」和「特定时刻才需要的长文档」拆成两种东西，常驻部分因此可以压到很短。</p>
+<p><b>方法长什么样</b></p>
+<ol><li><b>压核心</b>：常驻部分只留约 45 行，硬上限 60 行。里面放 12 条铁律、一张事件路由表和 4 个硬停，其余内容全部移出去。</li><li><b>事件路由</b>：路由条件写成模型当下能感知的事件，比如测试红了、准备说 done、第 3 次读同一个大文件。不写主题标签，因为主题标签要先判断「我属于哪一类」，这一步经常判断错。</li><li><b>按需 playbook</b>：PLAN、CODE、TRAPS、DEBUG、VERIFY、EFFICIENCY、SESSION 八份文档放在旁边，只有对应事件触发时才读。平时它们不占上下文。</li><li><b>可粘贴证据</b>：每条规则都产出一个能在 transcript 里搜到的标记，比如 TRIGGER:、CAUSE:、V3: PASS。验收时要求同一个标记和同一轮工具输出一起出现，规则有没有执行就不用靠感觉。</li><li><b>迁移</b>：MIGRATE.md 逐行处置旧的 CLAUDE.md：先快照，再备份，遇到冲突显式暴露，最后让用户确认。旧规则不会在迁移时静默消失。</li></ol>
+<p><b>搬到 ANB 的哪个阶段</b></p>
+<p><a href="manage.html">管理</a> · <a href="design.html">设计</a> · <a href="verify.html">验收</a></p>
+<ul><li>manage：把规则分成常驻核心和事件触发 playbook。常驻部分只留每次都必须生效的条目，其余按触发事件归档。</li><li>design：先写 TASK 块，把目标、前提、基线、拆分，以及哪些要问人、哪些自己决定写清楚，再让模型动手。</li><li>verify：用 12 项回声协议逐条验收。每一条 claim 都必须引用同一轮真实工具输出，不能只复述结论。</li></ul>
+<p><b>可以直接用的提示词</b></p>
+<pre>把这段常驻规则压到 60 行以内：只保留 12 条铁律、事件路由表、4 个硬停；其余移到按需文档。每条路由写清触发事件、要读的文件、读完必须产出的标记。</pre>
+<p><b>作者报告的效果</b></p>
+<p>作者用 155 条失败模式研究和 193 条对抗评审把规则硬化了一遍。规则以可 grep 的标记出现在 transcript 里，所以能审计哪些触发过、哪些被跳过。作者报告，常驻上下文从一份不断变长的文件，变成 45 行核心加按需文档。</p>
+<p><b>来源</b>：<a href="https://github.com/TheColliny/FableClaudeMDForOpus">TheColliny/FableClaudeMDForOpus</a></p>
+</article>
+<article class="card" id="p-clean-prompt">
+<h3>Universal Fable 5：把系统提示词删到只剩行为</h3>
+<p class="h2sub">把平台细节删到只剩行为原则，按 core、balanced、complete 三档控制预算。</p>
+<p><b>它解决什么</b></p>
+<p>原版系统提示词里混着大量平台实现细节：XML 包装、MCP 与工具接口、产品行为、内部 UI、存储与 artifact、环境实现。这些内容在原来的平台上有效，换一个模型或客户端之后，既占 token 又不起作用。作者没有改写行为原则，而是先把只属于某个平台的部分一层层删掉，看剩下什么还成立。删除顺序也有讲究：先删最依赖平台的协议与界面，再删产品行为，最后检查剩下的原则能不能独立执行。</p>
+<p><b>方法长什么样</b></p>
+<ol><li><b>分层删除</b>：按来源一层一层去掉：XML 包装、MCP 与工具接口、产品行为、内部 UI、存储与 artifact、环境实现。每删完一层，检查剩下的行为原则还能不能独立读懂。</li><li><b>保留行为</b>：留下的是跨模型仍然成立的部分：先理解意图、诚实处理不确定、清晰沟通、代码质量、权衡建议、完成前验证、客观纠错、少元评论。这些不依赖任何平台的接口。条目之间的顺序也有意义：先理解再验证，先诚实再完整。</li><li><b>三档预算</b>：core 是最小行为集，balanced 是推荐档，complete 保留近乎全部厂商中立行为。用哪一档由 token 预算和任务复杂度决定，不默认用最长的那一档。三档共用同一组行为原则，差的是覆盖面和例子数量。</li><li><b>用法</b>：直接粘贴到 system prompt、custom instructions、Gem 或 custom GPT。它是一份纯文本，不依赖 SDK，也不要求模型支持某个工具协议。</li></ol>
+<p><b>搬到 ANB 的哪个阶段</b></p>
+<p><a href="design.html">设计</a> · <a href="manage.html">管理</a> · <a href="ship.html">交付</a></p>
+<ul><li>design：把产品行为原则写成可迁移的段落，不绑定某一个模型的工具格式。</li><li>manage：按 token 预算选 core、balanced 或 complete，先问这一轮能花多少上下文。</li><li>ship：上线前删掉厂商特定内容，避免换模型时整段失效。</li></ul>
+<p><b>可以直接用的提示词</b></p>
+<pre>把这份系统提示词里只属于某个平台的部分删掉（XML、工具接口、产品 UI、存储、环境），只保留跨模型仍然成立的行为原则；按 core、balanced、complete 三档输出，并说明每档删了什么。</pre>
+<p><b>作者报告的效果</b></p>
+<p>作者报告三档提示词在 Claude、ChatGPT、Gemini、DeepSeek、Qwen、Grok、GLM 等模型上保持兼容。删掉平台细节之后 prompt 更短，context 更省，行为原则仍然能读。换模型时不需要重新审一遍平台耦合，只要按新的预算挑一档。</p>
+<p><b>来源</b>：<a href="https://github.com/KinetiNode/claude-fable-5-system-prompt-clean">KinetiNode/claude-fable-5-system-prompt-clean</a></p>
+</article>
+<article class="card" id="p-moely-zh">
+<h3>Fable 5 中文版：一套可以直接改的系统提示词骨架</h3>
+<p class="h2sub">不是英文原文的逐字翻译，而是一套能按段替换策略的中文骨架。</p>
+<p><b>它解决什么</b></p>
+<p>中文产品要一套能直接改的系统提示词骨架，而不是英文原文的逐字翻译。逐字翻译会把英文的句式和例子一起搬过来，读起来别扭，也不方便按本地政策替换。作者保留原文作参照，另做英文通用版和中文通用版，让策略段可以逐段改。分段的直接好处是替换时只动一段，其他段的语气和边界不受影响。</p>
+<p><b>方法长什么样</b></p>
+<ol><li><b>原文保留</b>：PROMPT_fable5.md 原样保留，作为对照和回溯的基准。后面两版都以它为参照，避免改着改着丢了原意。</li><li><b>厂商中立重写</b>：PROMPT.md 去掉品牌名和平台细节，只留行为原则，作为英文通用版。它可以在不同模型上直接当 system prompt 用。</li><li><b>中文版</b>：PROMPT.zh.md 按行为总览、搜索与工具、图片搜索、文件与代码输出分段。中文读者可以逐段读、逐段改，不用先在心里翻译一遍。分段名称直接对应读者要改的东西，不需要先理解英文的章节标题。</li><li><b>策略段可直接替换</b>：拒绝处理、法律财务、语气格式、列表、健康、立场均衡、错误与批评、知识截止、版权、有害内容、图片搜索禁区，每一段都有明确边界。版权段还给了 15 词限制和每来源一次的规则。</li></ol>
+<p><b>搬到 ANB 的哪个阶段</b></p>
+<p><a href="design.html">设计</a> · <a href="ship.html">交付</a> · <a href="manage.html">管理</a></p>
+<ul><li>design：把拒绝清单、语气、引用规则写成可逐条对照的策略段，每一段只回答一类问题。</li><li>ship：上线前替换产品信息、拒绝清单、版权与图片规则，保留分段顺序，方便逐段回归。</li><li>manage：把策略段作为版本化基线，改一条记一条，避免多处副本各自漂移。</li></ul>
+<p><b>可以直接用的提示词</b></p>
+<pre>以这份中文系统提示词为骨架，保留策略分段结构，把产品信息、拒绝清单、引用规则、图片规则改成我们产品的版本；不要改变分段顺序。</pre>
+<p><b>作者报告的效果</b></p>
+<p>作者提供原文、英文通用版、中文通用版三份。任何一份都可以直接作为聊天机器人或 agent 的 system prompt 起点。中文版按行为、搜索、图片、文件与代码输出分段，策略段可以整段替换而不动结构。原文保留还让改动有据可查，哪一段换过，可以和原文逐段对照。</p>
+<p><b>来源</b>：<a href="https://github.com/moely-ai/claude-fable-5-prompt">moely-ai/claude-fable-5-prompt</a></p>
+</article>
+<article class="card" id="p-vff">
+<h3>Value-for-Fable：用诊断结构而不是压缩去接近 Opus</h3>
+<p class="h2sub">压缩省下的是 token，削掉的是诊断质量；v2 删掉压缩强制，保留诊断结构。</p>
+<p><b>它解决什么</b></p>
+<p>用 Sonnet 想接近 Opus 的质量，常见做法是压缩输出省 token。压缩确实让回答变短，但它会连同诊断质量一起削掉：假设没有展开，测量被跳过，结论先于证据。作者的做法是保留诊断结构，只把重复和啰嗦去掉，让较便宜的模型仍然按同一条推理路径走。压缩规则通常写成字数或句数上限，模型为了达标会先删解释，而解释正是诊断过程本身。</p>
+<p><b>方法长什么样</b></p>
+<ol><li><b>8 段输出结构</b>：communication、style_reference、effort_and_reasoning、tool_discipline、verification、code_and_changes、writing_and_research、tone_and_conduct。每一段只负责一类行为，模型不用在一段里同时满足互相冲突的要求。</li><li><b>诊断结构</b>：线索优先的假设、先做最便宜的测量、结论放在第一句、验证之后再宣布完成、置信度显式写出。这套顺序让回答可以被检查，而不是听起来完整。顺序本身就是检查表：先有假设，再选测量，最后才允许说完成。</li><li><b>2-pass 评审</b>：高难度任务交给一个 Sonnet 评审 agent，只按四条标准评：需求遗漏、事实或数字错误、未解释的线索、超量。标准之外不评，避免评审自己发散。</li><li><b>漂移提醒</b>：transcript 超过 400KB 且 VFF 仍然活跃时，才每轮注入一次提醒；没超过阈值就不注入，成本为零。</li><li><b>v2 的关键修正</b>：删掉压缩强制，保留诊断结构。作者实测 v1 到 v2 提升 10.9 分，说明省 token 和省质量不是同一件事。</li></ol>
+<p><b>搬到 ANB 的哪个阶段</b></p>
+<p><a href="verify.html">验收</a> · <a href="iterate.html">迭代</a> · <a href="manage.html">管理</a></p>
+<ul><li>verify：把诊断结构用作验收回答模板，先给结论，再给假设、测量和置信度。</li><li>iterate：把「压缩是质量债」做成一次消融实验，去掉压缩规则看分数，再决定要不要保留。</li><li>manage：长会话只在超过阈值时注入提醒，避免每一轮都付一次 token。</li></ul>
+<p><b>可以直接用的提示词</b></p>
+<pre>用 VFF v2 的诊断结构回答：第一句给结论；先找能解释所有线索的假设；处方前先给最便宜的测量；没验证前不说完成；不确定的地方标置信度。不要为了短而删掉解释。</pre>
+<p><b>作者报告的效果</b></p>
+<p>作者报告 Sonnet 加 v2 与裸 Opus 在两次重评中的结果为 87.1 对 86.2、84.8 对 89.4，落在噪声内；输出成本约为 Opus 的 0.30 倍。省下来的主要是输出 token，诊断结构仍然保留。这个结果说明，接近更强模型的一条可行路径是改回答的结构，而不是改回答的长度。</p>
+<p><b>来源</b>：<a href="https://github.com/itsinseong/value-for-fable">itsinseong/value-for-fable</a></p>
+</article>
+<div class="note"><b>怎么用这一页。</b>先读「它解决什么」，判断是不是你现在的症状；再挑方法里一条今天就能做的；提示词可以直接复制，先在一件小事上试，再决定要不要改常驻规则。</div>
+      
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+</body>
+</html>

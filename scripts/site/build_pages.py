@@ -3,6 +3,7 @@ from build_shell import page, STAGES
 from paths import out_dir
 from map import MAP
 from battle_tips_data import THEMES
+from practices_data import PRACTICES
 
 # 文档里的数字从归属表数，不写字面量。
 N_ROWS = len(MAP)
@@ -197,6 +198,30 @@ BRANCH_BODY = {
  'b-keep': ('想保留但说不清理由', '删掉。<br><br>没有理由的保留物会成为下个项目的负担，因为每个未来的决定都要塞进它的形状里。而且你会在三个月后忘记它为什么在那儿，于是没人敢删。'),
 }
 
+def practices_for(slug):
+    """这一阶段收录了哪些实战做法。数据里没有的阶段返回空列表。"""
+    return [p for p in PRACTICES if slug in p['stages']]
+
+
+def practices_block(slug):
+    """阶段页上的收录表。管理页也复用这一块，所以它返回列表而不是整页。"""
+    ps = practices_for(slug)
+    if not ps:
+        return []
+    out = ['<h2 id="practices">这一步的实战用法</h2>']
+    out.append('<p class="h2sub">来自实战项目的做法，按它和本阶段的关系收录。'
+               '完整案例、方法和提示词见 <a href="practices.html">实战用法</a>。</p>')
+    rows = ''.join(
+        f'<tr><td><a href="practices.html#p-{p["id"]}">{p["title"]}</a></td>'
+        f'<td>{p["one_line"]}</td>'
+        f'<td><a href="{p["repo_url"]}">{p["repo"]}</a></td></tr>'
+        for p in ps)
+    out.append('<table><thead><tr><th style="width:34%">项目</th>'
+               '<th style="width:46%">一句话</th><th>来源</th></tr></thead>'
+               f'<tbody>{rows}</tbody></table>')
+    return out
+
+
 def stage_page(slug, name, oneline):
     d = DETAIL[slug]
     idx = [s[0] for s in STAGES].index(slug)
@@ -254,6 +279,10 @@ def stage_page(slug, name, oneline):
         body.append('<table><thead><tr><th style="width:26%">守则与手卡入口</th><th style="width:37%">典型痛点</th><th>验收判定</th></tr></thead>'
                     f'<tbody>{bt_rows}</tbody></table>')
 
+    ps = practices_block(slug)
+    if ps:
+        body.extend(ps)
+
     # skill
     body.append('<h2 id="skills">这一步用到哪些 skill</h2>')
     missing = [s for s in d['skills'] if s not in MAP]
@@ -284,6 +313,8 @@ def stage_page(slug, name, oneline):
     sections = [('branches', '走哪条路'), ('verify', '谁来验怎么验')]
     if stage_tips:
         sections.append(('battle-tips', '实战避坑'))
+    if ps:
+        sections.append(('practices', '实战用法'))
     sections.extend([('skills', '用到哪些 skill'), ('docs', '原文与依据')])
     return page(slug, name, '\n'.join(body), crumb, '\n'.join(pp), sections)
 

@@ -193,6 +193,7 @@
       <a href="cheatsheet.html">作战手卡</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="toolchain.html">工具链</a>
+      <a href="practices.html">实战用法</a>
       <a href="data-design.html">数据产品设计</a>
       <a href="data-layers.html">8+3 层契约</a>
       <a href="branches.html">分支总表</a>
@@ -247,6 +248,9 @@
       <p>最后两段是重点。"通过"这个词太容易写，而"这条测试证明了解析器，不能证明供应商可达"是真话。</p>
       <p style="color:var(--faint);font-size:.88rem;margin-bottom:0">票要标 done，<code>work-move</code> 会检查 <code>evidence:</code> 字段；没有就拒绝。</p></div>
 </div>
+<h2 id="practices">这一步的实战用法</h2>
+<p class="h2sub">来自实战项目的做法，按它和本阶段的关系收录。完整案例、方法和提示词见 <a href="practices.html">实战用法</a>。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:34%">项目</th><th style="width:46%">一句话</th><th>来源</th></tr></thead><tbody><tr><td><a href="practices.html#p-guardrails">Guardrails Kit：把常驻规则拆成事件触发的 playbook</a></td><td>常驻上下文是恒定和税；核心压到 45 行，长文档只在触发时读。</td><td><a href="https://github.com/TheColliny/FableClaudeMDForOpus">TheColliny/FableClaudeMDForOpus</a></td></tr><tr><td><a href="practices.html#p-clean-prompt">Universal Fable 5：把系统提示词删到只剩行为</a></td><td>把平台细节删到只剩行为原则，按 core、balanced、complete 三档控制预算。</td><td><a href="https://github.com/KinetiNode/claude-fable-5-system-prompt-clean">KinetiNode/claude-fable-5-system-prompt-clean</a></td></tr><tr><td><a href="practices.html#p-moely-zh">Fable 5 中文版：一套可以直接改的系统提示词骨架</a></td><td>不是英文原文的逐字翻译，而是一套能按段替换策略的中文骨架。</td><td><a href="https://github.com/moely-ai/claude-fable-5-prompt">moely-ai/claude-fable-5-prompt</a></td></tr><tr><td><a href="practices.html#p-vff">Value-for-Fable：用诊断结构而不是压缩去接近 Opus</a></td><td>压缩省下的是 token，削掉的是诊断质量；v2 删掉压缩强制，保留诊断结构。</td><td><a href="https://github.com/itsinseong/value-for-fable">itsinseong/value-for-fable</a></td></tr></tbody></table></div>
 <h2 id="m-use">怎么用（不需要记命令）</h2>
 <p>一个 skill，<code>anb-manage</code>。你说话，它读写目录。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:32%">你说</th><th>它做什么</th></tr></thead><tbody><tr id="m-status"><td>「现在什么情况？」</td><td>跑 <code>work status</code>，按它的输出回答，不凭记忆总结成"看起来还行"。</td></tr><tr id="m-close"><td>「这张票能关了吗？」</td><td>查三件：有证据吗、证据证明的是这张票还是别的东西、有没有一条检查真的红过。</td></tr><tr id="m-file"><td>「这里有个问题」</td><td>先分辨是"我们打算做的事"还是"发生在我们身上的事"：前者开票，后者开事故。</td></tr><tr id="m-where"><td>「这个东西该放哪？」</td><td>读 <code>work/LAYOUT.md</code>。它会不会变？会 → <code>work/</code>；不会 → <code>docs/</code>。</td></tr></tbody></table></div>

@@ -46,6 +46,7 @@ const GENERATORS = [
   'build_data_layers.py',
   'build_cheatsheet.py',
   'build_toolchain.py',
+  'build_practices.py',
   'build_architecture.py',
   'build_meta.py',
 ];
