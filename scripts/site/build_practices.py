@@ -3,7 +3,14 @@
 页面按层组织，一层一批上线。渲染只依赖数据里的字段，后续批次追加
 PRACTICES 条目时不需要改这里。阶段链接用 STAGES 的中文名，管理不在
 七阶段里，单独补一个名字，避免链接文字掉回 slug。
+
+案例数据按纯文本处理，渲染时统一 HTML 转义；这样正文里可以放心写
+`<文档>`、`<命令>` 这类占位符，不会被浏览器当成标签吞掉。
+
+可选字段：facts（关键数字表）、cases（补充小节）、tables（对比表）。
+字段缺省时不渲染，后续批次可以只填基础字段。
 """
+import html
 import os
 
 from build_shell import page, STAGES
@@ -14,28 +21,62 @@ STAGE_NAME = {slug: name for slug, name, _ in STAGES}
 STAGE_NAME['manage'] = '管理'
 
 
+def _e(value):
+    return html.escape(str(value))
+
+
 def _stage_links(practice):
     return ' · '.join(
-        f'<a href="{slug}.html">{STAGE_NAME.get(slug, slug)}</a>'
+        f'<a href="{_e(slug)}.html">{_e(STAGE_NAME.get(slug, slug))}</a>'
         for slug in practice['stages'])
 
 
+def _facts(p):
+    if not p.get('facts'):
+        return []
+    rows = ''.join(f'<tr><th>{_e(k)}</th><td>{_e(v)}</td></tr>' for k, v in p['facts'])
+    return [f'<table class="practice-facts"><tbody>{rows}</tbody></table>']
+
+
+def _cases(p):
+    out = []
+    for title, body in p.get('cases', []):
+        out.append(f'<h4>{_e(title)}</h4>')
+        out.append(f'<p>{_e(body)}</p>')
+    return out
+
+
+def _tables(p):
+    out = []
+    for t in p.get('tables', []):
+        caption = f'<caption>{_e(t["caption"])}</caption>' if t.get('caption') else ''
+        head = ''.join(f'<th>{_e(h)}</th>' for h in t['headers'])
+        body = ''.join(
+            '<tr>' + ''.join(f'<td>{_e(c)}</td>' for c in row) + '</tr>'
+            for row in t['rows'])
+        out.append(f'<table>{caption}<thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>')
+    return out
+
+
 def _practice_card(p):
-    b = [f'<article class="card" id="p-{p["id"]}">']
-    b.append(f'<h3>{p["title"]}</h3>')
-    b.append(f'<p class="h2sub">{p["one_line"]}</p>')
+    b = [f'<article class="card" id="p-{_e(p["id"])}">']
+    b.append(f'<h3>{_e(p["title"])}</h3>')
+    b.append(f'<p class="h2sub">{_e(p["one_line"])}</p>')
+    b += _facts(p)
     b.append('<p><b>它解决什么</b></p>')
-    b.append(f'<p>{p["problem"]}</p>')
+    b.append(f'<p>{_e(p["problem"])}</p>')
     b.append('<p><b>方法长什么样</b></p>')
-    b.append('<ol>' + ''.join(f'<li><b>{k}</b>：{v}</li>' for k, v in p['method']) + '</ol>')
+    b.append('<ol>' + ''.join(f'<li><b>{_e(k)}</b>：{_e(v)}</li>' for k, v in p['method']) + '</ol>')
+    b += _cases(p)
     b.append('<p><b>搬到 ANB 的哪个阶段</b></p>')
     b.append(f'<p>{_stage_links(p)}</p>')
-    b.append('<ul>' + ''.join(f'<li>{a}</li>' for a in p['apply']) + '</ul>')
+    b.append('<ul>' + ''.join(f'<li>{_e(a)}</li>' for a in p['apply']) + '</ul>')
+    b += _tables(p)
     b.append('<p><b>可以直接用的提示词</b></p>')
-    b.append(f'<pre>{p["prompt"]}</pre>')
+    b.append(f'<pre>{_e(p["prompt"])}</pre>')
     b.append('<p><b>作者报告的效果</b></p>')
-    b.append(f'<p>{p["effect"]}</p>')
-    b.append(f'<p><b>来源</b>：<a href="{p["repo_url"]}">{p["repo"]}</a></p>')
+    b.append(f'<p>{_e(p["effect"])}</p>')
+    b.append(f'<p><b>来源</b>：<a href="{_e(p["repo_url"])}">{_e(p["repo"])}</a></p>')
     b.append('</article>')
     return '\n'.join(b)
 
@@ -43,16 +84,24 @@ def _practice_card(p):
 def _layer_row(layer):
     ps = [p for p in PRACTICES if p['layer'] == layer['id']]
     if ps:
-        label = f'<a href="#layer-{layer["id"]}">{layer["num"]} {layer["title"]}</a>'
+        label = f'<a href="#layer-{_e(layer["id"])}">{_e(layer["num"])} {_e(layer["title"])}</a>'
         status = f'{len(ps)} 条，本批'
     else:
-        label = f'{layer["num"]} {layer["title"]}'
+        label = f'{_e(layer["num"])} {_e(layer["title"])}'
         status = '下一批'
-    return f'<tr><td>{label}</td><td>{layer["lede"]}</td><td>{status}</td></tr>'
+    return f'<tr><td>{label}</td><td>{_e(layer["lede"])}</td><td>{status}</td></tr>'
 
 
 def practices_page():
-    b = ['<style>.card pre{white-space:pre-wrap;word-break:break-word}</style>']
+    b = ["""<style>
+.card pre{white-space:pre-wrap;word-break:break-word}
+.practice-facts{margin:1.1rem 0 1.4rem;font-size:.9rem;border-collapse:collapse;width:100%}
+.practice-facts th{width:22%;color:var(--faint);font-weight:600;vertical-align:top;padding:.4rem .9rem .4rem 0;border-bottom:1px solid var(--sunk)}
+.practice-facts td{padding:.4rem 0;border-bottom:1px solid var(--sunk);color:var(--muted)}
+.card h4{margin:1.6rem 0 .45rem;font-size:1rem;color:var(--accent);letter-spacing:.01em}
+.card caption{text-align:left;font-size:.82rem;color:var(--faint);padding:.2rem 0 .5rem}
+.card table{margin:1.2rem 0 1.6rem}
+</style>"""]
     b.append('<h1>实战用法</h1>')
     b.append('<p class="lede">这里收的是别人已经在用的 agent 产品做法，按四层分开：'
              '<b>行为、流程、编排、证据</b>。每一层写清四件事：它解决什么问题、方法长什么样、'
@@ -71,8 +120,8 @@ def practices_page():
         ps = [p for p in PRACTICES if p['layer'] == layer['id']]
         if not ps:
             continue
-        b.append(f'<h2 id="layer-{layer["id"]}">{layer["num"]} {layer["title"]}</h2>')
-        b.append(f'<p class="h2sub">{layer["lede"]}</p>')
+        b.append(f'<h2 id="layer-{_e(layer["id"])}">{_e(layer["num"])} {_e(layer["title"])}</h2>')
+        b.append(f'<p class="h2sub">{_e(layer["lede"])}</p>')
         for p in ps:
             b.append(_practice_card(p))
 
