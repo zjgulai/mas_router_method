@@ -85,7 +85,7 @@ def _layer_row(layer):
     ps = [p for p in PRACTICES if p['layer'] == layer['id']]
     if ps:
         label = f'<a href="#layer-{_e(layer["id"])}">{_e(layer["num"])} {_e(layer["title"])}</a>'
-        status = f'{len(ps)} 条，本批'
+        status = f'{len(ps)} 条'
     else:
         label = f'{_e(layer["num"])} {_e(layer["title"])}'
         status = '下一批'
@@ -105,12 +105,10 @@ def practices_page():
     b.append('<h1>实战用法</h1>')
     b.append('<p class="lede">这里收的是别人已经在用的 agent 产品做法，按四层分开：'
              '<b>行为、流程、编排、证据</b>。每一层写清四件事：它解决什么问题、方法长什么样、'
-             '怎么搬到 ANB 的阶段、以及可以直接复制的提示词。整页分四批上线，'
-             '当前批次是行为层。</p>')
+             '怎么搬到 ANB 的阶段、以及可以直接复制的提示词。四层都已收录。</p>')
 
     b.append('<h2>四层目录</h2>')
-    b.append('<p class="h2sub">先看哪一层对得上你现在的症状。已经收录的层可以点进去，'
-             '其余三层会在后续批次补齐。</p>')
+    b.append('<p class="h2sub">先看哪一层对得上你现在的症状。四层都已收录，可以按症状直接点进去。</p>')
     b.append('<table><thead><tr><th style="width:28%">层</th>'
              '<th style="width:56%">这一层管什么</th><th>收录</th></tr></thead><tbody>'
              + ''.join(_layer_row(layer) for layer in LAYERS)
