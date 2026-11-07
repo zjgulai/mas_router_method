@@ -45,6 +45,10 @@ Internet :443
 
 以下命令都在仓库根目录执行。
 
+服务器：`ubuntu@43.163.92.244`，SSH 端口 `22222`。下文命令里的 `<key>` 指
+`~/Project/Knowledge/zhoujian_pachong.pem`——`~/.ssh/id_ed25519`、
+`luteos-prod-ed25519`、`luteos.com.pem` 都不能登录，`ssh-agent` 里也没有身份。
+
 ```bash
 # 1. 本地：构建并冒烟（原生架构；功能与生产镜像一致，Dockerfile 无架构相关步骤）
 deploy/build-image.sh
