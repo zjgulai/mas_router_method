@@ -207,6 +207,7 @@
       <div class="subnav"><span class="sub-h">本页</span>
       <a href="#branches">走哪条路</a>
       <a href="#verify">谁来验怎么验</a>
+      <a href="#cases">真实案例</a>
       <a href="#battle-tips">实战避坑</a>
       <a href="#practices">实战用法</a>
       <a href="#skills">用到哪些 skill</a>
@@ -227,6 +228,9 @@
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>你自己用随手找的输入跑了一次</td><td>不是它准备好的样例</td></tr><tr><td>换一个你没预想过的输入，也跑通了</td><td>两个都能跑，才算跑通</td></tr><tr><td>失败时报的是一句人话，且退出码非零</td><td>不是静默通过，也不是堆栈</td></tr></tbody></table></div>
+<h2 id="cases">真实案例</h2>
+<p class="h2sub">来自 2,794 个<b>工程实现</b>会话的统计与抽样。案例已抽象化，只用来说明这些误判<b>真的会发生</b>——不需要理解技术细节。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:20%">误判</th><th style="width:50%">真实案例</th><th>说明</th></tr></thead><tbody><tr><td><b>结果来自样例数据</b></td><td>隔离假数据测试 64 项通过；真实数据的验证只完成收集，未运行。</td><td>全绿和能用之间，隔着一整个真实数据层。</td></tr></tbody></table></div>
 <h2 id="battle-tips">实战避坑守则 (Battle Tips)</h2>
 <p class="h2sub">归属于<b>开发</b>阶段的实战守则摘要。完整复制口令见 <a href="cheatsheet.html">作战手卡全表</a>。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:26%">守则与手卡入口</th><th style="width:37%">典型痛点</th><th>验收判定</th></tr></thead><tbody><tr id="bt-agent-eng-05"><td><a href="cheatsheet.html#agent-eng-05"><code>01-05</code></a> <b>让 Agent 先看地图再改代码</b></td><td>一口气动十几个文件，依赖和影响面不可见，合并后才发现牵连别处。</td><td>变更说明必须能回答：改了哪里、为什么、可能影响谁、如何回滚。</td></tr><tr id="bt-skills-ctx-02"><td><a href="cheatsheet.html#skills-ctx-02"><code>02-02</code></a> <b>AGENTS.md 太重 / 规则要分层</b></td><td>把代码规范、API 格式、业务逻辑和所有例子全塞根目录，Agent 反而变慢。</td><td>每条规则都要有触发场景、适用范围、验证方式和删除条件。</td></tr><tr id="bt-eval-first-04"><td><a href="cheatsheet.html#eval-first-04"><code>03-04</code></a> <b>Bug 反复改 / 设调试止损线</b></td><td>改一次、又引出新问题，第三轮已经忘了最初错误，Token 和时间一起烧掉。</td><td>没有新的证据时，不继续堆 patch。</td></tr><tr id="bt-product-growth-04"><td><a href="cheatsheet.html#product-growth-04"><code>05-04</code></a> <b>自动化 / 先拆链路再接工具</b></td><td>把多个平台和 Agent 串起来很容易，但错误会被自动化放大。</td><td>没有权限、幂等和回滚设计时，不做全自动发布。</td></tr><tr id="bt-data-research-03"><td><a href="cheatsheet.html#data-research-03"><code>06-03</code></a> <b>数据工程 / 用状态机和 Provenance 管住链路</b></td><td>数据产生、摄取、存储、处理、发布混在一起，失败后无法定位。</td><td>任何结果都能回到源头、变换和版本。</td></tr></tbody></table></div>

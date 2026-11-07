@@ -59,6 +59,10 @@ DETAIL = {
    ('把四块交给 agent，它问你的问题在三个以内', '它猜的每一处都是洞，补完再数一次'),
  ],
  'skills': ['anb-design', 'architecture-decision-records', 'domain-modeling', 'codebase-design', 'spec-driven-development', 'to-spec', 'writing-plans', 'to-tickets', 'api-and-interface-design', 'database-schema-designer', 'auth-implementation-patterns', 'architect', 'arena', 'principle-exhaust-the-design-space', 'principle-foundational-thinking', 'principle-type-system-discipline', 'how', 'why'],
+ 'cases': [
+   ('交接契约只写了"它做什么"', '权限文档测试失败：新增了一项权限说明，但下游的"已审查清单"没同步登记。', '"它做什么"写了，"它和谁有关、什么时候别用"没写。'),
+   ('输入散在好几处', 'README、TODO、代码三处对同一事实的记载互相矛盾，需要区分"已实现"和"文档陈旧"。', '"拢成一份"的工作没人负责。'),
+ ],
  'docs': [('terms.html', '术语表：每个词配「坏了会怎样」'), ('capability-map.html', '能力图谱 A 域：领域建模与契约')],
 },
 'build': {
@@ -79,6 +83,9 @@ DETAIL = {
    ('失败时报的是一句人话，且退出码非零', '不是静默通过，也不是堆栈'),
  ],
  'skills': ['anb-runnable', 'implement', 'implement-spec', 'tdd', 'ponytail', 'karpathy-guidelines', 'reuse-first', 'prototype', 'using-git-worktrees', 'swarm', 'principle-build-the-lever', 'principle-laziness-protocol', 'principle-subtract-before-you-add', 'deslop'],
+ 'cases': [
+   ('结果来自样例数据', '隔离假数据测试 64 项通过；真实数据的验证只完成收集，未运行。', '全绿和能用之间，隔着一整个真实数据层。'),
+ ],
  'docs': [('failure-atlas.html', '失败图鉴：第二类「测的不是你的产品」全部在这一步发生')],
 },
 'verify': {
@@ -100,6 +107,13 @@ DETAIL = {
    ('成功 + 各种失败原因 = 总数', '拆开加一遍，两分钟'),
  ],
  'skills': ['anb-judgeable', 'anb-check-break', 'anb-check-offline', 'anb-check-readback', 'anb-check-reconcile', 'anb-check-output', 'verification-before-completion', 'llm-evaluation', 'test-suite-health', 'code-review', 'security-review', 'diagnosing-bugs', 'interrogate', 'principle-prove-it-works', 'principle-explain-the-number', 'benchmark-checklist', 'blast-radius', 'thermos'],
+ 'cases': [
+   ('一条检查都没有', 'CI 只跑 JSON 语法校验，没有测试、视觉回归或可访问性检查。', '有 CI ≠ 有检查。'),
+   ('检查从没红过', '回归断言加完后，先运行确认它会在现有模板下失败，避免测试只是空转。', '主动证明检查会红。'),
+   ('检查红了', 'RED 阶段符合预期：测试失败，因为目标脚本不存在。先确认红得对，再实现。', '红可能是尺子错，不一定是产品错。'),
+   ('全绿但结果不好', '本地 E2E 通过，不等于线上逐页巡检；旧页面即使仍返回 200，也不能冒充新版本上线成功。', '200 是机制可信，"新版本真上线"才是产出可用。'),
+   ('检查太松（最常见成因）', '迁移脚本只验证 ID 是否存在，不检查项目是否已归档；部署门只检查目录存在，不验证 owner 和权限。', '只检查 X 存在，不检查 X 正确。'),
+ ],
  'docs': [('failure-atlas.html', '失败图鉴：七种误判里有六种在这道门上现形'), ('atlas-test-report.html', '实测报告：七个问句漏了哪一类'), ('anb2-report.html', '实测报告：三次「通过但理由错」')],
 },
 'ship': {
@@ -259,6 +273,16 @@ def stage_page(slug, name, oneline):
     vrows = ''.join(f'<tr><td>{a}</td><td>{s}</td></tr>' for a, s in d['verify'])
     body.append(f'<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody>{vrows}</tbody></table>')
 
+    # 真实案例：来自工程实现会话的统计与抽样
+    case_list = d.get('cases', [])
+    if case_list:
+        body.append('<h2 id="cases">真实案例</h2>')
+        body.append('<p class="h2sub">来自 2,794 个<b>工程实现</b>会话的统计与抽样。案例已抽象化，只用来说明这些误判<b>真的会发生</b>——不需要理解技术细节。</p>')
+        crows = ''.join(
+            f'<tr><td><b>{w}</b></td><td>{c}</td><td>{l}</td></tr>'
+            for w, c, l in case_list)
+        body.append(f'<table><thead><tr><th style="width:20%">误判</th><th style="width:50%">真实案例</th><th>说明</th></tr></thead><tbody>{crows}</tbody></table>')
+
     # 实战战斗卡：Distill 精简为高密度对账表，不再重复整卡堆叠
     stage_tips = []
     for t in THEMES:
@@ -311,6 +335,8 @@ def stage_page(slug, name, oneline):
 
     crumb = '<a href="./">总览</a> / ' + name
     sections = [('branches', '走哪条路'), ('verify', '谁来验怎么验')]
+    if case_list:
+        sections.append(('cases', '真实案例'))
     if stage_tips:
         sections.append(('battle-tips', '实战避坑'))
     if ps:
