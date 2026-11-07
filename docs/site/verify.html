@@ -206,6 +206,7 @@
       <div class="subnav"><span class="sub-h">本页</span>
       <a href="#branches">走哪条路</a>
       <a href="#verify">谁来验怎么验</a>
+      <a href="#cases">真实案例</a>
       <a href="#battle-tips">实战避坑</a>
       <a href="#skills">用到哪些 skill</a>
       <a href="#docs">原文与依据</a>
@@ -225,6 +226,9 @@
 <h2 id="verify">谁来验，怎么验</h2>
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>你亲眼看到过一条检查变红，并能说出是哪条抓到的</td><td>不是"应该有"，是"我看到了"</td></tr><tr><td>被跳过的检查数为零，或者整体结论是"不完整"</td><td>"跳过"绝不能算通过</td></tr><tr><td>成功 + 各种失败原因 = 总数</td><td>拆开加一遍，两分钟</td></tr></tbody></table></div>
+<h2 id="cases">真实案例</h2>
+<p class="h2sub">来自 2,794 个<b>工程实现</b>会话的统计与抽样。案例已抽象化，只用来说明这些误判<b>真的会发生</b>——不需要理解技术细节。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:20%">误判</th><th style="width:50%">真实案例</th><th>说明</th></tr></thead><tbody><tr><td><b>一条检查都没有</b></td><td>CI 只跑 JSON 语法校验，没有测试、视觉回归或可访问性检查。</td><td>有 CI ≠ 有检查。</td></tr><tr><td><b>检查从没红过</b></td><td>回归断言加完后，先运行确认它会在现有模板下失败，避免测试只是空转。</td><td>主动证明检查会红。</td></tr><tr><td><b>检查红了</b></td><td>RED 阶段符合预期：测试失败，因为目标脚本不存在。先确认红得对，再实现。</td><td>红可能是尺子错，不一定是产品错。</td></tr><tr><td><b>全绿但结果不好</b></td><td>本地 E2E 通过，不等于线上逐页巡检；旧页面即使仍返回 200，也不能冒充新版本上线成功。</td><td>200 是机制可信，"新版本真上线"才是产出可用。</td></tr><tr><td><b>检查太松（最常见成因）</b></td><td>迁移脚本只验证 ID 是否存在，不检查项目是否已归档；部署门只检查目录存在，不验证 owner 和权限。</td><td>只检查 X 存在，不检查 X 正确。</td></tr></tbody></table></div>
 <h2 id="battle-tips">实战避坑守则 (Battle Tips)</h2>
 <p class="h2sub">归属于<b>验收</b>阶段的实战守则摘要。完整复制口令见 <a href="cheatsheet.html">作战手卡全表</a>。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:26%">守则与手卡入口</th><th style="width:37%">典型痛点</th><th>验收判定</th></tr></thead><tbody><tr id="bt-skills-ctx-03"><td><a href="cheatsheet.html#skills-ctx-03"><code>02-03</code></a> <b>装了 Skill / 不等于真的会用</b></td><td>Skill 数量增长很快，但模型、Harness 和任务上下文改变使用效果。</td><td>没有评测证据时，只能说“已安装”，不能说“已掌握”。</td></tr><tr id="bt-eval-first-01"><td><a href="cheatsheet.html#eval-first-01"><code>03-01</code></a> <b>AI 项目 / 先建评测再建功能</b></td><td>输出不可预测，单元测试通过也不能说明用户结果有效。</td><td>没有基线和失败样例，不宣称“效果更好”。</td></tr><tr id="bt-eval-first-02"><td><a href="cheatsheet.html#eval-first-02"><code>03-02</code></a> <b>单测通过 / 仍要跑真实业务路径</b></td><td>局部函数正确，不代表权限、状态、并发、重试和回滚真的成立。</td><td>从入口跑到底端，并留下可复核证据。</td></tr><tr id="bt-eval-first-03"><td><a href="cheatsheet.html#eval-first-03"><code>03-03</code></a> <b>机制很多 / 用消融实验找贡献</b></td><td>缓存、队列、锁、Agent、插件一起上线，没人知道真正收益来自哪里。</td><td>每个机制都有对照结果和业务收益。</td></tr><tr id="bt-eval-first-05"><td><a href="cheatsheet.html#eval-first-05"><code>03-05</code></a> <b>Review / 先看业务风险再看代码风格</b></td><td>Agent 生成速度上去了，人工判断却仍按原节奏，审查变成瓶颈。</td><td>每条评论都必须能改变风险、验收或维护成本。</td></tr><tr id="bt-eval-first-06"><td><a href="cheatsheet.html#eval-first-06"><code>03-06</code></a> <b>工具返回合理 / 不等于业务正确</b></td><td>DB、日志和 Trace 能说明发生了什么，却不能替业务定义什么是对。</td><td>结论必须同时有业务依据和可定位的运行证据。</td></tr><tr id="bt-data-research-05"><td><a href="cheatsheet.html#data-research-05"><code>06-05</code></a> <b>学习材料 / 让 AI 解释但不替你相信</b></td><td>一本书、PDF 或课程很难系统读完，摘要又可能混入幻觉。</td><td>解释必须能回到材料，不能只凭常识补全。</td></tr></tbody></table></div>
