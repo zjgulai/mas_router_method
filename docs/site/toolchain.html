@@ -110,6 +110,19 @@
   tbody tr:last-child td{border-bottom:0}
   tbody tr:hover td{background:var(--accent-soft)}
   tbody td:first-child{color:var(--ink);font-weight:600}
+  /* 窄屏：三列案例表改成一叠卡片，每格自带字段名，免得字被挤成竖条。 */
+  @media(max-width:760px){
+    table.cases-table{background:none;border:0}
+    table.cases-table thead{display:none}
+    table.cases-table,table.cases-table tbody,table.cases-table tr,table.cases-table td{display:block;width:auto}
+    table.cases-table tr{background:var(--surface);border:1px solid var(--deep);padding:1rem 1.15rem 1.1rem;margin:0 0 .9rem}
+    table.cases-table tr:hover td{background:transparent}
+    table.cases-table td{border:0;padding:0;font-size:.92rem}
+    table.cases-table td::before{content:attr(data-label);display:block;font-size:.74rem;font-weight:650;
+                                 letter-spacing:.06em;color:var(--faint);margin:.8rem 0 .18rem}
+    table.cases-table td:first-child{font-size:1.02rem;padding-bottom:.15rem}
+    table.cases-table td:first-child::before{display:none}
+  }
   .tag{display:inline-block;font-size:.76rem;font-weight:650;padding:.14rem .52rem;margin-right:.35rem;
        white-space:nowrap;border-radius:2px;font-variant-numeric:tabular-nums}
   .t-must{background:var(--accent2);color:var(--accent)}

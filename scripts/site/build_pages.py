@@ -60,8 +60,8 @@ DETAIL = {
  ],
  'skills': ['anb-design', 'architecture-decision-records', 'domain-modeling', 'codebase-design', 'spec-driven-development', 'to-spec', 'writing-plans', 'to-tickets', 'api-and-interface-design', 'database-schema-designer', 'auth-implementation-patterns', 'architect', 'arena', 'principle-exhaust-the-design-space', 'principle-foundational-thinking', 'principle-type-system-discipline', 'how', 'why'],
  'cases': [
-   ('交接契约只写了"它做什么"', '权限文档测试失败：新增了一项权限说明，但下游的"已审查清单"没同步登记。', '"它做什么"写了，"它和谁有关、什么时候别用"没写。'),
-   ('输入散在好几处', 'README、TODO、代码三处对同一事实的记载互相矛盾，需要区分"已实现"和"文档陈旧"。', '"拢成一份"的工作没人负责。'),
+   ('交接说明只写了"它做什么"', '给 agent 的说明里新增了一条权限规则，另一份"已核对清单"没有跟着更新，两边对不上。', '"做什么"写了，"和谁有关、什么时候别用"没写。', 'b-contract'),
+   ('输入散在好几处', '需求文档、待办清单、实际做出来的东西，三处对同一件事的说法互相矛盾，还得判断哪一处是旧的。', '"把散落的说法拢成一份"这件事没人负责。', 'b-scattered'),
  ],
  'docs': [('terms.html', '术语表：每个词配「坏了会怎样」'), ('capability-map.html', '能力图谱 A 域：领域建模与契约')],
 },
@@ -84,7 +84,7 @@ DETAIL = {
  ],
  'skills': ['anb-runnable', 'implement', 'implement-spec', 'tdd', 'ponytail', 'karpathy-guidelines', 'reuse-first', 'prototype', 'using-git-worktrees', 'swarm', 'principle-build-the-lever', 'principle-laziness-protocol', 'principle-subtract-before-you-add', 'deslop'],
  'cases': [
-   ('结果来自样例数据', '隔离假数据测试 64 项通过；真实数据的验证只完成收集，未运行。', '全绿和能用之间，隔着一整个真实数据层。'),
+   ('结果来自样例数据', '拿准备好的样例数据跑，64 项检查全过；换成真实数据时，只做到"把数据找齐"，还没真正跑过。', '全绿和能用之间，隔着一整个真实数据。', 'b-fake'),
  ],
  'docs': [('failure-atlas.html', '失败图鉴：第二类「测的不是你的产品」全部在这一步发生')],
 },
@@ -108,11 +108,11 @@ DETAIL = {
  ],
  'skills': ['anb-judgeable', 'anb-check-break', 'anb-check-offline', 'anb-check-readback', 'anb-check-reconcile', 'anb-check-output', 'verification-before-completion', 'llm-evaluation', 'test-suite-health', 'code-review', 'security-review', 'diagnosing-bugs', 'interrogate', 'principle-prove-it-works', 'principle-explain-the-number', 'benchmark-checklist', 'blast-radius', 'thermos'],
  'cases': [
-   ('一条检查都没有', 'CI 只跑 JSON 语法校验，没有测试、视觉回归或可访问性检查。', '有 CI ≠ 有检查。'),
-   ('检查从没红过', '回归断言加完后，先运行确认它会在现有模板下失败，避免测试只是空转。', '主动证明检查会红。'),
-   ('检查红了', 'RED 阶段符合预期：测试失败，因为目标脚本不存在。先确认红得对，再实现。', '红可能是尺子错，不一定是产品错。'),
-   ('全绿但结果不好', '本地 E2E 通过，不等于线上逐页巡检；旧页面即使仍返回 200，也不能冒充新版本上线成功。', '200 是机制可信，"新版本真上线"才是产出可用。'),
-   ('检查太松（最常见成因）', '迁移脚本只验证 ID 是否存在，不检查项目是否已归档；部署门只检查目录存在，不验证 owner 和权限。', '只检查 X 存在，不检查 X 正确。'),
+   ('一条检查都没有', '自动检查只验文件格式对不对，没测功能、没比页面长得对不对、也没查无障碍。', '有自动检查 ≠ 有能判断好坏的检查。', 'b-none'),
+   ('检查从没红过', '新加一条检查后，先拿现有版本跑一遍，确认它真的会报错；否则它可能只是在空转。', '主动证明检查会红。', 'b-neverfail'),
+   ('检查红了', '测试报错是预期的：要做的功能还不存在。先确认"红得对"，再动手做。', '红可能是尺子错，不一定是产品错。', 'b-red'),
+   ('全绿但结果不好', '在自己电脑上从头到尾跑通，不等于线上每个页面都换了新版本；旧页面照样能打开，看起来像成功。', '"能打开"是机制可信，"新版本真的上线了"才是产出可用。', 'b-green-bad'),
+   ('检查太松（最常见成因）', '换系统时，检查只确认"编号存在"，不确认"这个项目是不是已经停用"；上线前只确认"文件夹在"，不确认"谁有权访问"。', '只检查 X 存在，不检查 X 对不对。', None),
  ],
  'docs': [('failure-atlas.html', '失败图鉴：七种误判里有六种在这道门上现形'), ('atlas-test-report.html', '实测报告：七个问句漏了哪一类'), ('anb2-report.html', '实测报告：三次「通过但理由错」')],
 },
@@ -273,15 +273,22 @@ def stage_page(slug, name, oneline):
     vrows = ''.join(f'<tr><td>{a}</td><td>{s}</td></tr>' for a, s in d['verify'])
     body.append(f'<table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody>{vrows}</tbody></table>')
 
-    # 真实案例：来自工程实现会话的统计与抽样
+    # 真实案例：来自真实工程会话，每条都指回同页的分支说明
     case_list = d.get('cases', [])
     if case_list:
         body.append('<h2 id="cases">真实案例</h2>')
-        body.append('<p class="h2sub">来自 2,794 个<b>工程实现</b>会话的统计与抽样。案例已抽象化，只用来说明这些误判<b>真的会发生</b>——不需要理解技术细节。</p>')
-        crows = ''.join(
-            f'<tr><td><b>{w}</b></td><td>{c}</td><td>{l}</td></tr>'
-            for w, c, l in case_list)
-        body.append(f'<table><thead><tr><th style="width:20%">误判</th><th style="width:50%">真实案例</th><th>说明</th></tr></thead><tbody>{crows}</tbody></table>')
+        body.append('<p class="h2sub">从 2,794 个真实工程会话里挑出来的。'
+                    '案例已去掉业务细节，只用来说明这些误判<b>真的会发生</b>。</p>')
+        crows = []
+        for w, c, l, a in case_list:
+            head = f'<a href="#{a}">{w}</a>' if a else w
+            crows.append(f'<tr><td data-label="对应误判"><b>{head}</b></td>'
+                         f'<td data-label="真实案例">{c}</td>'
+                         f'<td data-label="说明">{l}</td></tr>')
+        crows = ''.join(crows)
+        body.append('<table class="cases-table"><thead><tr><th style="width:20%">对应误判</th>'
+                    '<th style="width:50%">真实案例</th><th>说明</th></tr></thead>'
+                    f'<tbody>{crows}</tbody></table>')
 
     # 实战战斗卡：Distill 精简为高密度对账表，不再重复整卡堆叠
     stage_tips = []

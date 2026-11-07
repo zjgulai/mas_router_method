@@ -110,6 +110,19 @@
   tbody tr:last-child td{border-bottom:0}
   tbody tr:hover td{background:var(--accent-soft)}
   tbody td:first-child{color:var(--ink);font-weight:600}
+  /* 窄屏：三列案例表改成一叠卡片，每格自带字段名，免得字被挤成竖条。 */
+  @media(max-width:760px){
+    table.cases-table{background:none;border:0}
+    table.cases-table thead{display:none}
+    table.cases-table,table.cases-table tbody,table.cases-table tr,table.cases-table td{display:block;width:auto}
+    table.cases-table tr{background:var(--surface);border:1px solid var(--deep);padding:1rem 1.15rem 1.1rem;margin:0 0 .9rem}
+    table.cases-table tr:hover td{background:transparent}
+    table.cases-table td{border:0;padding:0;font-size:.92rem}
+    table.cases-table td::before{content:attr(data-label);display:block;font-size:.74rem;font-weight:650;
+                                 letter-spacing:.06em;color:var(--faint);margin:.8rem 0 .18rem}
+    table.cases-table td:first-child{font-size:1.02rem;padding-bottom:.15rem}
+    table.cases-table td:first-child::before{display:none}
+  }
   .tag{display:inline-block;font-size:.76rem;font-weight:650;padding:.14rem .52rem;margin-right:.35rem;
        white-space:nowrap;border-radius:2px;font-variant-numeric:tabular-nums}
   .t-must{background:var(--accent2);color:var(--accent)}
@@ -229,8 +242,8 @@
 <p class="h2sub">每一行都是一个<b>你能亲手做的动作</b>。做不了就记成未通过，写明缺什么，不要用近似动作代替。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:52%">动作</th><th>通过标准</th></tr></thead><tbody><tr><td>你自己用随手找的输入跑了一次</td><td>不是它准备好的样例</td></tr><tr><td>换一个你没预想过的输入，也跑通了</td><td>两个都能跑，才算跑通</td></tr><tr><td>失败时报的是一句人话，且退出码非零</td><td>不是静默通过，也不是堆栈</td></tr></tbody></table></div>
 <h2 id="cases">真实案例</h2>
-<p class="h2sub">来自 2,794 个<b>工程实现</b>会话的统计与抽样。案例已抽象化，只用来说明这些误判<b>真的会发生</b>——不需要理解技术细节。</p>
-<div class="tablewrap"><table><thead><tr><th style="width:20%">误判</th><th style="width:50%">真实案例</th><th>说明</th></tr></thead><tbody><tr><td><b>结果来自样例数据</b></td><td>隔离假数据测试 64 项通过；真实数据的验证只完成收集，未运行。</td><td>全绿和能用之间，隔着一整个真实数据层。</td></tr></tbody></table></div>
+<p class="h2sub">从 2,794 个真实工程会话里挑出来的。案例已去掉业务细节，只用来说明这些误判<b>真的会发生</b>。</p>
+<div class="tablewrap"><table class="cases-table"><thead><tr><th style="width:20%">对应误判</th><th style="width:50%">真实案例</th><th>说明</th></tr></thead><tbody><tr><td data-label="对应误判"><b><a href="#b-fake">结果来自样例数据</a></b></td><td data-label="真实案例">拿准备好的样例数据跑，64 项检查全过；换成真实数据时，只做到"把数据找齐"，还没真正跑过。</td><td data-label="说明">全绿和能用之间，隔着一整个真实数据。</td></tr></tbody></table></div>
 <h2 id="battle-tips">实战避坑守则 (Battle Tips)</h2>
 <p class="h2sub">归属于<b>开发</b>阶段的实战守则摘要。完整复制口令见 <a href="cheatsheet.html">作战手卡全表</a>。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:26%">守则与手卡入口</th><th style="width:37%">典型痛点</th><th>验收判定</th></tr></thead><tbody><tr id="bt-agent-eng-05"><td><a href="cheatsheet.html#agent-eng-05"><code>01-05</code></a> <b>让 Agent 先看地图再改代码</b></td><td>一口气动十几个文件，依赖和影响面不可见，合并后才发现牵连别处。</td><td>变更说明必须能回答：改了哪里、为什么、可能影响谁、如何回滚。</td></tr><tr id="bt-skills-ctx-02"><td><a href="cheatsheet.html#skills-ctx-02"><code>02-02</code></a> <b>AGENTS.md 太重 / 规则要分层</b></td><td>把代码规范、API 格式、业务逻辑和所有例子全塞根目录，Agent 反而变慢。</td><td>每条规则都要有触发场景、适用范围、验证方式和删除条件。</td></tr><tr id="bt-eval-first-04"><td><a href="cheatsheet.html#eval-first-04"><code>03-04</code></a> <b>Bug 反复改 / 设调试止损线</b></td><td>改一次、又引出新问题，第三轮已经忘了最初错误，Token 和时间一起烧掉。</td><td>没有新的证据时，不继续堆 patch。</td></tr><tr id="bt-product-growth-04"><td><a href="cheatsheet.html#product-growth-04"><code>05-04</code></a> <b>自动化 / 先拆链路再接工具</b></td><td>把多个平台和 Agent 串起来很容易，但错误会被自动化放大。</td><td>没有权限、幂等和回滚设计时，不做全自动发布。</td></tr><tr id="bt-data-research-03"><td><a href="cheatsheet.html#data-research-03"><code>06-03</code></a> <b>数据工程 / 用状态机和 Provenance 管住链路</b></td><td>数据产生、摄取、存储、处理、发布混在一起，失败后无法定位。</td><td>任何结果都能回到源头、变换和版本。</td></tr></tbody></table></div>
