@@ -72,3 +72,15 @@ workflow needs a cheaper sampling strategy, not a higher ceiling.
 If the spike shows a general multimodal model meets the timestamp and
 silent-video bars at materially lower cost, this ADR is superseded. The port makes
 that a measured comparison rather than a rewrite.
+
+## Addendum 2026-11-07 — provider selected provisionally
+
+- Provider: vod gateway `https://mmu.vod-qcloud.com/v1`
+- Model: `gemini-3.1-flash-lite`
+- Evidence: `work/evidence/E-019-recipe-happy-path-live.md`
+- Real call: CeraVe TikTok URL, HTTP 200, `ReferenceAnalysis` parsed (hook pattern `problem-agitation`, 3 beats).
+- Usage: 154,839 prompt tokens, 819 completion tokens; 5s warm, about 62s cold.
+- Price: input $0.25/M, audio $0.5/M, output $1.5/M; one analysis is about $0.04 at list price.
+- Operational note: the host reaches the gateway through `127.0.0.1:7890`. Node's built-in fetch does not honour `HTTPS_PROXY`; run the adapter with `NODE_USE_ENV_PROXY=1` at process start. Without it, the gateway's TikTok fetch returns 400 robots.
+- Remaining debt: T-000's three-sample, two-candidate spike, retention/caching terms, and p95 under cold fetch.
+- Status: provider selected provisionally for the tracer; the class decision in this ADR is unchanged.

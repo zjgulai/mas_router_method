@@ -5,7 +5,7 @@ kind: ticket
 stage: build
 created: 2026-10-24
 needs: [T-001, T-002]
-evidence: [E-003]
+evidence: [E-003, E-019]
 ---
 ## 做什么
 
@@ -18,7 +18,7 @@ evidence: [E-003]
 - [x] 打印总成本与耗时
 - [x] 以可读文本打印配方，不是 JSON
 - [x] 失败时退出码非零，打印 `outcome.reason`
-- [ ] **一条真实 URL 上跑通过并贴出输出**
+- [x] **一条真实 URL 上跑通过并贴出输出**
 - [x] `baseline-beauty` 走同一条路径并报告确定性规则
 
 ## 为什么停在 awaiting-verification
@@ -30,3 +30,11 @@ evidence: [E-003]
 
 ## 证据
 `E-003` — 脚本存在性与参数解析
+
+## 验收结果 2026-11-07
+
+- 真实 URL: `https://www.tiktok.com/@cerave/video/7494697953379044651`
+- Run: `run_690d0e720fb2d1d8e0`, 72040ms, $0.1626
+- Recipe: `rec_2d8185d68651f35394`
+- 证据: `E-019`
+- 运行前提: Node 进程必须带 `NODE_USE_ENV_PROXY=1` 启动，否则 VOD 抓 TikTok 返回 400 robots。`.env` 里写这个变量不够，Node 启动时就要有。

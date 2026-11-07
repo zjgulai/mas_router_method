@@ -5,7 +5,7 @@ kind: ticket
 stage: build
 created: 2026-10-24
 needs: [T-000]
-evidence: [E-001]
+evidence: [E-001, E-019]
 ---
 ## 做什么
 
@@ -18,7 +18,7 @@ evidence: [E-001]
 - [x] 分析里的 hook pattern 来自 `HookPattern`，至少两个 beats
 - [x] 音频权利无法确定时报 `unknown`，不猜 `clearable`
 - [x] 有一条针对校验路径的单测，用录制的响应做 fixture
-- [ ] **真实供应商的一次调用**（ADR 0007 addendum 仍未写）
+- [x] **真实供应商的一次调用**（ADR 0007 addendum 已写）
 
 ## 为什么停在 awaiting-verification
 
@@ -29,3 +29,11 @@ ADR 0007 的 addendum 还是空的，`docs/evals/vision-spike/` 里只有 `clips
 
 ## 证据
 `E-001` — vod 适配器的单测（用假 HTTP，校验真实解析）
+
+## 验收结果 2026-11-07
+
+- 真实供应商调用: vod gateway `https://mmu.vod-qcloud.com/v1`，模型 `gemini-3.1-flash-lite`
+- 真实 TikTok URL 返回 `ReferenceAnalysis`，hook pattern 在 `HookPattern` 内，beats 至少 2 条
+- ADR 0007 addendum 已写
+- 证据: `E-019`
+- 未完成: T-000 的完整 spike（三样本、两候选、human ground truth、p95）仍未跑；本票只证明真实供应商调用。
