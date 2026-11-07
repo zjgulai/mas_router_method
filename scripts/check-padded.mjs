@@ -22,7 +22,7 @@
  *
  * Exit: 0 clean, 1 flagged, 2 cannot determine.
  */
-import { statSync } from 'node:fs';
+import { lstatSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
@@ -139,10 +139,12 @@ function main() {
     console.error('check-padded: cannot list files (git failed)');
     return 2;
   }
+  // 只有普通文件可能带 4096 字节尾页。stat() 会跟随符号链接，于是
+  // skills/repo/* 这种「指向目录的符号链接」被当成文件交给 Python，
+  // 读目录抛 IsADirectoryError，门禁以「无法判定」拦下所有提交。
   const existing = paths.filter((p) => {
     try {
-      statSync(p);
-      return true;
+      return lstatSync(p).isFile();
     } catch {
       return false;
     }
