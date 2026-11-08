@@ -73,7 +73,7 @@ def _practice_card(p):
     b.append('<ul>' + ''.join(f'<li>{_e(a)}</li>' for a in p['apply']) + '</ul>')
     b += _tables(p)
     b.append('<p><b>可以直接用的提示词</b></p>')
-    b.append(f'<pre>{_e(p["prompt"])}</pre>')
+    b.append(f'<pre class="prompt">{_e(p["prompt"])}</pre>')
     b.append('<p><b>作者报告的效果</b></p>')
     b.append(f'<p>{_e(p["effect"])}</p>')
     b.append(f'<p><b>来源</b>：<a href="{_e(p["repo_url"])}">{_e(p["repo"])}</a></p>')

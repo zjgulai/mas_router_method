@@ -91,6 +91,16 @@
   code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
   pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
       font-family:var(--mono);font-size:.84rem;line-height:1.68;border:1px solid var(--side-border);border-radius:2px}
+  /* 提示词复制：按钮贴在代码块右上角，横向滚动时不动。 */
+  .copybox{position:relative}
+  .copybox>pre{margin:0;padding-right:4.7rem}
+  .copy-btn{position:absolute;top:.55rem;right:.6rem;z-index:1;
+    font:600 .74rem/1 var(--sans);color:#f3e6e9;background:#3b2029;
+    border:1px solid #5a3440;border-radius:2px;padding:.36rem .6rem;
+    cursor:pointer;opacity:.88;transition:opacity .12s,background-color .12s}
+  .copy-btn:hover{opacity:1;background:#5a3440}
+  .copy-btn:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+  .copy-btn.done{background:var(--accent);border-color:var(--accent);opacity:1}
   .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
   .card h3{margin-top:0}
   .card p{max-width:none;line-height:1.7}
@@ -258,7 +268,7 @@
 <ul><li>manage：先列出现在所有常驻规则，按「每次都必须生效」和「只在某个事件发生时才需要」分成两堆。常驻堆压到 60 行以内，只留铁律、路由表和硬停；其余按触发事件归档到独立文档。每份文档只有一个家，避免同一规则在两处漂移。</li><li>design：在非平凡任务开始前写 TASK 块：GOAL、FILES、EST、DONE-WHEN、BASELINE、ASSUMPTION。再补三件事：前提检查、先例搜索、哪些要问人哪些自己决定。写完再动手，避免做到第 7 步才发现第 2 步的假设是错的。</li><li>verify：用 12 项回声协议逐条验收。每一条 claim 都要引用同一轮真实工具输出里的原文；跑不了的标 UNVERIFIABLE 或 EDITED-UNVERIFIED，不能用「应该」「大概」代替。最后把跳过的项和原因单独列出来。</li></ul>
 <div class="tablewrap"><table><caption>事件路由表（7 行）</caption><thead><tr><th>模型当下遇到的事件</th><th>下一份要读的文档</th></tr></thead><tbody><tr><td>任务需要超过 2 个文件编辑，或跨超过 1 个顶层目录，或准备编辑第 3 个文件但还没贴 TASK 块</td><td>PLAN.md</td></tr><tr><td>会话开始或上次压缩后，第一次创建或修改仓库文件</td><td>CODE.md</td></tr><tr><td>预期通过的测试失败、构建或运行非零退出、出现 traceback、输出与预测矛盾、用户报了一个本会话没复现的 bug</td><td>DEBUG.md</td></tr><tr><td>准备写 done、fixed、works、passing、complete、resolved、ready，或准备 git commit、gh pr create</td><td>VERIFY.md</td></tr><tr><td>准备读第 3 个超过 300 行的文件，或搜索返回超过 50 条</td><td>EFFICIENCY.md</td></tr><tr><td>从压缩或恢复回来、用户说停一下、或有 TASK 块的任务没有 STATE.md</td><td>SESSION.md</td></tr><tr><td>以上都不匹配，但工作感觉有风险</td><td>PLAN.md</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>把这段常驻规则压到 60 行以内：只保留 12 条铁律、事件路由表、4 个硬停；其余移到按需文档。每条路由写清触发事件、要读的文件、读完必须产出的标记。</pre>
+<pre class="prompt">把这段常驻规则压到 60 行以内：只保留 12 条铁律、事件路由表、4 个硬停；其余移到按需文档。每条路由写清触发事件、要读的文件、读完必须产出的标记。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者的 v1.0 由 155 条失败模式研究和 193 条对抗评审硬化，13 位评审参与。规则以可 grep 的标记出现在 transcript 里，所以能审计哪些触发过、哪些被跳过。作者报告，常驻上下文从一份不断变长的文件，变成 45 行核心加按需文档；规则的执行从「靠模型自觉」变成「能在 transcript 里查到」。</p>
 <p><b>来源</b>：<a href="https://github.com/TheColliny/FableClaudeMDForOpus">TheColliny/FableClaudeMDForOpus</a></p>
@@ -280,7 +290,7 @@
 <ul><li>design：把产品行为原则写成可迁移的段落，不绑定某一个模型的工具格式。每写一段，问一句：换一个模型，这段还成立吗？不成立的移到平台适配层，不放进行为层。</li><li>manage：按 token 预算选 core、balanced 或 complete，先问这一轮能花多少上下文。常驻部分只放每次都必须生效的段，例子和长解释放到按需加载的位置。</li><li>ship：上线前删掉厂商特定内容，避免换模型时整段失效。把删掉的清单留下来，下次换模型时按清单检查，而不是重新读一遍全文。</li></ul>
 <div class="tablewrap"><table><caption>三档提示词的体量与结构</caption><thead><tr><th>版本</th><th>字符数</th><th>行数</th><th>节数</th><th>适合</th></tr></thead><tbody><tr><td>core</td><td>1,389</td><td>20</td><td>1</td><td>最小行为集，预算最紧时用</td></tr><tr><td>balanced</td><td>2,953</td><td>69</td><td>9</td><td>推荐档，大多数产品直接用</td></tr><tr><td>complete</td><td>5,350</td><td>113</td><td>10</td><td>需要完整行为覆盖时用</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>把这份系统提示词里只属于某个平台的部分删掉（XML、工具接口、产品 UI、存储、环境），只保留跨模型仍然成立的行为原则；按 core、balanced、complete 三档输出，并说明每档删了什么。</pre>
+<pre class="prompt">把这份系统提示词里只属于某个平台的部分删掉（XML、工具接口、产品 UI、存储、环境），只保留跨模型仍然成立的行为原则；按 core、balanced、complete 三档输出，并说明每档删了什么。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者报告三档提示词在 Claude、ChatGPT、Gemini、DeepSeek、Qwen、Grok、GLM 等模型上保持兼容。删掉平台细节之后 prompt 更短，context 更省，行为原则仍然能读。换模型时不需要重新审一遍平台耦合，只要按新的预算挑一档。三档结构也让团队可以先用 core 起步，再按需要升到 balanced 或 complete，而不是一上来就维护一份最长的提示词。</p>
 <p><b>来源</b>：<a href="https://github.com/KinetiNode/claude-fable-5-system-prompt-clean">KinetiNode/claude-fable-5-system-prompt-clean</a></p>
@@ -302,7 +312,7 @@
 <ul><li>design：把拒绝清单、语气、引用规则写成可逐条对照的策略段，每一段只回答一类问题。拒绝清单要写成「一个具体输入 → 必须改做什么」，写不出具体输入的，放到价值观段，不要混进拒绝清单。</li><li>ship：上线前替换产品信息、拒绝清单、版权与图片规则，保留分段顺序，方便逐段回归。每改一段，在原文里找到对应段，记录改了什么、为什么改。</li><li>manage：把策略段作为版本化基线，改一条记一条，避免多处副本各自漂移。分段的顺序不要随便动，顺序一乱，逐段对照就失效了。</li></ul>
 <div class="tablewrap"><table><caption>三个版本的体量与结构</caption><thead><tr><th>版本</th><th>字符数</th><th>行数</th><th>二级标题</th><th>三级标题</th><th>用途</th></tr></thead><tbody><tr><td>原文</td><td>119,725</td><td>1,585</td><td>15</td><td>55</td><td>对照与回溯基准</td></tr><tr><td>英文通用版</td><td>9,426</td><td>122</td><td>4</td><td>11</td><td>跨模型英文基线</td></tr><tr><td>中文版</td><td>2,834</td><td>136</td><td>4</td><td>11</td><td>中文产品直接改的骨架</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>以这份中文系统提示词为骨架，保留策略分段结构，把产品信息、拒绝清单、引用规则、图片规则改成我们产品的版本；不要改变分段顺序。</pre>
+<pre class="prompt">以这份中文系统提示词为骨架，保留策略分段结构，把产品信息、拒绝清单、引用规则、图片规则改成我们产品的版本；不要改变分段顺序。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者提供原文、英文通用版、中文通用版三份。任何一份都可以直接作为聊天机器人或 agent 的 system prompt 起点。中文版按行为、搜索、图片、文件与代码输出分段，策略段可以整段替换而不动结构。原文保留还让改动有据可查，哪一段换过，可以和原文逐段对照。对中文产品来说，这套骨架的最大价值是让「改提示词」变成「改某一段」，而不是重写整份。</p>
 <p><b>来源</b>：<a href="https://github.com/moely-ai/claude-fable-5-prompt">moely-ai/claude-fable-5-prompt</a></p>
@@ -327,7 +337,7 @@
 <div class="tablewrap"><table><caption>中立重评 A（0 到 100）</caption><thead><tr><th>任务</th><th>Sonnet+v1</th><th>Sonnet+v2</th><th>裸 Opus</th></tr></thead><tbody><tr><td>H1 诊断</td><td>84.0</td><td>90.5</td><td>84.5</td></tr><tr><td>H2 350 字文</td><td>62.0</td><td>83.0</td><td>74.5</td></tr><tr><td>H3 RAG 解释</td><td>80.0</td><td>88.0</td><td>93.0</td></tr><tr><td>H4 性能诊断</td><td>79.0</td><td>87.0</td><td>93.0</td></tr><tr><td>平均</td><td>76.2</td><td>87.1</td><td>86.2</td></tr></tbody></table></div>
 <div class="tablewrap"><table><caption>成本对比（每百万 token）</caption><thead><tr><th>模型</th><th>输入</th><th>输出</th><th>备注</th></tr></thead><tbody><tr><td>Sonnet 4.6</td><td>$3</td><td>$15</td><td>VFF 的底座</td></tr><tr><td>Opus 4.8</td><td>$5</td><td>$25</td><td>VFF 的对照</td></tr><tr><td>Fable 5</td><td>$10</td><td>$50</td><td>原始目标模型</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>用 VFF v2 的诊断结构回答：第一句给结论；先找能解释所有线索的假设；处方前先给最便宜的测量；没验证前不说完成；不确定的地方标置信度。不要为了短而删掉解释。</pre>
+<pre class="prompt">用 VFF v2 的诊断结构回答：第一句给结论；先找能解释所有线索的假设；处方前先给最便宜的测量；没验证前不说完成；不确定的地方标置信度。不要为了短而删掉解释。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者报告 Sonnet 加 v2 与裸 Opus 在两次重评中的结果为 87.1 对 86.2、84.8 对 89.4，落在噪声内；输出成本约为 Opus 的 0.30 倍。省下来的主要是输出 token，诊断结构仍然保留。这个结果说明，接近更强模型的一条可行路径是改回答的结构，而不是改回答的长度。作者还报告，v2 删掉压缩强制后，比 v1 高 10.9 分，压缩规则本身就是质量债。</p>
 <p><b>来源</b>：<a href="https://github.com/itsinseong/value-for-fable">itsinseong/value-for-fable</a></p>
@@ -353,7 +363,7 @@
 <ul><li>need：先分类，再定义完成；写不出验证就先问一个问题。问句型任务只给发现和建议，不动手。</li><li>design：计划优先的任务先出计划，把每一步的验证命名；不可逆动作写 AUTH 行，没有用户原话就不做。</li><li>build：第一个编辑前写 INTENT 行；没打开过的签名、价格、法规先查，不凭记忆；做最小正确改动。</li><li>verify：完成标准要观察到；修了缺陷做 twin check；同一问题 3 次失败就停，别继续猜。</li><li>ship：外向动作没有用户原话就转成 proposed next step，报告里写 PENDING；不要把文档当授权。</li></ul>
 <div class="tablewrap"><table><caption>15 轮评测里的关键数字</caption><thead><tr><th>轮次</th><th>场景</th><th>结果</th></tr></thead><tbody><tr><td>round 3</td><td>spec 与 test 冲突</td><td>Haiku 0/4 到 4/4；Sonnet 2/2 理想</td></tr><tr><td>round 4</td><td>代码、数据、研究三题</td><td>Sonnet 加方法 2 个第一，Opus 加方法 1 个第一，裸前沿 1 个第一</td></tr><tr><td>round 5</td><td>5 项研究交付</td><td>裸前沿 10，Sonnet 加方法 10，Opus 加方法 9，Haiku 加方法 3</td></tr><tr><td>round 8</td><td>5 个植入欺诈</td><td>Haiku 3.5/5 到 5/5；裸 Sonnet 已 5/5</td></tr><tr><td>round 11</td><td>未授权部署</td><td>裸 Fable 2 次里 1 次部署；Haiku 三种措辞都没表面化</td></tr><tr><td>round 13</td><td>跨层校准</td><td>Haiku 2 到 6，Sonnet 9 到 10，Opus 8 到 9（fable-domain 生成）</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>用 Fable Method 处理这个任务：先分类（问句、任务、计划优先），用一两句话定义完成和验证，再取证。改行为前写 INTENT: code does X; check expects Y; spec says Z。不可逆动作先写 AUTH: user said &quot;&lt;原话&gt;&quot;。同一问题 3 次修复验证失败就停，把输出和假设交给我。</pre>
+<pre class="prompt">用 Fable Method 处理这个任务：先分类（问句、任务、计划优先），用一两句话定义完成和验证，再取证。改行为前写 INTENT: code does X; check expects Y; spec says Z。不可逆动作先写 AUTH: user said &quot;&lt;原话&gt;&quot;。同一问题 3 次修复验证失败就停，把输出和假设交给我。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者报告 15 轮、260 次以上运行。提升与模型层级成反比：Haiku 在 trap 上提升最大（0/4 到 4/4，3.5/5 到 5/5），Sonnet 在开放研究上从合成趋势线变成抓真实数据，前沿模型在封闭任务上没有提升。方法的价值集中在 trap：权威冲突、虚假完成、弱执行者、无人值守，不在所有任务。</p>
 <p><b>来源</b>：<a href="https://github.com/Sahir619/fable-method">Sahir619/fable-method</a></p>
@@ -378,7 +388,7 @@
 <div class="tablewrap"><table><caption>三种模型层级下的技能效果</caption><thead><tr><th>层级</th><th>结果</th><th>读法</th></tr></thead><tbody><tr><td>Fable 5.1</td><td>16 次配对全部 100/100，0 差异；约 1.1× token，1.5 到 2.3× 墙钟</td><td>买审计轨迹，不买正确率</td></tr><tr><td>Opus</td><td>封闭评分任务 0 差异；开放研究从合成趋势线变成抓真实数据</td><td>买真实来源，不买分数</td></tr><tr><td>Sonnet</td><td>封闭任务 0 差异；可靠地跳过第 3 步</td><td>重点盯可失败检查</td></tr><tr><td>Haiku</td><td>+25/−17 波动；机械勤勉提升，综合能力不变</td><td>抬地板，不抬天花板</td></tr></tbody></table></div>
 <div class="tablewrap"><table><caption>double-check 的检查器预算</caption><thead><tr><th>检查器</th><th>查什么</th><th>何时升级</th></tr></thead><tbody><tr><td>1× Haiku</td><td>数字重算、文件读回、链接或路径存在、命令重跑、计数对账</td><td>机械检查放不进一个 brief 时加第二个</td></tr><tr><td>1× Sonnet</td><td>需求覆盖、内部一致性、论证逻辑</td><td>两条检查器对同一项不一致时上 Opus</td></tr><tr><td>Opus</td><td>裁决争议项</td><td>每项最多一次</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>用 Fable Mode 跑这个任务：先写带编号的 stage map，每阶段一个可验证产物；明确哪些阶段委派、哪些留在主线程；每个阶段定义一个能失败的检查，不接受「看起来对」；交付前用 double-check 抽取 claim 和 requirement，冷验证者只拿规格和产物，不拿推理。</pre>
+<pre class="prompt">用 Fable Mode 跑这个任务：先写带编号的 stage map，每阶段一个可验证产物；明确哪些阶段委派、哪些留在主线程；每个阶段定义一个能失败的检查，不接受「看起来对」；交付前用 double-check 抽取 claim 和 requirement，冷验证者只拿规格和产物，不拿推理。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者报告三轮基准：Fable 5.1 上 0 差异，Opus 在开放研究上从合成趋势线变成抓真实数据，Haiku +25/−17。技能的价值随模型强度反转：强模型买审计轨迹，弱模型买不会跳过的验证。</p>
 <p><b>来源</b>：<a href="https://github.com/mrtooher/fable-mode">mrtooher/fable-mode</a></p>
@@ -402,7 +412,7 @@
 <ul><li>build：2 个以上故事先用 goals.py 建账本；每个 checkpoint 写具体证据；最后一个故事带 verify 命令和结果。</li><li>verify：调试走调查协议；渲染产物走验证接地；不要用静态解析代替运行。</li><li>ship：交付前检查每个故事的 evidence；没有证据的故事标 blocked，不标 complete。</li><li>iterate：到能力天花板时先提 effort，再把卡住的切片委派给 max effort，再换更强模型，最后诚实报告限制。</li><li>operate：按任务注入最小匹配纪律，不要把所有程序同时打开。</li></ul>
 <div class="tablewrap"><table><caption>什么可搬运，什么不可</caption><thead><tr><th>特质</th><th>可搬运</th><th>原因</th></tr></thead><tbody><tr><td>验证接地（运行并观察产物）</td><td>是</td><td>Opus 不是不能做，是没做；注入后渲染验证行为可测地上升</td></tr><tr><td>多故事完成加证据门</td><td>是</td><td>程序：拆解、检查点、无证据不完成</td></tr><tr><td>系统调查</td><td>是</td><td>程序：复现、竞争假设、因果链</td></tr><tr><td>早停阻止</td><td>是</td><td>确定性钩子：抓「我会做 X」但没做</td></tr><tr><td>规范外缺陷发现</td><td>否</td><td>能力：注入实验被反驳</td></tr><tr><td>开放创作细节</td><td>否</td><td>能力：只在没有固定答案的地方显现</td></tr><tr><td>自驱传播深度</td><td>否</td><td>能力：被 directed 的传播可搬，自发的深度不可搬</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>用 fablize 的方式做这个任务：如果它由 2 个以上顺序故事组成，先用 goals.py 建账本，每个故事写可验证目标，最后一个是验证故事；每个 checkpoint 必须有具体证据，最后一个故事必须有 verify 命令和结果。如果是调试，先复现，再列至少 3 个竞争假设，追完整因果链。如果是渲染产物，真的跑起来看输出再交付。</pre>
+<pre class="prompt">用 fablize 的方式做这个任务：如果它由 2 个以上顺序故事组成，先用 goals.py 建账本，每个故事写可验证目标，最后一个是验证故事；每个 checkpoint 必须有具体证据，最后一个故事必须有 verify 命令和结果。如果是调试，先复现，再列至少 3 个竞争假设，追完整因果链。如果是渲染产物，真的跑起来看输出再交付。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者的 19 次 A/B 加 26 个真实会话显示，封闭工作两个模型基本打平，差距只在开放工作；fablize 只发布被验证过效果的程序，并在 README 里明确列出不可搬运的三项。它不承诺把 Opus 变成 Fable，只承诺让模型走到自己的天花板，并在天花板处诚实地升级或交给人。</p>
 <p><b>来源</b>：<a href="https://github.com/fivetaku/fablize">fivetaku/fablize</a></p>
@@ -429,7 +439,7 @@
 <div class="tablewrap"><table><caption>三条 lane</caption><thead><tr><th>lane</th><th>生产者</th><th>默认 effort</th><th>什么时候路由</th></tr></thead><tbody><tr><td>Routine</td><td>GPT-6 Luna</td><td>max</td><td>spec 完全决定结果：boilerplate、wiring、CRUD、机械编辑</td></tr><tr><td>High-complexity</td><td>GPT-6 Sol</td><td>high，最高 ultra</td><td>判断决定结果：并发、算法、安全、硬调试、大范围重构，或 Luna 已失败一次</td></tr><tr><td>Review</td><td>Fable 5.1</td><td>继承会话</td><td>承诺边界加每次交付终局一次</td></tr></tbody></table></div>
 <div class="tablewrap"><table><caption>六段 spec</caption><thead><tr><th>段</th><th>写什么</th></tr></thead><tbody><tr><td>Objective</td><td>要构建或修改什么，一段话</td></tr><tr><td>Files</td><td>要创建或修改的精确路径</td></tr><tr><td>Interfaces</td><td>签名、类型或 API 形状</td></tr><tr><td>Constraints</td><td>项目约定、不能碰的东西</td></tr><tr><td>Verification</td><td>证明它能工作的命令</td></tr><tr><td>Reasoning</td><td>可选，一行 REASONING: &lt;effort&gt;，只在覆盖默认时写</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>用 Fable Advisor 的模式做这个任务：你当架构师，不写实现。先写六段 spec（Objective、Files、Interfaces、Constraints、Verification、Reasoning）。按判断含量选 lane：routine 给 Luna，高复杂度给 Sol；每次委派写清模型和 effort。交付前把累加 diff 交给 Fable advisor 做一次终局审查，不在审查前说完成。</pre>
+<pre class="prompt">用 Fable Advisor 的模式做这个任务：你当架构师，不写实现。先写六段 spec（Objective、Files、Interfaces、Constraints、Verification、Reasoning）。按判断含量选 lane：routine 给 Luna，高复杂度给 Sol；每次委派写清模型和 effort。交付前把累加 diff 交给 Fable advisor 做一次终局审查，不在审查前说完成。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者报告这套模式把实现 token 迁到 Codex lane，会话只承担判断和 spec；Fable 只在承诺边界和终局出现，跨厂商审查是结构自带的。每条 lane 的默认 effort 和 /fable-advisor:setup 的 pinned 模型让路由可见、可复现。</p>
 <p><b>来源</b>：<a href="https://github.com/DannyMac180/fable-advisor">DannyMac180/fable-advisor</a></p>
@@ -454,7 +464,7 @@
 <div class="tablewrap"><table><caption>四种 panel</caption><thead><tr><th>slug</th><th>panel</th><th>需要</th></tr></thead><tbody><tr><td>opus4.8-4.8</td><td>两个独立 Opus 4.8 冷跑</td><td>无，永远可用</td></tr><tr><td>opus4.8-gpt5.5</td><td>Opus 4.8 加 GPT-5.5</td><td>codex CLI</td></tr><tr><td>opus4.8-gemini3.1pro</td><td>Opus 4.8 加 Gemini 3.1 Pro</td><td>agy CLI</td></tr><tr><td>opus4.8-gpt5.5-gemini3.1pro</td><td>三家族全上</td><td>codex 加 agy</td></tr></tbody></table></div>
 <div class="tablewrap"><table><caption>两条 judge 轨道</caption><thead><tr><th>轨道</th><th>用于</th><th>做法</th></tr></thead><tbody><tr><td>Track A</td><td>代码、脚本、配置、schema</td><td>先运行每个候选，再合并，再运行到通过</td></tr><tr><td>Track B</td><td>研究、分析、建议</td><td>五段结构化综合，再写最终答案</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>把这个难题跑一遍 Fusion：同一 prompt 同时发给多个模型，每个独立作答，不给 persona，不互相看。然后由 Opus 做 judge，输出 Consensus、Contradictions、Partial coverage、Unique insights、Blind spots，再写最终答案。如果是代码任务，先运行每个候选，再合并，再运行合并结果直到通过。</pre>
+<pre class="prompt">把这个难题跑一遍 Fusion：同一 prompt 同时发给多个模型，每个独立作答，不给 persona，不互相看。然后由 Opus 做 judge，输出 Consensus、Contradictions、Partial coverage、Unique insights、Blind spots，再写最终答案。如果是代码任务，先运行每个候选，再合并，再运行合并结果直到通过。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者报告同一 prompt 跑两次 Opus 也比单次好；三家族 panel 在缺 CLI 时能优雅降级；每次运行都有 provenance，能审计最终答案是怎么组装的。成本约是单答案的 N 倍，换来的是在高风险问题上不自信地答错。</p>
 <p><b>来源</b>：<a href="https://github.com/duolahypercho/fusion-fable">duolahypercho/fusion-fable</a></p>
@@ -481,7 +491,7 @@
 <div class="tablewrap"><table><caption>路由卡里的关键 job</caption><thead><tr><th>job</th><th>class</th><th>默认或 close</th><th>理由</th></tr></thead><tbody><tr><td>mechanical</td><td>FAST</td><td>Codex Luna，low 或 medium</td><td>和 Haiku 同价，不花 lead 的 Claude allowance</td></tr><tr><td>standard-coding</td><td>WORKHORSE</td><td>close：Grok base、Codex Sol、Sonnet</td><td>按偏好、池压力、跨家族配对选</td></tr><tr><td>hard-coding</td><td>FRONTIER</td><td>close：Opus、Codex Sol max、Grok xhigh</td><td>判断含量高，价格差 2 到 5 倍</td></tr><tr><td>frontier-judgment</td><td>FRONTIER</td><td>LEAD</td><td>判断留在 lead</td></tr><tr><td>blind-verifier</td><td>FRONTIER</td><td>Opus，fresh context，无 edit</td><td>每个可能改变行为的改动都要</td></tr><tr><td>off-family-review</td><td>FRONTIER-advisory</td><td>Grok base medium</td><td>Claude 构建的行为改动加跨家族读</td></tr></tbody></table></div>
 <div class="tablewrap"><table><caption>成本对比（每百万 token）</caption><thead><tr><th>座位</th><th>输入</th><th>输出</th><th>备注</th></tr></thead><tbody><tr><td>Claude Opus 5.5</td><td>$4</td><td>$20</td><td>Claude frontier 价值座</td></tr><tr><td>Claude Fable 5.1</td><td>$10</td><td>$50</td><td>premium，永远不自动</td></tr><tr><td>GPT-6.1 Sol</td><td>$2</td><td>$10</td><td>Codex workhorse</td></tr><tr><td>Grok 4.7</td><td>$2</td><td>$6</td><td>200K 以上整单 2 倍</td></tr><tr><td>GPT-6 Luna</td><td>$0.10</td><td>$0.50</td><td>Codex FAST</td></tr><tr><td>Claude Haiku 5.5</td><td>$0.10</td><td>$0.50</td><td>Claude FAST fallback</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>用 Fable Foreman 的方式跑这个任务：先建路由卡，按 job 选座，settled 行直接用，close call 只问我一次。每个 ticket 写 7 段加 WRITE SET，并行的 ticket 必须 write set 不相交。每个可能改变行为的改动跑盲 verifier，dispatch 时 model 设为 opus。你亲自验收，reviewer 的 verdict 不算验收。premium 模型不要自动用。</pre>
+<pre class="prompt">用 Fable Foreman 的方式跑这个任务：先建路由卡，按 job 选座，settled 行直接用，close call 只问我一次。每个 ticket 写 7 段加 WRITE SET，并行的 ticket 必须 write set 不相交。每个可能改变行为的改动跑盲 verifier，dispatch 时 model 设为 opus。你亲自验收，reviewer 的 verdict 不算验收。premium 模型不要自动用。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者报告 15 个行为场景在 runs 6 到 12 全部通过；routing A/B 从 v0.5 的 6/12 到 v0.6 的 12/12；run 4 里 off-family review 抓到了 Claude verifier 放过的两个测试缺口；run 7 里 lead 把 Luna 的 2 个 docstring 自己改了，触发了后来的 micro-fix 规则：最多 5 行，只限测试或文档，fresh verifier 复验。</p>
 <p><b>来源</b>：<a href="https://github.com/olsenbrands/fable-foreman">olsenbrands/fable-foreman</a></p>
@@ -508,7 +518,7 @@
 <div class="tablewrap"><table><caption>仓库覆盖（顶层目录与文件数）</caption><thead><tr><th>厂商或目录</th><th>文件数</th><th>代表内容</th></tr></thead><tbody><tr><td>Anthropic</td><td>666</td><td>claude.ai、Claude Code、artifact types、integrations</td></tr><tr><td>OpenAI</td><td>435</td><td>ChatGPT、Codex、voice 等</td></tr><tr><td>Meta</td><td>474</td><td>Llama 系列与产品提示词</td></tr><tr><td>GLM</td><td>90</td><td>ZCode Desktop、GLM 系列</td></tr><tr><td>xAI</td><td>76</td><td>Grok、Grok Bot、skills</td></tr><tr><td>Google</td><td>67</td><td>Gemini、Antigravity IDE 和 CLI</td></tr><tr><td>其他</td><td>约 100</td><td>Cursor、Kimi、DeepSeek、Mistral、Perplexity、MiniMax、Qwen、Notion、Pi、Microsoft</td></tr></tbody></table></div>
 <div class="tablewrap"><table><caption>Claude Code 提示词的段落</caption><thead><tr><th>段</th><th>内容</th></tr></thead><tbody><tr><td>System prompt</td><td>身份、总体行为、工具使用原则</td></tr><tr><td>Harness</td><td>运行环境、浏览器自动化、会话规则</td></tr><tr><td>Memory</td><td>记忆文件、索引、环境、会话上下文</td></tr><tr><td>Context management</td><td>上下文管理和压缩</td></tr><tr><td>Delivering work</td><td>怎么交付、怎么写给用户看</td></tr><tr><td>Agents / Skills / Tools</td><td>子代理、技能、每个工具的接口和用法</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>把这份系统提示词按段拆开，和同产品的上一个版本对照：哪些段是行为原则，哪些段是平台实现？只保留跨模型仍然成立的行为段，平台段用我们自己的实现替换。不要整段复制别人的产品信息、工具接口或内部 UI。</pre>
+<pre class="prompt">把这份系统提示词按段拆开，和同产品的上一个版本对照：哪些段是行为原则，哪些段是平台实现？只保留跨模型仍然成立的行为段，平台段用我们自己的实现替换。不要整段复制别人的产品信息、工具接口或内部 UI。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者维护了约 1900 份文件、18 个厂商目录；Washington Post、CEPS AI World 和 Simon Willison 都用它做过分析或报道。它的价值不是某一句话，而是让「同一行为在不同厂商、不同版本里怎么写」变成可以逐段对照的材料。</p>
 <p><b>来源</b>：<a href="https://github.com/asgeirtj/system_prompts_leaks">asgeirtj/system_prompts_leaks</a></p>
@@ -533,7 +543,7 @@
 <div class="tablewrap"><table><caption>目录规模</caption><thead><tr><th>类别</th><th>项目数</th><th>内容</th></tr></thead><tbody><tr><td>templates</td><td>241</td><td>完整模板，含 premium clone</td></tr><tr><td>landing-pages</td><td>98</td><td>多 section 落地页</td></tr><tr><td>shaders</td><td>84</td><td>GLSL 和 WebGL 视觉</td></tr><tr><td>hero-sections</td><td>41</td><td>首屏 hero</td></tr><tr><td>ui-design</td><td>34</td><td>设计系统与风格探索</td></tr><tr><td>components-ui</td><td>15</td><td>独立组件与 UI 片段</td></tr><tr><td>portfolios</td><td>14</td><td>个人作品集</td></tr><tr><td>animations-loaders</td><td>12</td><td>动画、加载、转场</td></tr><tr><td>3d-games</td><td>2</td><td>3D 场景与可玩游戏</td></tr></tbody></table></div>
 <div class="tablewrap"><table><caption>三件套与检查</caption><thead><tr><th>产物</th><th>证明什么</th><th>怎么验证</th></tr></thead><tbody><tr><td>prompt.md</td><td>生成意图和可复现的输入</td><td>逐字保留，先提交</td></tr><tr><td>完整代码</td><td>项目能跑、能改、能离线</td><td>克隆后安装依赖并运行</td></tr><tr><td>demo.mp4</td><td>它真的动起来、交互可用</td><td>录屏，不是截图</td></tr><tr><td>poster.jpg</td><td>视频加载前的占位</td><td>脚本生成</td></tr><tr><td>verify.mjs</td><td>三个宽度、无 console error、无横向溢出</td><td>headless Chromium 重跑</td></tr></tbody></table></div>
 <p><b>可以直接用的提示词</b></p>
-<pre>把这个案例做成可复查的三件套：prompt.md 逐字保留生成提示词；项目代码完整可运行、资源本地化；demo.mp4 记录实际运行。交付前用 headless 浏览器在 390、768、1280 三个宽度检查标题、关键元素、图片、横向溢出、console error 和关键交互。不要用截图代替运行。</pre>
+<pre class="prompt">把这个案例做成可复查的三件套：prompt.md 逐字保留生成提示词；项目代码完整可运行、资源本地化；demo.mp4 记录实际运行。交付前用 headless 浏览器在 390、768、1280 三个宽度检查标题、关键元素、图片、横向溢出、console error 和关键交互。不要用截图代替运行。</pre>
 <p><b>作者报告的效果</b></p>
 <p>作者维护了 541 个项目、9 个类别；每个项目都有 prompt.md 和 demo.mp4，PR 由 Claude Opus 审查合并；每个项目可以带自己的 verify.mjs，template-auditor 对 premium clone 做同源审计并直接修到 same-to-same。README 明说整个仓库是 vibe coded，上线前要自己 review，这句话本身就是证据层的一部分。</p>
 <p><b>来源</b>：<a href="https://github.com/pulkitxm/claude-directory">pulkitxm/claude-directory</a></p>
@@ -547,5 +557,60 @@
     </footer>
   </div>
 </div>
+<script>
+(function () {
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        if (document.execCommand('copy')) resolve();
+        else reject(new Error('copy failed'));
+      } catch (err) {
+        reject(err);
+      } finally {
+        document.body.removeChild(ta);
+      }
+    });
+  }
+
+  document.querySelectorAll('pre.prompt').forEach(function (pre) {
+    if (pre.closest('.copybox')) return;
+    var box = document.createElement('div');
+    box.className = 'copybox';
+    box.style.margin = getComputedStyle(pre).margin;
+    pre.parentNode.insertBefore(box, pre);
+    box.appendChild(pre);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = '复制';
+    btn.setAttribute('aria-label', '复制这段提示词');
+    btn.addEventListener('click', function () {
+      copyText(pre.textContent).then(function () {
+        btn.textContent = '已复制';
+        btn.classList.add('done');
+        setTimeout(function () {
+          btn.textContent = '复制';
+          btn.classList.remove('done');
+        }, 1500);
+      }).catch(function () {
+        btn.textContent = '复制失败';
+        setTimeout(function () { btn.textContent = '复制'; }, 1500);
+      });
+    });
+    box.appendChild(btn);
+  });
+})();
+</script>
 </body>
 </html>

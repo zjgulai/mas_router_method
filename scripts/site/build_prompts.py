@@ -284,7 +284,7 @@ def prompts_page():
         for title, prompt, when, caution in PROMPTS[group]:
             b.append('<div class="card">')
             b.append(f'<h3>{title}</h3>')
-            b.append(f'<pre>{prompt}</pre>')
+            b.append(f'<pre class="prompt">{prompt}</pre>')
             b.append(f'<dl class="pm-meta">'
                      f'<dt>什么时候用</dt><dd>{when}</dd>'
                      f'<dt>为什么这样写</dt><dd>{caution}</dd></dl>')

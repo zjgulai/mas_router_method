@@ -91,6 +91,16 @@
   code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
   pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
       font-family:var(--mono);font-size:.84rem;line-height:1.68;border:1px solid var(--side-border);border-radius:2px}
+  /* 提示词复制：按钮贴在代码块右上角，横向滚动时不动。 */
+  .copybox{position:relative}
+  .copybox>pre{margin:0;padding-right:4.7rem}
+  .copy-btn{position:absolute;top:.55rem;right:.6rem;z-index:1;
+    font:600 .74rem/1 var(--sans);color:#f3e6e9;background:#3b2029;
+    border:1px solid #5a3440;border-radius:2px;padding:.36rem .6rem;
+    cursor:pointer;opacity:.88;transition:opacity .12s,background-color .12s}
+  .copy-btn:hover{opacity:1;background:#5a3440}
+  .copy-btn:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+  .copy-btn.done{background:var(--accent);border-color:var(--accent);opacity:1}
   .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
   .card h3{margin-top:0}
   .card p{max-width:none;line-height:1.7}
@@ -1438,5 +1448,60 @@ html:lang(th) body, html:lang(th) .lbl { font-family: &quot;JetBrains Mono&quot;
     </footer>
   </div>
 </div>
+<script>
+(function () {
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        if (document.execCommand('copy')) resolve();
+        else reject(new Error('copy failed'));
+      } catch (err) {
+        reject(err);
+      } finally {
+        document.body.removeChild(ta);
+      }
+    });
+  }
+
+  document.querySelectorAll('pre.prompt').forEach(function (pre) {
+    if (pre.closest('.copybox')) return;
+    var box = document.createElement('div');
+    box.className = 'copybox';
+    box.style.margin = getComputedStyle(pre).margin;
+    pre.parentNode.insertBefore(box, pre);
+    box.appendChild(pre);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = '复制';
+    btn.setAttribute('aria-label', '复制这段提示词');
+    btn.addEventListener('click', function () {
+      copyText(pre.textContent).then(function () {
+        btn.textContent = '已复制';
+        btn.classList.add('done');
+        setTimeout(function () {
+          btn.textContent = '复制';
+          btn.classList.remove('done');
+        }, 1500);
+      }).catch(function () {
+        btn.textContent = '复制失败';
+        setTimeout(function () { btn.textContent = '复制'; }, 1500);
+      });
+    });
+    box.appendChild(btn);
+  });
+})();
+</script>
 </body>
 </html>

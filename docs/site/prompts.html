@@ -91,6 +91,16 @@
   code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
   pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
       font-family:var(--mono);font-size:.84rem;line-height:1.68;border:1px solid var(--side-border);border-radius:2px}
+  /* 提示词复制：按钮贴在代码块右上角，横向滚动时不动。 */
+  .copybox{position:relative}
+  .copybox>pre{margin:0;padding-right:4.7rem}
+  .copy-btn{position:absolute;top:.55rem;right:.6rem;z-index:1;
+    font:600 .74rem/1 var(--sans);color:#f3e6e9;background:#3b2029;
+    border:1px solid #5a3440;border-radius:2px;padding:.36rem .6rem;
+    cursor:pointer;opacity:.88;transition:opacity .12s,background-color .12s}
+  .copy-btn:hover{opacity:1;background:#5a3440}
+  .copy-btn:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+  .copy-btn.done{background:var(--accent);border-color:var(--accent);opacity:1}
   .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
   .card h3{margin-top:0}
   .card p{max-width:none;line-height:1.7}
@@ -233,22 +243,22 @@
 <div class="grid two">
 <div class="card">
 <h3>会话开始</h3>
-<pre>用 todo-ledger 读一下当前状态，确认分支和 worktree，告诉我 Now 和下一件事。</pre>
+<pre class="prompt">用 todo-ledger 读一下当前状态，确认分支和 worktree，告诉我 Now 和下一件事。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>每次新会话</dd><dt>为什么这样写</dt><dd>凭记忆开工是万恶之源。</dd></dl>
 </div>
 <div class="card">
 <h3>会话结束</h3>
-<pre>用 handoff 写交接文档：目标、状态、决策、下一步、待答问题。指向已有产物，不要重复。</pre>
+<pre class="prompt">用 handoff 写交接文档：目标、状态、决策、下一步、待答问题。指向已有产物，不要重复。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>换人或换 agent 时</dd><dt>为什么这样写</dt><dd>交接文档写给下一个 agent 读，不是给你自己看的。</dd></dl>
 </div>
 <div class="card">
 <h3>不知道下一步</h3>
-<pre>用 anb 判断我现在卡在哪一步。只问必要的问题，然后只给我那一步要做的事，不要列全流程。</pre>
+<pre class="prompt">用 anb 判断我现在卡在哪一步。只问必要的问题，然后只给我那一步要做的事，不要列全流程。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何时候</dd><dt>为什么这样写</dt><dd>列表单会让你更迷茫。要一个动作。</dd></dl>
 </div>
 <div class="card">
 <h3>诊断卡住</h3>
-<pre>用 diagnosing-bugs 查这个 bug：先建一个能变红的反馈回路，再谈假设。</pre>
+<pre class="prompt">用 diagnosing-bugs 查这个 bug：先建一个能变红的反馈回路，再谈假设。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>有 bug 但不知道在哪</dd><dt>为什么这样写</dt><dd>不能变红的复现不算复现。</dd></dl>
 </div>
 </div>
@@ -256,22 +266,22 @@
 <div class="grid two">
 <div class="card">
 <h3>压缩常驻规则</h3>
-<pre>把这段常驻规则压到 60 行以内：只保留 12 条铁律、事件路由表、4 个硬停；其余移到按需文档。每条路由写清触发事件、要读的文件、读完必须产出的标记。</pre>
+<pre class="prompt">把这段常驻规则压到 60 行以内：只保留 12 条铁律、事件路由表、4 个硬停；其余移到按需文档。每条路由写清触发事件、要读的文件、读完必须产出的标记。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>常驻 CLAUDE.md 或系统提示词超过一屏时</dd><dt>为什么这样写</dt><dd>常驻规则每轮都付一次 token；规则一多，每条的遵守度会被稀释。把长文档改成事件触发，触发时再读。</dd></dl>
 </div>
 <div class="card">
 <h3>生成系统提示词三档</h3>
-<pre>把这份系统提示词里只属于某个平台的部分删掉（XML、工具接口、产品 UI、存储、环境），只保留跨模型仍然成立的行为原则；按 core、balanced、complete 三档输出，并说明每档删了什么。</pre>
+<pre class="prompt">把这份系统提示词里只属于某个平台的部分删掉（XML、工具接口、产品 UI、存储、环境），只保留跨模型仍然成立的行为原则；按 core、balanced、complete 三档输出，并说明每档删了什么。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要给一个产品定 system prompt，或准备换模型时</dd><dt>为什么这样写</dt><dd>平台细节换模型就失效。先删平台，再按 token 预算留档，<b>不要默认用最长的那一档</b>。</dd></dl>
 </div>
 <div class="card">
 <h3>中文系统提示词骨架</h3>
-<pre>以这份中文系统提示词为骨架，保留策略分段结构，把产品信息、拒绝清单、引用规则、图片规则改成我们产品的版本；不要改变分段顺序。</pre>
+<pre class="prompt">以这份中文系统提示词为骨架，保留策略分段结构，把产品信息、拒绝清单、引用规则、图片规则改成我们产品的版本；不要改变分段顺序。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>中文产品要从一份成熟骨架开始，而不是逐字翻译英文</dd><dt>为什么这样写</dt><dd>策略分段是骨架。按段替换，改一条能对上一条；顺序不变，回归时才能逐段对照。</dd></dl>
 </div>
 <div class="card">
 <h3>VFF 诊断结构</h3>
-<pre>用 VFF v2 的诊断结构回答：第一句给结论；先找能解释所有线索的假设；处方前先给最便宜的测量；没验证前不说完成；不确定的地方标置信度。不要为了短而删掉解释。</pre>
+<pre class="prompt">用 VFF v2 的诊断结构回答：第一句给结论；先找能解释所有线索的假设；处方前先给最便宜的测量；没验证前不说完成；不确定的地方标置信度。不要为了短而删掉解释。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>用较便宜的模型做高难度分析或验收时</dd><dt>为什么这样写</dt><dd>压缩省 token 会把诊断质量一起削掉。<b>保留结构，删重复，不删解释</b>。</dd></dl>
 </div>
 </div>
@@ -279,22 +289,22 @@
 <div class="grid two">
 <div class="card">
 <h3>写 stage map 和可失败检查</h3>
-<pre>把这个任务写成带编号的 stage map：每阶段一个预期产物和一个可失败检查。没有可检查产物的阶段合并到下一个。标出哪些阶段可以委派、哪些留在主线程；委派时写清产物路径和 pass condition。</pre>
+<pre class="prompt">把这个任务写成带编号的 stage map：每阶段一个预期产物和一个可失败检查。没有可检查产物的阶段合并到下一个。标出哪些阶段可以委派、哪些留在主线程；委派时写清产物路径和 pass condition。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任务跨多个文件、多个来源或多个会话时</dd><dt>为什么这样写</dt><dd>阶段没有可失败检查，就会变成「看起来做完了」。先写清楚每个阶段怎么失败，再开始做。</dd></dl>
 </div>
 <div class="card">
 <h3>分类并定义完成</h3>
-<pre>先用 Fable Method 分类：这是问句、任务，还是计划优先？用一两句话定义完成和验证。如果写不出验证，先只问我一个关键问题，不要开始做。</pre>
+<pre class="prompt">先用 Fable Method 分类：这是问句、任务，还是计划优先？用一两句话定义完成和验证。如果写不出验证，先只问我一个关键问题，不要开始做。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何非平凡任务开始前</dd><dt>为什么这样写</dt><dd>分类错会用错节奏；完成定义不清，会在最后才发现验收不了。</dd></dl>
 </div>
 <div class="card">
 <h3>拒绝无证据的完成</h3>
-<pre>把这个任务拆成 2 个以上顺序故事，用 goals.py 建账本；每个 checkpoint 写具体证据，最后一个故事必须有 verify 命令和结果。没有证据的故事标 blocked，不标 complete。</pre>
+<pre class="prompt">把这个任务拆成 2 个以上顺序故事，用 goals.py 建账本；每个 checkpoint 写具体证据，最后一个故事必须有 verify 命令和结果。没有证据的故事标 blocked，不标 complete。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任务有 2 个以上顺序故事时</dd><dt>为什么这样写</dt><dd>「做完了」必须是一条带证据的账本记录，不是一句话。</dd></dl>
 </div>
 <div class="card">
 <h3>调查协议</h3>
-<pre>先复现失败，读真实输出；再列至少 3 个竞争假设，为每个假设写清什么证据会确认或否定它；追完整因果链，别停在第一个 plausible cause；报告里写被否定的假设。</pre>
+<pre class="prompt">先复现失败，读真实输出；再列至少 3 个竞争假设，为每个假设写清什么证据会确认或否定它；追完整因果链，别停在第一个 plausible cause；报告里写被否定的假设。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>调试、未知原因、评审时</dd><dt>为什么这样写</dt><dd>第一个 plausible cause 常常不是根因；只移除可见触发器，会把缺陷留在系统里。</dd></dl>
 </div>
 </div>
@@ -302,27 +312,27 @@
 <div class="grid two">
 <div class="card">
 <h3>写六段 spec</h3>
-<pre>把这个实现任务写成六段 spec：Objective、Files、Interfaces、Constraints、Verification、Reasoning。写不完就说明决策还没做，不要委派。委派时在 Agent description 里写清模型和 effort。</pre>
+<pre class="prompt">把这个实现任务写成六段 spec：Objective、Files、Interfaces、Constraints、Verification、Reasoning。写不完就说明决策还没做，不要委派。委派时在 Agent description 里写清模型和 effort。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要把实现交给另一个模型或另一个会话时</dd><dt>为什么这样写</dt><dd>实现 lane 没有你的对话上下文；六段写不全，它就会用猜测填空。</dd></dl>
 </div>
 <div class="card">
 <h3>跑 Fusion panel</h3>
-<pre>把这个难题跑一遍 Fusion：同一 prompt 同时发给多个模型，每个独立作答，不给 persona，不互相看。然后由 Opus 做 judge，输出 Consensus、Contradictions、Partial coverage、Unique insights、Blind spots，再写最终答案。</pre>
+<pre class="prompt">把这个难题跑一遍 Fusion：同一 prompt 同时发给多个模型，每个独立作答，不给 persona，不互相看。然后由 Opus 做 judge，输出 Consensus、Contradictions、Partial coverage、Unique insights、Blind spots，再写最终答案。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>高风险研究、设计取舍、容易被自信答错的问题</dd><dt>为什么这样写</dt><dd>独立一致是最高置信度，独立冲突是最有价值的信号；persona 会污染独立性。</dd></dl>
 </div>
 <div class="card">
 <h3>建路由卡选座</h3>
-<pre>先建路由卡：列出本机实际可用的 provider 和 live access，再按 job 选座。settled 行直接用，close call 只问我一次。偏离 settled 行要写允许的理由；premium 模型不要自动用。</pre>
+<pre class="prompt">先建路由卡：列出本机实际可用的 provider 和 live access，再按 job 选座。settled 行直接用，close call 只问我一次。偏离 settled 行要写允许的理由；premium 模型不要自动用。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>多模型、多 agent、要控成本时</dd><dt>为什么这样写</dt><dd>按感觉选模型会把贵 token 花在便宜工作上；路由卡把成本和能力放在一张表里。</dd></dl>
 </div>
 <div class="card">
 <h3>盲 verifier 验收</h3>
-<pre>为这个改动派一个盲 verifier：给它原始任务原文、diff 和验收标准，不给 worker 的推理或摘要。它只读、只跑检查，不改文件。返回 PASS、FAIL 或 PASS_WITH_NOTES，每条都带命令和输出。</pre>
+<pre class="prompt">为这个改动派一个盲 verifier：给它原始任务原文、diff 和验收标准，不给 worker 的推理或摘要。它只读、只跑检查，不改文件。返回 PASS、FAIL 或 PASS_WITH_NOTES，每条都带命令和输出。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何可能改变行为的改动交付前</dd><dt>为什么这样写</dt><dd>worker 的报告是 claim，不是证据；冷验证者没有生产者的盲区。</dd></dl>
 </div>
 <div class="card">
 <h3>图编排：把复杂任务拆成可验收的节点图</h3>
-<pre># 角色
+<pre class="prompt"># 角色
 你是这次任务的图编排者：负责规划、调度、集成和记录。边界清楚的工作交给子智能体，结果唯一的步骤交给代码。动手前先读项目说明（如 CLAUDE.md）和已有成果。
 
 # 输入
@@ -381,22 +391,22 @@
 <div class="grid two">
 <div class="card">
 <h3>按段对照系统提示词</h3>
-<pre>把这份系统提示词按段拆开，和同产品的上一个版本对照：哪些段是行为原则，哪些段是平台实现？只保留跨模型仍然成立的行为段，平台段用我们自己的实现替换。不要整段复制别人的产品信息、工具接口或内部 UI。</pre>
+<pre class="prompt">把这份系统提示词按段拆开，和同产品的上一个版本对照：哪些段是行为原则，哪些段是平台实现？只保留跨模型仍然成立的行为段，平台段用我们自己的实现替换。不要整段复制别人的产品信息、工具接口或内部 UI。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要给自己的产品定 system prompt，或准备换模型时</dd><dt>为什么这样写</dt><dd>系统提示词的价值在结构和版本差异，不在某一句措辞；整段复制会把别人的平台耦合也带进来。</dd></dl>
 </div>
 <div class="card">
 <h3>做可复查的案例三件套</h3>
-<pre>把这个案例做成可复查的三件套：prompt.md 逐字保留生成提示词；项目代码完整可运行、资源本地化；demo.mp4 记录实际运行。交付前用 headless 浏览器在 390、768、1280 三个宽度检查标题、关键元素、图片、横向溢出、console error 和关键交互。</pre>
+<pre class="prompt">把这个案例做成可复查的三件套：prompt.md 逐字保留生成提示词；项目代码完整可运行、资源本地化；demo.mp4 记录实际运行。交付前用 headless 浏览器在 390、768、1280 三个宽度检查标题、关键元素、图片、横向溢出、console error 和关键交互。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要交付一个页面、组件或视觉案例时</dd><dt>为什么这样写</dt><dd>截图只能证明它看起来像；prompt、代码和录屏才能让别人重跑和复查。</dd></dl>
 </div>
 <div class="card">
 <h3>跑 headless 验收</h3>
-<pre>用 headless 浏览器在 390、768、1280 三个宽度打开这个页面：检查标题和关键元素存在、canvas 或视频真的渲染、图片没有破损、没有横向溢出、console 没有 error、没有 4xx 或 5xx 响应；在桌面宽度点开关键菜单确认交互。任何一项失败就非零退出。</pre>
+<pre class="prompt">用 headless 浏览器在 390、768、1280 三个宽度打开这个页面：检查标题和关键元素存在、canvas 或视频真的渲染、图片没有破损、没有横向溢出、console 没有 error、没有 4xx 或 5xx 响应；在桌面宽度点开关键菜单确认交互。任何一项失败就非零退出。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>页面或交互改完，准备说完成时</dd><dt>为什么这样写</dt><dd>静态检查只能证明 well-formed；三个宽度的 headless 运行才能抓到布局、资源和运行时错误。</dd></dl>
 </div>
 <div class="card">
 <h3>审计 clone 是否 same-to-same</h3>
-<pre>把这个 clone 和它的 REFERENCE 原站做同源审计：抓原站和 clone 的页面、section、样式、390、768、1280 响应式、hover 和点击状态、明暗主题，逐项 diff。发现 gap 直接修，再重录 demo、生成 poster、更新 README。不要只出报告。</pre>
+<pre class="prompt">把这个 clone 和它的 REFERENCE 原站做同源审计：抓原站和 clone 的页面、section、样式、390、768、1280 响应式、hover 和点击状态、明暗主题，逐项 diff。发现 gap 直接修，再重录 demo、生成 poster、更新 README。不要只出报告。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>做完一个复刻或迁移，准备交付时</dd><dt>为什么这样写</dt><dd>生成的结果常常少页面、少 section、漏响应式；只出报告会把修的工作留给别人。</dd></dl>
 </div>
 </div>
@@ -404,7 +414,7 @@
 <div class="grid two">
 <div class="card">
 <h3>发布前对抗式审计</h3>
-<pre>以产品上线倒计时为目标，对当前项目做一次发布前深度审查。以真实代码、真实页面、真实用户路径为主要依据，辅助材料是：用户手册、既有审计方案、当前项目文档与测试结果。
+<pre class="prompt">以产品上线倒计时为目标，对当前项目做一次发布前深度审查。以真实代码、真实页面、真实用户路径为主要依据，辅助材料是：用户手册、既有审计方案、当前项目文档与测试结果。
 
 按三步执行：
 1. 对每一个页面、交互、闭环、模块做对抗式审查，主动寻找误导、断点、死链、空状态缺口、权限缺口、异常路径和产品承诺落差。
@@ -420,7 +430,7 @@
 </div>
 <div class="card">
 <h3>网站 UI/UX 逐页重构</h3>
-<pre>以网站上线前 UI/UX 全面重构为目标，逐页、逐组件、逐交互审查当前网站。目标不是“更好看”，而是让它有品牌判断、产品秩序和上线完成度。
+<pre class="prompt">以网站上线前 UI/UX 全面重构为目标，逐页、逐组件、逐交互审查当前网站。目标不是“更好看”，而是让它有品牌判断、产品秩序和上线完成度。
 
 全站硬规则：禁止 emoji；建立统一品牌色彩系统；去掉 AI 默认模板感；删除卡片套卡片、廉价阴影、重复边框、无意义装饰和泛泛大标题。
 
@@ -443,27 +453,27 @@
 <div class="grid two">
 <div class="card">
 <h3>把一句话想法问成意图</h3>
-<pre>用 interview-me 采访我：我想做 ___，但还没想清给谁用、成功长什么样。一次只问一个问题，每个问题带上你的推荐答案。</pre>
+<pre class="prompt">用 interview-me 采访我：我想做 ___，但还没想清给谁用、成功长什么样。一次只问一个问题，每个问题带上你的推荐答案。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>只有一句模糊想法时</dd><dt>为什么这样写</dt><dd>不要让它替你回答。它替你想的每一句都是猜测，你会在验收时无从判断。</dd></dl>
 </div>
 <div class="card">
 <h3>攻击已有草稿</h3>
-<pre>用 grilling 拷问这份方案，按 frontier 分轮提问，每个问题给出你的推荐答案。</pre>
+<pre class="prompt">用 grilling 拷问这份方案，按 frontier 分轮提问，每个问题给出你的推荐答案。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>已经写了一份 PRD 或方案</dd><dt>为什么这样写</dt><dd>前提是草稿是你写的。攻击一份它自己写的草稿，只会听到附和。</dd></dl>
 </div>
 <div class="card">
 <h3>确定该走哪条车道</h3>
-<pre>用 agent-delivery-router 判断这个需求走哪条车道：incident / exploration / capability / fast。</pre>
+<pre class="prompt">用 agent-delivery-router 判断这个需求走哪条车道：incident / exploration / capability / fast。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>每个任务开始</dd><dt>为什么这样写</dt><dd>这一步只要 30 秒，但省掉它你会用错误的节奏做事。</dd></dl>
 </div>
 <div class="card">
 <h3>写想法的第五句</h3>
-<pre>帮我写"什么情况说明这个产品不该做"。要求：是一个可以被测量的事件，不是"如果没人用"。</pre>
+<pre class="prompt">帮我写"什么情况说明这个产品不该做"。要求：是一个可以被测量的事件，不是"如果没人用"。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>你能说清用途但说不清否定条件时</dd><dt>为什么这样写</dt><dd>这是整个需求阶段里唯一能后期验证的一句。</dd></dl>
 </div>
 <div class="card">
 <h3>判断该不该用 agent</h3>
-<pre>我这个产品要做的是___。先别设计。只用一个问题判断：我能不能把决策树画出来？如果能写出步骤顺序和分支条件，就告诉我该做成固定流程；如果下一步取决于上一步返回什么、我列不出分支，才告诉我需要 agent。给出判断和理由。</pre>
+<pre class="prompt">我这个产品要做的是___。先别设计。只用一个问题判断：我能不能把决策树画出来？如果能写出步骤顺序和分支条件，就告诉我该做成固定流程；如果下一步取决于上一步返回什么、我列不出分支，才告诉我需要 agent。给出判断和理由。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何 agent 产品动手前</dd><dt>为什么这样写</dt><dd>这是最贵的错误：本可以做成管线，却做成了 agent。管线的顺序确定，所以人力和钱都省一半以上。</dd></dl>
 </div>
 </div>
@@ -471,47 +481,47 @@
 <div class="grid two">
 <div class="card">
 <h3>第一问：画出流程形状</h3>
-<pre>帮我把这个产品的流程写成编号列表，然后标出哪些步骤<b>每次一样</b>、哪些步骤<b>需要临场判断</b>。最后告诉我判断点一共几处——零到一处说明这是管线，三处以上说明要么它真需要临场判断，要么我还没想清楚。</pre>
+<pre class="prompt">帮我把这个产品的流程写成编号列表，然后标出哪些步骤<b>每次一样</b>、哪些步骤<b>需要临场判断</b>。最后告诉我判断点一共几处——零到一处说明这是管线，三处以上说明要么它真需要临场判断，要么我还没想清楚。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>进入设计阶段的第一件事</dd><dt>为什么这样写</dt><dd>判断点的数量就是"该不该用 agent"的第二次投票。数量和需求阶段的判断对不上时，先别往下做。</dd></dl>
 </div>
 <div class="card">
 <h3>第二问：写拒绝清单</h3>
-<pre>我要一条一条写"它必须拒绝什么"。每条按这个格式：<b>一个具体输入 → 它必须改做什么</b>。先问我一个问题：这个产品最容易被误用成什么样？然后给我三条候选，我来判断。</pre>
+<pre class="prompt">我要一条一条写"它必须拒绝什么"。每条按这个格式：<b>一个具体输入 → 它必须改做什么</b>。先问我一个问题：这个产品最容易被误用成什么样？然后给我三条候选，我来判断。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>设计阶段的第二件事</dd><dt>为什么这样写</dt><dd>写不出具体输入的，是价值观不是拒绝清单。"要诚实"没法测，"问能不能治痘痘 → 改成外观表述"能测。</dd></dl>
 </div>
 <div class="card">
 <h3>第三问：动作权限按能不能撤销分</h3>
-<pre>列出这个产品能做的每一个动作，按<b>能不能撤销</b>分三档：可撤销的放行；会被看见或花钱的，放行但要记账并设额度；不可撤销的先问人。不要按重要性排——重要性我会排错。</pre>
+<pre class="prompt">列出这个产品能做的每一个动作，按<b>能不能撤销</b>分三档：可撤销的放行；会被看见或花钱的，放行但要记账并设额度；不可撤销的先问人。不要按重要性排——重要性我会排错。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>产品能发送/删除/付款/发布时</dd><dt>为什么这样写</dt><dd>中间那档最容易被跳过，而真正的损失都在那：不是答错一次，是在有人看之前错了五十次。额度要写数字。</dd></dl>
 </div>
 <div class="card">
 <h3>第四问：交接契约写三行</h3>
-<pre>对模型能调用的每一个工具，写三行：做什么、<b>什么时候不该用它</b>、失败时返回什么。第二行是重点——只写"它做什么"等于授权它在任何场景下用。</pre>
+<pre class="prompt">对模型能调用的每一个工具，写三行：做什么、<b>什么时候不该用它</b>、失败时返回什么。第二行是重点——只写"它做什么"等于授权它在任何场景下用。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>模型会自己决定调哪个工具时</dd><dt>为什么这样写</dt><dd>agent 产品最常见的失败不是工具坏了，是工具用在了不该用的地方，而日志里一切正常。</dd></dl>
 </div>
 <div class="card">
 <h3>写一条 ADR</h3>
-<pre>用 architecture-decision-records 为 ___ 的选择写一份 ADR，把放弃的选项和各自的代价写进去。</pre>
+<pre class="prompt">用 architecture-decision-records 为 ___ 的选择写一份 ADR，把放弃的选项和各自的代价写进去。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>做了难回退的选择</dd><dt>为什么这样写</dt><dd>没有"放弃的选项"那一节的 ADR 是宣布，不是决策。</dd></dl>
 </div>
 <div class="card">
 <h3>定死一个术语</h3>
-<pre>用 domain-modeling 把"___"这个词定死，写进 GLOSSARY。给出它在这里的具体含义，以及一个反例（它不包含什么）。</pre>
+<pre class="prompt">用 domain-modeling 把"___"这个词定死，写进 GLOSSARY。给出它在这里的具体含义，以及一个反例（它不包含什么）。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>同一个词在两处意思不同时</dd><dt>为什么这样写</dt><dd>反例比定义有用。说不清它不包含什么，等于没定义。</dd></dl>
 </div>
 <div class="card">
 <h3>契约先行</h3>
-<pre>用 api-and-interface-design 设计 ___ 的接口。先出契约和错误语义，再谈实现。</pre>
+<pre class="prompt">用 api-and-interface-design 设计 ___ 的接口。先出契约和错误语义，再谈实现。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要对接外部或跨模块时</dd><dt>为什么这样写</dt><dd>错误语义是重点。只写成功路径的契约会在第一个失败时崩掉。</dd></dl>
 </div>
 <div class="card">
 <h3>拆成可验收的票</h3>
-<pre>用 to-tickets 把这份计划拆成纵向切片，每张票切穿所有层、能单独演示，标清阻塞关系。</pre>
+<pre class="prompt">用 to-tickets 把这份计划拆成纵向切片，每张票切穿所有层、能单独演示，标清阻塞关系。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>计划已批准</dd><dt>为什么这样写</dt><dd>一张票如果跨了多个不相干的能力，继续拆。</dd></dl>
 </div>
 <div class="card">
 <h3>设计阶段收尾：数问题</h3>
-<pre>这是四问的答案。你现在只拿这份，不要问我任何问题，直接实现最窄的那条路。做完告诉我：过程中你不得不自己猜的有几处、分别是哪几处。</pre>
+<pre class="prompt">这是四问的答案。你现在只拿这份，不要问我任何问题，直接实现最窄的那条路。做完告诉我：过程中你不得不自己猜的有几处、分别是哪几处。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>四问写完之后</dd><dt>为什么这样写</dt><dd>它猜的每一处都是设计的洞。两轮之内补完是正常的；超过三轮说明是缺了一整块，不是写得不细。</dd></dl>
 </div>
 </div>
@@ -519,22 +529,22 @@
 <div class="grid two">
 <div class="card">
 <h3>做一条最窄的路</h3>
-<pre>只做一条路径：一个真实输入进去，一个真实结果出来。不要界面，不要配置，不要"以后扩展"。做完让我自己跑一次。</pre>
+<pre class="prompt">只做一条路径：一个真实输入进去，一个真实结果出来。不要界面，不要配置，不要"以后扩展"。做完让我自己跑一次。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>开始开发时</dd><dt>为什么这样写</dt><dd>它一定想给你搭架子。拒绝。架子不产生任何你能判断的东西。</dd></dl>
 </div>
 <div class="card">
 <h3>测试先行</h3>
-<pre>用 tdd 在 ___ 这个 seam 上做：先写会失败的测试，再写最小实现。</pre>
+<pre class="prompt">用 tdd 在 ___ 这个 seam 上做：先写会失败的测试，再写最小实现。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>写新逻辑或修 bug</dd><dt>为什么这样写</dt><dd>先跑一次确认它真的红。没红过的测试不是测试。</dd></dl>
 </div>
 <div class="card">
 <h3>控制范围</h3>
-<pre>ponytail full：用最小完整改动解决，不要加没人要的抽象。结束时告诉我你跳过了什么、风险在哪。</pre>
+<pre class="prompt">ponytail full：用最小完整改动解决，不要加没人要的抽象。结束时告诉我你跳过了什么、风险在哪。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何编码任务</dd><dt>为什么这样写</dt><dd>"跳过了什么"这一项最有价值，它让省略变成决定而不是遗漏。</dd></dl>
 </div>
 <div class="card">
 <h3>分析这个模块</h3>
-<pre>用 codebase-design 的词汇分析这个模块：接口是不是太浅，seam 该放哪。</pre>
+<pre class="prompt">用 codebase-design 的词汇分析这个模块：接口是不是太浅，seam 该放哪。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要改一块现有代码前</dd><dt>为什么这样写</dt><dd>先理解形状，再动。</dd></dl>
 </div>
 </div>
@@ -542,32 +552,32 @@
 <div class="grid two">
 <div class="card">
 <h3>故意弄坏一次</h3>
-<pre>挑一条检查和一种会让它失败的情况。造出来，跑一次，把结果原样贴给我。必须告诉我它是红了还是绿了。</pre>
+<pre class="prompt">挑一条检查和一种会让它失败的情况。造出来，跑一次，把结果原样贴给我。必须告诉我它是红了还是绿了。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何检查通过之后</dd><dt>为什么这样写</dt><dd>这是全套方法里最重要的一条。没红过的检查是装饰。</dd></dl>
 </div>
 <div class="card">
 <h3>断网试</h3>
-<pre>把 ___ 的密钥改成错的（或删掉），再跑一次。我要看到的是"无法判断"，不是"通过"。</pre>
+<pre class="prompt">把 ___ 的密钥改成错的（或删掉），再跑一次。我要看到的是"无法判断"，不是"通过"。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>一切正常得可疑时</dd><dt>为什么这样写</dt><dd>它的表现应该是明确报错 + 非零退出码，而不是静默降级。</dd></dl>
 </div>
 <div class="card">
 <h3>念给我听</h3>
-<pre>把这次检查结果逐条念：一共几条、跑了几条、过了几条、失败几条、<b>跳过了几条、为什么</b>。不许合并成一句。</pre>
+<pre class="prompt">把这次检查结果逐条念：一共几条、跑了几条、过了几条、失败几条、<b>跳过了几条、为什么</b>。不许合并成一句。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>收到"全部通过"之后</dd><dt>为什么这样写</dt><dd>第五节最容易省。省了就是被藏起来了。</dd></dl>
 </div>
 <div class="card">
 <h3>把总数加一遍</h3>
-<pre>把总数拆开加一遍：成功的 + 各种失败原因的 = 总数吗？给我算式。然后什么都不做刷新五次，看数字会不会自己动。</pre>
+<pre class="prompt">把总数拆开加一遍：成功的 + 各种失败原因的 = 总数吗？给我算式。然后什么都不做刷新五次，看数字会不会自己动。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>看到任何仪表盘或计数时</dd><dt>为什么这样写</dt><dd>两分钟，只需要计算器。这是唯一能查"记录有洞"的方法。</dd></dl>
 </div>
 <div class="card">
 <h3>看三个真实输出</h3>
-<pre>给我看三个真实输入的输出——不是你挑的样例，是我随手找的。然后告诉我：你会把这个交给客户吗？不会的话，哪一行最先出问题？</pre>
+<pre class="prompt">给我看三个真实输入的输出——不是你挑的样例，是我随手找的。然后告诉我：你会把这个交给客户吗？不会的话，哪一行最先出问题？</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>机制全绿但你不确定结果好不好时</dd><dt>为什么这样写</dt><dd>这一条抓的是"结果对不对"，前四条抓的是"机制可不可信"。两件事。</dd></dl>
 </div>
 <div class="card">
 <h3>读信号：红还是尺子坏了</h3>
-<pre>我认为这条测试红了。先别改代码。告诉我：你认为这是产品错了还是测试错了？理由是什么？</pre>
+<pre class="prompt">我认为这条测试红了。先别改代码。告诉我：你认为这是产品错了还是测试错了？理由是什么？</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>检查红了的时候</dd><dt>为什么这样写</dt><dd>实测中三条红的，三条全是测试自己写错。直接改代码迁就错的测试 = 测试变绿、产品变坏。</dd></dl>
 </div>
 </div>
@@ -575,37 +585,37 @@
 <div class="grid two">
 <div class="card">
 <h3>换台设备</h3>
-<pre>给我这个地址，我要在手机上打开。打的开的截图给我。</pre>
+<pre class="prompt">给我这个地址，我要在手机上打开。打的开的截图给我。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>认为做完了的时候</dd><dt>为什么这样写</dt><dd>在你机器上能开不叫能开。密钥、数据、权限、地址，四件事在你这里全是配好的。</dd></dl>
 </div>
 <div class="card">
 <h3>算一遍配额</h3>
-<pre>这个功能每次使用会消耗多少次外部调用？我们有多少配额？第几个用户会撞墙？</pre>
+<pre class="prompt">这个功能每次使用会消耗多少次外部调用？我们有多少配额？第几个用户会撞墙？</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>上线前</dd><dt>为什么这样写</dt><dd>这个算术在写完代码时就能做，不用等到用户撞墙。</dd></dl>
 </div>
 <div class="card">
 <h3>找人试</h3>
-<pre>给我一个陌生人第一次使用的说明：他要做什么、可能卡在哪。不要写功能列表。</pre>
+<pre class="prompt">给我一个陌生人第一次使用的说明：他要做什么、可能卡在哪。不要写功能列表。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>准备给别人用时</dd><dt>为什么这样写</dt><dd>写不出"可能卡在哪"，说明你不知道用户是谁。</dd></dl>
 </div>
 <div class="card">
 <h3>列一遍密钥与配置</h3>
-<pre>把这个产品跑起来需要的每一样东西列成清单：密钥、环境变量、数据库、外部服务。逐个回答：它从哪来？我是从环境变量读的，还是从某个文件读的？</pre>
+<pre class="prompt">把这个产品跑起来需要的每一样东西列成清单：密钥、环境变量、数据库、外部服务。逐个回答：它从哪来？我是从环境变量读的，还是从某个文件读的？</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>部署之前</dd><dt>为什么这样写</dt><dd>四项在你机器上全是配好的：密钥、数据、权限、地址。它们不会在开发时报错，因为开发时本来就没用到未配置的形态。</dd></dl>
 </div>
 <div class="card">
 <h3>选一个部署平台</h3>
-<pre>帮我选一个部署平台。不要给我"最好的"，给我<b>最省事的</b>：从零到别人能打开，我需要做几步？哪一步最容易卡住？</pre>
+<pre class="prompt">帮我选一个部署平台。不要给我"最好的"，给我<b>最省事的</b>：从零到别人能打开，我需要做几步？哪一步最容易卡住？</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要给别人用之前</dd><dt>为什么这样写</dt><dd>这个阶段的目标不是架构漂亮，是让别人打得开。选完就得做完，中途换平台的成本比选错高。</dd></dl>
 </div>
 <div class="card">
 <h3>想好怎么退回去</h3>
-<pre>这个东西如果上线后发现坏了，我怎么退回去？给我具体步骤和大概要多久。</pre>
+<pre class="prompt">这个东西如果上线后发现坏了，我怎么退回去？给我具体步骤和大概要多久。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>上线前</dd><dt>为什么这样写</dt><dd>没有回滚方案的部署不是部署，是单向门。写不出步骤说明你还没想清楚它依赖什么。</dd></dl>
 </div>
 <div class="card">
 <h3>上线后头 15 分钟看什么</h3>
-<pre>上线之后我该盯着看哪三样东西？分别看到什么数字算正常、什么数字说明要退回去？</pre>
+<pre class="prompt">上线之后我该盯着看哪三样东西？分别看到什么数字算正常、什么数字说明要退回去？</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>按下部署之后</dd><dt>为什么这样写</dt><dd>这十五分钟里你会紧张，紧张的时候需要的是三个具体数字，不是"再看看"。</dd></dl>
 </div>
 </div>
@@ -613,17 +623,17 @@
 <div class="grid two">
 <div class="card">
 <h3>补三个数字</h3>
-<pre>这个产品现在能回答：跑了多少次、花了多少、为什么失败？三个都要能打开就看到，不要跑命令。</pre>
+<pre class="prompt">这个产品现在能回答：跑了多少次、花了多少、为什么失败？三个都要能打开就看到，不要跑命令。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何"感觉不太对"的时候</dd><dt>为什么这样写</dt><dd>缺任何一个，后面所有判断都没有依据。</dd></dl>
 </div>
 <div class="card">
 <h3>产品侧观测</h3>
-<pre>除了技术日志，怎么知道"有没有人真的在用"？给出三个可以埋的点：谁、用了哪一步、在哪一步放弃。</pre>
+<pre class="prompt">除了技术日志，怎么知道"有没有人真的在用"？给出三个可以埋的点：谁、用了哪一步、在哪一步放弃。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>技术指标正常但不确定产品成不成立时</dd><dt>为什么这样写</dt><dd>这是这套方法的边界。技术正常和没人用可以同时成立。</dd></dl>
 </div>
 <div class="card">
 <h3>登记产物</h3>
-<pre>这个东西（脚本/开关/面板）登记一下：owner 是谁、什么时候过期、满足什么条件就删。</pre>
+<pre class="prompt">这个东西（脚本/开关/面板）登记一下：owner 是谁、什么时候过期、满足什么条件就删。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>创建任何有持续成本的东西时</dd><dt>为什么这样写</dt><dd>没有过期条件的产物会永久留在仓库里。</dd></dl>
 </div>
 </div>
@@ -631,17 +641,17 @@
 <div class="grid two">
 <div class="card">
 <h3>复盘</h3>
-<pre>用 retro 复盘这一段：按严重度排序列出环境改进项，每项给 owner 和复查日期。</pre>
+<pre class="prompt">用 retro 复盘这一段：按严重度排序列出环境改进项，每项给 owner 和复查日期。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>一个周期结束</dd><dt>为什么这样写</dt><dd>没有 owner 和日期的改进项等于没有。</dd></dl>
 </div>
 <div class="card">
 <h3>该不该抽模板</h3>
-<pre>这个东西要不要抽成模板？先回答两个问题：上个产品用过吗？它的形状会随产品变吗？</pre>
+<pre class="prompt">这个东西要不要抽成模板？先回答两个问题：上个产品用过吗？它的形状会随产品变吗？</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>想抽通用组件时</dd><dt>为什么这样写</dt><dd>判据不是"用了几次"。形状会变的，抽出来就是负担。</dd></dl>
 </div>
 <div class="card">
 <h3>分诊积压</h3>
-<pre>用 triage 过一遍待处理 issue，先给我需要我注意的三类，其余先不动。</pre>
+<pre class="prompt">用 triage 过一遍待处理 issue，先给我需要我注意的三类，其余先不动。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>issue 堆积时</dd><dt>为什么这样写</dt><dd>全量分诊会让真正重要的三条被埋掉。</dd></dl>
 </div>
 </div>
@@ -649,77 +659,77 @@
 <div class="grid two">
 <div class="card">
 <h3>判断这个指标该不该存在</h3>
-<pre>这个指标是「___」。先别帮我算。只回答一个问题：<b>如果这个数错了，哪个决策会怎么错</b>？答不出来就告诉我它不该进产品。然后告诉我它由哪一层的记录加总而来，以及分子和分母是不是同一层——跨层相除得到的是效率，而效率要等传导关系确立之后才有意义。</pre>
+<pre class="prompt">这个指标是「___」。先别帮我算。只回答一个问题：<b>如果这个数错了，哪个决策会怎么错</b>？答不出来就告诉我它不该进产品。然后告诉我它由哪一层的记录加总而来，以及分子和分母是不是同一层——跨层相除得到的是效率，而效率要等传导关系确立之后才有意义。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要往看板上加一个数字之前</dd><dt>为什么这样写</dt><dd>这一问挡掉的是最贵的一种浪费：一个看起来比任何单个指标都更像洞察、实际没有任何含义的复合数。</dd></dl>
 </div>
 <div class="card">
 <h3>把定义写到别人能算出来</h3>
-<pre>把这个指标的可执行定义写出来，要求换一个人不问你能算出同一个数。格式：数据从哪张表哪个字段来、过滤条件是什么、按什么分组、权重是多少、时间按哪个时点归周。写完之后，你自己找一处最容易被误读的地方指出来。</pre>
+<pre class="prompt">把这个指标的可执行定义写出来，要求换一个人不问你能算出同一个数。格式：数据从哪张表哪个字段来、过滤条件是什么、按什么分组、权重是多少、时间按哪个时点归周。写完之后，你自己找一处最容易被误读的地方指出来。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>定义写完了但还像一段说明</dd><dt>为什么这样写</dt><dd>「按情感为正的内容加权求和」不是定义，因为没有权重。定义的长度不是问题，可复现才是。</dd></dl>
 </div>
 <div class="card">
 <h3>找出这个指标什么时候骗人</h3>
-<pre>这个指标的已知偏差是什么？给我三档，每档说清一件事：具体哪个环节缺失或口径不一致、数字会往哪个方向偏、会让什么样的结论出错。不要给我「仅供参考」这种免责声明。</pre>
+<pre class="prompt">这个指标的已知偏差是什么？给我三档，每档说清一件事：具体哪个环节缺失或口径不一致、数字会往哪个方向偏、会让什么样的结论出错。不要给我「仅供参考」这种免责声明。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>写「已知偏差」那一栏时</dd><dt>为什么这样写</dt><dd>「无偏差」等于「没想过」。说不清方向说明还不了解这个数。</dd></dl>
 </div>
 <div class="card">
 <h3>写一条真能拦住它的禁令</h3>
-<pre>这个指标的「什么时候不可用」，要写成一条禁令：<b>当一个检查变红时，这个数不许出现在结论里</b>。帮我把现在的说法改写成这种形状，并指出它对应哪个能触发的检查。改不出来就说明这句话是感慨。</pre>
+<pre class="prompt">这个指标的「什么时候不可用」，要写成一条禁令：<b>当一个检查变红时，这个数不许出现在结论里</b>。帮我把现在的说法改写成这种形状，并指出它对应哪个能触发的检查。改不出来就说明这句话是感慨。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>写「什么时候不可用」那一栏时</dd><dt>为什么这样写</dt><dd>性质（「绝对数无意义」）和禁令（「不与上一期比较」）是两件事，后者才能挂到检查上。</dd></dl>
 </div>
 <div class="card">
 <h3>改口径之前先问这三句</h3>
-<pre>我要改这个指标的口径。先别动手。回答三件事：<b>旧数据重算还是不重算</b>（默认不重算，说清理由）、<b>新旧版本要不要并行跑一个周期对比</b>、<b>界面上的版本号怎么显示</b>。然后告诉我：如果不重算，跨期比较时怎么让人分清「口径变了」和「业务变了」。</pre>
+<pre class="prompt">我要改这个指标的口径。先别动手。回答三件事：<b>旧数据重算还是不重算</b>（默认不重算，说清理由）、<b>新旧版本要不要并行跑一个周期对比</b>、<b>界面上的版本号怎么显示</b>。然后告诉我：如果不重算，跨期比较时怎么让人分清「口径变了」和「业务变了」。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何口径变更前</dd><dt>为什么这样写</dt><dd>重算之后这两件事就永远分不开了，而这是数据产品里最贵的一种错误。</dd></dl>
 </div>
 <div class="card">
 <h3>判什么：说出那个人做的判断</h3>
-<pre>这个标签叫「___」。先别写分类规则。只回答：一个人看着一条内容时，脑子里做的那个判断是什么？然后给我三类例子，各一条：典型正例、典型反例、<b>边界例</b>。边界例是唯一有价值的那一条——写不出它，说明定义还没做完。</pre>
+<pre class="prompt">这个标签叫「___」。先别写分类规则。只回答：一个人看着一条内容时，脑子里做的那个判断是什么？然后给我三类例子，各一条：典型正例、典型反例、<b>边界例</b>。边界例是唯一有价值的那一条——写不出它，说明定义还没做完。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>定义一个新标签时</dd><dt>为什么这样写</dt><dd>一个只会标 80% 的标签，剩下 20% 全靠猜。而那 20% 里集中了所有真正有趣的帖子。</dd></dl>
 </div>
 <div class="card">
 <h3>什么情况算不适用</h3>
-<pre>这个标签有一批内容它判不了。给我三个选项让我挑：<b>加一个 n/a 值</b>（分母变小但可见）、<b>并进已有的一类</b>（分母完整但那类被稀释）、<b>排除整条记录</b>（覆盖率下降要单独统计）。选完之后告诉我：说得出一个具体帖子落在它上面吗？说不出这个值不成立。</pre>
+<pre class="prompt">这个标签有一批内容它判不了。给我三个选项让我挑：<b>加一个 n/a 值</b>（分母变小但可见）、<b>并进已有的一类</b>（分母完整但那类被稀释）、<b>排除整条记录</b>（覆盖率下降要单独统计）。选完之后告诉我：说得出一个具体帖子落在它上面吗？说不出这个值不成立。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>写完定义之后</dd><dt>为什么这样写</dt><dd>「不涉及这个维度」和「涉及但我判不了」必须是两个值，否则你答不出自己的打标覆盖率是多少。</dd></dl>
 </div>
 <div class="card">
 <h3>把置信度钉死成可用的东西</h3>
-<pre>这个标签的置信度，逐条钉死三件事：<b>它是逐条的还是逐类的</b>、<b>它校准过没有</b>（说 0.8 的那些真的对了 80% 吗）、<b>按三档分别算准确率</b>（<0.6 / 0.6–0.8 / >0.8）。高的那一档必须比低的那一档准。</pre>
+<pre class="prompt">这个标签的置信度，逐条钉死三件事：<b>它是逐条的还是逐类的</b>、<b>它校准过没有</b>（说 0.8 的那些真的对了 80% 吗）、<b>按三档分别算准确率</b>（<0.6 / 0.6–0.8 / >0.8）。高的那一档必须比低的那一档准。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>模型会输出 confidence 时</dd><dt>为什么这样写</dt><dd>反过来的置信度是最隐蔽的一种错：所有「只用 >0.8」的规则都反了，而每条规则单独看都合理。</dd></dl>
 </div>
 <div class="card">
 <h3>Kappa 低的时候先改定义还是先培训</h3>
-<pre>两个人标同一批 200 条，Kappa 是 ___。先别安排培训。把那几条不一致的拿出来，逐条问：<b>能说清「这条为什么该判 A」而不用「我觉得」吗</b>？说不清的那几条，是定义有歧义，不是标注员不行。给我一份改定义的清单。</pre>
+<pre class="prompt">两个人标同一批 200 条，Kappa 是 ___。先别安排培训。把那几条不一致的拿出来，逐条问：<b>能说清「这条为什么该判 A」而不用「我觉得」吗</b>？说不清的那几条，是定义有歧义，不是标注员不行。给我一份改定义的清单。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>Kappa < 0.6 时</dd><dt>为什么这样写</dt><dd>培训只会让两个人一起错得更一致。</dd></dl>
 </div>
 <div class="card">
 <h3>改标签之前先写映射表</h3>
-<pre>我要把「___」这一类拆成两类。先别动代码。给我：<b>显式映射表</b>（旧类 → 新类，不许静默合并）、<b>旧数据怎么查</b>（按版本分组，还是要映射）、<b>新旧并行跑多久</b>。最后告诉我：如果不映射，跨期比较时人会看到什么假象。</pre>
+<pre class="prompt">我要把「___」这一类拆成两类。先别动代码。给我：<b>显式映射表</b>（旧类 → 新类，不许静默合并）、<b>旧数据怎么查</b>（按版本分组，还是要映射）、<b>新旧并行跑多久</b>。最后告诉我：如果不映射，跨期比较时人会看到什么假象。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何标签改版前</dd><dt>为什么这样写</dt><dd>拆开之后悄悄按新体系合并，去年 52 周的数据会在某一点出现台阶，而那个台阶会和真实的市场变化混在一起。</dd></dl>
 </div>
 <div class="card">
 <h3>这句话能不能被推翻</h3>
-<pre>这是我的结论：「___」。先别帮我润色。只回答一个问题：<b>构造一个数据，让这句话变错</b>。构造得出来，告诉我那是哪个已注册的证伪条件；构造不出来，说明这句话里没有数字或者没有对象，回去改它。</pre>
+<pre class="prompt">这是我的结论：「___」。先别帮我润色。只回答一个问题：<b>构造一个数据，让这句话变错</b>。构造得出来，告诉我那是哪个已注册的证伪条件；构造不出来，说明这句话里没有数字或者没有对象，回去改它。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>任何结论写完之后</dd><dt>为什么这样写</dt><dd>一个不能说错的句子，也不能被检查。这是结论层和「一个 dashboard」之间唯一的分界线。</dd></dl>
 </div>
 <div class="card">
 <h3>把点估计换成区间</h3>
-<pre>这条结论现在只有点估计「___」。给我一个 95% 区间，并回答：<b>它跨过 0 吗</b>。跨过的话，这条结论要标成「无结论」而不是「效应弱」——告诉我为什么这两种说法会导致不同的动作。</pre>
+<pre class="prompt">这条结论现在只有点估计「___」。给我一个 95% 区间，并回答：<b>它跨过 0 吗</b>。跨过的话，这条结论要标成「无结论」而不是「效应弱」——告诉我为什么这两种说法会导致不同的动作。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>要发布一个数字之前</dd><dt>为什么这样写</dt><dd>「弱效应」会被引用进一次预算会；「无结论」不会。而它们来自同一个区间。</dd></dl>
 </div>
 <div class="card">
 <h3>决策含义要写成一个动词</h3>
-<pre>这条结论的决策含义我写的是「___」。帮我改成<b>一个动词 + 一个对象 + 一个方向 + 一个时间</b>。改完之后告诉我：星期一的哪件具体事会因此不同？说不出来，这条结论不该写。</pre>
+<pre class="prompt">这条结论的决策含义我写的是「___」。帮我改成<b>一个动词 + 一个对象 + 一个方向 + 一个时间</b>。改完之后告诉我：星期一的哪件具体事会因此不同？说不出来，这条结论不该写。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>写决策含义那一栏时</dd><dt>为什么这样写</dt><dd>这是六项里最常被写空的，也是唯一能反过来判断这条结论该不该存在的一项。</dd></dl>
 </div>
 <div class="card">
 <h3>依据要能走到原始载荷</h3>
-<pre>这条结论的依据是「___」。帮我逐跳列出：<b>结论 → 指标（带版本） → 标注（带 taxonomy_version） → 记录 → 原始载荷</b>。哪一跳断了，就停在那里告诉我缺什么。</pre>
+<pre class="prompt">这条结论的依据是「___」。帮我逐跳列出：<b>结论 → 指标（带版本） → 标注（带 taxonomy_version） → 记录 → 原始载荷</b>。哪一跳断了，就停在那里告诉我缺什么。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>写依据那一栏时</dd><dt>为什么这样写</dt><dd>做不到这点，血缘就只是宣称。「基于大量真实数据」三个问题一个都答不上：多少条、哪个源、哪个版本。</dd></dl>
 </div>
 <div class="card">
 <h3>被推翻的时候新增而不是改写</h3>
-<pre>这条结论被证伪了。别改原件。按三句话给我：<b>旧结论主张什么</b>、<b>什么条件触发了</b>、<b>新结论是什么</b>。然后告诉我这张旧卡该标成什么状态。</pre>
+<pre class="prompt">这条结论被证伪了。别改原件。按三句话给我：<b>旧结论主张什么</b>、<b>什么条件触发了</b>、<b>新结论是什么</b>。然后告诉我这张旧卡该标成什么状态。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>证伪检查报红之后</dd><dt>为什么这样写</dt><dd>删掉旧结论会失去「我们曾经相信过什么、为什么信错了」的记录，而那份记录是唯一能让下次判断更快的东西。</dd></dl>
 </div>
 </div>
@@ -734,5 +744,60 @@
     </footer>
   </div>
 </div>
+<script>
+(function () {
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        if (document.execCommand('copy')) resolve();
+        else reject(new Error('copy failed'));
+      } catch (err) {
+        reject(err);
+      } finally {
+        document.body.removeChild(ta);
+      }
+    });
+  }
+
+  document.querySelectorAll('pre.prompt').forEach(function (pre) {
+    if (pre.closest('.copybox')) return;
+    var box = document.createElement('div');
+    box.className = 'copybox';
+    box.style.margin = getComputedStyle(pre).margin;
+    pre.parentNode.insertBefore(box, pre);
+    box.appendChild(pre);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = '复制';
+    btn.setAttribute('aria-label', '复制这段提示词');
+    btn.addEventListener('click', function () {
+      copyText(pre.textContent).then(function () {
+        btn.textContent = '已复制';
+        btn.classList.add('done');
+        setTimeout(function () {
+          btn.textContent = '复制';
+          btn.classList.remove('done');
+        }, 1500);
+      }).catch(function () {
+        btn.textContent = '复制失败';
+        setTimeout(function () { btn.textContent = '复制'; }, 1500);
+      });
+    });
+    box.appendChild(btn);
+  });
+})();
+</script>
 </body>
 </html>

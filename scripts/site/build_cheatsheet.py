@@ -66,7 +66,7 @@ def cheatsheet_page():
                 f'<p class="cs-prob"><b>痛点：</b>{c["problem"]}</p>'
                 f'<ul class="cs-tips">{tips_li}</ul>'
                 f'<div class="cs-prompt-lbl">复制口令 (Prompt)</div>'
-                f'<pre class="cs-prompt">{c["prompt"]}</pre>'
+                f'<pre class="cs-prompt prompt">{c["prompt"]}</pre>'
                 f'<div class="cs-verdict"><b>验收判定：</b>{c["verdict"]}</div>'
                 f'</div>'
             )
