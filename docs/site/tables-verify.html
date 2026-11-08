@@ -21,42 +21,48 @@
     --serif:"Source Han Serif SC","Noto Serif CJK SC","Songti SC",Georgia,ui-serif,serif;
     --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
     --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-8:48px;
+    /* 一套字号阶梯：标签 / 元信息 / 导航 / 正文 / 导语 / 三级标题 / 二级标题 / 一级标题。
+       正文 17px，标题用衬线体拉开层级，导航比正文小一档半。 */
+    --fs-label:.72rem;--fs-meta:.84rem;--fs-nav:.93rem;--fs-body:1.0625rem;
+    --fs-lead:clamp(1.12rem,1.5vw,1.2rem);--fs-h3:1.15rem;
+    --fs-h2:clamp(1.45rem,2.5vw,1.88rem);--fs-h1:clamp(2.15rem,4.5vw,3.05rem);
   }
   *{box-sizing:border-box}
   ::selection{background:var(--accent2);color:var(--ink)}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  body{margin:0;background:var(--ground);color:var(--ink);font:16.5px/1.75 var(--sans);
-       -webkit-font-smoothing:antialiased;accent-color:var(--accent)}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+       font-size:var(--fs-body);line-height:1.8;font-weight:400;
+       -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;accent-color:var(--accent)}
   a{color:var(--accent);text-underline-offset:.24em;text-decoration-color:var(--deep);transition:color .12s,text-decoration-color .12s}
   a:hover{color:var(--accent-hover);text-decoration-color:var(--accent)}
   /* ── 左栏布局 ──────────────────────────────────────────────────────
      左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
      右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
-  .layout{display:grid;grid-template-columns:256px minmax(0,1fr);min-height:100vh}
+  .layout{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh}
   .side{background:var(--side-bg);color:var(--side-text);position:sticky;top:0;height:100vh;overflow-y:auto;
         padding:1.5rem 0 2.5rem;border-right:1px solid var(--side-border)}
   .side details{display:block}
   .side summary{list-style:none;cursor:default}
   .side summary::-webkit-details-marker{display:none}
   .nav-toggle{display:none;font-size:.82rem;color:var(--side-text);padding:.35rem .95rem}
-  .brand{display:block;padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--side-border);margin-bottom:1.1rem}
-  .brand .home{display:flex;align-items:center;gap:.5rem;min-height:28px;color:#faf4f5;text-decoration:none;
-               font:650 1.24rem/1.2 var(--serif);letter-spacing:-.02em}
-  .brand .home::before{content:'';display:inline-block;width:8px;height:8px;background:#c45a7c;border-radius:1px}
-  .brand-sub{display:block;font-size:.76rem;color:var(--side-muted);letter-spacing:.03em;margin-top:.32rem}
-  .nav{padding:0 .75rem}
-  .nav-g{margin-bottom:1.3rem}
-  .nav-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);
-         padding:.3rem .75rem .42rem}
-  .nav a{display:block;color:var(--side-text);text-decoration:none;font-size:.88rem;padding:.42rem .75rem;
-         border-radius:3px;line-height:1.42;border-left:2px solid transparent}
+  .brand{display:block;padding:0 1.3rem 1.3rem;border-bottom:1px solid var(--side-border);margin-bottom:1.2rem}
+  .brand .home{display:flex;align-items:center;gap:.55rem;min-height:30px;color:#faf4f5;text-decoration:none;
+               font:700 1.32rem/1.15 var(--serif);letter-spacing:-.015em}
+  .brand .home::before{content:'';display:inline-block;width:9px;height:9px;background:#c45a7c;border-radius:1px}
+  .brand-sub{display:block;font-size:var(--fs-meta);color:var(--side-muted);letter-spacing:.04em;margin-top:.38rem}
+  .nav{padding:0 .8rem}
+  .nav-g{margin-bottom:1.55rem}
+  .nav-h{display:block;font-size:var(--fs-label);font-weight:700;letter-spacing:.13em;color:#c9aab4;
+         padding:.32rem .8rem .5rem}
+  .nav a{display:block;color:var(--side-text);text-decoration:none;font-size:var(--fs-nav);padding:.5rem .8rem;
+         border-radius:4px;line-height:1.4;border-left:3px solid transparent}
   .nav a:hover{background:#301820;color:#fff}
-  .nav a.on{background:var(--accent2);color:var(--ink);font-weight:650;border-left-color:var(--accent)}
-  .subnav{border-top:1px solid var(--side-border);margin:.75rem 1.25rem 0;padding-top:1rem}
-  .sub-h{display:block;font-size:.76rem;font-weight:600;letter-spacing:.08em;color:var(--side-muted);margin-bottom:.45rem}
-  .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.83rem;
-            padding:.38rem 0 .38rem .75rem;
-            border-left:1px solid var(--side-border);line-height:1.42}
+  .nav a.on{background:var(--accent2);color:var(--ink);font-weight:700;border-left-color:var(--accent)}
+  .subnav{border-top:1px solid var(--side-border);margin:.9rem 1.25rem 0;padding-top:1.1rem}
+  .sub-h{display:block;font-size:var(--fs-label);font-weight:700;letter-spacing:.13em;color:#c9aab4;margin-bottom:.55rem}
+  .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.87rem;
+            padding:.44rem 0 .44rem .8rem;
+            border-left:1px solid var(--side-border);line-height:1.45}
   .subnav a:hover{color:#fff;border-left-color:#c45a7c}
   .content{display:flex;flex-direction:column;min-width:0}
   .content main{flex:1;padding:clamp(2.8rem,4.8vw,4.5rem) clamp(24px,5vw,76px) 5.2rem;
@@ -66,6 +72,7 @@
 
   /* 窄屏：左栏收到顶部，用 <details> 自带的开合。纯 CSS 几何箭头，禁用任何字符图标。 */
   @media(max-width:760px){
+    body{font-size:1rem;line-height:1.78}
     .layout{grid-template-columns:1fr}
     .side{position:static;height:auto;padding:.7rem 0}
     .side summary{cursor:pointer;padding-right:1.1rem;display:flex;align-items:center;justify-content:space-between}
@@ -74,23 +81,26 @@
                        transform:rotate(45deg);margin-left:.4rem}
     .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
     .nav,.subnav{margin-top:.45rem}
+    .nav a{font-size:.96rem;padding:.55rem .8rem}
+    .subnav a{font-size:.9rem;padding:.48rem 0 .48rem .8rem}
   }
-  .crumb{font-size:.84rem;color:var(--faint);margin-bottom:1rem;font-variant-numeric:tabular-nums}
+  .crumb{font-size:var(--fs-meta);color:var(--faint);margin-bottom:1.1rem;font-variant-numeric:tabular-nums}
   .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
-  h1{font-family:var(--serif);font-weight:650;letter-spacing:-.022em;line-height:1.15;
-     font-size:clamp(2rem,4.4vw,2.9rem);margin:0 0 1.05rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h1{font-family:var(--serif);font-weight:700;letter-spacing:-.03em;line-height:1.1;
+     font-size:var(--fs-h1);margin:0 0 1.15rem;text-wrap:balance;font-variant-numeric:tabular-nums}
   h1 .num{color:var(--accent);margin-right:.55rem;font-variant-numeric:tabular-nums}
-  .lede{font-size:clamp(1.04rem,1.6vw,1.16rem);color:var(--muted);max-width:76ch;margin:0 0 2.3rem;line-height:1.76;text-wrap:pretty}
+  .lede{font-size:var(--fs-lead);color:var(--muted);max-width:64ch;margin:0 0 2.45rem;line-height:1.85;text-wrap:pretty}
   .lede strong,.lede b{color:var(--ink)}
-  h2{font-family:var(--serif);font-size:clamp(1.35rem,2.5vw,1.72rem);font-weight:650;letter-spacing:-.016em;
-     margin:3.6rem 0 .65rem;text-wrap:balance;font-variant-numeric:tabular-nums}
-  h2:first-of-type{margin-top:2.4rem}
-  .h2sub{font-size:.95rem;color:var(--faint);margin:0 0 1.45rem;max-width:76ch;line-height:1.7}
-  h3{font-size:1.06rem;font-weight:650;margin:2rem 0 .6rem;text-wrap:balance}
-  p{margin:0 0 1.15rem;max-width:76ch;text-wrap:pretty}
-  code{font-family:var(--mono);font-size:.86em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
+  h2{font-family:var(--serif);font-size:var(--fs-h2);font-weight:700;letter-spacing:-.02em;line-height:1.3;
+     margin:4rem 0 .7rem;padding-top:1.5rem;border-top:1px solid var(--sunk);
+     text-wrap:balance;font-variant-numeric:tabular-nums}
+  h2:first-of-type{margin-top:2.5rem;padding-top:0;border-top:0}
+  .h2sub{font-size:1rem;color:var(--faint);margin:0 0 1.6rem;max-width:68ch;line-height:1.75}
+  h3{font-size:var(--fs-h3);font-weight:650;line-height:1.45;margin:2.2rem 0 .65rem;text-wrap:balance}
+  p{margin:0 0 1.25rem;max-width:66ch;line-height:inherit;text-wrap:pretty}
+  code{font-family:var(--mono);font-size:.88em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
   pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
-      font-family:var(--mono);font-size:.84rem;line-height:1.68;border:1px solid var(--side-border);border-radius:2px}
+      font-family:var(--mono);font-size:.86rem;line-height:1.7;border:1px solid var(--side-border);border-radius:2px}
   /* 提示词复制：按钮贴在代码块右上角，横向滚动时不动。 */
   .copybox{position:relative}
   .copybox>pre{margin:0;padding-right:4.7rem}
@@ -103,7 +113,7 @@
   .copy-btn.done{background:var(--accent);border-color:var(--accent);opacity:1}
   .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
   .card h3{margin-top:0}
-  .card p{max-width:none;line-height:1.7}
+  .card p{max-width:none;line-height:1.8}
   a.card{transition:border-color .14s,background-color .14s}
   a.card:hover{border-color:var(--accent);background:#fff}
   main>.card{margin:1.15rem 0}
@@ -114,9 +124,9 @@
   table{border-collapse:collapse;width:100%;background:var(--surface);margin:.85rem 0 1.6rem;
         border:1px solid var(--deep);font-variant-numeric:tabular-nums}
   .tablewrap{overflow-x:auto;max-width:100%}
-  thead th{font-size:.82rem;font-weight:650;color:var(--muted);background:var(--accent-soft);
-           text-align:left;padding:.95rem 1.2rem .85rem;border-bottom:1px solid var(--deep);letter-spacing:.02em}
-  tbody td{font-size:.91rem;color:var(--muted);padding:.92rem 1.2rem;border-bottom:1px solid var(--sunk);vertical-align:top;line-height:1.68}
+  thead th{font-size:var(--fs-meta);font-weight:650;color:var(--muted);background:var(--accent-soft);
+           text-align:left;padding:.95rem 1.2rem .85rem;border-bottom:1px solid var(--deep);letter-spacing:.02em;line-height:1.5}
+  tbody td{font-size:.94rem;color:var(--muted);padding:.95rem 1.2rem;border-bottom:1px solid var(--sunk);vertical-align:top;line-height:1.72}
   tbody tr:last-child td{border-bottom:0}
   tbody tr:hover td{background:var(--accent-soft)}
   tbody td:first-child{color:var(--ink);font-weight:600}
@@ -127,7 +137,7 @@
     table.cases-table,table.cases-table tbody,table.cases-table tr,table.cases-table td{display:block;width:auto}
     table.cases-table tr{background:var(--surface);border:1px solid var(--deep);padding:1rem 1.15rem 1.1rem;margin:0 0 .9rem}
     table.cases-table tr:hover td{background:transparent}
-    table.cases-table td{border:0;padding:0;font-size:.92rem}
+    table.cases-table td{border:0;padding:0;font-size:.95rem;line-height:1.75}
     table.cases-table td::before{content:attr(data-label);display:block;font-size:.74rem;font-weight:650;
                                  letter-spacing:.06em;color:var(--faint);margin:.8rem 0 .18rem}
     table.cases-table td:first-child{font-size:1.02rem;padding-bottom:.15rem}
@@ -142,28 +152,28 @@
   .t-plain{background:var(--sunk);color:var(--muted)}
   .t-gap{background:var(--alert2);color:var(--alert)}
   /* 告别廉价的 3px 粗左边框套路，采用 1px 精密玫瑰陶框 + 浅雾粉底色 */
-  .note{background:var(--accent-soft);padding:1.4rem 1.7rem;border:1px solid var(--deep);
-        margin:1.6rem 0 2rem;font-size:.95rem;color:var(--muted);line-height:1.74}
+  .note{background:var(--accent-soft);padding:1.45rem 1.75rem;border:1px solid var(--deep);
+        margin:1.6rem 0 2rem;font-size:1rem;color:var(--muted);line-height:1.8}
   .note.warn{border-color:#d9a6a6;background:var(--alert2);color:#4a1818}
   .note.warn b{color:#2e0d0d}
   .note b{color:var(--ink)}
   .cover{background:var(--surface);border:1px solid var(--deep);padding:1.5rem 1.8rem;margin:1.6rem 0 2.2rem}
-  .cover .row{display:flex;gap:1.25rem;align-items:baseline;flex-wrap:wrap;font-size:.94rem;color:var(--muted);
-              padding:.6rem 0;border-bottom:1px solid var(--sunk);line-height:1.68}
+  .cover .row{display:flex;gap:1.25rem;align-items:baseline;flex-wrap:wrap;font-size:.97rem;color:var(--muted);
+              padding:.65rem 0;border-bottom:1px solid var(--sunk);line-height:1.75}
   .cover .row:last-child{border:0}
-  .cover .k{flex:0 0 8.5rem;color:var(--faint);font-size:.84rem;font-weight:600}
+  .cover .k{flex:0 0 8.5rem;color:var(--faint);font-size:var(--fs-meta);font-weight:600}
   .cover .v{flex:1;min-width:220px}
   .nextprev{display:flex;justify-content:space-between;gap:1.5rem;margin-top:4rem;padding-top:1.6rem;
-            border-top:1px solid var(--deep);font-size:.94rem}
+            border-top:1px solid var(--deep);font-size:.97rem}
   .nextprev a{text-decoration:none;font-weight:600}
-  .nextprev .lbl{display:block;font-size:.78rem;color:var(--faint);font-weight:400;margin-bottom:.2rem}
-  footer{margin-top:3.5rem;padding:1.5rem 1.8rem;background:var(--sunk);font-size:.84rem;color:var(--muted);line-height:1.78}
+  .nextprev .lbl{display:block;font-size:.8rem;color:var(--faint);font-weight:400;margin-bottom:.2rem}
+  footer{margin-top:3.5rem;padding:1.5rem 1.8rem;background:var(--sunk);font-size:var(--fs-meta);color:var(--muted);line-height:1.8}
   footer code{background:transparent;padding:0}
-  ul,ol{padding-left:1.35rem;margin:.6rem 0 1.4rem}
-  li{margin-bottom:.52rem;font-size:.95rem;color:var(--muted);line-height:1.72;max-width:76ch}
+  ul,ol{padding-left:1.4rem;margin:.7rem 0 1.5rem}
+  li{margin-bottom:.55rem;font-size:var(--fs-body);color:var(--muted);line-height:1.8;max-width:66ch}
   li b{color:var(--ink)}
   /* 表格页：一行 = 一条记录，字段全部展开。空字段保持可读对比度 >= 4.5:1 */
-  .tb-index{background:var(--surface);border:1px solid var(--deep);padding:1.15rem 1.45rem;margin:1.4rem 0 1.8rem;font-size:.9rem}
+  .tb-index{background:var(--surface);border:1px solid var(--deep);padding:1.2rem 1.5rem;margin:1.4rem 0 1.8rem;font-size:.94rem}
   .tb-index a{display:flex;gap:.9rem;align-items:baseline;text-decoration:none;color:var(--muted);
     padding:.42rem 0;border-bottom:1px solid var(--sunk)}
   .tb-index a:last-child{border-bottom:0}
@@ -177,9 +187,9 @@
   table.tb-fields{margin:0}
   table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
   table.tb-fields td:first-child{width:12rem;color:var(--muted);font-weight:600;font-size:.84rem}
-  table.tb-fields td:last-child{font-size:.92rem;color:var(--ink)}
+  table.tb-fields td:last-child{font-size:.95rem;color:var(--ink)}
   table.tb-fields tr.tb-empty td:first-child{color:var(--faint)}
-  .tb-no{color:var(--faint);font-style:italic;font-size:.84rem}
+  .tb-no{color:var(--faint);font-style:italic;font-size:var(--fs-meta)}
   @media(max-width:620px){
     table.tb-fields td:first-child{width:7rem;font-size:.78rem}
   }
@@ -246,6 +256,10 @@
 </div>
 <script>
 (function () {
+  // 窄屏默认收起导航：展开的 40 条链接会把正文推到几屏之后。
+  var side = document.querySelector('.side details');
+  if (side && window.matchMedia('(max-width:760px)').matches) side.removeAttribute('open');
+
   function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
       return navigator.clipboard.writeText(text);
