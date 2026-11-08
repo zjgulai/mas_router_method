@@ -33,7 +33,10 @@ async function skillTableRows() {
   try {
     const html = await readText(join(ROOT, 'docs/site/skills.html'));
     const bodies = html.match(/<tbody>[\s\S]*?<\/tbody>/g) ?? [];
-    return bodies.reduce((n, b) => n + (b.match(/<tr/g) ?? []).length, 0);
+    // 只数有 id 的行：skills.html 里每一个 skill 行都是 <tr id="name">，
+    // 而「同名裁决」那张表没有 id。数 <tr> 会把裁决表也算成 skill——
+    // 这正是 anb-check-count 说的那种错：数的是容器，不是容器里的东西。
+    return bodies.reduce((n, b) => n + (b.match(/<tr id="/g) ?? []).length, 0);
   } catch {
     return 0;
   }

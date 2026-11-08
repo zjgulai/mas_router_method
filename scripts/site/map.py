@@ -69,6 +69,9 @@ MAP = {
 'anb-check-output': ('验收', ['ANB'], '看三个真实输出，判断结果对不对。'),
 'anb-check-count': ('验收', ['ANB'], '换一种方法把数字再数一遍。'),
 'llm-evaluation': ('验收', ['必用'], 'LLM 评测集设计、judge 偏差控制、回归门。'),
+# 在仓库里但长期没进这张表。站点按 MAP 渲染，没登记就等于从页面上消失，
+# 而 build_skills 的断言只覆盖 anb*，所以它不会报错。2026-11-08 补。
+'eval-triage': ('验收', ['评测', '排障'], '真实模型 eval 失败时按层归因（eval → 数据 → 工具 → 提示），不跳层改 prompt。'),
 'verification-before-completion': ('验收', ['必用'], '证据先于声明：跑命令、读输出、再下结论。'),
 'test-suite-health': ('验收', ['测试'], '测试越写越多越慢越脆时体检。'),
 'code-review': ('验收', ['审查'], 'Standards 与 Spec 两条轴分开报告。'),
@@ -85,6 +88,8 @@ MAP = {
 'deploy-checklist': ('交付', ['发布'], '发布前清单与回滚触发条件。'),
 'deployment-patterns': ('交付', ['发布'], '滚动/蓝绿/金丝雀、容器化、CI/CD。'),
 'milestone-report': ('交付', ['汇报'], '一页 HTML 里程碑报告，结论先行。'),
+# 同上：在仓库里但没登记，站点上看不到它。
+'ste': ('交付', ['文案', '规范'], 'ASD-STE100 中文写作规范：重点先说、一词一义、一句一事、状态词固定。生效后持续整场会话。'),
 
 # ---------- 运营 ----------
 'anb-observable': ('运营', ['ANB'], '三个数字：跑几次、花多少、为什么失败。'),
@@ -210,3 +215,19 @@ MAP = {
 'unslop': ('运营', ['pstack', '文案'], '去掉任何文字里的 AI 味。'),
 'setup-pstack': ('迭代', ['pstack', '配置'], '为各角色选模型，写出本运行时的覆写表。'),
 }
+
+
+# ---------- 同名裁决（2026-11-08 实测） ----------
+# 21 个名字同时由仓库和客户端插件提供，两份 SKILL.md 没有一对逐字节相同。
+# 不写下来，调用 /name 走哪一份就取决于客户端优先级——那是一个不报错的行为差异。
+# 这里记的是**当前实际生效**的裁决（仓库版胜出），不是对两份质量的评价。
+_PINNED = ('repo', '仓库版是 2026-10-24 vendored 的固定快照，可复现；插件版随客户端升级而变。')
+SHADOWED = {n: _PINNED for n in (
+    'code-review', 'codebase-design', 'diagnosing-bugs', 'domain-modeling',
+    'grill-me', 'grill-with-docs', 'grilling', 'handoff', 'implement',
+    'implement-spec', 'improve-codebase-architecture', 'pr', 'prototype',
+    'research', 'retro', 'setup-matt-pocock-skills', 'to-spec', 'to-tickets',
+    'triage', 'wayfinder',
+)}
+# 这一个不只是版本新旧：插件版前提不同，只在明确要求 TDD 时才用。
+SHADOWED['tdd'] = ('repo', '插件版只在明确要求 TDD 时用，前提不同；仓库版才是红-绿-重构。')

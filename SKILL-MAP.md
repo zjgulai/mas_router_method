@@ -2,7 +2,7 @@
 
 > **来源**：`npx skills`（skills.sh 生态）上游，四个仓库。
 > **位置**：`.claude/skills/`。每个 skill 一个目录，含 `SKILL.md`。（原文件写的是 `mas-router-method/skills/`，该路径从来没有存在过——2026-10-24 修正）
-> **当前数量**：仓库 46 个目录 = 34 个上游 + 12 个本方法新增（`anb*`）。原文件写的「38 个」是安装当时的快照。
+> **当前数量**：本文不写死。上一版这里写着「46 个目录 = 34 个上游 + 12 个新增」，skill 增加之后它没有跟着变——这就是「数字写两遍，必有一遍是错的」的实例。要数字就跑 `node scripts/facts.mjs`（`skill dirs total`），那是从磁盘算的。
 > **定位**：本文是一份**选型笔记**，不是现状清单。要看现在实际有什么、每个从哪来，以 [`docs/skills/skill-catalog.md`](./docs/skills/skill-catalog.md) 的「来源」列为准。
 
 ---
@@ -53,9 +53,9 @@
 | 前端/后端/数仓开发 | `executing-plans` | obra/superpowers | 241K | 按计划执行，带检查点 |
 | 任务实现 | `implement` / `implement-spec` | mattpocock | — | 17 行，但把顺序写死了：先读 ticket → 用 tdd → 常跑 typecheck → 最后调 code-review → commit |
 | 测试器-Agent | `tdd` | mattpocock | **1.1M** | 红-绿-重构 |
-| （备选） | `test-driven-development` | obra/superpowers | 258K | 同一主题的另一个实现，比 mattpocock 的 `tdd` 更啰嗦 |
+| （参考，不默认调用） | `test-driven-development` | obra/superpowers | 258K | 同一主题的另一个实现，比 mattpocock 的 `tdd` 更啰嗦。**已裁决不采用**，见下 |
 
-**两个 tdd 二选一。** `mattpocock/skills@tdd` 装量 1.1M 且更短；`obra/superpowers@test-driven-development` 258K 但更详细。我两个都装了，你读完选一个，删另一个。
+**两个 tdd 已裁决（2026-11-08）：用仓库的 `tdd`，`test-driven-development` 不默认调用。** 不是按篇幅选的，是按前提选的：仓库的 `tdd` 要求任何功能都先写失败测试，这是本仓库 `pnpm test` / eval 两级测试纪律的基础；obra 那版的前提是「明确要求 TDD，或有一个便宜的目标测试」——那是一个不同的问题，不是同一件事的详细版。参考副本留在 `skills/upstream/obra-superpowers/`，读可以，别当默认流程。
 
 ### 部署层
 
@@ -160,7 +160,7 @@
 
 | 建议删 | 理由 |
 |---|---|
-| `test-driven-development`（obra） | 和 `tdd`（mattpocock，1.1M）重复。留装量高的那个 |
+| `test-driven-development`（obra） | 已裁决为参考实现，不默认调用；参考副本在 `skills/upstream/`，不进 `.claude/skills/` |
 | `systematic-debugging`（obra） | 和 `diagnosing-bugs`（mattpocock，825K）重复，后者更短 |
 | `debugging-and-error-recovery`（addyosmani） | 第三份调试 skill，重复 |
 | `grill-me` | 7 行壳，直接调 `grilling` 即可。**但如果你想保留 `/grill-me` 这个命令名，就留着**——它就是个别名 |

@@ -29,6 +29,8 @@ claude plugin details pstack@pstack-claude   # 确认 67 个 skill 装上了
 
 上游是 Lauren Tan（poteto）的 Cursor 版 pstack，`michael-denyer/pstack-claude` 是把它翻译成 Claude Code 的移植。第三方 marketplace **默认不开自动更新**，升级要手动 `claude plugin update pstack@pstack-claude`。
 
+**另一份 TDD 不在这张表里**：obra 的 `test-driven-development` 从未安装，参考副本在 `skills/upstream/obra-superpowers/`。2026-11-08 裁决：用仓库的 `tdd`，那份不默认调用——两者前提不同，不是繁简两版。
+
 **两个同名冲突，必须知道**：插件里也提供 `tdd` 和 `teach`，与仓库自带同名。**仓库版本胜出**——你打 `/tdd` 走的是仓库那套（先失败测试 + 最小实现），插件版的前提不同（只在明确要求 TDD 或有便宜测试目标时才用）。要用插件版得显式写全名。`build_skills.py` 里有一条检查专门拦这个：pstack 名单与仓库目录重叠就构建失败，因为这类覆盖是**静默的行为差异**，不报错，没人会发现自己用的是另一套 TDD。
 
 **仓库自带的 36 个**：`ask-matt`、`code-review`、`codebase-design`、`diagnosing-bugs`、`domain-modeling`、`eval-triage`、`grill-me`、`grill-with-docs`、`grilling`、`handoff`、`implement`、`implement-spec`、`improve-codebase-architecture`、`native-agent-dev`（含 6 个阶段 skill）、`pr`、`prototype`、`research`、`retro`、`setup-matt-pocock-skills`、`ste`、`tdd`、`teach`、`to-questionnaire`、`to-spec`、`to-tickets`、`triage`、`wait-what`、`wayfinder`、`wizard`、`writing-for-agents`。

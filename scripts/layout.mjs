@@ -132,6 +132,10 @@ const declared = new Set([
   // 架构全景图（@rokoai/arch-diagram 规约目录）与周复盘/一页纸报告目录
   'architecture',
   'reports',
+  // 合并后的 skill 库：repo/ 是指向 .claude/skills 的符号链接（不复制），
+  // cowork/ 与 upstream/ 是拷贝，因为原件不在本仓库（客户端插件缓存、上游仓库）。
+  // 所有权责写在 skills/INDEX.md；这里只登记它确实是一个顶层目录。
+  'skills',
 ]);
 // 构建产物（dist/outputs 等）不是信息分类，用同一份 SKIP_DIRS 排除；
 // 否则跑完一次 deploy/pack-context.sh 就会把 layout 检查打红。

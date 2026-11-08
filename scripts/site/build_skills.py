@@ -1,6 +1,6 @@
 import sys, os
 from build_shell import page, STAGES
-from map import MAP
+from map import MAP, SHADOWED
 from paths import out_dir, SKILLS
 
 # 表里的行数，从归属表数出来：不在文档里写死数字，那是会过时的声明。
@@ -24,9 +24,20 @@ repo_dirs = {d for d in os.listdir(SKILLS) if os.path.isdir(os.path.join(SKILLS,
 anb = {d for d in repo_dirs if d.startswith('anb')}
 vendored = repo_dirs - anb
 
-_unlisted = sorted(anb - set(MAP))
+# 覆盖全部仓库目录，不是只覆盖 anb*。2026-11-08 之前这里只查 anb，于是
+# ste 和 eval-triage 在磁盘上存在、在站点上消失，而构建一直绿——检查的边界
+# 比它声称的窄，窄的那一侧没人看。
+_unlisted = sorted(repo_dirs - set(MAP))
 if _unlisted:
     raise SystemExit(f'these repo skills are in .claude/skills/ but not in map.py: {_unlisted}')
+
+# 裁决表必须指向真实存在的仓库 skill，否则它会慢慢变成一份没人核对的清单。
+_shadow_unknown = sorted(set(SHADOWED) - repo_dirs)
+if _shadow_unknown:
+    raise SystemExit(f'SHADOWED names that are not repo skills: {_shadow_unknown}')
+_shadow_unmapped = sorted(set(SHADOWED) - set(MAP))
+if _shadow_unmapped:
+    raise SystemExit(f'SHADOWED names missing from MAP: {_shadow_unmapped}')
 
 # 同名冲突：插件与仓库都提供 tdd / teach。仓库版本胜出，所以它们不进 pstack 那一层。
 # 这条检查存在的理由：一个 skill 名在两处都有定义时，调用 /tdd 到底走哪一份是个
@@ -80,11 +91,22 @@ def skills_page():
             src, label = source_of(name)
             cls = {'repo': 't-must', 'plugin': 't-plain', 'anb': 't-branch', 'pstack': 't-pstack'}[src]
             tagstr = ''.join(f'<span class="tag t-must">{t}</span>' for t in tags if t in ('必用', '硬门', '入口', '路由'))
+            if name in SHADOWED:
+                tagstr += '<span class="tag t-plain">同名</span>'
             rows.append(f'<tr id="{name}"><td><code>{name}</code>{tagstr}</td>'
                         f'<td><span class="tag {cls}">{label}</span></td>'
                         f'<td>{note}</td></tr>')
         b.append('<table><thead><tr><th style="width:26%">Skill</th><th style="width:12%">来源</th><th>坏了会怎样 / 用在哪</th></tr></thead><tbody>'
                  + ''.join(rows) + '</tbody></table>')
+
+    # 同名冲突：不写下来，调用走哪一份就取决于客户端优先级。
+    b.append('<h2>同名：一个名字，两份文本</h2>')
+    b.append(f'<p class="h2sub">{len(SHADOWED)} 个名字同时由仓库和客户端插件提供，<b>没有一对逐字节相同</b>。'
+             '下表记录当前实际生效的裁决——不是对两份质量的评价。</p>')
+    srows = ''.join(f'<tr><td><code>{n}</code></td><td><span class="tag t-must">{SHADOWED[n][0]}</span></td>'
+                    f'<td>{SHADOWED[n][1]}</td></tr>' for n in sorted(SHADOWED))
+    b.append('<table><thead><tr><th style="width:24%">Skill</th><th style="width:8%">胜出</th><th>为什么</th></tr></thead><tbody>'
+             + srows + '</tbody></table>')
 
     # 未安装的
     b.append('<h2>装了但没接进流程的</h2>')
