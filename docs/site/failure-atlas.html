@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>架构故障图鉴 · Agent Native Builder</title>
+<meta name="description" content="架构故障图鉴 · Agent Native Builder：一套给不写代码的产品开发者用的 agent 产品方法。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23211015'/%3E%3Ctext x='32' y='44' font-size='32' font-weight='700' text-anchor='middle' fill='%23f4dce3' font-family='Georgia,serif'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    color-scheme:light;
+    /* 暖粉色品牌基底：暖雾粉、陶土深莓与温润黑檀 */
+    --ground:#f7f1f2;--surface:#fcf8f9;--surface-elev:#ffffff;
+    --sunk:#efe3e6;--deep:#d8c1c7;
+    --ink:#211216;--muted:#4d3139;--faint:#6b4953;
+    --accent:#8c2a4b;--accent-hover:#6b1d37;--accent2:#f4dce3;--accent-soft:#f9eef1;
+    --alert:#8a1f24;--alert2:#f8dada;
+    --warn:#6b460a;--warn2:#f5e6cc;
+    --side-bg:#211015;--side-border:#3b2029;--side-text:#efe2e6;--side-muted:#b5949e;
+    --sans:"PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",-apple-system,BlinkMacSystemFont,"Microsoft YaHei",system-ui,sans-serif;
+    --serif:"Source Han Serif SC","Noto Serif CJK SC","Songti SC",Georgia,ui-serif,serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-8:48px;
+    /* 一套字号阶梯：标签 / 元信息 / 导航 / 正文 / 导语 / 三级标题 / 二级标题 / 一级标题。
+       正文 17px，标题用衬线体拉开层级，导航比正文小一档半。 */
+    --fs-label:.72rem;--fs-meta:.84rem;--fs-nav:.93rem;--fs-body:1.0625rem;
+    --fs-lead:clamp(1.12rem,1.5vw,1.2rem);--fs-h3:1.15rem;
+    --fs-h2:clamp(1.45rem,2.5vw,1.88rem);--fs-h1:clamp(2.15rem,4.5vw,3.05rem);
+  }
+  *{box-sizing:border-box}
+  ::selection{background:var(--accent2);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+       font-size:var(--fs-body);line-height:1.8;font-weight:400;
+       -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;accent-color:var(--accent)}
+  a{color:var(--accent);text-underline-offset:.24em;text-decoration-color:var(--deep);transition:color .12s,text-decoration-color .12s}
+  a:hover{color:var(--accent-hover);text-decoration-color:var(--accent)}
+  /* ── 左栏布局 ──────────────────────────────────────────────────────
+     左栏是「你在哪」和「还能去哪」，右栏是「这一页」。两件事分开之后，
+     右栏可以专心排版内容，不必在顶部为导航留一条横带。 */
+  .layout{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh}
+  .side{background:var(--side-bg);color:var(--side-text);position:sticky;top:0;height:100vh;overflow-y:auto;
+        padding:1.5rem 0 2.5rem;border-right:1px solid var(--side-border)}
+  .side details{display:block}
+  .side summary{list-style:none;cursor:default}
+  .side summary::-webkit-details-marker{display:none}
+  .nav-toggle{display:none;font-size:.82rem;color:var(--side-text);padding:.35rem .95rem}
+  .brand{display:block;padding:0 1.3rem 1.3rem;border-bottom:1px solid var(--side-border);margin-bottom:1.2rem}
+  .brand .home{display:flex;align-items:center;gap:.55rem;min-height:30px;color:#faf4f5;text-decoration:none;
+               font:700 1.32rem/1.15 var(--serif);letter-spacing:-.015em}
+  .brand .home::before{content:'';display:inline-block;width:9px;height:9px;background:#c45a7c;border-radius:1px}
+  .brand-sub{display:block;font-size:var(--fs-meta);color:var(--side-muted);letter-spacing:.04em;margin-top:.38rem}
+  .nav{padding:0 .8rem}
+  .nav-g{margin-bottom:1.55rem}
+  .nav-h{display:block;font-size:var(--fs-label);font-weight:700;letter-spacing:.13em;color:#c9aab4;
+         padding:.32rem .8rem .5rem}
+  .nav a{display:block;color:var(--side-text);text-decoration:none;font-size:var(--fs-nav);padding:.5rem .8rem;
+         border-radius:4px;line-height:1.4;border-left:3px solid transparent}
+  .nav a:hover{background:#301820;color:#fff}
+  .nav a.on{background:var(--accent2);color:var(--ink);font-weight:700;border-left-color:var(--accent)}
+  .subnav{border-top:1px solid var(--side-border);margin:.9rem 1.25rem 0;padding-top:1.1rem}
+  .sub-h{display:block;font-size:var(--fs-label);font-weight:700;letter-spacing:.13em;color:#c9aab4;margin-bottom:.55rem}
+  .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.87rem;
+            padding:.44rem 0 .44rem .8rem;
+            border-left:1px solid var(--side-border);line-height:1.45}
+  .subnav a:hover{color:#fff;border-left-color:#c45a7c}
+  .content{display:flex;flex-direction:column;min-width:0}
+  .content main{flex:1;padding:clamp(2.8rem,4.8vw,4.5rem) clamp(24px,5vw,76px) 5.2rem;
+                max-width:min(86rem,100%);width:100%}
+  .content footer{margin:0 clamp(24px,5vw,76px) 0;padding:1.6rem 1.8rem;background:var(--sunk);
+                  border-top:1px solid var(--deep);font-size:.84rem;color:var(--muted);line-height:1.78;max-width:min(86rem,100%)}
+
+  /* 窄屏：左栏收到顶部，用 <details> 自带的开合。纯 CSS 几何箭头，禁用任何字符图标。 */
+  @media(max-width:760px){
+    body{font-size:1rem;line-height:1.78}
+    .layout{grid-template-columns:1fr}
+    .side{position:static;height:auto;padding:.7rem 0}
+    .side summary{cursor:pointer;padding-right:1.1rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-toggle::after{content:'';display:inline-block;width:6px;height:6px;
+                       border-right:1.5px solid var(--side-muted);border-bottom:1.5px solid var(--side-muted);
+                       transform:rotate(45deg);margin-left:.4rem}
+    .brand{padding-bottom:.7rem;margin-bottom:0;border-bottom:0}
+    .nav,.subnav{margin-top:.45rem}
+    .nav a{font-size:.96rem;padding:.55rem .8rem}
+    .subnav a{font-size:.9rem;padding:.48rem 0 .48rem .8rem}
+  }
+  .crumb{font-size:var(--fs-meta);color:var(--faint);margin-bottom:1.1rem;font-variant-numeric:tabular-nums}
+  .crumb a{text-decoration:none;border-bottom:1px solid var(--deep)}
+  h1{font-family:var(--serif);font-weight:700;letter-spacing:-.03em;line-height:1.1;
+     font-size:var(--fs-h1);margin:0 0 1.15rem;text-wrap:balance;font-variant-numeric:tabular-nums}
+  h1 .num{color:var(--accent);margin-right:.55rem;font-variant-numeric:tabular-nums}
+  .lede{font-size:var(--fs-lead);color:var(--muted);max-width:64ch;margin:0 0 2.45rem;line-height:1.85;text-wrap:pretty}
+  .lede strong,.lede b{color:var(--ink)}
+  h2{font-family:var(--serif);font-size:var(--fs-h2);font-weight:700;letter-spacing:-.02em;line-height:1.3;
+     margin:4rem 0 .7rem;padding-top:1.5rem;border-top:1px solid var(--sunk);
+     text-wrap:balance;font-variant-numeric:tabular-nums}
+  h2:first-of-type{margin-top:2.5rem;padding-top:0;border-top:0}
+  .h2sub{font-size:1rem;color:var(--faint);margin:0 0 1.6rem;max-width:68ch;line-height:1.75}
+  h3{font-size:var(--fs-h3);font-weight:650;line-height:1.45;margin:2.2rem 0 .65rem;text-wrap:balance}
+  p{margin:0 0 1.25rem;max-width:66ch;line-height:inherit;text-wrap:pretty}
+  code{font-family:var(--mono);font-size:.88em;background:var(--sunk);color:var(--ink);padding:.12em .4em;border-radius:2px}
+  pre{margin:1.1rem 0 1.5rem;background:#211015;color:#f3e6e9;padding:1.25rem 1.5rem;overflow-x:auto;
+      font-family:var(--mono);font-size:.86rem;line-height:1.7;border:1px solid var(--side-border);border-radius:2px}
+  /* 提示词复制：按钮贴在代码块右上角，横向滚动时不动。 */
+  .copybox{position:relative}
+  .copybox>pre{margin:0;padding-right:4.7rem}
+  .copy-btn{position:absolute;top:.55rem;right:.6rem;z-index:1;
+    font:600 .74rem/1 var(--sans);color:#f3e6e9;background:#3b2029;
+    border:1px solid #5a3440;border-radius:2px;padding:.36rem .6rem;
+    cursor:pointer;opacity:.88;transition:opacity .12s,background-color .12s}
+  .copy-btn:hover{opacity:1;background:#5a3440}
+  .copy-btn:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+  .copy-btn.done{background:var(--accent);border-color:var(--accent);opacity:1}
+  .card{background:var(--surface);padding:1.65rem 1.85rem 1.7rem;border:1px solid var(--deep)}
+  .card h3{margin-top:0}
+  .card p{max-width:none;line-height:1.8}
+  a.card{transition:border-color .14s,background-color .14s}
+  a.card:hover{border-color:var(--accent);background:#fff}
+  main>.card{margin:1.15rem 0}
+  .grid{display:grid;gap:1.15rem;margin:1.25rem 0 1.8rem}
+  .grid .card{margin:0}
+  .grid.two{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  table{border-collapse:collapse;width:100%;background:var(--surface);margin:.85rem 0 1.6rem;
+        border:1px solid var(--deep);font-variant-numeric:tabular-nums}
+  .tablewrap{overflow-x:auto;max-width:100%}
+  thead th{font-size:var(--fs-meta);font-weight:650;color:var(--muted);background:var(--accent-soft);
+           text-align:left;padding:.95rem 1.2rem .85rem;border-bottom:1px solid var(--deep);letter-spacing:.02em;line-height:1.5}
+  tbody td{font-size:.94rem;color:var(--muted);padding:.95rem 1.2rem;border-bottom:1px solid var(--sunk);vertical-align:top;line-height:1.72}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:var(--accent-soft)}
+  tbody td:first-child{color:var(--ink);font-weight:600}
+  /* 窄屏：三列案例表改成一叠卡片，每格自带字段名，免得字被挤成竖条。 */
+  @media(max-width:760px){
+    table.cases-table{background:none;border:0}
+    table.cases-table thead{display:none}
+    table.cases-table,table.cases-table tbody,table.cases-table tr,table.cases-table td{display:block;width:auto}
+    table.cases-table tr{background:var(--surface);border:1px solid var(--deep);padding:1rem 1.15rem 1.1rem;margin:0 0 .9rem}
+    table.cases-table tr:hover td{background:transparent}
+    table.cases-table td{border:0;padding:0;font-size:.95rem;line-height:1.75}
+    table.cases-table td::before{content:attr(data-label);display:block;font-size:.74rem;font-weight:650;
+                                 letter-spacing:.06em;color:var(--faint);margin:.8rem 0 .18rem}
+    table.cases-table td:first-child{font-size:1.02rem;padding-bottom:.15rem}
+    table.cases-table td:first-child::before{display:none}
+  }
+  .tag{display:inline-block;font-size:.76rem;font-weight:650;padding:.14rem .52rem;margin-right:.35rem;
+       white-space:nowrap;border-radius:2px;font-variant-numeric:tabular-nums}
+  .t-must{background:var(--accent2);color:var(--accent)}
+  .t-branch{background:var(--warn2);color:var(--warn)}
+  .t-pstack{background:#e8e0f2;color:#4a2c6b}
+  .t-alert{background:var(--alert2);color:var(--alert)}
+  .t-plain{background:var(--sunk);color:var(--muted)}
+  .t-gap{background:var(--alert2);color:var(--alert)}
+  /* 告别廉价的 3px 粗左边框套路，采用 1px 精密玫瑰陶框 + 浅雾粉底色 */
+  .note{background:var(--accent-soft);padding:1.45rem 1.75rem;border:1px solid var(--deep);
+        margin:1.6rem 0 2rem;font-size:1rem;color:var(--muted);line-height:1.8}
+  .note.warn{border-color:#d9a6a6;background:var(--alert2);color:#4a1818}
+  .note.warn b{color:#2e0d0d}
+  .note b{color:var(--ink)}
+  .cover{background:var(--surface);border:1px solid var(--deep);padding:1.5rem 1.8rem;margin:1.6rem 0 2.2rem}
+  .cover .row{display:flex;gap:1.25rem;align-items:baseline;flex-wrap:wrap;font-size:.97rem;color:var(--muted);
+              padding:.65rem 0;border-bottom:1px solid var(--sunk);line-height:1.75}
+  .cover .row:last-child{border:0}
+  .cover .k{flex:0 0 8.5rem;color:var(--faint);font-size:var(--fs-meta);font-weight:600}
+  .cover .v{flex:1;min-width:220px}
+  .nextprev{display:flex;justify-content:space-between;gap:1.5rem;margin-top:4rem;padding-top:1.6rem;
+            border-top:1px solid var(--deep);font-size:.97rem}
+  .nextprev a{text-decoration:none;font-weight:600}
+  .nextprev .lbl{display:block;font-size:.8rem;color:var(--faint);font-weight:400;margin-bottom:.2rem}
+  footer{margin-top:3.5rem;padding:1.5rem 1.8rem;background:var(--sunk);font-size:var(--fs-meta);color:var(--muted);line-height:1.8}
+  footer code{background:transparent;padding:0}
+  ul,ol{padding-left:1.4rem;margin:.7rem 0 1.5rem}
+  li{margin-bottom:.55rem;font-size:var(--fs-body);color:var(--muted);line-height:1.8;max-width:66ch}
+  li b{color:var(--ink)}
+  /* 表格页：一行 = 一条记录，字段全部展开。空字段保持可读对比度 >= 4.5:1 */
+  .tb-index{background:var(--surface);border:1px solid var(--deep);padding:1.2rem 1.5rem;margin:1.4rem 0 1.8rem;font-size:.94rem}
+  .tb-index a{display:flex;gap:.9rem;align-items:baseline;text-decoration:none;color:var(--muted);
+    padding:.42rem 0;border-bottom:1px solid var(--sunk)}
+  .tb-index a:last-child{border-bottom:0}
+  .tb-index a:hover{color:var(--accent)}
+  .tb-index a:hover code{background:var(--accent);color:#fff}
+  .tb-index code{background:var(--accent2);padding:.1rem .48rem;color:var(--accent);font-weight:650;
+    flex:0 0 5.5rem;text-align:center}
+  .tb-row{margin:2.4rem 0 2.8rem}
+  .tb-row h3{margin:0 0 .7rem;font-family:var(--mono);font-size:.95rem}
+  .tb-row h3 code{background:var(--accent);color:#fff;padding:.18rem .65rem;font-size:.88rem}
+  table.tb-fields{margin:0}
+  table.tb-fields td{border-bottom:1px solid var(--sunk);vertical-align:top}
+  table.tb-fields td:first-child{width:12rem;color:var(--muted);font-weight:600;font-size:.84rem}
+  table.tb-fields td:last-child{font-size:.95rem;color:var(--ink)}
+  table.tb-fields tr.tb-empty td:first-child{color:var(--faint)}
+  .tb-no{color:var(--faint);font-style:italic;font-size:var(--fs-meta)}
+  @media(max-width:620px){
+    table.tb-fields td:first-child{width:7rem;font-size:.78rem}
+  }
+  @media print{
+    body{background:#fff}.top{display:none}
+    .card,.grid{break-inside:avoid}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand">
+      <a class="home" href="./">ANB</a>
+      <span class="brand-sub">Agent Native Builder</span>
+    </div>
+    <details open>
+      <summary class="nav-toggle">站点导航</summary>
+      <nav class="nav">
+        <div class="nav-g"><span class="nav-h">流程</span>
+      <a href="./">总览</a>
+      <a href="need.html">需求</a>
+      <a href="design.html">设计</a>
+      <a href="build.html">开发</a>
+      <a href="verify.html">验收</a>
+      <a href="ship.html">交付</a>
+      <a href="operate.html">运营</a>
+      <a href="iterate.html">迭代</a>
+      <a href="manage.html">管理</a>
+      </div>
+      <div class="nav-g"><span class="nav-h">查阅</span>
+      <a href="architecture.html">架构全景</a>
+      <a href="cheatsheet.html">作战手卡</a>
+      <a href="failure-atlas.html" class="on">故障图鉴</a>
+      <a href="agent-graph.html">Agent 图谱</a>
+      <a href="toolchain.html">工具链</a>
+      <a href="practices.html">实战用法</a>
+      <a href="data-design.html">数据产品设计</a>
+      <a href="data-layers.html">8+3 层契约</a>
+      <a href="branches.html">分支总表</a>
+      <a href="skills.html">Skill 全表</a>
+      <a href="prompts.html">提示词</a>
+      <a href="matrix.html">数据矩阵</a>
+      <a href="tables.html">十三个表</a>
+      <a href="docs.html">原始文档</a>
+      </div>
+      </nav>
+      <div class="subnav"><span class="sub-h">本页</span>
+      <a href="#early-step">01 早错一步，步步皆错</a>
+      <a href="#handoff">02 交接丢掉了接收方要的东西</a>
+      <a href="#crowded-view">03 视野塞太满，工具挤掉了任务</a>
+      <a href="#shared-blindspots">04 多个 agent，同一批错</a>
+      <a href="#oversized-input">05 输入比任何窗口都大</a>
+      <a href="#agreeable-review">06 评审附和作者，读者轻信文档</a>
+      <a href="#clock-and-bill">07 时钟与账单</a>
+      <a href="#no-learning">08 跨会话什么都没学到</a>
+      </div>
+    </details>
+  </aside>
+  <div class="content">
+    <main>
+      <div class="crumb"><a href="./">总览</a> / 架构故障图鉴</div>
+      <style>
+  .fa-legend{display:flex;gap:.65rem;flex-wrap:wrap;margin:1.5rem 0 2.4rem}
+  .fa-leg{font-size:.84rem;padding:.5rem .9rem;background:var(--surface);border:1px solid var(--deep);border-radius:2px;color:var(--muted)}
+  .fa-leg b{color:var(--ink);font-family:var(--mono);margin-right:.35rem}
+  .fa-chips{display:flex;gap:.6rem;flex-wrap:wrap;margin:1.4rem 0 2.6rem}
+  .fa-chip{font-size:.86rem;padding:.5rem .95rem;background:var(--surface);color:var(--muted);border:1px solid var(--deep);text-decoration:none;border-radius:2px}
+  .fa-chip:hover{border-color:var(--accent);color:var(--ink);background:var(--accent2)}
+  .fa-chip b{color:var(--accent);font-family:var(--mono);margin-right:.4rem}
+  .fa-item{margin:3.4rem 0 0;padding-top:2.2rem;border-top:1px solid var(--deep)}
+  .fa-item:first-of-type{border-top:0;padding-top:.4rem;margin-top:1.4rem}
+  .fa-head h2{margin:0 0 .3rem;border:0;padding:0}
+  .fa-head h2 .num{color:var(--accent);margin-right:.6rem;font-variant-numeric:tabular-nums}
+  .fa-sub{font-size:1rem;color:var(--faint);margin:0 0 1.2rem;max-width:64ch;line-height:1.7}
+  .fa-headline{background:var(--alert2);color:#4a1818;padding:1rem 1.3rem;border:1px solid #d9a6a6;border-radius:2px;margin:0 0 1.6rem;font-size:.95rem;line-height:1.66;display:flex;gap:.8rem;align-items:baseline}
+  .fa-fixes{list-style:none;margin:0;padding:0}
+  .fa-fix{display:flex;gap:.9rem;align-items:baseline;padding:.85rem 0;border-bottom:1px solid var(--sunk);font-size:.95rem;color:var(--muted);line-height:1.7}
+  .fa-fix:last-child{border-bottom:0}
+  .fa-fix .txt{flex:1}
+  .fa-fix .txt b{color:var(--ink)}
+  .fa-src{font-size:.82rem;color:var(--faint);margin-left:.4rem}
+  .tier{flex:0 0 auto;font-family:var(--mono);font-size:.74rem;font-weight:700;width:1.5rem;height:1.5rem;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;border:1px solid var(--deep)}
+  .tier-P{background:var(--accent2);color:var(--accent);border-color:var(--accent)}
+  .tier-V{background:var(--warn2);color:var(--warn)}
+  .tier-D{background:var(--sunk);color:var(--muted)}
+  .tier-A{background:var(--surface);color:var(--faint)}
+  .fa-see{margin:1.3rem 0 0;font-size:.9rem;color:var(--muted)}
+  .fa-see a{margin-right:.9rem}
+</style>
+<h1>架构故障图鉴 · 八个故障</h1>
+<p class="lede">多智能体系统不是从技巧开始坏的，是从<b>结构性故障</b>开始坏的。这一页把八个反复出现的故障、每个的结构修法、以及每条修法的<b>证据强度</b>列在一起——先认故障，再选修法，最后看证据站不站得住。<br>萃取自一张在 X 上流传的 Agentic 架构故障图（@sermakarevich 汇编转述）；措辞归属原图，不写成本站结论。</p>
+<div class="note"><b>为什么按故障排，不按技巧排。</b> 本仓库名为 <code>mas_router_method</code>——多智能体系统的<b>路由</b>方法。图里的故障 04（用实测统计路由，不靠模型自判）与 07（先路由便宜的）正是这个命名的立论来源。诊断顺序也一致：<b>先定位故障层，再动修法</b>（eval → data → tool → prompt），而不是一上来就改提示词。</div>
+<p class="cs-meta" style="margin:.2rem 0 .6rem;color:var(--faint);font-size:.9rem">证据分级（沿用原图标注）</p>
+<div class="fa-legend"><span class="fa-leg"><span class="tier tier-P" title="受控研究">P</span><b>P</b>受控研究</span><span class="fa-leg"><span class="tier tier-V" title="厂商声明">V</span><b>V</b>厂商声明</span><span class="fa-leg"><span class="tier tier-D" title="文档或源码">D</span><b>D</b>文档或源码</span><span class="fa-leg"><span class="tier tier-A" title="轶事">A</span><b>A</b>轶事</span></div>
+<div class="fa-chips"><a class="fa-chip" href="#early-step"><b>01</b>早错一步，步步皆错</a><a class="fa-chip" href="#handoff"><b>02</b>交接丢掉了接收方要的东西</a><a class="fa-chip" href="#crowded-view"><b>03</b>视野塞太满，工具挤掉了任务</a><a class="fa-chip" href="#shared-blindspots"><b>04</b>多个 agent，同一批错</a><a class="fa-chip" href="#oversized-input"><b>05</b>输入比任何窗口都大</a><a class="fa-chip" href="#agreeable-review"><b>06</b>评审附和作者，读者轻信文档</a><a class="fa-chip" href="#clock-and-bill"><b>07</b>时钟与账单</a><a class="fa-chip" href="#no-learning"><b>08</b>跨会话什么都没学到</a></div>
+<div class="fa-item" id="early-step"><div class="fa-head"><h2><span class="num">01</span>早错一步，步步皆错</h2></div><p class="fa-sub">模型标不出自己写的那段是错的，于是沿着错前提一路往下</p><div class="fa-headline"><span class="tier tier-P" title="受控研究">P</span><span>多轮准确率 −39%，不可靠性 +112%；回放摘要救回 15–20%，多数情况得开新对话。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-D" title="文档或源码">D</span><span class="txt">每次尝试都给全新上下文：前置节点写简报，无状态 worker 执行<span class="fa-src">— agents-as-tools / AgentTool / .as_tool()</span></span></li><li class="fa-fix"><span class="tier tier-A" title="轶事">A</span><span class="txt">长任务用重启循环：保留文件与测试结果，每轮丢掉对话记录<span class="fa-src">— 无基准</span></span></li><li class="fa-fix"><span class="tier tier-D" title="文档或源码">D</span><span class="txt">Checkpoint 后能 rewind：恢复对话加代码，不只是文件；连续两次纠正失败就清空<span class="fa-src">— Claude Code vs Cursor</span></span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">错误锁在单次尝试里，绝不跨尝试传播；先想后动，减少自我固化<span class="fa-src">— Manus；先想后动 [P]</span></span></li><li class="fa-fix"><span class="tier tier-D" title="文档或源码">D</span><span class="txt">按步做持久重试<span class="fa-src">— Temporal / DBOS；陷阱：把错误当字符串返回会被当成功重放</span></span></li></ul><p class="fa-see"><b>接着查：</b><a href="practices.html">实战用法·流程层</a><a href="iterate.html">迭代阶段</a></p></div>
+<div class="fa-item" id="handoff"><div class="fa-head"><h2><span class="num">02</span>交接丢掉了接收方要的东西</h2></div><p class="fa-sub">发出方说清了，接收方拿到的不是它需要的那部分</p><div class="fa-headline"><span class="tier tier-P" title="受控研究">P</span><span>一次交接后 recall 0.32，单体不交接是 1.00。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-D" title="文档或源码">D</span><span class="txt">用类型化状态而非散文：字段定死，没有字段的事实就会丢<span class="fa-src">— LangGraph / POLARIS</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">文件化任务包，worker 能反复重读：73.0→75.6、44.4→58.3<span class="fa-src">— arXiv 2603.25723</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">合并者看完整规格，不看切片：切片团队 58.2% → 88.9%<span class="fa-src">— arXiv 2603.24284</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">结构化中继而非散文：5 跳后 22.5% → 75.2%；100 token 验证摘要 $0.125 vs $0.399<span class="fa-src">— DELM</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">按输入重建而非按时效：0/30 过时计划通过 vs 30/30，多约 15% token<span class="fa-src">— Planfence</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">每个边界都设门：穿越 4 级流水线的错误 58.4% → 16.2%<span class="fa-src">— arXiv 2608.14588</span></span></li></ul><p class="fa-see"><b>接着查：</b><a href="data-layers.html">8+3 层契约</a><a href="practices.html">实战用法·编排层</a></p></div>
+<div class="fa-item" id="crowded-view"><div class="fa-head"><h2><span class="num">03</span>视野塞太满，工具挤掉了任务</h2></div><p class="fa-sub">工具和 skill 占满上下文，模型顾不上要做的事</p><div class="fa-headline"><span class="tier tier-P" title="受控研究">P</span><span>Haiku 4.5：10 工具 91%、15 工具 87%；Sonnet 4 到 30 工具跌破 90%。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">渐进式披露：一行索引，正文按需取：77k → 8.7k token，Opus 4 从 49% 到 74%<span class="fa-src">— 惰性加载 47.3k → 2.4k [P]</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">扁平索引、不嵌套：嵌套后成功率 0.7479 → 0.3890；精简描述 +19.0 vs 详尽 +0.7</span></li><li class="fa-fix"><span class="tier tier-D" title="文档或源码">D</span><span class="txt">每节点一份目录：分流路由把这一轮交给只带本主题工具的节点；路由错不可恢复</span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">遮蔽而非删除：从选项里藏起工具，但留在缓存前缀里<span class="fa-src">— Manus</span></span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">不到约 10 个工具不值得上多 agent；只有窗口不够才派子 agent<span class="fa-src">— 一个 harness 输给了朴素循环 [P] LOCA-bench</span></span></li></ul><p class="fa-see"><b>接着查：</b><a href="skills.html">Skill 全表</a><a href="cheatsheet.html">作战手卡·02 Skills</a></p></div>
+<div class="fa-item" id="shared-blindspots"><div class="fa-head"><h2><span class="num">04</span>多个 agent，同一批错</h2></div><p class="fa-sub">一个模型的副本共享同一套盲区，投票投不出多样性</p><div class="fa-headline"><span class="tier tier-P" title="受控研究">P</span><span>独立时错误 ×17.2、集中评审 ×4.4；平均 −3.5%。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">先独立后交互：先各自提案，再讨论；一交互多样性就从 1.03 掉到 0.47</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">审查席换一个模型家族：同族共失把投票/路由封顶在 5.2–7.9%；审计员配同伴 1.00 → 0.23</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">带全规格的中央评审，而非自由讨论：放大 17.2× → 4.4×<span class="fa-src">— arXiv 2512.08296</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">固定顺序、固定角色：比协调者 +14%；一文件一写者，worktree 63.3% vs 55.5%</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">用实测 per-task 统计做路由，不靠模型自判：41.41 → 47.74%；Opus 4.6 零样本路由最差 39.27%</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">先做等预算对照：同样思考 token 下单 agent 0.418 vs 团队 0.379–0.388<span class="fa-src">— arXiv 2604.02460</span></span></li></ul><p class="fa-see"><b>接着查：</b><a href="practices.html">实战用法·编排层</a><a href="agent-graph.html">Agent 图谱·路由</a></p></div>
+<div class="fa-item" id="oversized-input"><div class="fa-head"><h2><span class="num">05</span>输入比任何窗口都大</h2></div><p class="fa-sub">要处理的材料超过上下文，硬塞只会稀释</p><div class="fa-headline"><span class="tier tier-V" title="厂商声明">V</span><span>orchestrator-workers 比单 Opus 4 高 +90.2%，代价是 15× token；超过约 45% 基线不再涨。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">orchestrator-workers，effort 规则写进简报：token 解释了 80% 的方差<span class="fa-src">— Anthropic</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">用代码执行替代原始工具输出：43.6k → 27.3k token，+3–5 分；递归读在 132k 处超 GPT-5 >34 分</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">编码 agent 当读取器、带文件工具：100k → 200k 文档调用翻倍、−13.6 分；harness 让 Opus 4.6 从 93.1% 掉到 76.7%</span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">廉价无状态读取器：读取省约 90% 主模型 token，每次 10–30 秒，漏过一个线程安全 bug<span class="fa-src">— Spotify</span></span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">文件系统当上下文：worker 写、主管读摘要；Agora 13 worker 刷新 233 项最好成绩、无基线<span class="fa-src">— Manus；Agora [P]</span></span></li></ul><p class="fa-see"><b>接着查：</b><a href="data-layers.html">8+3 层契约</a><a href="cheatsheet.html">作战手卡·02 Context Budget</a></p></div>
+<div class="fa-item" id="agreeable-review"><div class="fa-head"><h2><span class="num">06</span>评审附和作者，读者轻信文档</h2></div><p class="fa-sub">没有外部信号，就没有自我纠正</p><div class="fa-headline"><span class="tier tier-P" title="受控研究">P</span><span>无外部信号时不会自纠。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">盲验证者：只给产物加任务、不给作者轨迹：Cloudflare 48,095 个 MR，3 分 39 秒，$0.98，1.2 条发现</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">换家族评审：56.7% vs 42.7%；同模型换新上下文约值 1 分；更弱的评审会把 91.4 拖到 82.8</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">作者看不到的隐藏评分：约 56% → 76%；同族评审带 +0.75 偏置<span class="fa-src">— AIRA2</span></span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">评审由 harness 指派，绝不自己派：Sonnet 5 模型卡里，模型派了子 agent 批准自己</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">守卫节点放在对话之外：攻击 17.6% → 1.75%，效用 47.7 → 42.7；CaMeL 163/163、2.82× token</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">从合并轨迹做归因：agent 级 53.5%、step 级 14.2%；过半根因落在模型节点<span class="fa-src">— AgentFail</span></span></li></ul><p class="fa-see"><b>接着查：</b><a href="verify.html">验收阶段</a><a href="practices.html">实战用法·证据层</a></p></div>
+<div class="fa-item" id="clock-and-bill"><div class="fa-head"><h2><span class="num">07</span>时钟与账单</h2></div><p class="fa-sub">语音要快、节点要慢、成本要省，三者互相拉扯</p><div class="fa-headline"><span class="tier tier-P" title="受控研究">P</span><span>语音控制约 320ms；口述工具调用 74.6 vs 文本 80.8；纯语音论证准确率 42.2。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">快节点说话、慢节点动手：工具召回 92–97%；tau-Voice 语音 31–51 vs 文本 85<span class="fa-src">— NVIDIA</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">规划一次、并行执行：ReWOO 5× token 效率、LLMCompiler 3.7× 延迟；仅当执行器更便宜才划算</span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">先路由便宜的：RouteLLM 95% 分数下省 3.66× 成本；单 agent 85% $2.78 胜过先规划后执行 84.6% $3.18<span class="fa-src">— Prewalk</span></span></li><li class="fa-fix"><span class="tier tier-V" title="厂商声明">V</span><span class="txt">缓存感知前缀：输入:输出约 100:1，命中率才是指标；团队共享前缀 7×<span class="fa-src">— Manus；共享前缀 [P]</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">睡眠期计算约比测试期少 5×；从日志恢复；按节点设预算（时间、调用、线程）<span class="fa-src">— 预算 [D]</span></span></li></ul><p class="fa-see"><b>接着查：</b><a href="agent-graph.html">Agent 图谱·交付车道</a><a href="cheatsheet.html">作战手卡·先路由再执行</a></p></div>
+<div class="fa-item" id="no-learning"><div class="fa-head"><h2><span class="num">08</span>跨会话什么都没学到</h2></div><p class="fa-sub">记忆产品反而输给朴素的全历史</p><div class="fa-headline"><span class="tier tier-V" title="厂商声明">V</span><span>记忆产品输给全历史：Mem0 66.88 vs 72.90；CL-Bench 15.1 vs 22.3。</span></div><ul class="fa-fixes"><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">先和全历史对照：CL-Bench 全历史 22.3 > Mem0 15.1 > ACE 4.6 > Notepad 3.5（模型各异）</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">记忆管理者带 schema 加评审：写入静默失败 18–30%；共享库时植入的记忆会在多 agent 间扩散</span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">血缘追踪：存下条目由什么构成，按输入重建<span class="fa-src">— Planfence</span></span></li><li class="fa-fix"><span class="tier tier-P" title="受控研究">P</span><span class="txt">循环紧时用任务专属记忆：JITMEM Qwen3-8B ALFWorld 61.2 → 77.4；ACE agent +10.6%</span></li></ul><p class="fa-see"><b>接着查：</b><a href="practices.html">实战用法·行为层</a><a href="cheatsheet.html">作战手卡·记忆分层</a></p></div>
+      
+    </main>
+    <footer>
+      Agent Native Builder · 方法论、诊断与可运行样本 · 建站于 2026-10-24<br>
+      这个站点的每一页都能在仓库里找到对应文件。原始文档未改一字，挂在 <a href="docs.html">原始文档</a>。
+    </footer>
+  </div>
+</div>
+<script>
+(function () {
+  // 窄屏默认收起导航：展开的 40 条链接会把正文推到几屏之后。
+  var side = document.querySelector('.side details');
+  if (side && window.matchMedia('(max-width:760px)').matches) side.removeAttribute('open');
+
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        if (document.execCommand('copy')) resolve();
+        else reject(new Error('copy failed'));
+      } catch (err) {
+        reject(err);
+      } finally {
+        document.body.removeChild(ta);
+      }
+    });
+  }
+
+  document.querySelectorAll('pre.prompt').forEach(function (pre) {
+    if (pre.closest('.copybox')) return;
+    var box = document.createElement('div');
+    box.className = 'copybox';
+    box.style.margin = getComputedStyle(pre).margin;
+    pre.parentNode.insertBefore(box, pre);
+    box.appendChild(pre);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = '复制';
+    btn.setAttribute('aria-label', '复制这段提示词');
+    btn.addEventListener('click', function () {
+      copyText(pre.textContent).then(function () {
+        btn.textContent = '已复制';
+        btn.classList.add('done');
+        setTimeout(function () {
+          btn.textContent = '复制';
+          btn.classList.remove('done');
+        }, 1500);
+      }).catch(function () {
+        btn.textContent = '复制失败';
+        setTimeout(function () { btn.textContent = '复制'; }, 1500);
+      });
+    });
+    box.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>

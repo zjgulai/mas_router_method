@@ -224,6 +224,7 @@
       <div class="nav-g"><span class="nav-h">查阅</span>
       <a href="architecture.html">架构全景</a>
       <a href="cheatsheet.html">作战手卡</a>
+      <a href="failure-atlas.html">故障图鉴</a>
       <a href="agent-graph.html">Agent 图谱</a>
       <a href="toolchain.html">工具链</a>
       <a href="practices.html" class="on">实战用法</a>
@@ -251,16 +252,26 @@
 .card h4{margin:1.6rem 0 .45rem;font-size:1rem;color:var(--accent);letter-spacing:.01em}
 .card caption{text-align:left;font-size:.82rem;color:var(--faint);padding:.2rem 0 .5rem}
 .card table{margin:1.2rem 0 1.6rem}
+.card h3 .tier{vertical-align:.08em;margin-right:.55rem}
+.tier{font-family:var(--mono);font-size:.72rem;font-weight:700;width:1.45rem;height:1.45rem;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;border:1px solid var(--deep);text-decoration:none}
+.tier-P{background:var(--accent2);color:var(--accent);border-color:var(--accent)}
+.tier-V{background:var(--warn2);color:var(--warn)}
+.tier-D{background:var(--sunk);color:var(--muted)}
+.tier-A{background:var(--surface);color:var(--faint)}
+.pr-legend{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.3rem 0 0}
+.pr-legend .tier{cursor:default}
+.pr-leg-item{font-size:.82rem;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem}
 </style>
 <h1>实战用法</h1>
 <p class="lede">这里收的是别人已经在用的 agent 产品做法，按四层分开：<b>行为、流程、编排、证据</b>。每一层写清四件事：它解决什么问题、方法长什么样、怎么搬到 ANB 的阶段、以及可以直接复制的提示词。四层都已收录。</p>
+<div class="note"><b>每条都带证据等级。</b> 标在标题前，和<a href="failure-atlas.html">故障图鉴</a>用同一把尺：<span class="pr-legend"><span class="pr-leg-item"><span class="tier tier-P">P</span>受控研究</span><span class="pr-leg-item"><span class="tier tier-V">V</span>厂商声明</span><span class="pr-leg-item"><span class="tier tier-D">D</span>可查数据或源码</span><span class="pr-leg-item"><span class="tier tier-A">A</span>结构主张、无基准</span></span><br>这一页收的全是公开仓库，没有一条是受控研究——多数是一线实践者的结构主张（A），三条给出可自查的数据（D）。要受控数字，去<a href="failure-atlas.html">故障图鉴</a>。证据级的徽章可以点，直接跳过去。</div>
 <h2>四层目录</h2>
 <p class="h2sub">先看哪一层对得上你现在的症状。四层都已收录，可以按症状直接点进去。</p>
 <div class="tablewrap"><table><thead><tr><th style="width:28%">层</th><th style="width:56%">这一层管什么</th><th>收录</th></tr></thead><tbody><tr><td><a href="#layer-behavior">01 行为层：让模型守规矩</a></td><td>让模型在每一轮都守住边界：哪些规则常驻，哪些只在事件触发时读，哪些内容不该进入上下文。</td><td>4 条</td></tr><tr><td><a href="#layer-process">02 流程层：让任务走得完</a></td><td>让任务从一句话走到可验收的结果：步骤、状态、交接和失败处理都不靠临场记忆。</td><td>3 条</td></tr><tr><td><a href="#layer-orchestration">03 编排层：让对的人干对的事</a></td><td>让多个角色各干各的强项：谁规划、谁执行、谁评审，以及它们之间怎么交接。</td><td>3 条</td></tr><tr><td><a href="#layer-evidence">04 证据层：让「做完了」可被检查</a></td><td>让「做完了」变成可以复查的东西：命令、原始输出，以及它证明不了什么。</td><td>2 条</td></tr></tbody></table></div>
 <h2 id="layer-behavior">01 行为层：让模型守规矩</h2>
 <p class="h2sub">让模型在每一轮都守住边界：哪些规则常驻，哪些只在事件触发时读，哪些内容不该进入上下文。</p>
 <article class="card" id="p-guardrails">
-<h3>Guardrails Kit：把常驻规则拆成事件触发的 playbook</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>Guardrails Kit：把常驻规则拆成事件触发的 playbook</h3>
 <p class="h2sub">常驻上下文是恒定和税；核心压到 45 行，长文档只在触发时读。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>核心预算</th><td>常驻约 45 行，硬上限 60 行；12 条铁律、1 张路由表、4 个硬停</td></tr><tr><th>按需文档</th><td>PLAN、CODE、DEBUG、VERIFY、EFFICIENCY、SESSION、TRAPS、_FORMAT，共 8 份</td></tr><tr><th>验收协议</th><td>V1 到 V12；每条 PASS 必须引用同一轮工具输出</td></tr><tr><th>研究底稿</th><td>155 条失败模式：PLAN 10、CODE 51、DEBUG 14、VERIFY 18、EFFICIENCY 23、SESSION 19、MIGRATE 20</td></tr><tr><th>对抗评审</th><td>193 条意见被应用，13 位评审参与</td></tr><tr><th>迁移程序</th><td>9 个阶段加 UPGRADE 模式；旧文件逐行编号，编号行数必须等于处置行数</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -284,7 +295,7 @@
 <p><b>来源</b>：<a href="https://github.com/TheColliny/FableClaudeMDForOpus">TheColliny/FableClaudeMDForOpus</a></p>
 </article>
 <article class="card" id="p-clean-prompt">
-<h3>Universal Fable 5：把系统提示词删到只剩行为</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>Universal Fable 5：把系统提示词删到只剩行为</h3>
 <p class="h2sub">把平台细节删到只剩行为原则，按 core、balanced、complete 三档控制预算。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>core</th><td>1,389 字符，20 行，1 节，13 条原则</td></tr><tr><th>balanced</th><td>2,953 字符，69 行，9 节</td></tr><tr><th>complete</th><td>5,350 字符，113 行，10 节</td></tr><tr><th>相对体量</th><td>core 约为 complete 的 26%，balanced 约为 55%</td></tr><tr><th>删除项</th><td>XML 包装、MCP 与工具接口、产品行为、内部 UI、存储与 artifact、环境实现</td></tr><tr><th>保留项</th><td>理解意图、处理不确定、清晰沟通、代码质量、权衡建议、完成前验证、客观纠错、少元评论</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -306,7 +317,7 @@
 <p><b>来源</b>：<a href="https://github.com/KinetiNode/claude-fable-5-system-prompt-clean">KinetiNode/claude-fable-5-system-prompt-clean</a></p>
 </article>
 <article class="card" id="p-moely-zh">
-<h3>Fable 5 中文版：一套可以直接改的系统提示词骨架</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>Fable 5 中文版：一套可以直接改的系统提示词骨架</h3>
 <p class="h2sub">不是英文原文的逐字翻译，而是一套能按段替换策略的中文骨架。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>原文</th><td>119,725 字符，1,585 行，15 个二级标题，55 个三级标题</td></tr><tr><th>英文通用版</th><td>9,426 字符，122 行，4 个二级标题，11 个三级标题</td></tr><tr><th>中文版</th><td>2,834 字符，136 行，4 个二级标题，11 个三级标题</td></tr><tr><th>体量比</th><td>中文版约为原文的 2.4%，英文通用版约为原文的 7.9%</td></tr><tr><th>版权规则</th><td>直接引用少于 15 词；每来源最多 1 次；歌词、诗歌、俳句不引；段落不逐字复现</td></tr><tr><th>输出规则</th><td>独立交付物建文件；策略、摘要、提纲行内；代码超过约 10 行建文件</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -328,7 +339,7 @@
 <p><b>来源</b>：<a href="https://github.com/moely-ai/claude-fable-5-prompt">moely-ai/claude-fable-5-prompt</a></p>
 </article>
 <article class="card" id="p-vff">
-<h3>Value-for-Fable：用诊断结构而不是压缩去接近 Opus</h3>
+<h3><a class="tier tier-D" href="failure-atlas.html" title="证据等级 D·文档或源码——受控数字见故障图鉴">D</a>Value-for-Fable：用诊断结构而不是压缩去接近 Opus</h3>
 <p class="h2sub">压缩省下的是 token，削掉的是诊断质量；v2 删掉压缩强制，保留诊断结构。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>输出结构</th><td>v2 共 8 段；v1 有 9 段，多一个 token_economy 压缩段</td></tr><tr><th>消融结果</th><td>v1 76.2 到 v2 87.1，提升 10.9 分；4 臂平均排名：VFF 减压缩 1.67、只留诊断结构 2.00、裸 Sonnet 3.00、完整 v1 3.33</td></tr><tr><th>中立重评</th><td>A 组：v2 87.1 对 Opus 86.2；B 组：v2 84.8 对 Opus 89.4</td></tr><tr><th>三家族交叉</th><td>Gemini：v2 3 胜、0 负、3 平；GPT：v2 2 胜、0 负、4 平；没有家族判 Opus 干净胜出</td></tr><tr><th>成本</th><td>Sonnet 4.6 每百万输入 3 美元、输出 15 美元；Opus 4.8 是 5 和 25；Fable 5 是 10 和 50</td></tr><tr><th>2-pass 评审</th><td>四条标准：需求遗漏、事实或数字错误、未解释的线索、超量</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -355,7 +366,7 @@
 <h2 id="layer-process">02 流程层：让任务走得完</h2>
 <p class="h2sub">让任务从一句话走到可验收的结果：步骤、状态、交接和失败处理都不靠临场记忆。</p>
 <article class="card" id="p-fable-method">
-<h3>The Fable Method：把判断问题转成证据问题的 7 步循环</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>The Fable Method：把判断问题转成证据问题的 7 步循环</h3>
 <p class="h2sub">分类、定义完成、取证、决策、最小改动、观察验证、结论先行；每一步都有硬边界。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>循环</th><td>7 步：分类、定义完成、取证、决策、执行、验证、报告</td></tr><tr><th>入口门</th><td>triviality gate；fit gate（答案在可打开的源里才跑循环）</td></tr><tr><th>硬边界</th><td>同一问题 3 次修复验证失败就停；两次查不到新东西就停；命名不出验证就先问一个问题</td></tr><tr><th>评测</th><td>15 轮、260 次以上 agent 运行；0 到 2 分评分，盲评或对 ground truth</td></tr><tr><th>关键结果</th><td>Haiku 在 spec 与 test 冲突上从 0/4 到 4/4；Sonnet 2/2 理想；Haiku 判官抓欺诈从 3.5/5 到 5/5</td></tr><tr><th>四个技能</th><td>fable-method（规则）、fable-loop（编排）、fable-judge（对抗验收）、fable-domain（生成领域包）</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -379,7 +390,7 @@
 <p><b>来源</b>：<a href="https://github.com/Sahir619/fable-method">Sahir619/fable-method</a></p>
 </article>
 <article class="card" id="p-fable-mode">
-<h3>Fable Mode：把编排做成结构，而不是提示词里的请求</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>Fable Mode：把编排做成结构，而不是提示词里的请求</h3>
 <p class="h2sub">stage map、命名委派、可失败的检查、冷验证；orchestrator 没有写权限，worker 才有。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>版本</th><td>v6.1，2026-10-24</td></tr><tr><th>阶梯</th><td>Haiku → Sonnet → Opus → 用户；按模型层级调强度</td></tr><tr><th>结构委派</th><td>fable-orchestrator 无 Write/Edit；fable-worker-sonnet/haiku 产出；fable-verifier 只读</td></tr><tr><th>验证门</th><td>double-check：claim/requirement 编号，PASS/FAIL/UNVERIFIABLE，冷验证者只拿主张不拿推理</td></tr><tr><th>基准</th><td>3 轮；Fable 5.1 上 16 次配对 0 差异，约 1.1× token、1.5–2.3× 墙钟；Opus 在开放研究上从合成趋势线变成抓真实数据；Haiku +25/−17 波动</td></tr><tr><th>预算</th><td>最多 2 次完整 replan；第 3 次说明需求层面有歧义，交回用户</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -404,7 +415,7 @@
 <p><b>来源</b>：<a href="https://github.com/mrtooher/fable-mode">mrtooher/fable-mode</a></p>
 </article>
 <article class="card" id="p-fablize">
-<h3>fablize：只搬运被实验证明可搬运的程序</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>fablize：只搬运被实验证明可搬运的程序</h3>
 <p class="h2sub">不提升模型天花板，只让模型走到自己的天花板；只发布验证过效果的程序。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>实验</th><td>19 次 A/B 加 26 个真实会话，约 1,500 次工具调用</td></tr><tr><th>可搬运</th><td>验证接地、多故事完成加证据门、系统调查、早停阻止</td></tr><tr><th>不可搬运</th><td>规范外缺陷发现、开放创作细节、自驱传播深度</td></tr><tr><th>证据门</th><td>goals.py：complete 必须有非空 evidence；最后一个故事必须有 verify-cmd 和 verify-evidence</td></tr><tr><th>调查协议</th><td>先复现 → 至少 3 个竞争假设 → 每个假设取证 → 追完整因果链 → 前后验证 → 报告被否定的假设</td></tr><tr><th>路由</th><td>按任务注入最小匹配纪律；多故事、调试、渲染产物、硬任务各走各的</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -430,7 +441,7 @@
 <h2 id="layer-orchestration">03 编排层：让对的人干对的事</h2>
 <p class="h2sub">让多个角色各干各的强项：谁规划、谁执行、谁评审，以及它们之间怎么交接。</p>
 <article class="card" id="p-fable-advisor">
-<h3>Fable Advisor：架构师不下场打字，按能力分 lane 路由</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>Fable Advisor：架构师不下场打字，按能力分 lane 路由</h3>
 <p class="h2sub">会话当架构师，GPT-6 lane 打字，Fable 在承诺边界和终局做审查。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>角色</th><td>会话是架构师；luna-implementer 和 sol-implementer 是实现 lane；fable-advisor 是只读审查</td></tr><tr><th>默认 lane</th><td>Luna：routine，默认 effort max；Sol：high-complexity，默认 high，最高 ultra</td></tr><tr><th>spec 契约</th><td>6 段：Objective、Files、Interfaces、Constraints、Verification、Reasoning</td></tr><tr><th>审查时机</th><td>承诺边界（架构、迁移、API、重构，或同一问题失败两次）加每次交付终局一次</td></tr><tr><th>跨厂商</th><td>实现走 Codex（非 Claude 家族），审查走 Fable（Claude 家族），审查不是同族自审</td></tr><tr><th>成本纪律</th><td>emit judgment, not volume；keep context lean；reason once, then hand off</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -455,7 +466,7 @@
 <p><b>来源</b>：<a href="https://github.com/DannyMac180/fable-advisor">DannyMac180/fable-advisor</a></p>
 </article>
 <article class="card" id="p-fusion-fable">
-<h3>Fusion-Fable：独立 panel 加固定 judge，把多个模型合成一个答案</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>Fusion-Fable：独立 panel 加固定 judge，把多个模型合成一个答案</h3>
 <p class="h2sub">同一 prompt 盲跑多个模型，Opus 固定做 judge，输出共识、矛盾、遗漏、盲点。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>panel</th><td>opus4.8-4.8、opus4.8-gpt5.5、opus4.8-gemini3.1pro、三家族全上</td></tr><tr><th>硬规则</th><td>Opus 4.8 永远 judge 并写最终答案，pipeline 不可反转</td></tr><tr><th>独立性</th><td>每个 panelist 拿到用户原文，不给 lens 或 persona，不看别人的答案</td></tr><tr><th>judge 输出</th><td>Consensus、Contradictions、Partial coverage、Unique insights、Blind spots</td></tr><tr><th>代码任务</th><td>Track A：先运行每个候选，再合并，再运行合并结果直到通过</td></tr><tr><th>provenance</th><td>每次运行写带时间戳的 .md，保存 raw panelist 答案、分析、最终答案</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -480,7 +491,7 @@
 <p><b>来源</b>：<a href="https://github.com/duolahypercho/fusion-fable">duolahypercho/fusion-fable</a></p>
 </article>
 <article class="card" id="p-fable-foreman">
-<h3>Fable Foreman：路由卡是单一事实源，贵的模型要二次批准</h3>
+<h3><a class="tier tier-A" href="failure-atlas.html" title="证据等级 A·轶事——受控数字见故障图鉴">A</a>Fable Foreman：路由卡是单一事实源，贵的模型要二次批准</h3>
 <p class="h2sub">先证明能用，再按成本/能力选座；lead 亲自验收，贵模型要用户两次确认。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>路由卡</th><td>routing-card.py 把 live access、成本/能力矩阵、用户答案合成一张卡；settled 行是默认，close 行只问一次</td></tr><tr><th>语义</th><td>LEAD 座位按能力类，不按模型名；Claude、Codex、Grok、Jev 各自有 seat</td></tr><tr><th>成本矩阵</th><td>Opus 5.5 4/20、Fable 5.1 10/50、GPT-6.1 Sol 2/10、Grok 4.7 2/6、Luna 0.10/0.50、Haiku 0.10/0.50</td></tr><tr><th>第一定律</th><td>经济性只在已经过质量线的模型里选，绝不降线</td></tr><tr><th>premium</th><td>Astra 和 Fable 永远不自动分配；用户本会话说要，再确认一次成本，才可派</td></tr><tr><th>验收</th><td>worker 报告是 claim；lead 跑真实构建/测试、盲 verifier、跨家族 review，最后亲自验收</td></tr><tr><th>行为测试</th><td>15 个场景，runs 6 到 12 全部通过；routing A/B 从 6/12 到 12/12</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -509,7 +520,7 @@
 <h2 id="layer-evidence">04 证据层：让「做完了」可被检查</h2>
 <p class="h2sub">让「做完了」变成可以复查的东西：命令、原始输出，以及它证明不了什么。</p>
 <article class="card" id="p-system-prompts-leaks">
-<h3>System Prompts Leaks：把系统提示词当成可对照的工程材料</h3>
+<h3><a class="tier tier-D" href="failure-atlas.html" title="证据等级 D·文档或源码——受控数字见故障图鉴">D</a>System Prompts Leaks：把系统提示词当成可对照的工程材料</h3>
 <p class="h2sub">18 个厂商、约 1900 份提示词，按产品和版本归档，能看到行为契约的结构和演变。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>覆盖</th><td>18 个顶层目录：Anthropic 666、OpenAI 435、Meta 474、GLM 90、xAI 76、Google 67 等，共约 1900 份文件</td></tr><tr><th>Anthropic 目录</th><td>claude.ai 提示词、Claude Code、artifact types、integrations；每个文件标注产品，不混用</td></tr><tr><th>Claude Code 结构</th><td>System prompt、Harness、Memory、Environment、Context management、Delivering work、Writing for the user、Agents、Skills、Tools</td></tr><tr><th>工具提示词</th><td>每个工具一段：Agent、Artifact、AskUserQuestion、Bash、CronCreate、Edit、Monitor 等；还有 auto mode classifier 和 advisor tool 两侧提示词</td></tr><tr><th>最新条目</th><td>2026-11-03 的 Claude Code auto mode classifier，139 KB，按 Sonnet 5 发送</td></tr><tr><th>引用</th><td>Washington Post、CEPS AI World、Simon Willison 都基于这个仓库做过报道或分析</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>
@@ -534,7 +545,7 @@
 <p><b>来源</b>：<a href="https://github.com/asgeirtj/system_prompts_leaks">asgeirtj/system_prompts_leaks</a></p>
 </article>
 <article class="card" id="p-claude-directory">
-<h3>claude-directory：用 prompt、成品和录屏证明一个案例真的能跑</h3>
+<h3><a class="tier tier-D" href="failure-atlas.html" title="证据等级 D·文档或源码——受控数字见故障图鉴">D</a>claude-directory：用 prompt、成品和录屏证明一个案例真的能跑</h3>
 <p class="h2sub">541 个项目，每个都带 prompt.md、可运行代码、demo.mp4 和 poster.jpg。</p>
 <div class="tablewrap"><table class="practice-facts"><tbody><tr><th>规模</th><td>9 个类别，541 个项目：templates 241、landing-pages 98、shaders 84、hero-sections 41、ui-design 34、components-ui 15、portfolios 14、animations-loaders 12、3d-games 2</td></tr><tr><th>三件套</th><td>prompt.md、可运行的项目代码、demo.mp4；poster.jpg 由脚本生成</td></tr><tr><th>栈</th><td>React、TypeScript、Vite、Tailwind、Three.js、Framer Motion、GSAP，也有纯 HTML/CSS/JS</td></tr><tr><th>贡献规则</th><td>只有两条硬要求：prompt.md 和 demo.mp4；PR 由 Claude Opus 审查合并</td></tr><tr><th>自动检查</th><td>每个项目自带 verify.mjs：390、768、1280 三个宽度，检查标题、canvas、opacity、图片、横向溢出、console error、失败响应、菜单交互</td></tr><tr><th>交付流程</th><td>worktree、分类目录、verbatim prompt.md 先提交、完整构建、CLI 验证、review、录 demo、生成 poster、README 登记、PR、合并、清理</td></tr></tbody></table></div>
 <p><b>它解决什么</b></p>

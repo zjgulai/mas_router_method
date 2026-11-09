@@ -215,5 +215,29 @@ PRACTICES = [
     },
 ] + PROCESS_PRACTICES + ORCHESTRATION_PRACTICES + EVIDENCE_PRACTICES
 
+# 证据等级：沿用故障图鉴（failure_atlas_data.TIERS）的同一把尺，让两页可比。
+#   P 受控研究 · V 厂商声明 · D 可查数据或源码 · A 结构主张、无基准
+# 这一页收的全是公开仓库，没有一条是受控研究（P）。绝大多数是一线实践者的
+# 结构主张（A），只有三条给出可自查的数据或基准（D）：vff 自跑的诊断基准、
+# system-prompts-leaks 约 1900 份提示词、claude-directory 541 个可运行项目。
+# 要受控数字，去故障图鉴。这个分布本身就是信号——所以标出来，不让 A 和 P 平权。
+TIER_BY_ID = {
+    'guardrails': 'A',
+    'clean-prompt': 'A',
+    'moely-zh': 'A',
+    'vff': 'D',
+    'fable-method': 'A',
+    'fable-mode': 'A',
+    'fablize': 'A',
+    'fable-advisor': 'A',
+    'fusion-fable': 'A',
+    'fable-foreman': 'A',
+    'system-prompts-leaks': 'D',
+    'claude-directory': 'D',
+}
+
 if __name__ == '__main__':
     print(f'{len(LAYERS)} 层，{len(PRACTICES)} 条')
+    missing = [p['id'] for p in PRACTICES if p['id'] not in TIER_BY_ID]
+    if missing:
+        raise SystemExit(f'practices 缺少证据等级标注: {missing}')

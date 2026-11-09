@@ -287,7 +287,8 @@ def nav_groups():
         ('流程', [('index', '总览')]
                   + [(s, n) for s, n, _ in STAGES]
                   + [('manage', '管理')]),
-        ('查阅', [('architecture', '架构全景'), ('cheatsheet', '作战手卡'), ('agent-graph', 'Agent 图谱'),
+        ('查阅', [('architecture', '架构全景'), ('cheatsheet', '作战手卡'),
+                  ('failure-atlas', '故障图鉴'), ('agent-graph', 'Agent 图谱'),
                   ('toolchain', '工具链'), ('practices', '实战用法'),
                   ('data-design', '数据产品设计'), ('data-layers', '8+3 层契约'),
                   ('branches', '分支总表'), ('skills', 'Skill 全表'),

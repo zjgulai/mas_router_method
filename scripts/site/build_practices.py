@@ -15,7 +15,10 @@ import os
 
 from build_shell import page, STAGES
 from paths import out_dir
-from practices_data import LAYERS, PRACTICES
+from practices_data import LAYERS, PRACTICES, TIER_BY_ID
+from failure_atlas_data import TIERS
+
+TIER_NAME = {code: name for code, name, _desc in TIERS}
 
 STAGE_NAME = {slug: name for slug, name, _ in STAGES}
 STAGE_NAME['manage'] = '管理'
@@ -58,9 +61,18 @@ def _tables(p):
     return out
 
 
+def _tier_badge(pid):
+    code = TIER_BY_ID.get(pid)
+    if not code:
+        return ''
+    name = TIER_NAME.get(code, code)
+    return (f'<a class="tier tier-{code}" href="failure-atlas.html" '
+            f'title="证据等级 {code}·{name}——受控数字见故障图鉴">{code}</a>')
+
+
 def _practice_card(p):
     b = [f'<article class="card" id="p-{_e(p["id"])}">']
-    b.append(f'<h3>{_e(p["title"])}</h3>')
+    b.append(f'<h3>{_tier_badge(p["id"])}{_e(p["title"])}</h3>')
     b.append(f'<p class="h2sub">{_e(p["one_line"])}</p>')
     b += _facts(p)
     b.append('<p><b>它解决什么</b></p>')
@@ -101,11 +113,32 @@ def practices_page():
 .card h4{margin:1.6rem 0 .45rem;font-size:1rem;color:var(--accent);letter-spacing:.01em}
 .card caption{text-align:left;font-size:.82rem;color:var(--faint);padding:.2rem 0 .5rem}
 .card table{margin:1.2rem 0 1.6rem}
+.card h3 .tier{vertical-align:.08em;margin-right:.55rem}
+.tier{font-family:var(--mono);font-size:.72rem;font-weight:700;width:1.45rem;height:1.45rem;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;border:1px solid var(--deep);text-decoration:none}
+.tier-P{background:var(--accent2);color:var(--accent);border-color:var(--accent)}
+.tier-V{background:var(--warn2);color:var(--warn)}
+.tier-D{background:var(--sunk);color:var(--muted)}
+.tier-A{background:var(--surface);color:var(--faint)}
+.pr-legend{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:.3rem 0 0}
+.pr-legend .tier{cursor:default}
+.pr-leg-item{font-size:.82rem;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem}
 </style>"""]
     b.append('<h1>实战用法</h1>')
     b.append('<p class="lede">这里收的是别人已经在用的 agent 产品做法，按四层分开：'
              '<b>行为、流程、编排、证据</b>。每一层写清四件事：它解决什么问题、方法长什么样、'
              '怎么搬到 ANB 的阶段、以及可以直接复制的提示词。四层都已收录。</p>')
+
+    b.append('<div class="note"><b>每条都带证据等级。</b> '
+             '标在标题前，和<a href="failure-atlas.html">故障图鉴</a>用同一把尺：'
+             '<span class="pr-legend">'
+             '<span class="pr-leg-item"><span class="tier tier-P">P</span>受控研究</span>'
+             '<span class="pr-leg-item"><span class="tier tier-V">V</span>厂商声明</span>'
+             '<span class="pr-leg-item"><span class="tier tier-D">D</span>可查数据或源码</span>'
+             '<span class="pr-leg-item"><span class="tier tier-A">A</span>结构主张、无基准</span>'
+             '</span><br>'
+             '这一页收的全是公开仓库，没有一条是受控研究——多数是一线实践者的结构主张（A），'
+             '三条给出可自查的数据（D）。要受控数字，去<a href="failure-atlas.html">故障图鉴</a>。'
+             '证据级的徽章可以点，直接跳过去。</div>')
 
     b.append('<h2>四层目录</h2>')
     b.append('<p class="h2sub">先看哪一层对得上你现在的症状。四层都已收录，可以按症状直接点进去。</p>')
