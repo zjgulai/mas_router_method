@@ -30,6 +30,12 @@
   *{box-sizing:border-box}
   ::selection{background:var(--accent2);color:var(--ink)}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* 跳过导航：读屏/键盘用户第一个 Tab 停这里，回车直达正文，不必穿过 20+ 条链接。
+     平时移出视口，获得焦点时才现身——它只为需要它的人出现。 */
+  .skip{position:absolute;left:-9999px;top:0;z-index:100;
+        background:var(--accent);color:#fff;font-size:var(--fs-nav);font-weight:650;
+        padding:.6rem 1.1rem;border-radius:0 0 3px 0;text-decoration:none}
+  .skip:focus{left:0}
   body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
        font-size:var(--fs-body);line-height:1.8;font-weight:400;
        -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;accent-color:var(--accent)}
@@ -58,7 +64,11 @@
          border-radius:4px;line-height:1.4;border-left:3px solid transparent}
   .nav a:hover{background:#301820;color:#fff}
   .nav a.on{background:var(--accent2);color:var(--ink);font-weight:700;border-left-color:var(--accent)}
-  .subnav{border-top:1px solid var(--side-border);margin:.9rem 1.25rem 0;padding-top:1.1rem}
+  /* 「本页」目录移到左栏顶部（品牌之下、站点导航之上）。
+     当你已经在一页上时，「这一页有什么」是最该先看见的导航——原先它排在
+     23 条站点链接之后，在 900px 笔记本上永远落在折叠外，等于没有。
+     只在声明了小节的页面出现，用底边线与下方的站点导航分隔。 */
+  .subnav{margin:0 1.25rem 1.3rem;padding-bottom:1.2rem;border-bottom:1px solid var(--side-border)}
   .sub-h{display:block;font-size:var(--fs-label);font-weight:700;letter-spacing:.13em;color:#c9aab4;margin-bottom:.55rem}
   .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.87rem;
             padding:.44rem 0 .44rem .8rem;
@@ -201,6 +211,7 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#main">跳到正文</a>
 <div class="layout">
   <aside class="side">
     <div class="brand">
@@ -209,7 +220,10 @@
     </div>
     <details open>
       <summary class="nav-toggle">站点导航</summary>
-      <nav class="nav">
+      <nav class="subnav" aria-label="本页目录"><span class="sub-h">本页</span>
+      <a href="#operate-07-运营">07 运营</a>
+      </nav>
+      <nav class="nav" aria-label="站点导航">
         <div class="nav-g"><span class="nav-h">流程</span>
       <a href="./">总览</a>
       <a href="need.html">需求</a>
@@ -238,13 +252,10 @@
       <a href="docs.html">原始文档</a>
       </div>
       </nav>
-      <div class="subnav"><span class="sub-h">本页</span>
-      <a href="#operate-07-运营">07 运营</a>
-      </div>
     </details>
   </aside>
   <div class="content">
-    <main>
+    <main id="main" tabindex="-1">
       <div class="crumb">表格 · <a href="tables.html">全部</a></div>
       <h1>运营 <span style="font-size:.82rem;color:var(--faint);font-family:var(--sans);font-weight:500;margin-left:.4rem">1 张表</span></h1><p class="lede">看得出它有没有被用、有没有变好</p><p style="font-size:.9rem;color:var(--faint)">这一页是<b>表的样张</b>，不是方法论。方法在<a href="operate.html">运营</a>那一页。两页读的是同一件事：一页讲这一步要问什么，一页讲答案记在哪一列。</p><h2 id="operate-07-运营">07 运营</h2><p class="lede" style="margin-bottom:1rem">看什么信号，多久没动静算异常。</p><div class="tb-index"><a href="#operate-ops-01"><code>ops-01</code> 每天各源的成功率、三种失败计数（抓到了/抓错了/无法判断）</a><a href="#operate-ops-02"><code>ops-02</code> 库的增长速率、存储成本、重复率</a><a href="#operate-ops-03"><code>ops-03</code> 按周计算的准确率漂移、置信度分布</a><a href="#operate-ops-04"><code>ops-04</code> 每日计算的完成情况、分母规模</a><a href="#operate-ops-05"><code>ops-05</code> 每周重估的收敛性、系数稳定性</a><a href="#operate-ops-06"><code>ops-06</code> 访问日志：有没有人看、看到多深</a><a href="#operate-ops-07"><code>ops-07</code> 被使用次数、被反驳次数、被推翻次数</a><a href="#operate-ops-08"><code>ops-08</code> 发送记录、回应、以及有没有人因为某条报告改了做法</a></div><p class="h2sub">8 条记录、13 个字段。每个字段下是这个值现在填的是什么；空着的字段也列出来，因为「没填」和「不需要填」在表里长得一样，在这里必须能分开看。</p><div class="tb-row" id="operate-ops-01"><h3><code>ops-01</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-01</td></tr><tr><td>多久没动静算异常</td><td>连续 26 小时没有 run 记录</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>采集</td></tr><tr><td>备注</td><td>三种失败必须分开计数。合并成一个「失败」会让「没抓到」和「抓到了但解析不了」看起来一样，而前者要重跑、后者要改 adapter。</td></tr><tr><td>多久看一次</td><td>每天 09:00 自动</td></tr><tr><td>异常的信号长什么样</td><td>某源连续两天成功率 0，且没有告警；或者 empty 突然变成 100%</td></tr><tr><td>正常的信号长什么样</td><td>五个源成功率都 &gt; 95%，empty 是 0 或接近 0</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>每天各源的成功率、三种失败计数（抓到了/抓错了/无法判断）</td></tr><tr><td>这个信号会自己过期吗</td><td>不会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="tb-row" id="operate-ops-02"><h3><code>ops-02</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-02</td></tr><tr><td>多久没动静算异常</td><td>连续两周没有新的 run 写入</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>存储</td></tr><tr><td>备注</td><td>增长异常是一个症状，不是原因。看到翻倍先查去重指纹还在不在生效，别先扩容。</td></tr><tr><td>多久看一次</td><td>每周一</td></tr><tr><td>异常的信号长什么样</td><td>一周内存储翻倍（去重失效或重复抓取）；重复率跳升</td></tr><tr><td>正常的信号长什么样</td><td>增长速率与声量趋势同向，重复率稳定在个位数</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>库的增长速率、存储成本、重复率</td></tr><tr><td>这个信号会自己过期吗</td><td>不会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="tb-row" id="operate-ops-03"><h3><code>ops-03</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-03</td></tr><tr><td>多久没动静算异常</td><td>连续三周没有新的金标准集复测</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>打标</td></tr><tr><td>备注</td><td>反转比下降更严重：它意味着所有「只用高置信结果」的下游规则是反的。label-audit 会单独判这一条。</td></tr><tr><td>多久看一次</td><td>每周一</td></tr><tr><td>异常的信号长什么样</td><td>准确率连续两周下降；或置信度分层的准确率反转（高置信反而更不准）</td></tr><tr><td>正常的信号长什么样</td><td>准确率周环比波动 &lt; 3 个百分点，高置信度档的准确率高于低置信度档</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>按周计算的准确率漂移、置信度分布</td></tr><tr><td>这个信号会自己过期吗</td><td>不会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="tb-row" id="operate-ops-04"><h3><code>ops-04</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-04</td></tr><tr><td>多久没动静算异常</td><td>连续 48 小时没有新的计算记录</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>指标</td></tr><tr><td>备注</td><td>分组：缺值要告警，分母骤降也要告警。前者看得见，后者看不见：分母少一半算出来的比率仍然像个正常数。</td></tr><tr><td>多久看一次</td><td>每天 09:00 自动</td></tr><tr><td>异常的信号长什么样</td><td>某天指标缺失而无告警；分母骤降（比如某源断了导致分母少一半）</td></tr><tr><td>正常的信号长什么样</td><td>每天都有值，分母规模与前一周同量级</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>每日计算的完成情况、分母规模</td></tr><tr><td>这个信号会自己过期吗</td><td>不会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="tb-row" id="operate-ops-05"><h3><code>ops-05</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-05</td></tr><tr><td>多久没动静算异常</td><td>连续两周没有重估</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>分析</td></tr><tr><td>备注</td><td>符号翻转不是「效应变弱」，是两次计算在讲相反的话。要停下来查，不能挑一个信。</td></tr><tr><td>多久看一次</td><td>每周一</td></tr><tr><td>异常的信号长什么样</td><td>系数符号在两周之间翻转而无说明</td></tr><tr><td>正常的信号长什么样</td><td>系数在区间内稳定，符号不变</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>每周重估的收敛性、系数稳定性</td></tr><tr><td>这个信号会自己过期吗</td><td>不会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="tb-row" id="operate-ops-06"><h3><code>ops-06</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-06</td></tr><tr><td>多久没动静算异常</td><td>连续三周访问量为 0</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>呈现</td></tr><tr><td>备注</td><td>零访问是最诚实的信号，也是最容易被解释掉的（「大家还在试用」）。设一个到期日，到期还零访问就下线。</td></tr><tr><td>多久看一次</td><td>每周一</td></tr><tr><td>异常的信号长什么样</td><td>上线两个月零访问而无告警</td></tr><tr><td>正常的信号长什么样</td><td>每周有 ≥3 个不同的分析师访问，有人用到下钻</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>访问日志：有没有人看、看到多深</td></tr><tr><td>这个信号会自己过期吗</td><td>会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="tb-row" id="operate-ops-07"><h3><code>ops-07</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-07</td></tr><tr><td>多久没动静算异常</td><td>连续两个月没有任何引用</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>结论</td></tr><tr><td>备注</td><td>只统计阅读量等于没统计。这一层的信号必须是「谁因为这条结论改了什么动作」。</td></tr><tr><td>多久看一次</td><td>每月一号</td></tr><tr><td>异常的信号长什么样</td><td>只统计「看了」，不统计「据此做了什么」；或者一张卡半年无人引用</td></tr><tr><td>正常的信号长什么样</td><td>每张活跃结论卡每月至少被引用一次</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>被使用次数、被反驳次数、被推翻次数</td></tr><tr><td>这个信号会自己过期吗</td><td>会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="tb-row" id="operate-ops-08"><h3><code>ops-08</code></h3><div class="tablewrap"><table class="tb-fields"><tbody><tr><td>运营编号</td><td>ops-08</td></tr><tr><td>多久没动静算异常</td><td>连续两周没有发送记录</td></tr><tr><td>产品</td><td>数说</td></tr><tr><td>哪一层</td><td>报告</td></tr><tr><td>备注</td><td>发送量是发件人的指标，不是产品的指标。一个每周准时发出但没人看的报告，和没做是一样的。</td></tr><tr><td>多久看一次</td><td>每周一</td></tr><tr><td>异常的信号长什么样</td><td>只统计发送量；或者造了证伪触发但没人被通知</td></tr><tr><td>正常的信号长什么样</td><td>每周都发出，且至少有一次回应或引用</td></tr><tr><td>状态</td><td>还没跑过</td></tr><tr><td>现在的值</td><td>待采集</td></tr><tr><td>看的是什么</td><td>发送记录、回应、以及有没有人因为某条报告改了做法</td></tr><tr><td>这个信号会自己过期吗</td><td>会</td></tr><tr><td>通知方式</td><td>飞书群 + 告警卡片</td></tr></tbody></table></div></div><div class="nextprev"><div><span class="lbl">其它阶段的表</span><a href="tables-need.html">需求</a> · <a href="tables-design.html">设计</a> · <a href="tables-build.html">开发</a> · <a href="tables-verify.html">验收</a> · <a href="tables-ship.html">交付</a> · <a href="tables-iterate.html">迭代</a></div></div>
       

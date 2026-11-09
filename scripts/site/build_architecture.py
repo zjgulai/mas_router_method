@@ -39,12 +39,16 @@ def architecture_page():
     b = [
         '<style>'
         '.arch-frame-wrap{background:#190c11;border:1px solid var(--deep);border-radius:2px;margin:1.5rem 0 2.6rem;overflow:hidden}'
-        '.arch-frame-bar{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.25rem;'
+        '.arch-frame-bar{display:flex;justify-content:space-between;align-items:center;gap:.9rem;flex-wrap:wrap;padding:.75rem 1.25rem;'
         'background:var(--side-bg);color:var(--side-text);font-size:.82rem;border-bottom:1px solid var(--side-border)}'
         '.arch-frame-bar code{background:#301820;color:#f4dce3;padding:.12rem .48rem}'
-        '.arch-frame{display:block;width:100%;height:1220px;border:0;background:#190c11}'
-        '@media(max-width:1100px){.arch-frame{height:980px}}'
-        '@media(max-width:760px){.arch-frame{height:760px}}'
+        # 蓝图是 nowrap 的固定宽度终端图，窄屏下 iframe 缩小只会把它压成糊字。
+        # 用和 .tablewrap 同一套路：横向滚动，内容永远保持自然尺寸，绝不挤压。
+        '.arch-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}'
+        '.arch-frame{display:block;width:100%;min-width:1024px;height:1220px;border:0;background:#190c11}'
+        # 窄屏给一行「右滑查看完整蓝图」的提示，告诉读者这里可以横向滚动。
+        '.arch-hint{display:none;font-size:var(--fs-meta);color:var(--faint);margin:-.6rem 0 1.8rem}'
+        '@media(max-width:1100px){.arch-hint{display:block}}'
         '</style>'
     ]
     b.append('<h1>全产品架构全景图</h1>')
@@ -63,8 +67,11 @@ def architecture_page():
              '<span>MAS Router Method · 13 核心节点 · 12 条类型化数据流</span>'
              '<code>architecture/mas-router-panorama.spec.json</code>'
              '</div>'
+             '<div class="arch-scroll">'
              f'<iframe class="arch-frame" title="MAS Router Method 全产品架构全景图" srcdoc="{escaped_srcdoc}"></iframe>'
+             '</div>'
              '</div>')
+    b.append('<p class="arch-hint">↔ 蓝图较宽，可在框内横向滚动查看完整数据流。</p>')
 
     b.append('<h2 id="layers">二、五层架构职责与边界对账</h2>')
     b.append('<p class="h2sub">每一层只做自己的事，跨层越界（如在评测夹具里复制品牌档案、在工具 handler 里抛异常）一律视为架构缺陷。</p>')

@@ -30,6 +30,12 @@
   *{box-sizing:border-box}
   ::selection{background:var(--accent2);color:var(--ink)}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* 跳过导航：读屏/键盘用户第一个 Tab 停这里，回车直达正文，不必穿过 20+ 条链接。
+     平时移出视口，获得焦点时才现身——它只为需要它的人出现。 */
+  .skip{position:absolute;left:-9999px;top:0;z-index:100;
+        background:var(--accent);color:#fff;font-size:var(--fs-nav);font-weight:650;
+        padding:.6rem 1.1rem;border-radius:0 0 3px 0;text-decoration:none}
+  .skip:focus{left:0}
   body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
        font-size:var(--fs-body);line-height:1.8;font-weight:400;
        -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;accent-color:var(--accent)}
@@ -58,7 +64,11 @@
          border-radius:4px;line-height:1.4;border-left:3px solid transparent}
   .nav a:hover{background:#301820;color:#fff}
   .nav a.on{background:var(--accent2);color:var(--ink);font-weight:700;border-left-color:var(--accent)}
-  .subnav{border-top:1px solid var(--side-border);margin:.9rem 1.25rem 0;padding-top:1.1rem}
+  /* 「本页」目录移到左栏顶部（品牌之下、站点导航之上）。
+     当你已经在一页上时，「这一页有什么」是最该先看见的导航——原先它排在
+     23 条站点链接之后，在 900px 笔记本上永远落在折叠外，等于没有。
+     只在声明了小节的页面出现，用底边线与下方的站点导航分隔。 */
+  .subnav{margin:0 1.25rem 1.3rem;padding-bottom:1.2rem;border-bottom:1px solid var(--side-border)}
   .sub-h{display:block;font-size:var(--fs-label);font-weight:700;letter-spacing:.13em;color:#c9aab4;margin-bottom:.55rem}
   .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.87rem;
             padding:.44rem 0 .44rem .8rem;
@@ -201,6 +211,7 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#main">跳到正文</a>
 <div class="layout">
   <aside class="side">
     <div class="brand">
@@ -209,7 +220,15 @@
     </div>
     <details open>
       <summary class="nav-toggle">站点导航</summary>
-      <nav class="nav">
+      <nav class="subnav" aria-label="本页目录"><span class="sub-h">本页</span>
+      <a href="#branches">走哪条路</a>
+      <a href="#verify">谁来验怎么验</a>
+      <a href="#battle-tips">实战避坑</a>
+      <a href="#practices">实战用法</a>
+      <a href="#skills">用到哪些 skill</a>
+      <a href="#docs">原文与依据</a>
+      </nav>
+      <nav class="nav" aria-label="站点导航">
         <div class="nav-g"><span class="nav-h">流程</span>
       <a href="./">总览</a>
       <a href="need.html" class="on">需求</a>
@@ -238,18 +257,10 @@
       <a href="docs.html">原始文档</a>
       </div>
       </nav>
-      <div class="subnav"><span class="sub-h">本页</span>
-      <a href="#branches">走哪条路</a>
-      <a href="#verify">谁来验怎么验</a>
-      <a href="#battle-tips">实战避坑</a>
-      <a href="#practices">实战用法</a>
-      <a href="#skills">用到哪些 skill</a>
-      <a href="#docs">原文与依据</a>
-      </div>
     </details>
   </aside>
   <div class="content">
-    <main>
+    <main id="main" tabindex="-1">
       <div class="crumb"><a href="./">总览</a> / 需求</div>
       <h1><span class="num">01</span>需求</h1>
 <p class="lede">把「我想做个 X」变成一句话：谁在什么情况下用、用完他能做什么以前做不到的事。</p>
