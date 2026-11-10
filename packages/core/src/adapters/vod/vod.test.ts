@@ -3,17 +3,33 @@ import type { ReferenceAnalysis } from '@mas/shared';
 import { createVodVisionAnalyzer } from './index.js';
 
 const analysis: ReferenceAnalysis = {
-  hook: { pattern: 'problem-agitation', text: 'Tired of long routines?', durationSec: 2, whyItWorks: 'Names a pain.' },
+  hook: {
+    pattern: 'problem-agitation',
+    text: 'Tired of long routines?',
+    durationSec: 2,
+    whyItWorks: 'Names a pain.',
+  },
   beats: [
     { name: 'problem', startSec: 2, endSec: 8, purpose: 'Agitate' },
     { name: 'mechanism', startSec: 8, endSec: 16, purpose: 'Show the fix' },
   ],
   shots: [
-    { index: 0, kind: 'a-roll', startSec: 0, endSec: 8, action: 'Person at a mirror', reuse: 'reshoot-required' },
+    {
+      index: 0,
+      kind: 'a-roll',
+      startSec: 0,
+      endSec: 8,
+      action: 'Person at a mirror',
+      reuse: 'reshoot-required',
+    },
   ],
   voiceover: [{ startSec: 2, endSec: 8, line: 'It used to take an hour.' }],
   audio: { source: 'original voiceover', rights: 'clearable' },
-  captionFormula: { template: '<pain>? <fix>', example: 'Tired? Try this.', hashtagStrategy: 'category' },
+  captionFormula: {
+    template: '<pain>? <fix>',
+    example: 'Tired? Try this.',
+    hashtagStrategy: 'category',
+  },
   callToAction: { text: 'Try it tonight', mechanism: 'Low effort' },
   transferability: { score: 0.7, blockers: [] },
 };
@@ -37,7 +53,10 @@ describe('vod vision adapter', () => {
       return okResponse(JSON.stringify(analysis));
     };
 
-    const result = await analyzer(fake).analyze({ url: 'https://tiktok.test/v/1', brandContext: 'skincare' });
+    const result = await analyzer(fake).analyze({
+      url: 'https://tiktok.test/v/1',
+      brandContext: 'skincare',
+    });
     expect(result).toEqual(analysis);
 
     const parsed = JSON.parse(body ?? '{}') as {
@@ -46,13 +65,19 @@ describe('vod vision adapter', () => {
     };
     expect(parsed.model).toBe('gemini-3.1-flash-lite');
     const parts = parsed.messages[1]?.content ?? [];
-    expect(parts.some((part) => part.type === 'video_url' && part.video_url?.url === 'https://tiktok.test/v/1')).toBe(true);
+    expect(
+      parts.some(
+        (part) => part.type === 'video_url' && part.video_url?.url === 'https://tiktok.test/v/1',
+      ),
+    ).toBe(true);
   });
 
   it('accepts content parts and fenced JSON', async () => {
     const fake: typeof fetch = async () =>
       okResponse([{ type: 'text', text: `\`\`\`json\n${JSON.stringify(analysis)}\n\`\`\`` }]);
-    await expect(analyzer(fake).analyze({ url: 'u', brandContext: 'b' })).resolves.toEqual(analysis);
+    await expect(analyzer(fake).analyze({ url: 'u', brandContext: 'b' })).resolves.toEqual(
+      analysis,
+    );
   });
 
   it('rejects a response that does not match ReferenceAnalysis', async () => {

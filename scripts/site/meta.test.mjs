@@ -28,11 +28,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BUILD = join(ROOT, 'scripts', 'site', 'build.mjs');
 const ORIGIN = 'https://main.luteos.com';
 
-const build = (siteDir) => promisify(execFile)(process.execPath, [BUILD], {
-  env: { ...process.env, SITE_DIR: siteDir },
-})
-  .then((r) => ({ code: 0, out: r.stdout + r.stderr }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const build = (siteDir) =>
+  promisify(execFile)(process.execPath, [BUILD], {
+    env: { ...process.env, SITE_DIR: siteDir },
+  })
+    .then((r) => ({ code: 0, out: r.stdout + r.stderr }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 async function withBuiltSite(run) {
   const site = await mkdtemp(join(tmpdir(), 'site-meta-'));

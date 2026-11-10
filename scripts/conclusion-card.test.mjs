@@ -20,9 +20,10 @@ import { writeAndConfirm } from './test-fs.mjs';
 import { checkCard } from './conclusion-card.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const run = (args) => promisify(execFile)(process.execPath, [join(ROOT, 'scripts/conclusion-card.mjs'), ...args])
-  .then((r) => ({ code: 0, out: r.stdout }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const run = (args) =>
+  promisify(execFile)(process.execPath, [join(ROOT, 'scripts/conclusion-card.mjs'), ...args])
+    .then((r) => ({ code: 0, out: r.stdout }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 const good = (over = {}) => ({
   id: 'C1',
@@ -42,18 +43,30 @@ test('a real card passes', () => {
 
 test('a claim with no number fails — it cannot be wrong, so it cannot be checked', () => {
   const p = checkCard(good({ claim: '更好的表现' }));
-  assert.ok(p.some((x) => /has no number/.test(x)), p.join('\n'));
-  assert.ok(p.some((x) => /hedge/.test(x)), 'the hedge is also reported, not just the missing number');
+  assert.ok(
+    p.some((x) => /has no number/.test(x)),
+    p.join('\n'),
+  );
+  assert.ok(
+    p.some((x) => /hedge/.test(x)),
+    'the hedge is also reported, not just the missing number',
+  );
 });
 
 test('a hedge in a quantified claim still fails — the number does not launder the adjective', () => {
   const p = checkCard(good({ claim: '声量提升 10% 后 GMV 可能有明显改善' }));
-  assert.ok(p.some((x) => /hedge/.test(x)), p.join('\n'));
+  assert.ok(
+    p.some((x) => /hedge/.test(x)),
+    p.join('\n'),
+  );
 });
 
 test('范围 without a time window fails — a region alone cannot be re-checked later', () => {
   const p = checkCard(good({ scope: 'US 和 DE' }));
-  assert.ok(p.some((x) => /time window/.test(x)), p.join('\n'));
+  assert.ok(
+    p.some((x) => /time window/.test(x)),
+    p.join('\n'),
+  );
   // …while the same text with a window passes that field.
   assert.deepEqual(checkCard(good({ scope: 'US 和 DE · 2025 全年' })), []);
 });
@@ -71,19 +84,28 @@ test('a backwards interval fails', () => {
 
 test('依据 with no version or artefact fails — it is a link, not a path', () => {
   const p = checkCard(good({ basis: ['看了很多数据'] }));
-  assert.ok(p.some((x) => /no version or traceable artefact/.test(x)), p.join('\n'));
+  assert.ok(
+    p.some((x) => /no version or traceable artefact/.test(x)),
+    p.join('\n'),
+  );
 });
 
 test('没有证伪条件 fails, and an unregistered condition name fails differently', () => {
   assert.ok(checkCard(good({ conditions: [] })).some((x) => /cannot be overturned/.test(x)));
   const p = checkCard(good({ conditions: ['lag-has-peak', 'sounds-right'] }));
-  assert.ok(p.some((x) => /not a registered condition/.test(x)), p.join('\n'));
+  assert.ok(
+    p.some((x) => /not a registered condition/.test(x)),
+    p.join('\n'),
+  );
   assert.ok(!p.some((x) => /lag-has-peak/.test(x)), 'a registered name must not be reported');
 });
 
 test('决策含义 that names a state of mind fails, and says why', () => {
   const p = checkCard(good({ decision: '有助于决策' }));
-  assert.ok(p.some((x) => /state of mind/.test(x)), p.join('\n'));
+  assert.ok(
+    p.some((x) => /state of mind/.test(x)),
+    p.join('\n'),
+  );
   assert.ok(p.some((x) => /Name the thing someone does differently on Monday/.test(x)));
 });
 
@@ -106,5 +128,7 @@ async function withDoc(doc) {
     const p = join(dir, 'cards.json');
     await writeAndConfirm(p, JSON.stringify(doc));
     return await run([p]);
-  } finally { await rm(dir, { recursive: true, force: true }); }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 }

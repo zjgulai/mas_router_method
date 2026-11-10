@@ -18,16 +18,19 @@ import { promisify } from 'node:util';
 import { writeAndConfirm } from './test-fs.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const run = (args) => promisify(execFile)(process.execPath, [join(ROOT, 'scripts/metric-card.mjs'), ...args])
-  .then((r) => ({ code: 0, out: r.stdout }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const run = (args) =>
+  promisify(execFile)(process.execPath, [join(ROOT, 'scripts/metric-card.mjs'), ...args])
+    .then((r) => ({ code: 0, out: r.stdout }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 async function checkCard(text) {
   const dir = await mkdtemp(join(tmpdir(), 'metric-'));
   try {
     await writeAndConfirm(join(dir, 'card.md'), text);
     return await run(['check', dir]);
-  } finally { await rm(dir, { recursive: true, force: true }); }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 }
 
 const card = (over = {}) => {
@@ -42,11 +45,17 @@ const card = (over = {}) => {
     什么时候不可用: '跨源去重阈值未标定时，不与上一期比较。',
     ...over,
   };
-  return Object.entries(fields).map(([k, v]) => `## ${k}\n\n${v}\n`).join('\n');
+  return Object.entries(fields)
+    .map(([k, v]) => `## ${k}\n\n${v}\n`)
+    .join('\n');
 };
 
 test('the template fails its own check — eight copied headings certify nothing', async () => {
-  const { stdout } = await promisify(execFile)(process.execPath, [join(ROOT, 'scripts/metric-card.mjs'), 'new', 'X']);
+  const { stdout } = await promisify(execFile)(process.execPath, [
+    join(ROOT, 'scripts/metric-card.mjs'),
+    'new',
+    'X',
+  ]);
   const { code, out } = await checkCard(stdout);
   assert.equal(code, 1, out);
   assert.match(out, /still holds the template's placeholder/);
@@ -103,7 +112,7 @@ test('a field that only restates its own heading fails', async () => {
   assert.match(out, /restates its own name/);
 });
 
-test('the repo\'s committed cards all pass', async () => {
+test("the repo's committed cards all pass", async () => {
   const { code, out } = await run(['check']);
   assert.equal(code, 0, out);
 });

@@ -30,8 +30,12 @@ import { pathToFileURL } from 'node:url';
 import { WORK } from './schema.mjs';
 import { sections, section, skipReason, tablesIn } from './markdown.mjs';
 
-const RED = '\x1b[31m', YELLOW = '\x1b[33m', GREEN = '\x1b[32m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  YELLOW = '\x1b[33m',
+  GREEN = '\x1b[32m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
 const NOTHING_TO_READ = 3;
 
@@ -51,7 +55,10 @@ export function pickLatest(records) {
     const m = /^D-(\d+)/.exec(r.id ?? '');
     if (m === null) continue;
     const n = Number(m[1]);
-    if (n > bestN) { bestN = n; best = r.id; }
+    if (n > bestN) {
+      bestN = n;
+      best = r.id;
+    }
   }
   return best;
 }
@@ -130,8 +137,8 @@ async function resolveRecord() {
  * a test path, so it takes the usage branch and sets a failing exit code. The
  * tests all passed and the file still reported failure.
  */
-const isMain = process.argv[1] !== undefined
-  && import.meta.url === pathToFileURL(process.argv[1]).href;
+const isMain =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 const cmd = positional[0] ?? '';
 
@@ -141,7 +148,9 @@ if (!isMain) {
   const records = await load(dir);
   if (records.length === 0) {
     console.log(`no confirmed design record in ${dir}`);
-    console.log(`${DIM}Nothing to read — which is not the same as "the design says there is nothing".${RESET}`);
+    console.log(
+      `${DIM}Nothing to read — which is not the same as "the design says there is nothing".${RESET}`,
+    );
     process.exitCode = NOTHING_TO_READ;
   } else {
     console.log(pickLatest(records));
@@ -157,7 +166,9 @@ if (!isMain) {
       const rules = section(text, '应答规则');
       let ruleCount = 0;
       if (rules !== undefined) {
-        console.log(`${BOLD}${record.id}${RESET} ${DIM}应答规则 / how each case is answered${RESET}\n`);
+        console.log(
+          `${BOLD}${record.id}${RESET} ${DIM}应答规则 / how each case is answered${RESET}\n`,
+        );
         const skipRules = skipReason(rules.body);
         if (skipRules !== null) console.log(`${YELLOW}跳过：${skipRules}${RESET}`);
         else {
@@ -171,38 +182,53 @@ if (!isMain) {
         console.log();
       }
       const sec = section(text, '拒绝清单');
-      console.log(`${BOLD}${record.id}${RESET} ${DIM}拒绝清单 / what it must refuse（只有禁令）${RESET}\n`);
+      console.log(
+        `${BOLD}${record.id}${RESET} ${DIM}拒绝清单 / what it must refuse（只有禁令）${RESET}\n`,
+      );
       if (sec === undefined) {
-        console.log(`${YELLOW}no 「拒绝清单」 section — this record does not say what it refuses${RESET}`);
+        console.log(
+          `${YELLOW}no 「拒绝清单」 section — this record does not say what it refuses${RESET}`,
+        );
       } else {
         const skip = skipReason(sec.body);
         if (skip !== null) {
           // 关键区分：跳过是有理由的空白，不是「没有要拒绝的」。
           console.log(`${YELLOW}跳过：${skip}${RESET}`);
           console.log(`${DIM}This layer of guardrails is empty by decision, not by oversight.`);
-          console.log(`Stage verify must report it that way rather than as "nothing to refuse".${RESET}`);
+          console.log(
+            `Stage verify must report it that way rather than as "nothing to refuse".${RESET}`,
+          );
         } else {
-          const rows = sec.body.split('\n')
+          const rows = sec.body
+            .split('\n')
             .map((l) => l.trim())
             .filter((l) => l.startsWith('-') || l.startsWith('|'));
           for (const row of rows) console.log(row);
           const concrete = rows.filter((r) => /→|->/.test(r)).length;
           console.log(`\n${DIM}拒绝清单：${concrete} of ${rows.length} 行写出了具体输入 → 行为。`);
-          console.log(`（这条计数只覆盖禁令，不含上面的应答规则——两者加起来才是验收阶段的工作量。）`);
-          console.log(`禁令 ${concrete} 条 + 规则 ${ruleCount} 行 = ${concrete + ruleCount} 条检查。${RESET}`);
+          console.log(
+            `（这条计数只覆盖禁令，不含上面的应答规则——两者加起来才是验收阶段的工作量。）`,
+          );
+          console.log(
+            `禁令 ${concrete} 条 + 规则 ${ruleCount} 行 = ${concrete + ruleCount} 条检查。${RESET}`,
+          );
         }
       }
     } else {
       const flow = section(text, '流程形状');
       const perms = section(text, '动作权限');
-      console.log(`${BOLD}${record.id}${RESET} ${DIM}约束 / what the build stage must respect${RESET}\n`);
+      console.log(
+        `${BOLD}${record.id}${RESET} ${DIM}约束 / what the build stage must respect${RESET}\n`,
+      );
 
       console.log(`${BOLD}流程形状${RESET}`);
       if (flow === undefined) console.log(`${YELLOW}(no section)${RESET}`);
       else {
         const count = /判断点[：:]\s*(\S+)/.exec(flow.body);
         console.log(count === null ? flow.body : `判断点：${count[1]}`);
-        console.log(`${DIM}Judgement points must stay judgement: do not hard-code them into a special case.${RESET}`);
+        console.log(
+          `${DIM}Judgement points must stay judgement: do not hard-code them into a special case.${RESET}`,
+        );
       }
 
       console.log(`\n${BOLD}动作权限${RESET}`);
@@ -210,12 +236,16 @@ if (!isMain) {
       else {
         const skip = skipReason(perms.body);
         if (skip !== null) console.log(`${YELLOW}跳过：${skip}${RESET}`);
-        else for (const row of perms.body.split('\n').filter((l) => l.trim().startsWith('|'))) console.log(row.trim());
+        else
+          for (const row of perms.body.split('\n').filter((l) => l.trim().startsWith('|')))
+            console.log(row.trim());
       }
     }
     console.log();
   }
 } else {
-  console.error('usage: design.mjs latest | refusals [D-NNN] | constraints [D-NNN]  [--dir <path>]');
+  console.error(
+    'usage: design.mjs latest | refusals [D-NNN] | constraints [D-NNN]  [--dir <path>]',
+  );
   process.exitCode = 1;
 }

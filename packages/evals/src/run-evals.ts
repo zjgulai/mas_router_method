@@ -96,7 +96,9 @@ async function main(): Promise<void> {
   const selected = selectCases(options);
 
   if (options.selfTest) {
-    console.log('SELF-TEST: fixture artifacts, no model call. This verifies plumbing, not quality.');
+    console.log(
+      'SELF-TEST: fixture artifacts, no model call. This verifies plumbing, not quality.',
+    );
   }
 
   const results: CaseResult[] = [];
@@ -135,7 +137,9 @@ async function main(): Promise<void> {
     const mark = result.inconclusive ? '??? ' : result.passed ? 'PASS' : 'FAIL';
     console.log(`  ${mark}  ${result.caseId.padEnd(26)} ${describe(result)}`);
   }
-  console.log(`\nGuardrail failures: ${suite.guardrailFailures.length === 0 ? 'none' : suite.guardrailFailures.join(', ')}`);
+  console.log(
+    `\nGuardrail failures: ${suite.guardrailFailures.length === 0 ? 'none' : suite.guardrailFailures.join(', ')}`,
+  );
   console.log(
     `Guardrail inconclusive: ${suite.guardrailInconclusive.length === 0 ? 'none' : `${suite.guardrailInconclusive.join(', ')} (an outage is not a refusal)`}`,
   );

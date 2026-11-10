@@ -64,6 +64,17 @@ is a second derivation, not a second reading of the same command.
 If the parts do not sum to the total, one of them is wrong — and the total is the one
 people quote.
 
+## 机械部分（已封装）
+
+两种数法不用手抄命令，直接跑：
+
+```
+node scripts/anb-check.mjs count <file> --pattern '<regex>'
+```
+
+它同时给出「匹配的行数」与「匹配的次数」，不一致时退出码 1——就是下面那个 `grep -c` 陷阱。
+回报写好后用 `node scripts/anb-check.mjs report <file>` 校验格式与自洽，别自己目测。
+
 ## Report back in this shape
 
 > Counting: `<what>`. Method A: `<command>` = `<n>`. Method B: `<command>` = `<m>`.

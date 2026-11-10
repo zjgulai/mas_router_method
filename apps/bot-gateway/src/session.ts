@@ -19,10 +19,7 @@ export interface SessionStoreLike {
  * few turns. This is fast but does not survive a restart.
  */
 export class SessionStore implements SessionStoreLike {
-  private readonly entries = new Map<
-    string,
-    { turns: ConversationTurn[]; expiresAt: number }
-  >();
+  private readonly entries = new Map<string, { turns: ConversationTurn[]; expiresAt: number }>();
 
   constructor(
     private readonly ttlMs = 30 * 60_000,
@@ -140,8 +137,7 @@ export class SqliteSessionStore implements SessionStoreLike {
   get size(): number {
     this.db.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(Date.now());
     const row = this.db.prepare('SELECT COUNT(*) AS count FROM sessions').get() as
-      | { count?: unknown }
-      | undefined;
+      { count?: unknown } | undefined;
     return typeof row?.count === 'number' ? row.count : 0;
   }
 
@@ -167,15 +163,15 @@ export function createSessionStore(
   }
 }
 
-/** Stable session key: thread > root > p2p chat; top-level group = no session. */
+/** Stable session key: one session per chat. Topics/threads do not split it. */
 export function sessionKeyFor(message: {
   chatType: 'p2p' | 'group';
   chatId: string;
   threadId?: string;
   rootId?: string;
-}): string | undefined {
-  if (message.threadId !== undefined) return `thread:${message.threadId}`;
-  if (message.rootId !== undefined) return `root:${message.rootId}`;
-  if (message.chatType === 'p2p') return `chat:${message.chatId}`;
-  return undefined;
+}): string {
+  // threadId/rootId stay in the signature so callers can pass a NormalisedMessage
+  // unchanged; they are deliberately ignored. The long-connection event stream is
+  // the transport, and the chat is the conversation boundary.
+  return `chat:${message.chatId}`;
 }

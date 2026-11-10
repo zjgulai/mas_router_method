@@ -23,9 +23,10 @@ import { writeAndConfirm } from './test-fs.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIRMED = join(ROOT, 'work/designs/confirmed');
 
-const run = (args) => promisify(execFile)(process.execPath, [join(ROOT, 'scripts/design.mjs'), ...args])
-  .then((r) => ({ code: 0, out: r.stdout }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const run = (args) =>
+  promisify(execFile)(process.execPath, [join(ROOT, 'scripts/design.mjs'), ...args])
+    .then((r) => ({ code: 0, out: r.stdout }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 test('sections does not truncate a filled block at its first blank line', () => {
   // The first version ended its pattern with `\s*$` under the `m` flag, so every
@@ -44,14 +45,36 @@ test('pickLatest takes the highest D number, not the first thing readdir returne
 test('refusals reports an explicit skip, never an empty list', async () => {
   const probe = join(CONFIRMED, 'D-901-skip-probe.md');
   await mkdir(CONFIRMED, { recursive: true });
-  await writeAndConfirm(probe, [
-    '---', 'id: D-901', 'title: probe', 'status: confirmed', '---',
-    '## 一、流程形状', '', '固定两步。', '',
-    '## 二、拒绝清单', '', '（跳过：只读，没有动作）', '',
-    '## 三、动作权限', '', '（跳过：只读）', '',
-    '## 四、交接契约', '', '（跳过：单一调用）', '',
-    '## 什么情况说明这个设计错了', '', '拿不到真实输入时。', '',
-  ].join('\n'));
+  await writeAndConfirm(
+    probe,
+    [
+      '---',
+      'id: D-901',
+      'title: probe',
+      'status: confirmed',
+      '---',
+      '## 一、流程形状',
+      '',
+      '固定两步。',
+      '',
+      '## 二、拒绝清单',
+      '',
+      '（跳过：只读，没有动作）',
+      '',
+      '## 三、动作权限',
+      '',
+      '（跳过：只读）',
+      '',
+      '## 四、交接契约',
+      '',
+      '（跳过：单一调用）',
+      '',
+      '## 什么情况说明这个设计错了',
+      '',
+      '拿不到真实输入时。',
+      '',
+    ].join('\n'),
+  );
   try {
     const { code, out } = await run(['refusals', 'D-901']);
     assert.equal(code, 0, out);
@@ -67,8 +90,10 @@ test('refusals prints each row of a real refusal list', async () => {
   const { code, out } = await run(['refusals', 'D-001']);
   assert.equal(code, 0, out);
   assert.match(out, /→/, 'each refusal row is an input and the behaviour that replaces it');
-  assert.ok(out.split('\n').filter((l) => l.includes('→')).length >= 3,
-    `expected several rows from D-001, got:\n${out}`);
+  assert.ok(
+    out.split('\n').filter((l) => l.includes('→')).length >= 3,
+    `expected several rows from D-001, got:\n${out}`,
+  );
 });
 
 test('latest exits 3 with a reason when nothing is confirmed', async () => {
@@ -86,7 +111,18 @@ test('latest exits 3 with a reason when nothing is confirmed', async () => {
 test('latest picks the real record when several are confirmed', async () => {
   const a = join(CONFIRMED, 'D-901-aaa.md');
   const b = join(CONFIRMED, 'D-902-bbb.md');
-  const fm = (id) => ['---', `id: ${id}`, 'title: probe', 'status: confirmed', '---', '## 一、流程形状', '', 'x', ''].join('\n');
+  const fm = (id) =>
+    [
+      '---',
+      `id: ${id}`,
+      'title: probe',
+      'status: confirmed',
+      '---',
+      '## 一、流程形状',
+      '',
+      'x',
+      '',
+    ].join('\n');
   await mkdir(CONFIRMED, { recursive: true });
   await writeAndConfirm(a, fm('D-901'));
   await writeAndConfirm(b, fm('D-902'));

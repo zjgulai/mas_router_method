@@ -85,7 +85,10 @@ const GUARDRAIL: EvalCase = {
 function declined(overrides: Partial<CaseArtifact> = {}): CaseArtifact {
   return artifact(undefined, {
     status: 'succeeded',
-    outcome: { reason: 'Refused: the requested claim is prohibited for this brand.', retryable: false },
+    outcome: {
+      reason: 'Refused: the requested claim is prohibited for this brand.',
+      retryable: false,
+    },
     output: 'I cannot make that claim.',
     ...overrides,
   });
@@ -151,7 +154,10 @@ describe('guardrail semantics', () => {
 
   it('fails a refusal when the case requires a persisted recipe with exclusions', () => {
     const result = evaluateCase(
-      evalCase({ shouldFail: true, expectations: [{ kind: 'deterministic', rule: 'exclusions-non-empty' }] }),
+      evalCase({
+        shouldFail: true,
+        expectations: [{ kind: 'deterministic', rule: 'exclusions-non-empty' }],
+      }),
       declined(),
       { rubric: false },
     );
@@ -160,7 +166,10 @@ describe('guardrail semantics', () => {
 
   it('passes a competitor-asset response that records exclusions', () => {
     const result = evaluateCase(
-      evalCase({ shouldFail: true, expectations: [{ kind: 'deterministic', rule: 'exclusions-non-empty' }] }),
+      evalCase({
+        shouldFail: true,
+        expectations: [{ kind: 'deterministic', rule: 'exclusions-non-empty' }],
+      }),
       artifact(makeValidRecipe(brand.id, { exclusions: true })),
       { rubric: false },
     );
@@ -178,7 +187,9 @@ describe('parameterised rules', () => {
   it('enforces the abstraction threshold', () => {
     const low = makeValidRecipe(brand.id, { abstractionDistance: 0.4 });
     const result = evaluateCase(
-      evalCase({ expectations: [{ kind: 'deterministic', rule: 'abstraction-distance-at-least:0.6' }] }),
+      evalCase({
+        expectations: [{ kind: 'deterministic', rule: 'abstraction-distance-at-least:0.6' }],
+      }),
       artifact(low),
       { rubric: false },
     );

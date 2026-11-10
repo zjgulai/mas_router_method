@@ -42,7 +42,6 @@ function linksTo(html, target) {
   return new RegExp(`href="(?:\\./)?${esc}(?=["#])`).test(html);
 }
 
-
 test('the router names every stage skill and the management skill', async () => {
   const { stages } = await loadSchema();
   const router = await read('.claude/skills/anb/SKILL.md');
@@ -55,8 +54,8 @@ test('the router names every stage skill and the management skill', async () => 
   }
   assert.ok(
     mentions(router, 'anb-manage'),
-    'the router never names anb-manage — the management layer becomes unreachable from the '
-    + 'documented entry point, which is exactly how it was lost the first time',
+    'the router never names anb-manage — the management layer becomes unreachable from the ' +
+      'documented entry point, which is exactly how it was lost the first time',
   );
 });
 
@@ -67,27 +66,20 @@ test('the site: every stage page and the management page is linked from the two 
   for (const page of ['index.html', 'branches.html']) {
     const html = await read(`docs/site/${page}`);
     for (const target of required) {
-      assert.ok(
-        linksTo(html, target),
-        `docs/site/${page} does not link to ${target}`,
-      );
+      assert.ok(linksTo(html, target), `docs/site/${page} does not link to ${target}`);
     }
   }
 });
 
 test('the nav bar reaches management from every generated page', async () => {
   const { readdir } = await import('node:fs/promises');
-  const pages = (await readdir(join(ROOT, 'docs/site')))
-    .filter((f) => f.endsWith('.html'));
+  const pages = (await readdir(join(ROOT, 'docs/site'))).filter((f) => f.endsWith('.html'));
 
   assert.ok(pages.length >= 13, `expected the generated pages, found ${pages.length}`);
   for (const page of pages) {
     const html = await read(`docs/site/${page}`);
     // 顶部导航在每一页都有，所以管理在任何一页都只需一次点击。
-    assert.ok(
-      linksTo(html, 'manage.html'),
-      `docs/site/${page} has no link to the management page`,
-    );
+    assert.ok(linksTo(html, 'manage.html'), `docs/site/${page} has no link to the management page`);
   }
 });
 
@@ -139,8 +131,16 @@ test('the stages that consume a design record actually say to read it', async ()
     'the verify stage must read the refusal list — its guardrail checks come from there',
   );
   // 三种结果必须被区分开：有行、显式跳过、没有记录。混为一谈就是假通过。
-  assert.match(judgeable, /跳过/, 'the verify stage must handle an explicitly skipped refusal list');
-  assert.match(judgeable, /Exit code 3|退出码 3/, 'the verify stage must handle "no design record" without skipping silently');
+  assert.match(
+    judgeable,
+    /跳过/,
+    'the verify stage must handle an explicitly skipped refusal list',
+  );
+  assert.match(
+    judgeable,
+    /Exit code 3|退出码 3/,
+    'the verify stage must handle "no design record" without skipping silently',
+  );
 
   const runnable = await read('.claude/skills/anb-runnable/SKILL.md');
   assert.match(
@@ -156,12 +156,32 @@ test('the iterate stage closes the loop from observation back into a register', 
   // 「自进化闭环」如果不落在寄存器里，就只是这一页上的一句话。
   const reusable = await read('.claude/skills/anb-reusable/SKILL.md');
 
-  assert.match(reusable, /## What to change/, 'the iterate stage must act on what the observation said, not only on what to keep');
-  assert.match(reusable, /ran|cost|failed/i, 'the loop starts from the operate stage\'s three numbers');
-  assert.match(reusable, /work\/requirements\//, 'a changed need goes back as a requirement, or the loop is not closed');
-  assert.match(reusable, /work\/tickets\//, 'committed work goes back as a ticket, or the conclusion stays in the conversation');
+  assert.match(
+    reusable,
+    /## What to change/,
+    'the iterate stage must act on what the observation said, not only on what to keep',
+  );
+  assert.match(
+    reusable,
+    /ran|cost|failed/i,
+    "the loop starts from the operate stage's three numbers",
+  );
+  assert.match(
+    reusable,
+    /work\/requirements\//,
+    'a changed need goes back as a requirement, or the loop is not closed',
+  );
+  assert.match(
+    reusable,
+    /work\/tickets\//,
+    'committed work goes back as a ticket, or the conclusion stays in the conversation',
+  );
 
   // 站点与技能必须说同一件事，否则站点描述的是一个不存在的流程。
   const site = await read('docs/site/iterate.html');
-  assert.match(site, /work\/requirements\//, 'the iterate page must name the same destination as the skill');
+  assert.match(
+    site,
+    /work\/requirements\//,
+    'the iterate page must name the same destination as the skill',
+  );
 });

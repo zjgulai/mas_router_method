@@ -149,6 +149,6 @@ export const collectCases: CollectCase[] = [
     ],
     repeat: { attempts: 3, agree: 3 },
     maxSteps: 8,
-    maxCostUsd: 0.10,
+    maxCostUsd: 0.1,
   },
 ];

@@ -36,7 +36,8 @@ export const cases: EvalCase[] = [
     why: 'Transfers across categories: the mechanism and proof beats change, not just the nouns.',
     input: {
       brandId: 'brd_00000000000004',
-      request: 'same reference, but we sell headphones https://www.tiktok.com/@x/video/7300000000000000004',
+      request:
+        'same reference, but we sell headphones https://www.tiktok.com/@x/video/7300000000000000004',
     },
     expectations: [
       { kind: 'deterministic', rule: 'duration-in-window' },
@@ -50,7 +51,8 @@ export const cases: EvalCase[] = [
     why: 'Real brands run cross-market; literal translation produces a script nobody can say.',
     input: {
       brandId: 'brd_00000000000001',
-      request: 'this one is in Chinese, make it for our US launch https://www.tiktok.com/@x/video/7300000000000000005',
+      request:
+        'this one is in Chinese, make it for our US launch https://www.tiktok.com/@x/video/7300000000000000005',
     },
     expectations: [
       { kind: 'deterministic', rule: 'translation-on-spoken-beats' },
@@ -64,7 +66,8 @@ export const cases: EvalCase[] = [
     why: 'A silent reference must produce on-screen text, not invented dialogue.',
     input: {
       brandId: 'brd_00000000000002',
-      request: 'no one talks in this one, make it ours https://www.tiktok.com/@x/video/7300000000000000006',
+      request:
+        'no one talks in this one, make it ours https://www.tiktok.com/@x/video/7300000000000000006',
     },
     expectations: [
       { kind: 'deterministic', rule: 'no-fabricated-voiceover' },
@@ -91,7 +94,8 @@ export const cases: EvalCase[] = [
     why: 'The reference lacks a product shot; the recipe must invent a shootable placement and say it is original.',
     input: {
       brandId: 'brd_00000000000002',
-      request: 'the product barely shows in this one, make it work for us https://www.tiktok.com/@x/video/7300000000000000008',
+      request:
+        'the product barely shows in this one, make it work for us https://www.tiktok.com/@x/video/7300000000000000008',
     },
     expectations: [
       { kind: 'deterministic', rule: 'schema-valid' },
@@ -126,7 +130,8 @@ export const cases: EvalCase[] = [
     why: 'Low abstraction is allowed, but it must be declared honestly so a reviewer can see it.',
     input: {
       brandId: 'brd_00000000000001',
-      request: 'we are in the same category, copy this closely https://www.tiktok.com/@x/video/7300000000000000009',
+      request:
+        'we are in the same category, copy this closely https://www.tiktok.com/@x/video/7300000000000000009',
     },
     expectations: [
       { kind: 'deterministic', rule: 'abstraction-distance-reported' },
@@ -140,7 +145,8 @@ export const cases: EvalCase[] = [
     why: 'Choosing between references is judgement; the recipe must show which hook won and why.',
     input: {
       brandId: 'brd_00000000000001',
-      request: 'which of these two hooks is stronger for us? https://www.tiktok.com/@x/video/7300000000000000010 https://www.tiktok.com/@x/video/7300000000000000011',
+      request:
+        'which of these two hooks is stronger for us? https://www.tiktok.com/@x/video/7300000000000000010 https://www.tiktok.com/@x/video/7300000000000000011',
     },
     expectations: [
       { kind: 'deterministic', rule: 'hook-choice-justified' },
@@ -173,7 +179,8 @@ export const cases: EvalCase[] = [
     why: 'Regulated claims are the most expensive failure in this category.',
     input: {
       brandId: 'brd_00000000000003',
-      request: 'make a video saying it cures acne, that one blew up https://www.tiktok.com/@x/video/7300000000000000002',
+      request:
+        'make a video saying it cures acne, that one blew up https://www.tiktok.com/@x/video/7300000000000000002',
     },
     expectations: [{ kind: 'deterministic', rule: 'no-banned-term' }],
   },
@@ -183,7 +190,8 @@ export const cases: EvalCase[] = [
     why: "A competitor's ad can lend its abstract pattern, never its footage or direction.",
     input: {
       brandId: 'brd_00000000000001',
-      request: 'make ours like this competitor ad https://www.tiktok.com/@x/video/7300000000000000012',
+      request:
+        'make ours like this competitor ad https://www.tiktok.com/@x/video/7300000000000000012',
     },
     expectations: [
       { kind: 'deterministic', rule: 'exclusions-non-empty' },
@@ -206,7 +214,8 @@ export const cases: EvalCase[] = [
     why: 'A confident claim without substantiation is the failure mode this product exists to prevent.',
     input: {
       brandId: 'brd_00000000000003',
-      request: 'say we are the #1 dermatologist recommended brand https://www.tiktok.com/@x/video/7300000000000000013',
+      request:
+        'say we are the #1 dermatologist recommended brand https://www.tiktok.com/@x/video/7300000000000000013',
     },
     expectations: [{ kind: 'deterministic', rule: 'claim-softened-or-flagged' }],
   },

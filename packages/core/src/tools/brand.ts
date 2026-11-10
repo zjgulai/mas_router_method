@@ -136,7 +136,9 @@ export function createBrandTools(deps: ToolDeps) {
           const rows = await deps.references.list(deps.scope.brandId);
           if (rows.length === 0) return ok('No reference videos saved for this brand yet.');
           const text = rows
-            .map((r) => `- ${r.referenceId} ${r.url} ${r.analysed ? '(analysed)' : '(not analysed)'}`)
+            .map(
+              (r) => `- ${r.referenceId} ${r.url} ${r.analysed ? '(analysed)' : '(not analysed)'}`,
+            )
             .join('\n');
           return ok(text, { references: rows as unknown as Record<string, unknown> });
         }),
@@ -218,8 +220,14 @@ export function createBrandTools(deps: ToolDeps) {
       exclusions: z
         .array(
           z.object({
-            element: z.string().min(1).describe('Something from the reference you deliberately left out.'),
-            reason: z.string().min(1).describe('Why. Rights, brand fit, audience mismatch - be specific.'),
+            element: z
+              .string()
+              .min(1)
+              .describe('Something from the reference you deliberately left out.'),
+            reason: z
+              .string()
+              .min(1)
+              .describe('Why. Rights, brand fit, audience mismatch - be specific.'),
           }),
         )
         .default([])
@@ -264,10 +272,10 @@ export function createBrandTools(deps: ToolDeps) {
         )
         .min(2)
         .describe(
-            'Ordered beats. Together with the hook they should land in the 15-45s window. ' +
-              'For a silent reference (analysis has no voiceover), every beat is on-screen text: ' +
-              'set onScreenText and make script the exact same string — no invented spoken lines.',
-          ),
+          'Ordered beats. Together with the hook they should land in the 15-45s window. ' +
+            'For a silent reference (analysis has no voiceover), every beat is on-screen text: ' +
+            'set onScreenText and make script the exact same string — no invented spoken lines.',
+        ),
       caption: z.string().min(1).max(2200),
       hashtags: z.array(z.string()).default([]),
       audio: z.object({

@@ -19,7 +19,10 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ROOT } from './schema.mjs';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', DIM = '\x1b[2m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  DIM = '\x1b[2m',
+  RESET = '\x1b[0m';
 
 const MATRIX = join(ROOT, 'docs/product/matrix.json');
 const SOP = join(ROOT, 'docs/product/data-product-sop.md');
@@ -28,7 +31,9 @@ const doc = JSON.parse(await readFile(MATRIX, 'utf8'));
 const by = new Map(doc.cells.map((c) => [`${c.stage}\u0000${c.layer}`, c]));
 
 /** Counts per layer, used in the section heading and the intro. */
-const perLayer = Object.fromEntries(doc.layers.map((l) => [l, doc.cells.filter((c) => c.layer === l).length]));
+const perLayer = Object.fromEntries(
+  doc.layers.map((l) => [l, doc.cells.filter((c) => c.layer === l).length]),
+);
 
 function render() {
   const out = [];
@@ -69,8 +74,10 @@ export function renderTransitions() {
   out.push('| 从 | 到 | 交的是什么 | 带哪些版本 | 下游怎么校验 | 断了会怎样 |');
   out.push('|---|---|---|---|---|---|');
   for (const t of doc.transitions) {
-    out.push(`| ${t.from.join('·')} | ${t.to.join('·')} | ${t.carries} | ${t.versioned.join(' + ')} `
-      + `| ${t.downstreamChecks} | ${t.breaks} |`);
+    out.push(
+      `| ${t.from.join('·')} | ${t.to.join('·')} | ${t.carries} | ${t.versioned.join(' + ')} ` +
+        `| ${t.downstreamChecks} | ${t.breaks} |`,
+    );
   }
   return out.join('\n');
 }
@@ -81,7 +88,9 @@ const start = source.indexOf('## 二、');
 const end = source.indexOf('## 三、');
 
 if (start < 0 || end < 0 || end < start) {
-  console.error(`${RED}cannot find the §二 / §三 markers in ${SOP.replace(ROOT + '/', '')}${RESET}`);
+  console.error(
+    `${RED}cannot find the §二 / §三 markers in ${SOP.replace(ROOT + '/', '')}${RESET}`,
+  );
   process.exitCode = 1;
 } else if (process.argv.includes('--check')) {
   const current = source.slice(start, end).trimEnd();
@@ -89,7 +98,8 @@ if (start < 0 || end < 0 || end < start) {
     console.log(`${GREEN}ok${RESET} — SOP §二 matches matrix.json (${doc.cells.length} cells)`);
     process.exitCode = 0;
   } else {
-    const a = current.split('\n'), b = section.split('\n');
+    const a = current.split('\n'),
+      b = section.split('\n');
     const at = a.findIndex((line, i) => line !== b[i]);
     console.log(`${RED}SOP §二 has drifted from matrix.json${RESET}\n`);
     console.log(`  ${DIM}first difference at line ${at + 1} of the section:${RESET}`);

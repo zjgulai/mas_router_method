@@ -125,14 +125,10 @@ export class MainConsultAgent {
     // The node's own sources are the evidence contract. Pull them in even when
     // the query terms do not match code identifiers, then let the composer quote
     // from them first.
-    const earlyPlay = classification.needsContext
-      ? undefined
-      : findPlay(trimmed, history);
+    const earlyPlay = classification.needsContext ? undefined : findPlay(trimmed, history);
     const nodeId = earlyPlay?.nodeId ?? classification.node?.id;
     const evidenceNode =
-      nodeId === undefined
-        ? undefined
-        : this.graph.nodes.find((node) => node.id === nodeId);
+      nodeId === undefined ? undefined : this.graph.nodes.find((node) => node.id === nodeId);
     const sourceEvidence =
       evidenceNode === undefined
         ? []

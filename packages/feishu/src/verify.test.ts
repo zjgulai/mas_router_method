@@ -54,9 +54,7 @@ describe('parseFeishuBody', () => {
   });
 
   it('rejects a truncated ciphertext instead of crashing', () => {
-    expect(() => decryptEnvelope({ encrypt: 'AAAA' }, 'enc_key_xyz')).toThrow(
-      /too short/,
-    );
+    expect(() => decryptEnvelope({ encrypt: 'AAAA' }, 'enc_key_xyz')).toThrow(/too short/);
   });
 });
 

@@ -54,6 +54,15 @@ the same machinery.
 **Moves when you refresh.** Observation is counted. Whatever else the dashboard
 says, its traffic figure is inflated by the number of people looking at it.
 
+## 机械部分（已封装）
+
+```
+node scripts/anb-check.mjs reconcile --total <n> --parts <a,b,c>
+```
+
+分项相加与总数不符时退出码 1，并给出差额。回报写好后用
+`node scripts/anb-check.mjs report <file>` 校验「分项之和 = 等号右边 = Total」这一条自洽。
+
 ## Report back in this shape
 
 > Total: `<n>`. Parts: `<a> + <b> + <c> = <sum>`. Equal: `<yes/no, by how much>`.

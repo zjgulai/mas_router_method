@@ -13,8 +13,7 @@ export function recipeFromDraft(
   now: string,
 ): RecipeType {
   const raw = typeof draft === 'object' && draft !== null ? (draft as Record<string, unknown>) : {};
-  const referenceId =
-    typeof raw['referenceId'] === 'string' ? raw['referenceId'] : undefined;
+  const referenceId = typeof raw['referenceId'] === 'string' ? raw['referenceId'] : undefined;
   if (referenceId === undefined) throw new Error('draft.referenceId is required');
 
   const { referenceId: _referenceId, abstractionDistance, exclusions, ...rest } = raw;

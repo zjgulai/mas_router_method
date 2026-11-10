@@ -48,7 +48,10 @@ export function skipReason(body) {
  * for the other. The separator row (`---`) is consumed, not returned.
  */
 export function parseTable(text) {
-  const lines = text.split('\n').map((l) => l.trim()).filter((l) => l.includes('|'));
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.includes('|'));
   if (lines.length < 2) return null;
 
   const cells = (line) => {
@@ -64,7 +67,10 @@ export function parseTable(text) {
   if (sepAt < 1) return null;
 
   const header = cells(lines[sepAt - 1]);
-  const rows = lines.slice(sepAt + 1).filter((l) => !isSeparator(l)).map(cells);
+  const rows = lines
+    .slice(sepAt + 1)
+    .filter((l) => !isSeparator(l))
+    .map(cells);
   return { header, rows };
 }
 
@@ -95,5 +101,7 @@ export function tablesIn(body) {
 
 /** Find a table whose header contains every one of `needed`. */
 export function findTable(body, needed) {
-  return tablesIn(body).find((t) => needed.every((n) => t.header.some((h) => h.includes(n)))) ?? null;
+  return (
+    tablesIn(body).find((t) => needed.every((n) => t.header.some((h) => h.includes(n)))) ?? null
+  );
 }

@@ -22,12 +22,15 @@ import { writeAndConfirm } from './test-fs.mjs';
 import { cohenKappa } from './label-audit.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const run = (args) => promisify(execFile)(process.execPath, [join(ROOT, 'scripts/label-audit.mjs'), ...args])
-  .then((r) => ({ code: 0, out: r.stdout }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const run = (args) =>
+  promisify(execFile)(process.execPath, [join(ROOT, 'scripts/label-audit.mjs'), ...args])
+    .then((r) => ({ code: 0, out: r.stdout }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
-const csv = (rows) => 'id,gold,predicted,confidence\n'
-  + rows.map((r, i) => `${r.id ?? 'r' + i},${r.gold},${r.predicted},${r.confidence}`).join('\n') + '\n';
+const csv = (rows) =>
+  'id,gold,predicted,confidence\n' +
+  rows.map((r, i) => `${r.id ?? 'r' + i},${r.gold},${r.predicted},${r.confidence}`).join('\n') +
+  '\n';
 
 async function audit(rows) {
   const dir = await mkdtemp(join(tmpdir(), 'label-'));
@@ -36,29 +39,46 @@ async function audit(rows) {
     await writeAndConfirm(p, csv(rows));
     const { code, out } = await run([p, '--json']);
     return { code, json: JSON.parse(out) };
-  } finally { await rm(dir, { recursive: true, force: true }); }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 }
 
 /** n perfectly-labelled rows, split across two classes, confidence high. */
-const clean = (n = 60) => Array.from({ length: n }, (_, i) => ({
-  id: 'c' + i, gold: i % 2 ? 'positive' : 'negative',
-  predicted: i % 2 ? 'positive' : 'negative', confidence: 0.9,
-}));
+const clean = (n = 60) =>
+  Array.from({ length: n }, (_, i) => ({
+    id: 'c' + i,
+    gold: i % 2 ? 'positive' : 'negative',
+    predicted: i % 2 ? 'positive' : 'negative',
+    confidence: 0.9,
+  }));
 
 test('Kappa is 1 for perfect agreement and 0 for chance-level agreement', () => {
-  const perfect = [{ gold: 'a', predicted: 'a' }, { gold: 'b', predicted: 'b' }];
+  const perfect = [
+    { gold: 'a', predicted: 'a' },
+    { gold: 'b', predicted: 'b' },
+  ];
   assert.equal(cohenKappa(perfect).toFixed(6), '1.000000');
   // Symmetric disagreement: agreement equals what chance would give.
   const chance = [
-    { gold: 'a', predicted: 'a' }, { gold: 'a', predicted: 'b' },
-    { gold: 'b', predicted: 'a' }, { gold: 'b', predicted: 'b' },
+    { gold: 'a', predicted: 'a' },
+    { gold: 'a', predicted: 'b' },
+    { gold: 'b', predicted: 'a' },
+    { gold: 'b', predicted: 'b' },
   ];
   assert.equal(cohenKappa(chance).toFixed(6), '0.000000');
 });
 
 test('Kappa is NaN, not 0, when it is undefined — 0 is a finding, undefined is not', () => {
-  assert.ok(Number.isNaN(cohenKappa([{ gold: 'a', predicted: 'a' }, { gold: 'a', predicted: 'a' }])),
-    'one class on both sides makes Kappa undefined');
+  assert.ok(
+    Number.isNaN(
+      cohenKappa([
+        { gold: 'a', predicted: 'a' },
+        { gold: 'a', predicted: 'a' },
+      ]),
+    ),
+    'one class on both sides makes Kappa undefined',
+  );
   assert.ok(Number.isNaN(cohenKappa([])));
 });
 
@@ -72,7 +92,8 @@ test('always answering the majority class gets high accuracy and near-zero Kappa
   // 80% one class: accuracy 80%, Kappa 0. This is the case a naive report calls fine.
   const rows = Array.from({ length: 100 }, (_, i) => ({
     gold: i % 5 === 0 ? 'negative' : 'positive',
-    predicted: 'positive', confidence: 0.9,
+    predicted: 'positive',
+    confidence: 0.9,
   }));
   const { code, json } = await audit(rows);
   assert.ok(json.accuracy >= 0.7, `accuracy ${json.accuracy} should look fine`);
@@ -91,7 +112,12 @@ test('inverted confidence fails even when accuracy and Kappa are fine', async ()
   }
   for (let i = 0; i < 20; i++) {
     const gold = i % 2 ? 'positive' : 'negative';
-    rows.push({ id: 'hi' + i, gold, predicted: gold === 'positive' ? 'negative' : 'positive', confidence: 0.95 });
+    rows.push({
+      id: 'hi' + i,
+      gold,
+      predicted: gold === 'positive' ? 'negative' : 'positive',
+      confidence: 0.95,
+    });
   }
   const { code, json } = await audit(rows);
   assert.ok(json.accuracy >= 0.7, `accuracy ${json.accuracy}`);
@@ -104,7 +130,9 @@ test('inverted confidence fails even when accuracy and Kappa are fine', async ()
 
 test('a single-class gold set is inconclusive, not failed and not passed', async () => {
   const rows = Array.from({ length: 40 }, (_, i) => ({
-    gold: 'positive', predicted: i % 3 ? 'positive' : 'negative', confidence: 0.9,
+    gold: 'positive',
+    predicted: i % 3 ? 'positive' : 'negative',
+    confidence: 0.9,
   }));
   const { code, json } = await audit(rows);
   assert.equal(json.verdict, 'inconclusive', JSON.stringify(json.blockers, null, 2));
@@ -119,7 +147,7 @@ test('too few rows is inconclusive — twenty rows cannot carry two decimals', a
   assert.match(json.blockers.join('\n'), /below 30/);
 });
 
-test('a gold set below the design\'s 200 is computed but flagged, and still exits 0 when clean', async () => {
+test("a gold set below the design's 200 is computed but flagged, and still exits 0 when clean", async () => {
   const { code, json } = await audit(clean(60));
   assert.equal(code, 0);
   assert.equal(json.recommendedRows, 200);
@@ -130,13 +158,18 @@ test('a gold set below the design\'s 200 is computed but flagged, and still exit
       const p = join(dir, 'gold.csv');
       await writeAndConfirm(p, csv(clean(60)));
       return await run([p]);
-    } finally { await rm(dir, { recursive: true, force: true }); }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   })();
   assert.match(out, /first look, not a verdict you should cite/);
 });
 
 test('a malformed confidence is skipped and reported, not silently treated as 1', async () => {
-  const rows = [...clean(40), { id: 'bad', gold: 'positive', predicted: 'positive', confidence: 'high' }];
+  const rows = [
+    ...clean(40),
+    { id: 'bad', gold: 'positive', predicted: 'positive', confidence: 'high' },
+  ];
   const { json } = await audit(rows);
   assert.equal(json.problems.length, 1);
   assert.match(json.problems[0], /not a number in 0–1/);

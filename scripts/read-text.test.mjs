@@ -29,9 +29,16 @@ async function pythonSees(file) {
   // spawnSync, not execFile: the async pipe on this mount loses bytes from
   // child stdout (the same second corruption layer read-text.mjs works around).
   const { spawnSync } = await import('node:child_process');
-  const r = spawnSync('python3', ['-I', '-c',
-    'from pathlib import Path; import sys; sys.stdout.buffer.write(Path(sys.argv[1]).read_bytes())', file],
-    { encoding: 'buffer' });
+  const r = spawnSync(
+    'python3',
+    [
+      '-I',
+      '-c',
+      'from pathlib import Path; import sys; sys.stdout.buffer.write(Path(sys.argv[1]).read_bytes())',
+      file,
+    ],
+    { encoding: 'buffer' },
+  );
   return r.stdout;
 }
 
@@ -110,7 +117,11 @@ test('readText: markdown whose bytes Python also cannot decode fails naming both
       () => readText(file),
       (e) => {
         assert.match(e.message, /garbage\.md/, 'the error must name the file');
-        assert.match(e.message, /not readable|fallback/i, 'the error must say the file could not be read by either channel');
+        assert.match(
+          e.message,
+          /not readable|fallback/i,
+          'the error must say the file could not be read by either channel',
+        );
         return true;
       },
     );

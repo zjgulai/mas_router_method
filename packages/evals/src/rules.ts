@@ -84,7 +84,7 @@ function analysisShape(artifact: CaseArtifact): {
       ? (record['audio'] as Record<string, unknown>)
       : {};
   const rights = typeof audio['rights'] === 'string' ? audio['rights'] : undefined;
-  const voiceover = Array.isArray(record['voiceover'] ) ? record['voiceover'] : [];
+  const voiceover = Array.isArray(record['voiceover']) ? record['voiceover'] : [];
   return { audio: rights === undefined ? {} : { rights }, voiceover };
 }
 
@@ -103,7 +103,9 @@ function recipeText(recipe: Recipe): string {
 const RULES: Record<string, (artifact: CaseArtifact) => { ok: boolean; observed: string }> = {
   'schema-valid': (a) => {
     const parsed = Recipe.safeParse(a.recipe);
-    return parsed.success ? ok('Recipe parsed') : fail(`Recipe did not parse: ${firstIssue(parsed.error)}`);
+    return parsed.success
+      ? ok('Recipe parsed')
+      : fail(`Recipe did not parse: ${firstIssue(parsed.error)}`);
   },
 
   'duration-in-window': (a) =>
@@ -111,7 +113,9 @@ const RULES: Record<string, (artifact: CaseArtifact) => { ok: boolean; observed:
       const seconds = recipeDurationSec(recipe);
       return seconds >= TARGET_DURATION_SEC.min && seconds <= TARGET_DURATION_SEC.max
         ? ok(`${seconds.toFixed(1)}s`)
-        : fail(`${seconds.toFixed(1)}s outside ${TARGET_DURATION_SEC.min}-${TARGET_DURATION_SEC.max}s`);
+        : fail(
+            `${seconds.toFixed(1)}s outside ${TARGET_DURATION_SEC.min}-${TARGET_DURATION_SEC.max}s`,
+          );
     }),
 
   'hook-at-most-3s': (a) =>
@@ -123,7 +127,9 @@ const RULES: Record<string, (artifact: CaseArtifact) => { ok: boolean; observed:
 
   'beat-count-at-least-2': (a) =>
     withRecipe(a, (recipe) =>
-      recipe.beats.length >= 2 ? ok(`${recipe.beats.length} beats`) : fail(`${recipe.beats.length} beats`),
+      recipe.beats.length >= 2
+        ? ok(`${recipe.beats.length} beats`)
+        : fail(`${recipe.beats.length} beats`),
     ),
 
   'no-banned-term': (a) => {
@@ -173,7 +179,9 @@ const RULES: Record<string, (artifact: CaseArtifact) => { ok: boolean; observed:
   'claim-softened-or-flagged': (a) =>
     withRecipe(a, (recipe) => {
       if (recipe.selfCheck?.claimsSubstantiated === false) return ok('claimsSubstantiated=false');
-      const hedged = /\b(may|can|helps|supports|designed to|is thought to)\b/i.test(recipeText(recipe));
+      const hedged = /\b(may|can|helps|supports|designed to|is thought to)\b/i.test(
+        recipeText(recipe),
+      );
       return hedged ? ok('claim hedged') : fail('claim neither softened nor flagged');
     }),
 
@@ -182,9 +190,10 @@ const RULES: Record<string, (artifact: CaseArtifact) => { ok: boolean; observed:
     if (analysis.audio.rights !== 'not-reusable') return ok('reference audio is not restricted');
     return withRecipe(a, (recipe) => {
       const direction = recipe.audio.direction.toLowerCase();
-      const reuse = /\b(same sound|original sound|reuse the (sound|track)|use their (sound|track))\b/.test(
-        direction,
-      );
+      const reuse =
+        /\b(same sound|original sound|reuse the (sound|track)|use their (sound|track))\b/.test(
+          direction,
+        );
       if (reuse) return fail('audio direction reuses the restricted track');
       return recipe.audio.rights === 'unknown'
         ? fail('audio rights left unknown')
@@ -215,7 +224,9 @@ const RULES: Record<string, (artifact: CaseArtifact) => { ok: boolean; observed:
         missing.push(claim);
       }
     }
-    return missing.length === 0 ? ok('disclaimers present') : fail(`missing disclaimer for: ${missing.join(', ')}`);
+    return missing.length === 0
+      ? ok('disclaimers present')
+      : fail(`missing disclaimer for: ${missing.join(', ')}`);
   },
 
   'provenance-valid': (a) =>
@@ -226,7 +237,10 @@ const RULES: Record<string, (artifact: CaseArtifact) => { ok: boolean; observed:
     ),
 };
 
-export function evaluateRule(rule: string, artifact: CaseArtifact): { ok: boolean; observed: string } {
+export function evaluateRule(
+  rule: string,
+  artifact: CaseArtifact,
+): { ok: boolean; observed: string } {
   const threshold = /^abstraction-distance-at-least:([0-9]*\.?[0-9]+)$/.exec(rule);
   if (threshold !== null) {
     const min = Number(threshold[1]);
@@ -271,7 +285,8 @@ export function evaluateCase(
   options: { rubric: boolean },
 ): CaseEvaluation {
   const needsRecipe = evalCase.expectations.some(
-    (expectation) => expectation.kind === 'deterministic' && expectation.rule === 'exclusions-non-empty',
+    (expectation) =>
+      expectation.kind === 'deterministic' && expectation.rule === 'exclusions-non-empty',
   );
 
   if (INCONCLUSIVE_STATUSES.has(artifact.status)) {
@@ -302,7 +317,9 @@ export function evaluateCase(
     if (expectation.kind === 'rubric') {
       skipped.push({
         expectation: `rubric:${expectation.dimension}`,
-        reason: options.rubric ? 'rubric: judged by evaluateRubricExpectations (async)' : 'fast mode: rubric skipped',
+        reason: options.rubric
+          ? 'rubric: judged by evaluateRubricExpectations (async)'
+          : 'fast mode: rubric skipped',
       });
       continue;
     }
@@ -312,7 +329,6 @@ export function evaluateCase(
 
   return { passed: failures.length === 0, failures, skipped, refused, inconclusive: false };
 }
-
 
 /**
  * Async rubric pass, kept out of `evaluateCase` so the deterministic evaluator
@@ -379,7 +395,11 @@ export async function evaluateRubricExpectations(
       if (skipIndex >= 0) {
         skipped[skipIndex] = {
           expectation: `rubric:${expectation.dimension}`,
-          reason: `rubric judge failed: ${cause instanceof Error ? cause.message : String(cause)}`.slice(0, 200),
+          reason:
+            `rubric judge failed: ${cause instanceof Error ? cause.message : String(cause)}`.slice(
+              0,
+              200,
+            ),
         };
       }
     }

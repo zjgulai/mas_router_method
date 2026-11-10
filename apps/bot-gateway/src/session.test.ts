@@ -47,12 +47,12 @@ describe('SqliteSessionStore', () => {
 });
 
 describe('sessionKeyFor', () => {
-  it('prefers thread, then root, then p2p chat', () => {
-    expect(
-      sessionKeyFor({ chatType: 'group', chatId: 'oc', threadId: 'omt', rootId: 'omr' }),
-    ).toBe('thread:omt');
-    expect(sessionKeyFor({ chatType: 'group', chatId: 'oc', rootId: 'omr' })).toBe('root:omr');
+  it('keys every conversation by chat, ignoring topics and threads', () => {
+    expect(sessionKeyFor({ chatType: 'group', chatId: 'oc', threadId: 'omt', rootId: 'omr' })).toBe(
+      'chat:oc',
+    );
+    expect(sessionKeyFor({ chatType: 'group', chatId: 'oc', rootId: 'omr' })).toBe('chat:oc');
     expect(sessionKeyFor({ chatType: 'p2p', chatId: 'oc' })).toBe('chat:oc');
-    expect(sessionKeyFor({ chatType: 'group', chatId: 'oc' })).toBeUndefined();
+    expect(sessionKeyFor({ chatType: 'group', chatId: 'oc' })).toBe('chat:oc');
   });
 });

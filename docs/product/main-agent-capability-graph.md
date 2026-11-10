@@ -314,7 +314,7 @@ pnpm --filter @mas/bot-gateway check
 - 对抗层：20 条安全/越界（提示词注入、凭据、删库、隐私、伪造引用）+ 35 条冲突/权威/治理/数值陷阱 + 5 条多轮；拒答、纠错或上下文优先，不套模板
 - 错误前提纠正：相关≠因果、周固定效应救不了高相关、should_fail 90%、小样本 70%、旧数据重算，回答先给 `【先纠正一个前提】`
 - 症状排查：`@ 没反应` 直接给事件订阅 → 权限 → 群/mention → 网关 → 回复权限的顺序清单
-- thread session：`thread > root > p2p chat`，SQLite 持久化，TTL 30 分钟、最近 6 轮；顶层群消息不共享历史
+- chat session：一个群/单聊一个 session，SQLite 持久化，TTL 30 分钟、最近 6 轮；话题/线程不再拆 session
 - 独立盲评：30 条分层抽样，6 轮 AI 盲评；初始 9 条需改进，最终 0 条（B29 单条复评通过）；报告 `docs/evals/main-agent-blind-review.md`
 - 真实使用快照（最近 14 天）：252 条消息、2 次 @Main、1 个唯一问题、1 次 15 分钟复问、0 条可见答案；报告 `docs/evals/main-agent-usage.md`
 - Live check：`scripts/feishu-live-check.py` 检查“提问 → 回复 burst → 四段契约 → 延迟 → 重复回复”；当前 2 个历史提问 0 通过（都在 parser 修复前），报告 `docs/evals/main-agent-live-check.md`，等待真人重测

@@ -2,7 +2,7 @@
  * A tiny queue with two guarantees the gateway needs:
  *
  *   1. A global concurrency cap, so one busy group cannot exhaust the process.
- *   2. Per-chat serialisation, so two answers in the same thread do not overtake
+ *   2. Per-chat serialisation, so two answers in the same chat do not overtake
  *      each other.
  *
  * It is intentionally not a durable job queue. Feishu only needs the handler to

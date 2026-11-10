@@ -42,8 +42,9 @@ export async function readText(path) {
     // The mount's stale-block form. Python in this workspace reads the real
     // UTF-8 (see scripts/materialize-main-knowledge.py). -I isolates it from
     // ambient imports; no shell, so the path cannot be interpreted.
-    const PYTHON_READER = 'from pathlib import Path; import sys; '
-      + 'sys.stdout.buffer.write(Path(sys.argv[1]).read_bytes())';
+    const PYTHON_READER =
+      'from pathlib import Path; import sys; ' +
+      'sys.stdout.buffer.write(Path(sys.argv[1]).read_bytes())';
     let bytes;
     try {
       // spawnSync, not execFile: the async pipe path on this mount loses bytes
@@ -51,21 +52,25 @@ export async function readText(path) {
       // read) — a *second* corruption layer, independent of the first. Sync
       // spawn returns the child's bytes intact; the subprocess blocks this
       // event loop for milliseconds, which is acceptable for a fallback.
-      const r = spawnSync('python3', ['-I', '-c', PYTHON_READER, path],
-        { timeout: 30_000, maxBuffer: 16 * 1024 * 1024, encoding: 'buffer' });
+      const r = spawnSync('python3', ['-I', '-c', PYTHON_READER, path], {
+        timeout: 30_000,
+        maxBuffer: 16 * 1024 * 1024,
+        encoding: 'buffer',
+      });
       if (r.error) throw r.error;
-      if (r.status !== 0) throw new Error(`python3 exited ${r.status}: ${r.stderr?.toString().split('\n')[0] ?? ''}`);
+      if (r.status !== 0)
+        throw new Error(`python3 exited ${r.status}: ${r.stderr?.toString().split('\n')[0] ?? ''}`);
       bytes = r.stdout;
     } catch (fallbackError) {
       throw new Error(
-        `readText: ${path} is binary to Node and the Python fallback failed too `
-        + `(${fallbackError.message.split('\n')[0]})`,
+        `readText: ${path} is binary to Node and the Python fallback failed too ` +
+          `(${fallbackError.message.split('\n')[0]})`,
       );
     }
     if (!isTextual(bytes)) {
       throw new Error(
-        `readText: ${path} is binary to Node and Python returned non-textual bytes — `
-        + 'not readable in this workspace',
+        `readText: ${path} is binary to Node and Python returned non-textual bytes — ` +
+          'not readable in this workspace',
       );
     }
     return bytes.toString('utf8');

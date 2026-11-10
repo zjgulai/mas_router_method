@@ -25,11 +25,12 @@ import { tmpdir } from 'node:os';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BUILD = join(ROOT, 'scripts', 'site', 'build.mjs');
 
-const build = (siteDir) => promisify(execFile)(process.execPath, [BUILD], {
-  env: { ...process.env, SITE_DIR: siteDir },
-})
-  .then((r) => ({ code: 0, out: r.stdout + r.stderr }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const build = (siteDir) =>
+  promisify(execFile)(process.execPath, [BUILD], {
+    env: { ...process.env, SITE_DIR: siteDir },
+  })
+    .then((r) => ({ code: 0, out: r.stdout + r.stderr }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 test('build: succeeds, and the committed site holds exactly what it generated', async () => {
   /*
@@ -46,10 +47,15 @@ test('build: succeeds, and the committed site holds exactly what it generated', 
     const generated = (await readdir(site)).filter((f) => f.endsWith('.html')).sort();
 
     const committed = (await readdir(join(ROOT, 'docs', 'site'), { withFileTypes: true }))
-      .filter((e) => e.isFile() && e.name.endsWith('.html')).map((e) => e.name).sort();
+      .filter((e) => e.isFile() && e.name.endsWith('.html'))
+      .map((e) => e.name)
+      .sort();
 
-    assert.deepEqual(committed, generated,
-      'docs/site must hold exactly the pages the generators produce — run `node scripts/site/build.mjs`');
+    assert.deepEqual(
+      committed,
+      generated,
+      'docs/site must hold exactly the pages the generators produce — run `node scripts/site/build.mjs`',
+    );
   } finally {
     await rm(site, { recursive: true, force: true });
   }
@@ -128,4 +134,3 @@ test('build: generated pages contain zero emoji or decorative unicode glyphs', a
     assert.equal(m, null, `docs/site/${name} contains banned emoji/symbol: ${m ? m[0] : ''}`);
   }
 });
-

@@ -129,11 +129,46 @@ Both are required, and confusing them is the most common process failure here.
 A ticket is not done when its unit tests pass. It is done when its eval cases pass.
 See `docs/evals/` for the eval-set design and `packages/evals/` for the harness.
 
+## 调用 vendored 流程 skill 时的完成判据
+
+`implement`、`implement-spec`、`code-review` 是从上游 vendored 进来的（见 `.claude/skills/VENDOR.md`），
+本地改动会在下次升级被 `rsync --delete` 覆盖。所以它们缺的那一节写在这里，而不是写进
+它们的文件——写进去等于写一份注定被删的东西。
+
+调用其中任何一个时，"完成"按下面判，不按感觉判。
+
+### `/implement`
+
+- ticket 的每条验收标准都有对应物：一个测试，或一条写明的人工检查。没有对应物的那条要单独列出来，说清为什么没有。
+- `pnpm typecheck` 通过；改动的测试文件通过；最后跑一次 `pnpm test`。
+- 如果改动碰了模型行为（提示词、工具 schema、数据形状、模型版本），eval 用例必须跑过并记录分数。**单测通过不算完成**——这是本仓库最常见的假完成。
+- 汇报四段：改了什么 / 证据（命令 + 输出）/ 没做什么 / 剩下什么。
+
+### `/implement-spec`
+
+- 每张票单独关闭，各自带证据；不接受"整体跑通了"代替逐票证据。
+- 全分支审查做过一次（`/code-review`），两条轴的结论都在。
+- 汇报是一张表：票 → 状态 → 证据路径。
+
+### `/code-review`
+
+- Standards 与 Spec 两条轴分开写，不合并成一句"看起来没问题"。
+- 每条发现带 `文件:行`、为什么是问题、严重度。
+- 明说**没看什么**：哪些文件、哪些轴没有覆盖。
+- 给合并结论：安全 / 需要再看 / 先别合。
+- 不说通过了哪几项就不要说"通过"。空口 LGTM 视为未完成。
+
+相邻能力：`node scripts/flow-check.mjs` 判的是 spec / build / release 三个**阶段**出口里
+可机检的部分（eval 集是否存在、最近一次运行是否覆盖全部用例、有没有交付回执），
+不判上面三个 skill 的完成度。两者的关系是"阶段"与"一次工作单元"，不要互相代替。
+
 ## TypeScript constraints
 
-- **TypeScript is pinned to 5.9.3, not 7.x.** `typescript-eslint@8` declares
-  `typescript: ">=4.8.4 <6.1.0"`, so upgrading breaks lint. Revisit when
-  typescript-eslint supports 7.
+- **TypeScript is pinned to 5.9.3, not 7.x.** Repo-wide ESLint is not set up yet:
+  only `apps/workbench` intends `next lint`, eslint is not installed in any package,
+  and `pnpm lint` (→ `turbo run lint`) currently runs nothing. The pin keeps the door
+  open for `typescript-eslint@8`, which declares `typescript: ">=4.8.4 <6.1.0"` and
+  would break on 7.x. Revisit when typescript-eslint supports 7.
 - `exactOptionalPropertyTypes: true` and `noUncheckedIndexedAccess: true` are on.
   Optional properties need `?: T | undefined` when a value may be passed through
   explicitly — the `metrics` field in `tools/brand.ts` shows the pattern.
@@ -195,11 +230,11 @@ Honest status, so the next session does not over-estimate what exists:
 
 - `packages/shared` — complete schemas, typechecked, exported.
 - `packages/core` — runtime, tool contracts, SQLite + vod adapters, the four seed
-  brands, and the store contract suite. 31 unit tests passing.
+  brands, and the store contract suite. 32 unit tests passing.
 - `packages/feishu` — signature verification, decryption, event normalisation.
-  19 tests passing. Delivery and the HTTP server are not built.
+  24 tests passing. Delivery and the HTTP server are not built.
 - `packages/evals` — harness, 14 cases, 15 deterministic rules, store conformance.
-  30 tests passing. Rubric judging is not implemented, and **no eval run has ever
+  105 tests passing. Rubric judging is not implemented, and **no eval run has ever
   reached a real model** (the one attempt had no API key).
 - `apps/workbench` — placeholder surface. Its design is specified; only session
   resolution and a placeholder page exist.
@@ -214,7 +249,7 @@ Honest status, so the next session does not over-estimate what exists:
 - `apps/bot-gateway` — Feishu gateway in two modes: WebSocket long connection
   (default, no public URL) and HTTP webhook (`POST /events`). Idempotency, per-chat
   queue, mention matching by bot open_id, reply fallback, thread sessions persisted
-  in SQLite, doctor/configure/authorize/eval CLIs. 45 tests.
+  in SQLite, doctor/configure/authorize/eval CLIs. 86 tests.
 - `packages/feishu` — added Feishu `post` rich-text extraction, mention open ids, and
   thread/root ids. 24 tests.
 - Eval dataset: 150 cases (83 real group questions + 67 adversarial/conflict/multi-turn),

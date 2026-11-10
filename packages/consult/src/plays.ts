@@ -68,7 +68,8 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   {
     id: 'content-tag-request',
     nodeId: 'labeling-taxonomy',
-    pattern: /(给我|来|要)[^。！？]{0,6}(一个|个)?[^。！？]{0,4}(内容)?标签|(内容标签)[^。！？]{0,8}(给我|来一个)/,
+    pattern:
+      /(给我|来|要)[^。！？]{0,6}(一个|个)?[^。！？]{0,4}(内容)?标签|(内容标签)[^。！？]{0,8}(给我|来一个)/,
     conclusion:
       '可以，但标签必须绑定一条真实内容和用途。先给你最小标签卡：层级（产品/物流/内容/社区）、定义、正例、反例、置信度；把一条样本贴出来，我按这个卡标一次。',
     actions: [
@@ -172,8 +173,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
       '在报告首页写一句：本结论不支持因果解释，也不支持预算再分配。',
     ],
     boundaries: ['业务压力不能替代识别条件；“相关性高”不是“因果证据强”。'],
-    correction:
-      '0.8 以上是识别不成立，不是“更强的因果证据”；相关性越高，区域面板越没有独立变异。',
+    correction: '0.8 以上是识别不成立，不是“更强的因果证据”；相关性越高，区域面板越没有独立变异。',
   },
   {
     id: 'deadline-vs-gate',
@@ -221,7 +221,8 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   },
   {
     id: 'never-apportion-unknown',
-    pattern: /(unknown|未知)[^。！？]{0,20}(摊派|分配|按人口|按比例)|(摊派|分配)[^。！？]{0,10}unknown/,
+    pattern:
+      /(unknown|未知)[^。！？]{0,20}(摊派|分配|按人口|按比例)|(摊派|分配)[^。！？]{0,10}unknown/,
     conclusion:
       '不做。unknown 永不摊派；按人口或 GMV 比例重分配会制造“完整但错”的分母，而且看起来没有任何问题。',
     actions: [
@@ -237,8 +238,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
     id: 'migration-overwrite',
     pattern:
       /(迁移|migrate)[^。！？]{0,20}(覆盖|改写|重写)[^。！？]{0,10}(旧记录|历史|磁盘)|(旧记录|历史)[^。！？]{0,10}(覆盖|改写)/,
-    conclusion:
-      '不做。迁移是读侧透镜，不改写磁盘；旧记录必须原样可查。覆盖会毁掉血缘和回滚。',
+    conclusion: '不做。迁移是读侧透镜，不改写磁盘；旧记录必须原样可查。覆盖会毁掉血缘和回滚。',
     actions: [
       '追加一条 migration 记录，读的时候套透镜。',
       '迁移前先试读；丢一条记录就拒绝迁移。',
@@ -278,10 +278,8 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   },
   {
     id: 'boundary-as-established',
-    pattern:
-      /(0\.5\s*[–-]\s*0\.8|边界带)[^。！？]{0,24}(成立|识别成功|可以直接做|说成)/,
-    conclusion:
-      '不能写成识别成立。边界带只能给有限结论并标注“有效变异有限”，结论只到 C1/C3。',
+    pattern: /(0\.5\s*[–-]\s*0\.8|边界带)[^。！？]{0,24}(成立|识别成功|可以直接做|说成)/,
+    conclusion: '不能写成识别成立。边界带只能给有限结论并标注“有效变异有限”，结论只到 C1/C3。',
     actions: [
       '在报告里写“边界带 / 有效变异有限”，不要写“识别成立”。',
       '只发 C1/C3，不发因果或预算结论。',
@@ -293,8 +291,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   },
   {
     id: 'c1-boundary',
-    pattern:
-      /(区间跨\s*0|跨零)[^。！？]{0,20}(C1|能发|发布)|(C1)[^。！？]{0,20}(区间跨\s*0|跨零)/,
+    pattern: /(区间跨\s*0|跨零)[^。！？]{0,20}(C1|能发|发布)|(C1)[^。！？]{0,20}(区间跨\s*0|跨零)/,
     conclusion:
       '不能发 C1。正确状态是“无结论 / unmeasurable”，不是“效应弱”；12 周也低于区域面板需要的共同周数。',
     actions: [
@@ -308,9 +305,9 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   },
   {
     id: 'should-fail-not-100',
-    pattern: /should_fail[^。！？]{0,12}(9\s*\/\s*10|90\s*%|[5-9]\s*\/\s*10)|(9\s*\/\s*10|90\s*%)[^。！？]{0,12}should_fail/,
-    conclusion:
-      '不能上线。should_fail 只有 0 和 100%，9/10 等于护栏已经失效；正例全过不能抵消。',
+    pattern:
+      /should_fail[^。！？]{0,12}(9\s*\/\s*10|90\s*%|[5-9]\s*\/\s*10)|(9\s*\/\s*10|90\s*%)[^。！？]{0,12}should_fail/,
+    conclusion: '不能上线。should_fail 只有 0 和 100%，9/10 等于护栏已经失效；正例全过不能抵消。',
     actions: [
       '复现第 10 条，定位是 guardrail 漏了、样例标错，还是模型绕过了检查。',
       '修 guardrail 或加确定性检查，不要只改 prompt。',
@@ -323,8 +320,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   {
     id: 'small-sample',
     pattern: /(10\s*条|十条|小样本)[^。！？]{0,24}(70\s*%|稳定|上线|可信)/,
-    conclusion:
-      '不能。10 条只能做 smoke / 方向性判断，不能证明稳定；先定样本量、判定标准和基线。',
+    conclusion: '不能。10 条只能做 smoke / 方向性判断，不能证明稳定；先定样本量、判定标准和基线。',
     actions: [
       '记录样本量与抽样方法：这 10 条从哪里来、覆盖哪些失败类型。',
       '补 should_fail 和真实失败样例，不要只补正例。',
@@ -338,8 +334,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
     id: 'delete-failing-case',
     pattern:
       /(删|删除|去掉|隐藏)[^。！？]{0,12}(should_fail|失败样例|失败\s*case|失败用例)|(should_fail|失败样例|失败\s*case|失败用例)[^。！？]{0,12}(删|删除|去掉|隐藏)/,
-    conclusion:
-      '不做。删失败样例是让 eval 变绿，不是让产品变好；这会把已知缺陷变成未知缺陷。',
+    conclusion: '不做。删失败样例是让 eval 变绿，不是让产品变好；这会把已知缺陷变成未知缺陷。',
     actions: [
       '保留失败样例，并把失败原因写进报告。',
       '修 guardrail / 数据 / 工具，或明确把结论降级。',
@@ -367,8 +362,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   {
     id: 'relabel-old-data',
     nodeId: 'labeling-taxonomy',
-    pattern:
-      /(历史数据|旧数据)[^。！？]{0,12}(重标|重新标|补标)|(重标)[^。！？]{0,10}(历史|旧)/,
+    pattern: /(历史数据|旧数据)[^。！？]{0,12}(重标|重新标|补标)|(重标)[^。！？]{0,10}(历史|旧)/,
     conclusion:
       '不要原地重写。可以做追加式重标：新增一列/一张表存新 taxonomy_version，旧标签保留；查询时按版本或映射合并，并记录重标批次。',
     actions: [
@@ -382,8 +376,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   },
   {
     id: 'rewrite-old-labels',
-    pattern:
-      /(旧数据|历史数据|旧标签|历史标签)[^。！？]{0,20}(重写|重算|重标|覆盖|改成新版本)/,
+    pattern: /(旧数据|历史数据|旧标签|历史标签)[^。！？]{0,20}(重写|重算|重标|覆盖|改成新版本)/,
     conclusion:
       '不重写。标签改版时旧数据保留原 taxonomy_version；新数据用新版本，跨版本查询必须显式映射。',
     actions: [
@@ -411,8 +404,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   {
     id: 'write-long-lag',
     pattern: /(6\s*周以上|六周以上|长滞后)[^。！？]{0,20}(写|结论|滞后|识别)/,
-    conclusion:
-      '不能写。1 年约 26 个双周周期，只能勉强识别 2–4 周滞后；6 周以上样本不够。',
+    conclusion: '不能写。1 年约 26 个双周周期，只能勉强识别 2–4 周滞后；6 周以上样本不够。',
     actions: [
       '只报 2–4 周的滞后结构。',
       '6 周以上标“不可识别”，不要写成“无效应”。',
@@ -424,8 +416,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   {
     id: 'delete-old-conclusion',
     pattern: /(旧结论|已有结论|结论)[^。！？]{0,12}(删掉|删除|清掉)/,
-    conclusion:
-      '不删。旧结论转 superseded，新增一条说明为什么被推翻；删除会丢掉审计链。',
+    conclusion: '不删。旧结论转 superseded，新增一条说明为什么被推翻；删除会丢掉审计链。',
     actions: [
       '把旧结论 status 改为 superseded。',
       '新结论引用旧 id，写清哪条证据变了。',
@@ -438,8 +429,7 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   {
     id: 'denominator',
     pattern: /(denominator|分母)[^。！？]{0,15}(调小|改小|调整|换)/,
-    conclusion:
-      '不改。固定分母定义并加异常检测；变更走新 metric_version，跨版本不直接相减。',
+    conclusion: '不改。固定分母定义并加异常检测；变更走新 metric_version，跨版本不直接相减。',
     actions: [
       '固定分母定义，写进指标卡第八项“什么时候不可用”。',
       '加分母骤降/骤升告警。',
@@ -508,7 +498,8 @@ export const DIRECT_PLAYS: DirectPlay[] = [
   },
   {
     id: 'add-case-only',
-    pattern: /(补|加|再)[^。！？]{0,12}(第?\s*\d*\s*条|case|样本)[^。！？]{0,10}(就行|够|可以|吗|呢)/,
+    pattern:
+      /(补|加|再)[^。！？]{0,12}(第?\s*\d*\s*条|case|样本)[^。！？]{0,10}(就行|够|可以|吗|呢)/,
     when: (context) => has(context.all, /should_fail|eval|通过|失败|样例/),
     conclusion:
       '不够。先诊断第 10 条为什么通过：是 guardrail 漏了、样例标错，还是模型绕过了检查；只补数量会把同一个洞留在那里。',

@@ -30,18 +30,21 @@ export async function writeAndConfirm(path, content, attempts = 20) {
   let last = 'no attempt was made';
   for (let i = 0; i < attempts; i++) {
     await writeFile(path, content, 'utf8');
-    const { stdout } = await execFileAsync(process.execPath, ['-e', `
+    const { stdout } = await execFileAsync(process.execPath, [
+      '-e',
+      `
       import('node:fs/promises').then(async (fs) => {
         const t = await fs.readFile(${JSON.stringify(path)}, 'utf8').catch((e) => 'ERR:' + e.code);
         process.stdout.write(t === ${JSON.stringify(content)} ? 'ok' : 'stale:' + t.length);
       });
-    `]);
+    `,
+    ]);
     if (stdout.trim() === 'ok') return;
     last = stdout.trim();
   }
   throw new Error(
     `writeAndConfirm could not make ${path} readable with the intended contents after ` +
-    `${attempts} attempts (last read: ${last}). This is INC-002, the mount returning ` +
-    `stale blocks after a write — not a failure of the code under test.`,
+      `${attempts} attempts (last read: ${last}). This is INC-002, the mount returning ` +
+      `stale blocks after a write — not a failure of the code under test.`,
   );
 }

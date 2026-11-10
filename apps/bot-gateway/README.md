@@ -137,7 +137,7 @@ If the message is visible in Feishu but the gateway does not answer:
      --message-id om_xxx --chat-id oc_xxx \
      --sender ou_xxx --text "你的问题"
    ```
-   This sends the answer as a reply in the original thread.
+   This sends the answer as a reply in the chat, not in a topic thread.
 
 Set `MAIN_AGENT_LOG_LEVEL=debug` to see raw events and ignore reasons.
 

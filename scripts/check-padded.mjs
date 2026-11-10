@@ -85,7 +85,8 @@ function cleanLengths(paths) {
     maxBuffer: 64 * 1024 * 1024,
   });
   if (r.error) throw new Error(`python3 unavailable: ${r.error.message}`);
-  if (r.status !== 0) throw new Error(`python3 exited ${r.status}: ${r.stderr?.trim().split('\n')[0] ?? ''}`);
+  if (r.status !== 0)
+    throw new Error(`python3 exited ${r.status}: ${r.stderr?.trim().split('\n')[0] ?? ''}`);
   const out = new Map();
   for (const line of r.stdout.split('\n')) {
     if (!line) continue;

@@ -7,16 +7,16 @@ by replacing the agent and the card formatter.
 
 ## What to copy
 
-| File | Why it is reusable |
-| --- | --- |
-| `src/feishu/client.ts` | tenant token, reply/send, identity, error scopes |
-| `src/feishu/normalize.ts` | @-mention matching by open id, then name |
-| `src/session.ts` | thread/root/p2p session keys, in-memory + SQLite |
-| `src/telemetry.ts` | questions, answers, card actions, error evidence |
-| `src/card-action.ts` | action-id registry, toast/card response |
-| `src/handler.ts` | dedupe, allow-list, queue, card callback, evidence |
-| `src/http.ts` / `src/ws.ts` | webhook and long-connection transports |
-| `src/cli/check.ts` / `src/cli/telemetry.ts` | doctor and Stage 3 readout |
+| File                                        | Why it is reusable                                 |
+| ------------------------------------------- | -------------------------------------------------- |
+| `src/feishu/client.ts`                      | tenant token, reply/send, identity, error scopes   |
+| `src/feishu/normalize.ts`                   | @-mention matching by open id, then name           |
+| `src/session.ts`                            | thread/root/p2p session keys, in-memory + SQLite   |
+| `src/telemetry.ts`                          | questions, answers, card actions, error evidence   |
+| `src/card-action.ts`                        | action-id registry, toast/card response            |
+| `src/handler.ts`                            | dedupe, allow-list, queue, card callback, evidence |
+| `src/http.ts` / `src/ws.ts`                 | webhook and long-connection transports             |
+| `src/cli/check.ts` / `src/cli/telemetry.ts` | doctor and Stage 3 readout                         |
 
 Replace `src/feishu/recipe-format.ts` with your own card. Keep the card's
 `action.value.action_id` and `recipe_id` (or your domain id) shape so the
@@ -31,15 +31,15 @@ registry and the ledger stay generic.
 
 ## Environment
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `FEISHU_APP_ID` / `FEISHU_APP_SECRET` | required | the expert's own app |
-| `FEISHU_EVENT_MODE` | `ws` | `ws` or `http` |
-| `FEISHU_VERIFICATION_TOKEN` | - | required for `http` |
-| `MAIN_AGENT_SESSION_DB` | `.data/main-agent-sessions.db` | thread sessions |
-| `MAIN_AGENT_TELEMETRY_DB` | `.data/main-agent-telemetry.db` | Stage 3 evidence |
-| `MAIN_AGENT_TELEMETRY` | `true` | `false` disables the evidence file |
-| `MAIN_AGENT_GROUP_MODE` | `mention` | `all` answers every group message |
+| Variable                              | Default                         | Purpose                            |
+| ------------------------------------- | ------------------------------- | ---------------------------------- |
+| `FEISHU_APP_ID` / `FEISHU_APP_SECRET` | required                        | the expert's own app               |
+| `FEISHU_EVENT_MODE`                   | `ws`                            | `ws` or `http`                     |
+| `FEISHU_VERIFICATION_TOKEN`           | -                               | required for `http`                |
+| `MAIN_AGENT_SESSION_DB`               | `.data/main-agent-sessions.db`  | thread sessions                    |
+| `MAIN_AGENT_TELEMETRY_DB`             | `.data/main-agent-telemetry.db` | Stage 3 evidence                   |
+| `MAIN_AGENT_TELEMETRY`                | `true`                          | `false` disables the evidence file |
+| `MAIN_AGENT_GROUP_MODE`               | `mention`                       | `all` answers every group message  |
 
 ## Three rules
 

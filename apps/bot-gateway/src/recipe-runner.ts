@@ -43,9 +43,7 @@ export interface RecipeSubmission {
 export class RecipeRunner {
   private readonly chains = new Map<string, Promise<void>>();
 
-  constructor(
-    private readonly deps: { runtime: RecipeRuntime; maxQueueDepth: number },
-  ) {}
+  constructor(private readonly deps: { runtime: RecipeRuntime; maxQueueDepth: number }) {}
 
   submit(submission: RecipeSubmission): Promise<void> {
     const depth = this.chains.get(submission.chatId) === undefined ? 0 : 1;
@@ -69,7 +67,9 @@ export class RecipeRunner {
         await submission.deliver([
           {
             msgType: 'text',
-            content: JSON.stringify({ text: `拆解没跑完：${reason}\n请稍后重试，或换一条参考视频。` }),
+            content: JSON.stringify({
+              text: `拆解没跑完：${reason}\n请稍后重试，或换一条参考视频。`,
+            }),
           },
         ]);
         return;

@@ -31,11 +31,17 @@ export function mean(xs) {
  */
 export function pearson(x, y) {
   if (x.length !== y.length || x.length < 2) return Number.NaN;
-  const mx = mean(x), my = mean(y);
-  let sxy = 0, sxx = 0, syy = 0;
+  const mx = mean(x),
+    my = mean(y);
+  let sxy = 0,
+    sxx = 0,
+    syy = 0;
   for (let i = 0; i < x.length; i++) {
-    const a = x[i] - mx, b = y[i] - my;
-    sxy += a * b; sxx += a * a; syy += b * b;
+    const a = x[i] - mx,
+      b = y[i] - my;
+    sxy += a * b;
+    sxx += a * a;
+    syy += b * b;
   }
   if (sxx === 0 || syy === 0) return Number.NaN;
   return sxy / Math.sqrt(sxx * syy);
@@ -49,7 +55,9 @@ export function demeanByWeek(series) {
   for (let t = 0; t < n; t++) {
     const column = series.map((s) => s.values[t]);
     const m = mean(column);
-    series.forEach((s, r) => { out[r].values[t] = s.values[t] - m; });
+    series.forEach((s, r) => {
+      out[r].values[t] = s.values[t] - m;
+    });
   }
   return out;
 }
@@ -72,7 +80,9 @@ export function inverse(A) {
       if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r;
     }
     if (Math.abs(M[pivot][col]) < 1e-12) {
-      throw new Error(`singular design matrix at column ${col} — two columns carry the same information`);
+      throw new Error(
+        `singular design matrix at column ${col} — two columns carry the same information`,
+      );
     }
     if (pivot !== col) [M[pivot], M[col]] = [M[col], M[pivot]];
 
@@ -143,9 +153,9 @@ export function ols(X, y) {
 function lgamma(x) {
   // Lanczos approximation, g = 7.
   const g = [
-    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
-    771.32342877765313, -176.61502916214059, 12.507343278686905,
-    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+    -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
+    1.5056327351493116e-7,
   ];
   if (x < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * x)) - lgamma(1 - x);
   x -= 1;
@@ -156,21 +166,31 @@ function lgamma(x) {
 }
 
 function betacf(a, b, x) {
-  const MAXIT = 200, EPS = 3e-12, FPMIN = 1e-300;
-  const qab = a + b, qap = a + 1, qam = a - 1;
-  let c = 1, d = 1 - (qab * x) / qap;
+  const MAXIT = 200,
+    EPS = 3e-12,
+    FPMIN = 1e-300;
+  const qab = a + b,
+    qap = a + 1,
+    qam = a - 1;
+  let c = 1,
+    d = 1 - (qab * x) / qap;
   if (Math.abs(d) < FPMIN) d = FPMIN;
   d = 1 / d;
   let h = d;
   for (let m = 1; m <= MAXIT; m++) {
     const m2 = 2 * m;
     let aa = (m * (b - m) * x) / ((qam + m2) * (a + m2));
-    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
-    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
-    d = 1 / d; h *= d * c;
+    d = 1 + aa * d;
+    if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c;
+    if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d;
+    h *= d * c;
     aa = (-(a + m) * (qab + m) * x) / ((a + m2) * (qap + m2));
-    d = 1 + aa * d; if (Math.abs(d) < FPMIN) d = FPMIN;
-    c = 1 + aa / c; if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 + aa * d;
+    if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c;
+    if (Math.abs(c) < FPMIN) c = FPMIN;
     d = 1 / d;
     const del = d * c;
     h *= del;
@@ -183,7 +203,9 @@ function betacf(a, b, x) {
 export function betai(a, b, x) {
   if (x <= 0) return 0;
   if (x >= 1) return 1;
-  const bt = Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x));
+  const bt = Math.exp(
+    lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x),
+  );
   return x < (a + 1) / (a + b + 2)
     ? (bt * betacf(a, b, x)) / a
     : 1 - (bt * betacf(b, a, 1 - x)) / b;
@@ -200,10 +222,12 @@ export function tCdf(t, df) {
 /** The t value with P(T ≤ q) = p, for p in (0.5, 1). Bisection — accuracy is ample. */
 export function tQuantile(p, df) {
   if (p <= 0.5) throw new Error('tQuantile is only used for upper-tail quantiles here');
-  let lo = 0, hi = 1e4;
+  let lo = 0,
+    hi = 1e4;
   for (let i = 0; i < 200; i++) {
     const mid = (lo + hi) / 2;
-    if (tCdf(mid, df) < p) lo = mid; else hi = mid;
+    if (tCdf(mid, df) < p) lo = mid;
+    else hi = mid;
   }
   return (lo + hi) / 2;
 }

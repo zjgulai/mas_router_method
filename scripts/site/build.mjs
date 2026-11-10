@@ -60,8 +60,12 @@ function runGenerator(file, stage) {
     });
     let out = '';
     let err = '';
-    p.stdout.on('data', (d) => { out += d; });
-    p.stderr.on('data', (d) => { err += d; });
+    p.stdout.on('data', (d) => {
+      out += d;
+    });
+    p.stderr.on('data', (d) => {
+      err += d;
+    });
     p.on('error', (e) => reject(new Error(`cannot run python3: ${e.message}`)));
     p.on('close', (code) => {
       if (code === 0) resolvePromise(out);
@@ -125,8 +129,10 @@ try {
     await mkdir(SITE, { recursive: true });
     for (const f of generated) await copyFile(join(stage, f), join(SITE, f));
     const nonHtml = generated.length - generatedPages.length;
-    console.log(`\nok — ${generatedPages.length} pages generated into docs/site/` +
-      (nonHtml > 0 ? ` (+${nonHtml} non-page files)` : ''));
+    console.log(
+      `\nok — ${generatedPages.length} pages generated into docs/site/` +
+        (nonHtml > 0 ? ` (+${nonHtml} non-page files)` : ''),
+    );
   }
 } catch (cause) {
   console.error(cause.message);

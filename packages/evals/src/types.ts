@@ -7,7 +7,11 @@ export type Expectation =
   /** Free to check, stable, and what the CI gate keys on. */
   | { kind: 'deterministic'; rule: string }
   /** Costs a model call. Reserved for what genuinely needs taste. */
-  | { kind: 'rubric'; dimension: 'voice-match' | 'hook-strength' | 'transferability' | 'shootability'; minScore: number };
+  | {
+      kind: 'rubric';
+      dimension: 'voice-match' | 'hook-strength' | 'transferability' | 'shootability';
+      minScore: number;
+    };
 
 export interface EvalCase {
   /** Stable across runs so scores are comparable. Never renumber. */

@@ -20,8 +20,13 @@ import { loadSchema, stateDir, flatDir, WORK } from './schema.mjs';
 import { sections, findTable } from './markdown.mjs';
 import { readText } from './read-text.mjs';
 
-const DIM = '\x1b[2m', BOLD = '\x1b[1m', RED = '\x1b[31m',
-      GREEN = '\x1b[32m', YELLOW = '\x1b[33m', CYAN = '\x1b[36m', RESET = '\x1b[0m';
+const DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  CYAN = '\x1b[36m',
+  RESET = '\x1b[0m';
 
 const GROUP_LABEL = {
   requirement: '需求 requirement',
@@ -42,9 +47,14 @@ function parseFrontmatter(text) {
     const m = /^([a-z_]+):\s*(.*)$/.exec(line.trim());
     if (m === null) continue;
     const [, key, value] = m;
-    data[key] = value.startsWith('[') && value.endsWith(']')
-      ? value.slice(1, -1).split(',').map((s) => s.trim()).filter(Boolean)
-      : value;
+    data[key] =
+      value.startsWith('[') && value.endsWith(']')
+        ? value
+            .slice(1, -1)
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : value;
   }
   return { data };
 }
@@ -53,7 +63,10 @@ async function readRecord(kind, dirName, state, file) {
   const path = join(dirName, file);
   const [{ data }, s] = await Promise.all([readText(path).then(parseFrontmatter), stat(path)]);
   return {
-    kind, state, file, path,
+    kind,
+    state,
+    file,
+    path,
     id: data.id ?? file.replace(/\.md$/, ''),
     title: data.title ?? '',
     stage: data.stage ?? '',
@@ -89,7 +102,11 @@ async function collect(schema) {
   for (const name of schema.appendOnly) {
     const dir = join(WORK, name);
     let files = [];
-    try { files = await readdir(dir); } catch { files = []; }
+    try {
+      files = await readdir(dir);
+    } catch {
+      files = [];
+    }
     found[name] = { list: [] };
     for (const f of files.filter((x) => x.endsWith('.md'))) {
       const rec = await readRecord(name, dir, 'append', f);
@@ -106,7 +123,11 @@ async function collect(schema) {
       // directories would rewrite where history lives.
       const dir = flatDir(schema, kind);
       let files = [];
-      try { files = await readdir(dir); } catch { files = []; }
+      try {
+        files = await readdir(dir);
+      } catch {
+        files = [];
+      }
       const list = [];
       for (const f of files.filter((x) => x.endsWith('.md'))) {
         const rec = await readRecord(kind, dir, 'flat', f);
@@ -125,7 +146,10 @@ async function collect(schema) {
       try {
         files = await readdir(dir);
       } catch (cause) {
-        if (cause.code === 'ENOENT') { missingDirs.push({ kind, state, dir }); continue; }
+        if (cause.code === 'ENOENT') {
+          missingDirs.push({ kind, state, dir });
+          continue;
+        }
         problems.push(`${kind}/${state}: cannot read ${dir} (${cause.code})`);
         continue;
       }
@@ -161,14 +185,26 @@ function recordsOf(bucket) {
   return out;
 }
 
-const fmtDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const fmtDate = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const daysSince = (d) => Math.floor((Date.now() - d.getTime()) / 86_400_000);
 
 const STATE_COLOUR = {
-  open: YELLOW, 'in-progress': CYAN, 'awaiting-verification': YELLOW,
-  done: GREEN, abandoned: DIM, drafting: YELLOW, confirmed: GREEN,
-  dropped: DIM, contained: YELLOW, closed: GREEN, active: GREEN, expired: DIM,
-  drafting: YELLOW, confirmed: GREEN, superseded: DIM,
+  open: YELLOW,
+  'in-progress': CYAN,
+  'awaiting-verification': YELLOW,
+  done: GREEN,
+  abandoned: DIM,
+  drafting: YELLOW,
+  confirmed: GREEN,
+  dropped: DIM,
+  contained: YELLOW,
+  closed: GREEN,
+  active: GREEN,
+  expired: DIM,
+  drafting: YELLOW,
+  confirmed: GREEN,
+  superseded: DIM,
 };
 
 async function cmdStatus() {
@@ -176,7 +212,9 @@ async function cmdStatus() {
   const { found, missingDirs, problems } = await collect(schema);
   const today = new Date();
 
-  console.log(`\n${BOLD}work${RESET}  ${fmtDate(today)}  ${DIM}${WORK.replace(process.cwd() + '/', '')}${RESET}\n`);
+  console.log(
+    `\n${BOLD}work${RESET}  ${fmtDate(today)}  ${DIM}${WORK.replace(process.cwd() + '/', '')}${RESET}\n`,
+  );
 
   const order = ['requirement', 'design', 'ticket', 'incident', 'artifact', 'decision'];
   for (const kind of order) {
@@ -187,11 +225,20 @@ async function cmdStatus() {
     if (bucket.list !== undefined) {
       const items = bucket.list;
       console.log(`${BOLD}${GROUP_LABEL[kind] ?? kind}${RESET} ${DIM}(${items.length})${RESET}`);
-      if (items.length === 0) { console.log(`  ${DIM}—${RESET}`); console.log(); continue; }
+      if (items.length === 0) {
+        console.log(`  ${DIM}—${RESET}`);
+        console.log();
+        continue;
+      }
       for (const r of items.sort((a, b) => a.id.localeCompare(b.id))) {
-        const expired = r.expires !== '' && r.expires < fmtDate(today) ? ` ${RED}EXPIRED ${r.expires}${RESET}` : '';
+        const expired =
+          r.expires !== '' && r.expires < fmtDate(today)
+            ? ` ${RED}EXPIRED ${r.expires}${RESET}`
+            : '';
         const who = r.owner !== '' ? `${DIM}${r.owner}${RESET}` : `${RED}no owner${RESET}`;
-        console.log(`  ${DIM}${r.id.padEnd(9)}${RESET}${r.title.slice(0, 46).padEnd(46)}  ${who}${expired}`);
+        console.log(
+          `  ${DIM}${r.id.padEnd(9)}${RESET}${r.title.slice(0, 46).padEnd(46)}  ${who}${expired}`,
+        );
       }
       console.log();
       continue;
@@ -199,7 +246,11 @@ async function cmdStatus() {
 
     const total = def.states.reduce((n, s) => n + (bucket[s]?.length ?? 0), 0);
     console.log(`${BOLD}${GROUP_LABEL[kind] ?? kind}${RESET} ${DIM}(${total})${RESET}`);
-    if (total === 0) { console.log(`  ${DIM}—${RESET}`); console.log(); continue; }
+    if (total === 0) {
+      console.log(`  ${DIM}—${RESET}`);
+      console.log();
+      continue;
+    }
 
     for (const state of def.states) {
       const items = bucket[state] ?? [];
@@ -208,7 +259,10 @@ async function cmdStatus() {
       console.log(`  ${colour}${state}${RESET} ${DIM}${items.length}${RESET}`);
       for (const r of items.sort((a, b) => a.id.localeCompare(b.id))) {
         const quiet = daysSince(r.mtime);
-        const stuck = (state === 'in-progress' || state === 'open') && quiet > 14 ? ` ${RED}quiet ${quiet}d${RESET}` : '';
+        const stuck =
+          (state === 'in-progress' || state === 'open') && quiet > 14
+            ? ` ${RED}quiet ${quiet}d${RESET}`
+            : '';
         console.log(`    ${r.id.padEnd(9)}${r.title.slice(0, 58)}${stuck}`);
       }
     }
@@ -217,24 +271,34 @@ async function cmdStatus() {
 
   // What needs a human. Facts with reasons, not a verdict.
   const attention = [];
-  for (const r of found.ticket?.['awaiting-verification'] ?? []) attention.push(`${r.id} waiting for verification — ${r.title}`);
+  for (const r of found.ticket?.['awaiting-verification'] ?? [])
+    attention.push(`${r.id} waiting for verification — ${r.title}`);
   for (const r of found.ticket?.['in-progress'] ?? []) {
-    if (daysSince(r.mtime) > 14) attention.push(`${r.id} in progress, untouched ${daysSince(r.mtime)} days`);
+    if (daysSince(r.mtime) > 14)
+      attention.push(`${r.id} in progress, untouched ${daysSince(r.mtime)} days`);
   }
   for (const r of found.incident?.open ?? []) attention.push(`${r.id} incident open — ${r.title}`);
   for (const r of recordsOf(found.artifact)) {
-    if (r.expires !== '' && r.expires < fmtDate(today)) attention.push(`${r.id} expired ${r.expires} — ${r.title}`);
+    if (r.expires !== '' && r.expires < fmtDate(today))
+      attention.push(`${r.id} expired ${r.expires} — ${r.title}`);
     if (r.owner === '') attention.push(`${r.id} has no owner — ${r.title}`);
   }
 
   // Append-only registers: no states, just a count and the newest few.
   for (const name of schema.appendOnly) {
     const items = found[name]?.list ?? [];
-    const label = name === 'evidence' ? '证据 evidence' : name === 'receipts' ? '回执 receipt' : name;
+    const label =
+      name === 'evidence' ? '证据 evidence' : name === 'receipts' ? '回执 receipt' : name;
     console.log(`${BOLD}${label}${RESET} ${DIM}(${items.length}, append-only)${RESET}`);
-    if (items.length === 0) { console.log(`  ${DIM}—${RESET}`); console.log(); continue; }
+    if (items.length === 0) {
+      console.log(`  ${DIM}—${RESET}`);
+      console.log();
+      continue;
+    }
     for (const r of items.slice(-4).reverse()) {
-      console.log(`  ${DIM}${r.id.padEnd(9)}${RESET}${r.title ? r.title.slice(0, 40) : r.file.slice(0, 40).padEnd(40)}  ${DIM}${r.ticket ? 'for ' + r.ticket : ''}${RESET}`);
+      console.log(
+        `  ${DIM}${r.id.padEnd(9)}${RESET}${r.title ? r.title.slice(0, 40) : r.file.slice(0, 40).padEnd(40)}  ${DIM}${r.ticket ? 'for ' + r.ticket : ''}${RESET}`,
+      );
     }
     console.log();
   }
@@ -244,13 +308,17 @@ async function cmdStatus() {
   else for (const a of attention) console.log(`  ${YELLOW}•${RESET} ${a}`);
 
   if (problems.length > 0) {
-    console.log(`\n${RED}record problems ${problems.length}${RESET} ${DIM}(run \`work check\`)${RESET}`);
+    console.log(
+      `\n${RED}record problems ${problems.length}${RESET} ${DIM}(run \`work check\`)${RESET}`,
+    );
     for (const p of problems.slice(0, 5)) console.log(`  ${RED}•${RESET} ${p}`);
   }
   if (missingDirs.length > 0) {
     // 这里原本是一个恒真的 filter（谓词里算了 others 却没用它），所以它只是把
     // missingDirs 原样复制了一遍。删掉，直接数。
-    console.log(`\n${DIM}${missingDirs.length} state directories do not exist yet (normal until something is filed there)${RESET}`);
+    console.log(
+      `\n${DIM}${missingDirs.length} state directories do not exist yet (normal until something is filed there)${RESET}`,
+    );
   }
   console.log();
   return problems.length === 0 ? 0 : 1;
@@ -293,24 +361,27 @@ async function cmdCheck() {
 
   // 2. a ticket marked done must carry evidence — "done" without a re-runnable
   //    command is a claim, and this is the rule the migration kept tripping on.
-  if (runAll) for (const r of found.ticket?.done ?? []) {
-    if (r.evidence.length === 0) out.push(`${r.id} is done but records no evidence`);
-  }
+  if (runAll)
+    for (const r of found.ticket?.done ?? []) {
+      if (r.evidence.length === 0) out.push(`${r.id} is done but records no evidence`);
+    }
 
   // 3. artifacts need an owner and a delete condition, or they live forever
-  if (runAll) for (const r of recordsOf(found.artifact)) {
-    if (r.owner === '') out.push(`${r.id} artifact has no owner`);
-    if (r.deleteWhen === '') out.push(`${r.id} artifact has no delete_when`);
-  }
+  if (runAll)
+    for (const r of recordsOf(found.artifact)) {
+      if (r.owner === '') out.push(`${r.id} artifact has no owner`);
+      if (r.deleteWhen === '') out.push(`${r.id} artifact has no delete_when`);
+    }
 
   // 4. every `needs:` target must exist as a record
-  if (runAll) for (const r of all) {
-    for (const n of r.needs) {
-      if (![...seen.keys()].includes(n) && !/^ADR-/.test(n) && !/^R-/.test(n)) {
-        out.push(`${r.id} needs ${n}, which does not exist`);
+  if (runAll)
+    for (const r of all) {
+      for (const n of r.needs) {
+        if (![...seen.keys()].includes(n) && !/^ADR-/.test(n) && !/^R-/.test(n)) {
+          out.push(`${r.id} needs ${n}, which does not exist`);
+        }
       }
     }
-  }
 
   // 5. every evidence file named by a ticket must exist
   const evidenceFiles = new Set();
@@ -318,12 +389,16 @@ async function cmdCheck() {
     for (const f of await readdir(join(WORK, 'evidence'))) {
       if (f.endsWith('.md')) evidenceFiles.add(f.split('-').slice(0, 2).join('-'));
     }
-  } catch { /* no evidence dir yet */ }
-  if (runAll) for (const r of all) {
-    for (const e of r.evidence) {
-      if (!evidenceFiles.has(e)) out.push(`${r.id} cites evidence ${e}, which is not in work/evidence/`);
-    }
+  } catch {
+    /* no evidence dir yet */
   }
+  if (runAll)
+    for (const r of all) {
+      for (const e of r.evidence) {
+        if (!evidenceFiles.has(e))
+          out.push(`${r.id} cites evidence ${e}, which is not in work/evidence/`);
+      }
+    }
 
   // 6. a design record must carry its four blocks. The blocks are the four
   //    questions from anb-design; a design missing one was never asked, and
@@ -391,11 +466,14 @@ async function cmdCheck() {
         // 第一版豁免写成了整条 `continue`，于是「拒绝清单写成价值观」在草稿阶段
         // 也能蒙过去——被现有测试当场抓出，说明豁免的粒度写粗了。
         if (sec === undefined) {
-          if (!answering) out.push(`${r.id}: no 「${block.key}」 block — ${block.what} was never asked`);
+          if (!answering)
+            out.push(`${r.id}: no 「${block.key}」 block — ${block.what} was never asked`);
           continue;
         }
         if (sec.body === '') {
-          out.push(`${r.id}: 「${block.key}」 is empty — say what it is, or mark it 跳过 with a reason`);
+          out.push(
+            `${r.id}: 「${block.key}」 is empty — say what it is, or mark it 跳过 with a reason`,
+          );
         } else if (/跳过/.test(sec.body) && !/跳过[：:]\s*\S/.test(sec.body)) {
           out.push(`${r.id}: 「${block.key}」 is marked skipped without a reason`);
         }
@@ -411,7 +489,9 @@ async function cmdCheck() {
       if (rules !== undefined && rules.body !== '' && !/跳过[：:]/.test(rules.body)) {
         const t = findTable(rules.body, ['具体输入', '该怎么答']);
         if (t === null) {
-          out.push(`${r.id}: 「应答规则」 has no decision table — a list of intentions is not a rule`);
+          out.push(
+            `${r.id}: 「应答规则」 has no decision table — a list of intentions is not a rule`,
+          );
         } else {
           const REQUIRED = ['具体输入', '该怎么答', '升级档次', '依据'];
           const missingCols = REQUIRED.filter((c) => !t.header.some((h) => h.includes(c)));
@@ -419,7 +499,9 @@ async function cmdCheck() {
             out.push(`${r.id}: 「应答规则」 missing column(s): ${missingCols.join(', ')}`);
           }
           const idx = (name) => t.header.findIndex((h) => h.includes(name));
-          const iIn = idx('具体输入'), iAns = idx('该怎么答'), iTier = idx('升级档次');
+          const iIn = idx('具体输入'),
+            iAns = idx('该怎么答'),
+            iTier = idx('升级档次');
           const TIERS = ['不升级', '软升级', '硬升级'];
           // 价值观画上了表格：这些词看起来是一行，测不了。
           const VAGUE = ['妥善', '酌情', '视情况', '看情况', '按需', '适当', '视具体', '灵活处理'];
@@ -431,103 +513,118 @@ async function cmdCheck() {
             const tier = (row[iTier] ?? '').trim();
 
             if (input === '' || /^[-—–]+$/.test(input)) {
-              out.push(`${r.id}: 应答规则 row ${no} has no concrete input — it cannot become a check`);
+              out.push(
+                `${r.id}: 应答规则 row ${no} has no concrete input — it cannot become a check`,
+              );
             }
             if (answer === '') {
               out.push(`${r.id}: 应答规则 row ${no} says nothing about how to answer`);
             } else if (VAGUE.some((v) => answer.includes(v))) {
-              out.push(`${r.id}: 应答规则 row ${no}: 「该怎么答」 is a value, not an instruction ("${answer}")`);
+              out.push(
+                `${r.id}: 应答规则 row ${no}: 「该怎么答」 is a value, not an instruction ("${answer}")`,
+              );
             }
             if (!TIERS.includes(tier)) {
-              out.push(`${r.id}: 应答规则 row ${no}: 升级档次 must be one of ${TIERS.join(' / ')}, got "${tier}"`);
+              out.push(
+                `${r.id}: 应答规则 row ${no}: 升级档次 must be one of ${TIERS.join(' / ')}, got "${tier}"`,
+              );
             }
           });
 
-        // ── 跨块约束：应答规则要的东西，动作权限表里得给 ──────────────────────
-        //
-        // 三轮实测里每一处硬矛盾都是跨块的：表格要求了权限表里不存在的动作，而六块是
-        // 各自独立回答的六个问题。这条原本只写在 skill 里，靠人工逐行核对——那时就
-        // 发现过两行要「读商品事实」而权限表里没有。现在是检查。
-        //
-        // 判定规则是有意保守的，而且**只认能机械判断的部分**：
-        //   · 答案以动词开头（读 / 查 / 取 / 拉 / 调用 / 发 / 提交 / 删除 …）就要求权限表
-        //     里有一行，其「动作」列包含那个宾语的核心词。
-        //   · 权限表被显式跳过（写成理由）时，任何需要动作的行都算矛盾——空表不能
-        //     变成免费的通行证，那正是最容易被骗过的形状。
-        // 猜不出来的时候**不报错**：宁可漏也不误报，因为一条会乱叫的检查会被关掉。
-        const perm = secs.find((x) => x.head.includes('动作权限'));
-        const permSkipped = perm !== undefined && /跳过[：:]/.test(perm.body ?? '');
-        const permTable = perm === undefined ? null : findTable(perm.body, ['动作', '档']);
-        const permitted = permTable === null ? [] : permTable.rows.map((r) => (r[0] ?? '').trim());
+          // ── 跨块约束：应答规则要的东西，动作权限表里得给 ──────────────────────
+          //
+          // 三轮实测里每一处硬矛盾都是跨块的：表格要求了权限表里不存在的动作，而六块是
+          // 各自独立回答的六个问题。这条原本只写在 skill 里，靠人工逐行核对——那时就
+          // 发现过两行要「读商品事实」而权限表里没有。现在是检查。
+          //
+          // 判定规则是有意保守的，而且**只认能机械判断的部分**：
+          //   · 答案以动词开头（读 / 查 / 取 / 拉 / 调用 / 发 / 提交 / 删除 …）就要求权限表
+          //     里有一行，其「动作」列包含那个宾语的核心词。
+          //   · 权限表被显式跳过（写成理由）时，任何需要动作的行都算矛盾——空表不能
+          //     变成免费的通行证，那正是最容易被骗过的形状。
+          // 猜不出来的时候**不报错**：宁可漏也不误报，因为一条会乱叫的检查会被关掉。
+          const perm = secs.find((x) => x.head.includes('动作权限'));
+          const permSkipped = perm !== undefined && /跳过[：:]/.test(perm.body ?? '');
+          const permTable = perm === undefined ? null : findTable(perm.body, ['动作', '档']);
+          const permitted =
+            permTable === null ? [] : permTable.rows.map((r) => (r[0] ?? '').trim());
 
-        /**
-         * 一句答案要求的动作里，能机械认出来的那些（动词 + 宾语）。
-         *
-         * 第一版写成「动词后面跟任意 1–10 个字」，于是「说明这个 id 查不到」里的
-         * 「查不到」被当成一个动作，真实记录立刻被误报。**一条会乱叫的检查会被关掉**，
-         * 所以这里收紧了三条：
-         *   · 动词前允许有修饰语（「直接发放优惠券」的动词前是「直接」）——
-         *     第一版要求动词前必须是句首或标点，于是所有带修饰语的句子全被漏掉，
-         *     「直接发放优惠券」这个本该报出来的矛盾就静默通过了；
-         *   · 宾语不能以「不 / 没 / 无」开头（那是结果，不是对象）；
-         *   · 宾语不能是「不到 / 不了 / 完」这类补语。
-         * 收得更紧意味着漏看得更多——那是这个方向上有意的取舍。
-         */
-        const requires = (answer) => {
-          const NEEDS = /(读|查|取|拉取|调用|访问|发送|提交|删除|扣款|发放|创建|更新|打开|下载)([^，。；、,;\s→]{1,14})/g;
-          const NOT_AN_OBJECT = /^(不|没|无|不到|不了|完|过)/;
-          // 宾语后面常粘着后续动作（「商品适用月龄后陈述」）。按这些词切开，只留前半。
-          const TRAILING = /(?:后|之后|以后|然后|再|并|且|同时|完|了|，|,).*$/;
-          const found = [];
-          let m;
-          while ((m = NEEDS.exec(answer)) !== null) {
-            if (NOT_AN_OBJECT.test(m[2])) continue;
-            const object = m[2].replace(TRAILING, '').trim();
-            if (object === '') continue;
-            found.push({ verb: m[1], object });
-          }
-          return found;
-        };
+          /**
+           * 一句答案要求的动作里，能机械认出来的那些（动词 + 宾语）。
+           *
+           * 第一版写成「动词后面跟任意 1–10 个字」，于是「说明这个 id 查不到」里的
+           * 「查不到」被当成一个动作，真实记录立刻被误报。**一条会乱叫的检查会被关掉**，
+           * 所以这里收紧了三条：
+           *   · 动词前允许有修饰语（「直接发放优惠券」的动词前是「直接」）——
+           *     第一版要求动词前必须是句首或标点，于是所有带修饰语的句子全被漏掉，
+           *     「直接发放优惠券」这个本该报出来的矛盾就静默通过了；
+           *   · 宾语不能以「不 / 没 / 无」开头（那是结果，不是对象）；
+           *   · 宾语不能是「不到 / 不了 / 完」这类补语。
+           * 收得更紧意味着漏看得更多——那是这个方向上有意的取舍。
+           */
+          const requires = (answer) => {
+            const NEEDS =
+              /(读|查|取|拉取|调用|访问|发送|提交|删除|扣款|发放|创建|更新|打开|下载)([^，。；、,;\s→]{1,14})/g;
+            const NOT_AN_OBJECT = /^(不|没|无|不到|不了|完|过)/;
+            // 宾语后面常粘着后续动作（「商品适用月龄后陈述」）。按这些词切开，只留前半。
+            const TRAILING = /(?:后|之后|以后|然后|再|并|且|同时|完|了|，|,).*$/;
+            const found = [];
+            let m;
+            while ((m = NEEDS.exec(answer)) !== null) {
+              if (NOT_AN_OBJECT.test(m[2])) continue;
+              const object = m[2].replace(TRAILING, '').trim();
+              if (object === '') continue;
+              found.push({ verb: m[1], object });
+            }
+            return found;
+          };
 
-        /**
-         * 宾语和权限行之间算不算对得上。
-         *
-         * 这是启发式，不可能完美——所以判据写成「明显对不上才报」：
-         * 两边只要有任何 2 个字以上的公共片段就算对得上，否则报。
-         * 一条会乱叫的检查会被关掉，宁可漏看。
-         */
-        const sharesWords = (a, b) => {
-          const strip = (x) => x.replace(/（.*?）/g, '').replace(/[、，,·\s]/g, '');
-          const x = strip(a), y = strip(b);
-          if (x === '' || y === '') return false;
-          if (x.includes(y) || y.includes(x)) return true;
-          for (let i = 0; i + 2 <= x.length; i++) {
-            if (y.includes(x.slice(i, i + 2))) return true;
-          }
-          return false;
-        };
+          /**
+           * 宾语和权限行之间算不算对得上。
+           *
+           * 这是启发式，不可能完美——所以判据写成「明显对不上才报」：
+           * 两边只要有任何 2 个字以上的公共片段就算对得上，否则报。
+           * 一条会乱叫的检查会被关掉，宁可漏看。
+           */
+          const sharesWords = (a, b) => {
+            const strip = (x) => x.replace(/（.*?）/g, '').replace(/[、，,·\s]/g, '');
+            const x = strip(a),
+              y = strip(b);
+            if (x === '' || y === '') return false;
+            if (x.includes(y) || y.includes(x)) return true;
+            for (let i = 0; i + 2 <= x.length; i++) {
+              if (y.includes(x.slice(i, i + 2))) return true;
+            }
+            return false;
+          };
 
-        t.rows.forEach((row, n) => {
-          const answer = (row[iAns] ?? '').trim();
-          if (answer === '') return;
-          for (const need of requires(answer)) {
-            if (permSkipped) {
-              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
-                + `but 「动作权限」 is marked skipped — an answer that acts needs a permission`);
-              continue;
+          t.rows.forEach((row, n) => {
+            const answer = (row[iAns] ?? '').trim();
+            if (answer === '') return;
+            for (const need of requires(answer)) {
+              if (permSkipped) {
+                out.push(
+                  `${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, ` +
+                    `but 「动作权限」 is marked skipped — an answer that acts needs a permission`,
+                );
+                continue;
+              }
+              if (permitted.length === 0) {
+                out.push(
+                  `${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, ` +
+                    `but 「动作权限」 has no table to grant it`,
+                );
+                continue;
+              }
+              const ok = permitted.some((p) => sharesWords(need.object, p));
+              if (!ok) {
+                out.push(
+                  `${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, ` +
+                    `which 「动作权限」 does not grant (cross-block contradiction)`,
+                );
+              }
             }
-            if (permitted.length === 0) {
-              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
-                + `but 「动作权限」 has no table to grant it`);
-              continue;
-            }
-            const ok = permitted.some((p) => sharesWords(need.object, p));
-            if (!ok) {
-              out.push(`${r.id}: 应答规则 row ${n + 1} needs to ${need.verb}「${need.object}」, `
-                + `which 「动作权限」 does not grant (cross-block contradiction)`);
-            }
-          }
-        });
+          });
         }
       }
 
@@ -535,10 +632,15 @@ async function cmdCheck() {
       // stage 3 — and becoming a check is the only reason to write it here.
       const refusal = secs.find((x) => x.head.includes('拒绝清单'));
       if (refusal !== undefined && !/跳过[：:]/.test(refusal.body)) {
-        const rows = refusal.body.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('-') || l.startsWith('|'));
+        const rows = refusal.body
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.startsWith('-') || l.startsWith('|'));
         const concrete = rows.filter((l) => /→|->/.test(l));
         if (rows.length > 0 && concrete.length === 0) {
-          out.push(`${r.id}: refusal list names no concrete input → behaviour, so none of it can become a check`);
+          out.push(
+            `${r.id}: refusal list names no concrete input → behaviour, so none of it can become a check`,
+          );
         }
       }
 
@@ -551,9 +653,13 @@ async function cmdCheck() {
   const total = all.length;
   const scope = only === null ? '' : ` (--only ${only})`;
   if (out.length === 0) {
-    const designs = schema.entities.design.states
-      .reduce((n, s2) => n + (found.design?.[s2]?.length ?? 0), 0);
-    console.log(`${GREEN}ok${RESET} — ${total} records${only === 'design' ? `, ${designs} design` : ''}, ${missingDirs.length} empty state dirs, no problems${scope}`);
+    const designs = schema.entities.design.states.reduce(
+      (n, s2) => n + (found.design?.[s2]?.length ?? 0),
+      0,
+    );
+    console.log(
+      `${GREEN}ok${RESET} — ${total} records${only === 'design' ? `, ${designs} design` : ''}, ${missingDirs.length} empty state dirs, no problems${scope}`,
+    );
     return 0;
   }
   console.log(`${RED}${out.length} problem(s)${RESET} across ${total} records\n`);
@@ -572,10 +678,15 @@ async function cmdTimeline() {
   all.sort((a, b) => b.mtime - a.mtime);
 
   console.log(`\n${BOLD}timeline${RESET} ${DIM}newest first${RESET}\n`);
-  if (all.length === 0) { console.log(`  ${DIM}nothing recorded yet${RESET}\n`); return; }
+  if (all.length === 0) {
+    console.log(`  ${DIM}nothing recorded yet${RESET}\n`);
+    return;
+  }
   for (const r of all.slice(0, 40)) {
     const colour = STATE_COLOUR[r.state] ?? DIM;
-    console.log(`  ${fmtDate(r.mtime)}  ${colour}${(r.state ?? '').padEnd(21)}${RESET}${r.id.padEnd(9)}${r.title.slice(0, 50)}`);
+    console.log(
+      `  ${fmtDate(r.mtime)}  ${colour}${(r.state ?? '').padEnd(21)}${RESET}${r.id.padEnd(9)}${r.title.slice(0, 50)}`,
+    );
   }
   console.log();
 }
@@ -584,4 +695,7 @@ const cmd = process.argv[2] ?? 'status';
 if (cmd === 'status') process.exitCode = await cmdStatus();
 else if (cmd === 'check') process.exitCode = await cmdCheck();
 else if (cmd === 'timeline') await cmdTimeline();
-else { console.error(`unknown command: ${cmd}\n  status | check | timeline`); process.exitCode = 1; }
+else {
+  console.error(`unknown command: ${cmd}\n  status | check | timeline`);
+  process.exitCode = 1;
+}

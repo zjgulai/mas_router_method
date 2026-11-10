@@ -74,12 +74,14 @@ const RANK = { pending: 0, claimed: 1, landed: 2, stopped: 3 };
  */
 export function parseCells(value) {
   if (!Array.isArray(value)) return [];
-  return value.map((raw) => {
-    const s = String(raw).trim();
-    const parts = s.split(/[·・.]/).map((x) => x.trim());
-    if (parts.length !== 2) return null;
-    return { stage: parts[0], layer: parts[1] };
-  }).filter((x) => x !== null);
+  return value
+    .map((raw) => {
+      const s = String(raw).trim();
+      const parts = s.split(/[·・.]/).map((x) => x.trim());
+      if (parts.length !== 2) return null;
+      return { stage: parts[0], layer: parts[1] };
+    })
+    .filter((x) => x !== null);
 }
 
 function frontmatter(text) {
@@ -91,9 +93,14 @@ function frontmatter(text) {
     const m = /^([a-z_]+):\s*(.*)$/.exec(line.trim());
     if (m === null) continue;
     const [, key, value] = m;
-    data[key] = value.startsWith('[') && value.endsWith(']')
-      ? value.slice(1, -1).split(',').map((s) => s.trim()).filter(Boolean)
-      : value;
+    data[key] =
+      value.startsWith('[') && value.endsWith(']')
+        ? value
+            .slice(1, -1)
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : value;
   }
   return data;
 }
@@ -108,12 +115,22 @@ function frontmatter(text) {
 export async function readTickets(schema) {
   const out = [];
   const problems = [];
-  const states = schema.entities.ticket?.states ?? ['open', 'in-progress', 'awaiting-verification', 'done', 'abandoned'];
+  const states = schema.entities.ticket?.states ?? [
+    'open',
+    'in-progress',
+    'awaiting-verification',
+    'done',
+    'abandoned',
+  ];
 
   for (const state of states) {
     const dir = join(WORK, 'tickets', state);
     let files;
-    try { files = (await readdir(dir)).filter((f) => f.endsWith('.md')); } catch { continue; }
+    try {
+      files = (await readdir(dir)).filter((f) => f.endsWith('.md'));
+    } catch {
+      continue;
+    }
     for (const file of files) {
       const text = await readFile(join(dir, file), 'utf8');
       const fm = frontmatter(text);
@@ -123,13 +140,25 @@ export async function readTickets(schema) {
         // Not a problem — plenty of tickets (the recipe ones) are about the agent
         // product, not the data product. Listed so the page can say so rather than
         // leaving a reader wondering why a ticket is invisible here.
-        out.push({ id, title: fm.title ?? '', state, cells: [], cellState: STATE_TO_CELL[state] ?? 'pending', evidence: fm.evidence ?? [], linked: false });
+        out.push({
+          id,
+          title: fm.title ?? '',
+          state,
+          cells: [],
+          cellState: STATE_TO_CELL[state] ?? 'pending',
+          evidence: fm.evidence ?? [],
+          linked: false,
+        });
         continue;
       }
       out.push({
-        id, title: fm.title ?? '', state,
-        cells, cellState: STATE_TO_CELL[state] ?? 'pending',
-        evidence: fm.evidence ?? [], linked: true,
+        id,
+        title: fm.title ?? '',
+        state,
+        cells,
+        cellState: STATE_TO_CELL[state] ?? 'pending',
+        evidence: fm.evidence ?? [],
+        linked: true,
       });
     }
   }

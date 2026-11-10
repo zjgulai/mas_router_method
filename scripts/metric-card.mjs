@@ -27,8 +27,12 @@ import { join } from 'node:path';
 import { ROOT, WORK } from './schema.mjs';
 import { section } from './markdown.mjs';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
 const DIR = join(WORK, 'metrics');
 
@@ -54,7 +58,23 @@ export const FIELDS = [
  * 「按区域」 is a real answer for 粒度, and an empty one for 可执行定义.
  */
 const VAGUE = {
-  universal: ['按情况', '视情况', '看情况', '酌情', '适当', '按需', '灵活', '较高', '较低', '正常', '合理', '完善', '待定', 'TBD', 'TODO'],
+  universal: [
+    '按情况',
+    '视情况',
+    '看情况',
+    '酌情',
+    '适当',
+    '按需',
+    '灵活',
+    '较高',
+    '较低',
+    '正常',
+    '合理',
+    '完善',
+    '待定',
+    'TBD',
+    'TODO',
+  ],
   byField: {
     可执行定义: ['各渠道', '多源', '综合', '统计后', '按业务'],
     已知偏差: ['无', '暂无', '基本没有', '可忽略'],
@@ -103,7 +123,9 @@ function problemsFor(text, label) {
     // (below) is the one that matters — a number you can compare across periods.
     if (f.key === '口径版本') {
       if (!/\bv?\d+(\.\d+)*\b/.test(stripped)) {
-        out.push(`${label}: 「口径版本」 has no version number — "${stripped.slice(0, 40)}" cannot be compared across periods`);
+        out.push(
+          `${label}: 「口径版本」 has no version number — "${stripped.slice(0, 40)}" cannot be compared across periods`,
+        );
       }
       continue;
     }
@@ -115,20 +137,26 @@ function problemsFor(text, label) {
     // caught: a template that passes its own validator means "eight headings copied"
     // reads as a complete card, and the check has certified nothing.
     if (/^[（(].*[）)]$/s.test(body.trim())) {
-      out.push(`${label}: 「${f.key}」 still holds the template's placeholder — replace it or the card says nothing`);
+      out.push(
+        `${label}: 「${f.key}」 still holds the template's placeholder — replace it or the card says nothing`,
+      );
       continue;
     }
     // The two fields the design singles out must say something falsifiable. A short
     // sentence can be a real answer; three characters cannot.
     if ((f.key === '已知偏差' || f.key === '什么时候不可用') && stripped.length < 8) {
-      out.push(`${label}: 「${f.key}」 is ${stripped.length} characters — too short to name a condition`);
+      out.push(
+        `${label}: 「${f.key}」 is ${stripped.length} characters — too short to name a condition`,
+      );
     }
   }
 
   // 口径版本 has to be a version a reader can compare, not a date-shaped vibe.
   const v = fields['口径版本'];
   if (v !== null && v !== '' && !/\bv?\d+(\.\d+)*\b/.test(v)) {
-    out.push(`${label}: 「口径版本」 has no version number — "${v.slice(0, 40)}" cannot be compared across periods`);
+    out.push(
+      `${label}: 「口径版本」 has no version number — "${v.slice(0, 40)}" cannot be compared across periods`,
+    );
   }
 
   return out;
@@ -171,21 +199,27 @@ const cmd = process.argv[2] ?? 'check';
 
 if (cmd === 'new') {
   const name = process.argv[3];
-  if (name === undefined) { console.error('usage: metric-card new <name>'); process.exitCode = 2; }
-  else process.stdout.write(TEMPLATE(name));
+  if (name === undefined) {
+    console.error('usage: metric-card new <name>');
+    process.exitCode = 2;
+  } else process.stdout.write(TEMPLATE(name));
 } else if (cmd === 'show') {
   const name = process.argv[3];
   const files = await readdir(DIR).catch(() => []);
   const hit = files.find((f) => f.includes(name ?? '') && f.endsWith('.md'));
-  if (hit === undefined) { console.error(`${RED}no metric card matching "${name}"${RESET}`); process.exitCode = 1; }
-  else process.stdout.write(await readFile(join(DIR, hit), 'utf8'));
+  if (hit === undefined) {
+    console.error(`${RED}no metric card matching "${name}"${RESET}`);
+    process.exitCode = 1;
+  } else process.stdout.write(await readFile(join(DIR, hit), 'utf8'));
 } else {
   const dir = process.argv[3] ?? DIR;
   let files;
   try {
     files = (await readdir(dir)).filter((f) => f.endsWith('.md') && !f.startsWith('.'));
   } catch {
-    console.log(`${DIM}no metric cards yet — ${dir.replace(ROOT + '/', '')} does not exist${RESET}`);
+    console.log(
+      `${DIM}no metric cards yet — ${dir.replace(ROOT + '/', '')} does not exist${RESET}`,
+    );
     console.log(`${DIM}create one with: node scripts/metric-card.mjs new <name> > ...${RESET}`);
     process.exitCode = 0;
     files = null;

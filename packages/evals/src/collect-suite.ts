@@ -97,9 +97,12 @@ function verdictFor(testCase: CollectCase, artifacts: CollectArtifact[]): CaseVe
 
   const rulesHeld = failures.length === 0;
   const repeatHeld = repeat === undefined ? true : repeat.passed;
-  const observed = repeat === undefined
-    ? (rulesHeld ? 'all rules held' : failures.map((f) => `${f.rule}: ${f.observed}`).join('; '))
-    : `${repeat.observed}` + (rulesHeld ? '' : `; also: ${failures.length} rule failure(s)`);
+  const observed =
+    repeat === undefined
+      ? rulesHeld
+        ? 'all rules held'
+        : failures.map((f) => `${f.rule}: ${f.observed}`).join('; ')
+      : `${repeat.observed}` + (rulesHeld ? '' : `; also: ${failures.length} rule failure(s)`);
 
   /*
    * Running fewer times than the policy asks is not a failure, it is missing
@@ -112,8 +115,9 @@ function verdictFor(testCase: CollectCase, artifacts: CollectArtifact[]): CaseVe
     return {
       ...base,
       verdict: 'unverified',
-      observed: `${observed} — ${base.runs} run(s) reached a verdict out of the `
-        + `${testCase.repeat.attempts} the policy asks for, so stability was never measured`,
+      observed:
+        `${observed} — ${base.runs} run(s) reached a verdict out of the ` +
+        `${testCase.repeat.attempts} the policy asks for, so stability was never measured`,
       repeat,
     };
   }
@@ -132,9 +136,10 @@ function verdictFor(testCase: CollectCase, artifacts: CollectArtifact[]): CaseVe
      * latter is true and unhelpful — the thing they have to go and create is a card,
      * not a count.
      */
-    const invented = testCase.gold.kind === 'consistency'
-      ? `a correct answer against a card that does not exist certifies nothing`
-      : `a correct answer to a made-up number certifies nothing`;
+    const invented =
+      testCase.gold.kind === 'consistency'
+        ? `a correct answer against a card that does not exist certifies nothing`
+        : `a correct answer to a made-up number certifies nothing`;
     return {
       ...base,
       verdict: 'unverified',
@@ -151,7 +156,9 @@ export function judgeSuite(
   artifactsByCase: Map<string, CollectArtifact[]>,
   now: Date = new Date(),
 ): SuiteVerdict {
-  const verdicts = cases.map((testCase) => verdictFor(testCase, artifactsByCase.get(testCase.id) ?? []));
+  const verdicts = cases.map((testCase) =>
+    verdictFor(testCase, artifactsByCase.get(testCase.id) ?? []),
+  );
   return {
     ranAt: now.toISOString(),
     cases: verdicts,
@@ -174,13 +181,17 @@ export function judgeSuite(
  */
 export function releaseDecision(suite: SuiteVerdict): { release: boolean; reason: string } {
   if (suite.blockers.length > 0) {
-    return { release: false, reason: `${suite.blockers.length} failing case(s): ${suite.blockers.join(', ')}` };
+    return {
+      release: false,
+      reason: `${suite.blockers.length} failing case(s): ${suite.blockers.join(', ')}`,
+    };
   }
   if (suite.unverified.length > 0) {
     return {
       release: true,
-      reason: `${suite.unverified.length} case(s) unverified — the code may ship, `
-        + `but no quality claim about them may be made: ${suite.unverified.join(', ')}`,
+      reason:
+        `${suite.unverified.length} case(s) unverified — the code may ship, ` +
+        `but no quality claim about them may be made: ${suite.unverified.join(', ')}`,
     };
   }
   return { release: true, reason: 'every case passed on measured gold' };

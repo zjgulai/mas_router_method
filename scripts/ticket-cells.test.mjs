@@ -14,14 +14,22 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCells, expandCells, attach, unclaimedKind, STATE_TO_CELL, FUTURE_STAGES } from './ticket-cells.mjs';
+import {
+  parseCells,
+  expandCells,
+  attach,
+  unclaimedKind,
+  STATE_TO_CELL,
+  FUTURE_STAGES,
+} from './ticket-cells.mjs';
 
 const STAGES = ['需求', '设计', '开发', '验收', '交付', '运营', '迭代', '管理'];
 const LAYERS = ['采集', '存储', '打标', '指标', '分析', '呈现', '结论', '报告'];
 
 test('cells parse from the middle-dot form, and a malformed entry is dropped', () => {
   assert.deepEqual(parseCells(['开发·采集', '验收·存储']), [
-    { stage: '开发', layer: '采集' }, { stage: '验收', layer: '存储' },
+    { stage: '开发', layer: '采集' },
+    { stage: '验收', layer: '存储' },
   ]);
   assert.deepEqual(parseCells(['开发']), []);
   assert.deepEqual(parseCells([]), []);
@@ -50,20 +58,28 @@ test('the ticket state mapping does not promote awaiting-verification to verifie
 });
 
 test('a cell takes the weakest live ticket, so one unfinished ticket keeps it pending', () => {
-  const { byCell } = attach([
-    { id: 'T-1', linked: true, cellState: 'landed', cells: [{ stage: '开发', layer: '采集' }] },
-    { id: 'T-2', linked: true, cellState: 'pending', cells: [{ stage: '开发', layer: '采集' }] },
-  ], STAGES, LAYERS);
+  const { byCell } = attach(
+    [
+      { id: 'T-1', linked: true, cellState: 'landed', cells: [{ stage: '开发', layer: '采集' }] },
+      { id: 'T-2', linked: true, cellState: 'pending', cells: [{ stage: '开发', layer: '采集' }] },
+    ],
+    STAGES,
+    LAYERS,
+  );
   const entry = byCell.get('开发\u0000采集');
   assert.equal(entry.state, 'pending');
   assert.equal(entry.tickets.length, 2, 'both are listed, so the page can say which');
 });
 
 test('an abandoned ticket does not keep a cell looking half-built once another finished it', () => {
-  const { byCell } = attach([
-    { id: 'T-1', linked: true, cellState: 'stopped', cells: [{ stage: '开发', layer: '采集' }] },
-    { id: 'T-2', linked: true, cellState: 'landed', cells: [{ stage: '开发', layer: '采集' }] },
-  ], STAGES, LAYERS);
+  const { byCell } = attach(
+    [
+      { id: 'T-1', linked: true, cellState: 'stopped', cells: [{ stage: '开发', layer: '采集' }] },
+      { id: 'T-2', linked: true, cellState: 'landed', cells: [{ stage: '开发', layer: '采集' }] },
+    ],
+    STAGES,
+    LAYERS,
+  );
   assert.equal(byCell.get('开发\u0000采集').state, 'landed');
 });
 

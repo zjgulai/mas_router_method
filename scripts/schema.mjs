@@ -64,7 +64,11 @@ export function parseSchema(text) {
     }
 
     if (value.startsWith('[') && value.endsWith(']')) {
-      parent[key] = value.slice(1, -1).split(',').map((s) => unquote(s.trim())).filter((s) => s !== '');
+      parent[key] = value
+        .slice(1, -1)
+        .split(',')
+        .map((s) => unquote(s.trim()))
+        .filter((s) => s !== '');
       continue;
     }
 
@@ -164,8 +168,8 @@ export function flatDir(schema, kind) {
  *
  *   node scripts/schema.mjs stages --json
  */
-const isMain = process.argv[1] !== undefined
-  && import.meta.url === pathToFileURL(process.argv[1]).href;
+const isMain =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 if (isMain) {
   const [cmd, ...flags] = process.argv.slice(2);

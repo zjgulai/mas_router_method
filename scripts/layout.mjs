@@ -15,10 +15,23 @@ import { readdir, stat } from 'node:fs/promises';
 import { join, relative, extname, basename } from 'node:path';
 import { ROOT, WORK } from './schema.mjs';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
-const SKIP_DIRS = new Set(['node_modules', '.git', '.turbo', 'dist', '.next', '.agent-runs', 'outputs', 'worktrees']);
+const SKIP_DIRS = new Set([
+  'node_modules',
+  '.git',
+  '.turbo',
+  'dist',
+  '.next',
+  '.agent-runs',
+  'outputs',
+  'worktrees',
+]);
 
 /**
  * Where a given kind of file is allowed to be. `pattern` matches the top-level or
@@ -59,8 +72,8 @@ const RULES = [
     match: (p) => /^docs\/site\/(originals\/)?[^/]+\.html$/.test(p),
     // docs/index.html is the entry point Pages serves at /, and it redirects into
     // docs/site/. It is the one page allowed outside the site directory.
-    forbid: (p) => /\.html$/.test(p) && /^docs\//.test(p)
-      && !/^docs\/site\//.test(p) && p !== 'docs/index.html',
+    forbid: (p) =>
+      /\.html$/.test(p) && /^docs\//.test(p) && !/^docs\/site\//.test(p) && p !== 'docs/index.html',
     hint: '站点 html 只住 docs/site/（Pages 限制）：生成物在根，手写原件在 originals/',
   },
 ];
@@ -114,14 +127,28 @@ for (const f of files) {
   const m = /^((?:T|INC|E|R|ART|REC)-\d{3})-/.exec(base);
   if (m === null) continue;
   const id = m[1];
-  if (idOwners.has(id)) problems.push({ file: f, why: `同 id 出现两次：${idOwners.get(id)} 和 ${f}` });
+  if (idOwners.has(id))
+    problems.push({ file: f, why: `同 id 出现两次：${idOwners.get(id)} 和 ${f}` });
   else idOwners.set(id, f);
 }
 
 // 3. top-level directories that are not declared anywhere
 const declared = new Set([
-  'work', 'docs', 'packages', 'apps', 'scripts', 'node_modules', '.git', '.turbo', '.github',
-  'anb-experiment-linkdigest', 'anb2-repo-vitals', '.agent-runs', '.claude', '.scratch', 'outputs',
+  'work',
+  'docs',
+  'packages',
+  'apps',
+  'scripts',
+  'node_modules',
+  '.git',
+  '.turbo',
+  '.github',
+  'anb-experiment-linkdigest',
+  'anb2-repo-vitals',
+  '.agent-runs',
+  '.claude',
+  '.scratch',
+  'outputs',
   // 交付物：镜像、compose、网关片段与部署/验收脚本。它们不是信息寄存器，
   // 但同样需要一个明确的家；运行手册在 deploy/README.md。
   'deploy',
@@ -141,12 +168,19 @@ const declared = new Set([
 // 否则跑完一次 deploy/pack-context.sh 就会把 layout 检查打红。
 const top = await readdir(ROOT, { withFileTypes: true });
 const unknown = top
-  .filter((e) => e.isDirectory() && !declared.has(e.name) && !SKIP_DIRS.has(e.name) && !e.name.startsWith('.'))
+  .filter(
+    (e) =>
+      e.isDirectory() && !declared.has(e.name) && !SKIP_DIRS.has(e.name) && !e.name.startsWith('.'),
+  )
   .map((e) => e.name);
 
 if (problems.length === 0 && unknown.length === 0) {
   console.log(`${GREEN}ok${RESET} — ${files.length} files, everything in its declared place`);
-  console.log(`${DIM}${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(' · ')}${RESET}`);
+  console.log(
+    `${DIM}${Object.entries(counts)
+      .map(([k, v]) => `${k} ${v}`)
+      .join(' · ')}${RESET}`,
+  );
   process.exitCode = 0;
 } else {
   if (problems.length > 0) {
@@ -157,7 +191,9 @@ if (problems.length === 0 && unknown.length === 0) {
     }
   }
   if (unknown.length > 0) {
-    console.log(`\n${YELLOW}${unknown.length} undeclared top-level director${unknown.length === 1 ? 'y' : 'ies'}${RESET}\n`);
+    console.log(
+      `\n${YELLOW}${unknown.length} undeclared top-level director${unknown.length === 1 ? 'y' : 'ies'}${RESET}\n`,
+    );
     for (const u of unknown) console.log(`  ${YELLOW}•${RESET} ${u}/`);
     console.log(`\n  ${DIM}在 work/LAYOUT.md 里声明它属于哪一类，或者删掉它。${RESET}`);
   }

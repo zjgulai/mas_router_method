@@ -108,12 +108,18 @@ test('the shipped table set is internally consistent', async () => {
   const { readFile } = await import('node:fs/promises');
   let tables;
   try {
-    tables = JSON.parse(await readFile(new URL('../docs/product/tables.json', import.meta.url), 'utf8'));
+    tables = JSON.parse(
+      await readFile(new URL('../docs/product/tables.json', import.meta.url), 'utf8'),
+    );
   } catch {
     return;
   }
   const { problems } = check(tables);
-  assert.deepEqual(problems, [], `the real table set has dangling references:\n${problems.join('\n')}`);
+  assert.deepEqual(
+    problems,
+    [],
+    `the real table set has dangling references:\n${problems.join('\n')}`,
+  );
 });
 
 test('every prefix this project uses has a home', () => {

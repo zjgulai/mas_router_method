@@ -31,8 +31,12 @@
 import { readFile } from 'node:fs/promises';
 import { CONDITIONS, checkConclusion } from './conclusion-conditions.mjs';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
 function demo() {
   return {
@@ -90,8 +94,9 @@ async function notify(channel, message, dryRun) {
   // the point: an alert path that quietly drops is the failure this layer prevents.
   return {
     sent: false,
-    reason: 'no transport configured — set FEISHU_WEBHOOK or pass --dry-run. '
-      + 'A channel that pretends to deliver turns a red conclusion into a silent one.',
+    reason:
+      'no transport configured — set FEISHU_WEBHOOK or pass --dry-run. ' +
+      'A channel that pretends to deliver turns a red conclusion into a silent one.',
   };
 }
 
@@ -101,7 +106,9 @@ const channel = argv.includes('--notify') ? argv[argv.indexOf('--notify') + 1] :
 const dryRun = argv.includes('--dry-run');
 
 if (arg === undefined && !argv.includes('--demo')) {
-  console.error('usage: verify-conclusion <conclusions.json> [--notify feishu] [--dry-run] | --demo');
+  console.error(
+    'usage: verify-conclusion <conclusions.json> [--notify feishu] [--dry-run] | --demo',
+  );
   process.exitCode = 2;
 } else {
   let doc;
@@ -118,16 +125,30 @@ if (arg === undefined && !argv.includes('--demo')) {
     const superseded = all.filter((c) => c.status === 'superseded');
     const live = all.filter((c) => c.status !== 'superseded');
 
-    console.log(`\n${BOLD}证伪检查${RESET} ${DIM}${live.length} active conclusion(s), `
-      + `${superseded.length} superseded (not re-checked)${RESET}\n`);
+    console.log(
+      `\n${BOLD}证伪检查${RESET} ${DIM}${live.length} active conclusion(s), ` +
+        `${superseded.length} superseded (not re-checked)${RESET}\n`,
+    );
 
-    const perConclusion = live.map((c) => ({ c, ...checkConclusion(c.conditions ?? [], c.data ?? {}) }));
+    const perConclusion = live.map((c) => ({
+      c,
+      ...checkConclusion(c.conditions ?? [], c.data ?? {}),
+    }));
 
     for (const { c, verdict, results } of perConclusion) {
-      const icon = verdict === 'falsified' ? `${RED}✗` : verdict === 'unmeasurable' ? `${YELLOW}?` : `${GREEN}✓`;
+      const icon =
+        verdict === 'falsified'
+          ? `${RED}✗`
+          : verdict === 'unmeasurable'
+            ? `${YELLOW}?`
+            : `${GREEN}✓`;
       console.log(`${icon}${RESET} ${BOLD}${c.id}${RESET}  ${c.claim}`);
       for (const r of results) {
-        const mark = r.triggered ? `${RED}fired${RESET}` : r.verdict === 'unmeasurable' ? `${YELLOW}unmeasurable${RESET}` : `${GREEN}holds${RESET}`;
+        const mark = r.triggered
+          ? `${RED}fired${RESET}`
+          : r.verdict === 'unmeasurable'
+            ? `${YELLOW}unmeasurable${RESET}`
+            : `${GREEN}holds${RESET}`;
         console.log(`    ${mark.padEnd(10)} ${r.name} ${DIM}— ${r.detail}${RESET}`);
         if (r.triggered) console.log(`      ${DIM}why it matters: ${r.why}${RESET}`);
       }
@@ -138,13 +159,18 @@ if (arg === undefined && !argv.includes('--demo')) {
     const unknownState = perConclusion.filter((p) => p.verdict === 'unmeasurable');
     const active = perConclusion.filter((p) => p.verdict === 'active');
 
-    console.log(`${BOLD}合计${RESET}  ${active.length} active · ${falsified.length} falsified · ${unknownState.length} unmeasurable`);
+    console.log(
+      `${BOLD}合计${RESET}  ${active.length} active · ${falsified.length} falsified · ${unknownState.length} unmeasurable`,
+    );
 
     if (falsified.length > 0) {
       const message = [
         `证伪检查触发 ${falsified.length} 条结论`,
         ...falsified.map(({ c, results }) => {
-          const why = results.filter((r) => r.triggered).map((r) => `${r.name}: ${r.detail}`).join('; ');
+          const why = results
+            .filter((r) => r.triggered)
+            .map((r) => `${r.name}: ${r.detail}`)
+            .join('; ');
           return `${c.id} ${c.claim} — ${why}`;
         }),
         '',
@@ -163,8 +189,12 @@ if (arg === undefined && !argv.includes('--demo')) {
       }
       process.exitCode = 1;
     } else if (unknownState.length > 0) {
-      console.log(`\n${YELLOW}无法判断${RESET} — ${unknownState.length} conclusion(s) had a condition that could not be evaluated.`);
-      console.log(`  ${DIM}This is not a pass. A condition nobody could check is not a condition that held.${RESET}`);
+      console.log(
+        `\n${YELLOW}无法判断${RESET} — ${unknownState.length} conclusion(s) had a condition that could not be evaluated.`,
+      );
+      console.log(
+        `  ${DIM}This is not a pass. A condition nobody could check is not a condition that held.${RESET}`,
+      );
       process.exitCode = 2;
     } else {
       console.log(`${GREEN}全部成立${RESET}`);

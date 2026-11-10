@@ -56,3 +56,9 @@ __pycache__/
 # --- local runtime state ---
 .data/
 ANB全照开发skill库.zip
+
+# --- local scratch & tool output (no tracked files; not deliverables) ---
+/skills/
+/.playwright-mcp/
+/.audit/
+/.scratch/daily-report/

@@ -75,17 +75,25 @@ export async function judgeDimension(
   ].join('\n');
 
   const text =
-    config.provider === 'anthropic' ? await callAnthropic(user, config) : await callOpenAi(user, config);
+    config.provider === 'anthropic'
+      ? await callAnthropic(user, config)
+      : await callOpenAi(user, config);
   return parseScore(text, dimension, config.provider);
 }
 
-export function parseScore(text: string, dimension: RubricDimension, provider: RubricScore['provider']): RubricScore {
+export function parseScore(
+  text: string,
+  dimension: RubricDimension,
+  provider: RubricScore['provider'],
+): RubricScore {
   const jsonText = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
   const parsed = JSON.parse(jsonText) as { score?: unknown; justification?: unknown };
   const score = typeof parsed.score === 'number' ? parsed.score : Number.NaN;
   const justification = typeof parsed.justification === 'string' ? parsed.justification.trim() : '';
   if (Number.isNaN(score) || score < 0 || score > 1 || justification.length === 0) {
-    throw new Error(`rubric judge returned unusable output for ${dimension}: ${text.slice(0, 200)}`);
+    throw new Error(
+      `rubric judge returned unusable output for ${dimension}: ${text.slice(0, 200)}`,
+    );
   }
   return { dimension, score, justification, provider };
 }
@@ -108,7 +116,8 @@ async function callAnthropic(user: string, config: RubricJudgeConfig): Promise<s
     }),
     signal: AbortSignal.timeout(45_000),
   });
-  if (!response.ok) throw new Error(`judge anthropic ${response.status}: ${(await response.text()).slice(0, 200)}`);
+  if (!response.ok)
+    throw new Error(`judge anthropic ${response.status}: ${(await response.text()).slice(0, 200)}`);
   const payload = (await response.json()) as { content?: { type?: string; text?: string }[] };
   return (payload.content ?? [])
     .filter((part) => part.type === 'text')
@@ -135,12 +144,15 @@ async function callOpenAi(user: string, config: RubricJudgeConfig): Promise<stri
     }),
     signal: AbortSignal.timeout(45_000),
   });
-  if (!response.ok) throw new Error(`judge openai ${response.status}: ${(await response.text()).slice(0, 200)}`);
+  if (!response.ok)
+    throw new Error(`judge openai ${response.status}: ${(await response.text()).slice(0, 200)}`);
   const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] };
   return payload.choices?.[0]?.message?.content ?? '';
 }
 
-export function createRubricJudgeFromEnv(env: NodeJS.ProcessEnv = process.env): RubricJudgeConfig | null {
+export function createRubricJudgeFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+): RubricJudgeConfig | null {
   if ((env['EVAL_RUBRIC'] ?? 'off') === 'off') return null;
   const anthropicKey = env['ANTHROPIC_API_KEY'];
   if (anthropicKey !== undefined && anthropicKey !== '') {

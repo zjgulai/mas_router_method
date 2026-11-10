@@ -35,9 +35,11 @@ export const CONDITIONS = {
     what: '置信区间不跨 0',
     why: '跨过 0 的区间看起来像「有这个效应」，实际上什么都没说；产品必须标为「无结论」',
     check: ({ beta_ci }) => {
-      if (!Array.isArray(beta_ci) || beta_ci.length !== 2) return unknown('no interval in the input');
+      if (!Array.isArray(beta_ci) || beta_ci.length !== 2)
+        return unknown('no interval in the input');
       const [lo, hi] = beta_ci;
-      if (!Number.isFinite(lo) || !Number.isFinite(hi)) return unknown(`interval is not finite: [${lo}, ${hi}]`);
+      if (!Number.isFinite(lo) || !Number.isFinite(hi))
+        return unknown(`interval is not finite: [${lo}, ${hi}]`);
       if (lo <= 0 && hi >= 0) return fire(`interval [${fmt(lo)}, ${fmt(hi)}] contains 0`);
       return ok(`interval [${fmt(lo)}, ${fmt(hi)}] excludes 0`);
     },
@@ -51,13 +53,13 @@ export const CONDITIONS = {
     what: '各区域系数符号一致',
     why: '符号不一致说明没有统一机制，面板假设不成立',
     check: ({ region_betas }) => {
-      if (!Array.isArray(region_betas) || region_betas.length < 2) return unknown('need coefficients for at least 2 regions');
+      if (!Array.isArray(region_betas) || region_betas.length < 2)
+        return unknown('need coefficients for at least 2 regions');
       const signs = new Set(region_betas.map((b) => Math.sign(b)).filter((s) => s !== 0));
       if (signs.size > 1) return fire(`signs differ: ${region_betas.map(fmt).join(', ')}`);
       return ok(`all ${region_betas.length} regions share a sign`);
     },
   },
-
 
   /**
    * C2's condition, and it was missing.
@@ -79,26 +81,33 @@ export const CONDITIONS = {
       if (!Array.isArray(lag_curve) || lag_curve.length < 3) {
         return unknown('need at least three lags to talk about a peak');
       }
-      if (!lag_curve.every((x) => Number.isFinite(x))) return unknown('lag curve has non-finite values');
+      if (!lag_curve.every((x) => Number.isFinite(x)))
+        return unknown('lag curve has non-finite values');
 
       const maxAt = lag_curve.indexOf(Math.max(...lag_curve));
       // A peak at the last lag is not a peak — the curve may still be rising, or the
       // window is too short to see the fall. Both are 无法判断 about the peak, not断 about it.
       if (maxAt === lag_curve.length - 1) {
-        return unknown(`the maximum is at the last lag (k=${maxAt}); the curve may not have turned yet — `
-          + 'extend the window before concluding anything about a peak');
+        return unknown(
+          `the maximum is at the last lag (k=${maxAt}); the curve may not have turned yet — ` +
+            'extend the window before concluding anything about a peak',
+        );
       }
       if (maxAt === 0) {
-        return fire(`the curve is highest at lag 0 (${fmt(lag_curve[0])}) — the effect is contemporaneous, `
-          + 'so there is no lag structure to report');
+        return fire(
+          `the curve is highest at lag 0 (${fmt(lag_curve[0])}) — the effect is contemporaneous, ` +
+            'so there is no lag structure to report',
+        );
       }
       // Is the peak distinguishable from its neighbours? Without a noise scale, no.
       if (Number.isFinite(lag_noise) && lag_noise > 0) {
         const top = lag_curve[maxAt];
         const neighbour = Math.max(lag_curve[maxAt - 1], lag_curve[maxAt + 1] ?? -Infinity);
         if (top - neighbour <= lag_noise) {
-          return fire(`the peak at k=${maxAt} (${fmt(top)}) is within the noise scale (${fmt(lag_noise)}) `
-            + 'of its neighbours — that is a bump, not a peak');
+          return fire(
+            `the peak at k=${maxAt} (${fmt(top)}) is within the noise scale (${fmt(lag_noise)}) ` +
+              'of its neighbours — that is a bump, not a peak',
+          );
         }
       }
       return ok(`peak at k=${maxAt} (${fmt(lag_curve[maxAt])}), falling on both sides`);
@@ -118,7 +127,9 @@ export const CONDITIONS = {
     why: '本地大促、竞品价格战、新品上市会同时抬高声量与 GMV，效应被错误归给声量',
     check: ({ known_events, controlled }) => {
       if (!Array.isArray(known_events)) {
-        return unknown('no event list in the input — an empty list is a claim that you looked, and that has to be supplied');
+        return unknown(
+          'no event list in the input — an empty list is a claim that you looked, and that has to be supplied',
+        );
       }
       const controlledSet = new Set(Array.isArray(controlled) ? controlled : []);
       const loose = known_events.filter((e) => {
@@ -126,8 +137,13 @@ export const CONDITIONS = {
         return !controlledSet.has(name);
       });
       if (loose.length > 0) {
-        return fire(`${loose.length} event(s) in the window are not in the control set: `
-          + loose.slice(0, 3).map((e) => (typeof e === 'string' ? e : e.name)).join(', '));
+        return fire(
+          `${loose.length} event(s) in the window are not in the control set: ` +
+            loose
+              .slice(0, 3)
+              .map((e) => (typeof e === 'string' ? e : e.name))
+              .join(', '),
+        );
       }
       return ok(`${known_events.length} event(s) in the window, all controlled`);
     },
@@ -138,10 +154,16 @@ export const CONDITIONS = {
     what: '打标准确率 ≥ 0.7',
     why: '低于 0.7 情感维度不可用，A2+/A2− 退化为 A1',
     check: ({ kappa, accuracy }) => {
-      if (!Number.isFinite(accuracy)) return unknown('no accuracy in the input — the gold set has not been compared');
+      if (!Number.isFinite(accuracy))
+        return unknown('no accuracy in the input — the gold set has not been compared');
       if (accuracy < 0.7) return fire(`accuracy ${fmt(accuracy)} < 0.7`);
-      if (Number.isFinite(kappa) && kappa < 0.6) return fire(`Kappa ${fmt(kappa)} < 0.6 — the label definition itself is ambiguous, not the annotators`);
-      return ok(`accuracy ${fmt(accuracy)}${Number.isFinite(kappa) ? `, Kappa ${fmt(kappa)}` : ''}`);
+      if (Number.isFinite(kappa) && kappa < 0.6)
+        return fire(
+          `Kappa ${fmt(kappa)} < 0.6 — the label definition itself is ambiguous, not the annotators`,
+        );
+      return ok(
+        `accuracy ${fmt(accuracy)}${Number.isFinite(kappa) ? `, Kappa ${fmt(kappa)}` : ''}`,
+      );
     },
   },
 
@@ -162,7 +184,10 @@ export const CONDITIONS = {
     why: '一年只调整一两次则 C4 无识别力，只能降级为描述性对比',
     check: ({ budget_changes }) => {
       if (!Number.isFinite(budget_changes)) return unknown('no budget history in the input');
-      if (budget_changes < 3) return fire(`${budget_changes} reallocation(s) in the window — below 3, C4 has no identifying power`);
+      if (budget_changes < 3)
+        return fire(
+          `${budget_changes} reallocation(s) in the window — below 3, C4 has no identifying power`,
+        );
       return ok(`${budget_changes} reallocations`);
     },
   },
@@ -216,14 +241,21 @@ export function checkConclusion(conditions, input) {
   const results = conditions.map((name) => {
     const c = CONDITIONS[name];
     if (c === undefined) {
-      return { name, verdict: 'unmeasurable', triggered: false, detail: `no such condition "${name}" — a name that was never registered cannot be trusted to have passed` };
+      return {
+        name,
+        verdict: 'unmeasurable',
+        triggered: false,
+        detail: `no such condition "${name}" — a name that was never registered cannot be trusted to have passed`,
+      };
     }
     const r = c.check(input ?? {});
     return { name, what: c.what, why: c.why, ...r };
   });
 
-  const verdict = results.some((r) => r.triggered) ? 'falsified'
-    : results.some((r) => r.verdict === 'unmeasurable') ? 'unmeasurable'
+  const verdict = results.some((r) => r.triggered)
+    ? 'falsified'
+    : results.some((r) => r.verdict === 'unmeasurable')
+      ? 'unmeasurable'
       : 'active';
 
   return { verdict, results };

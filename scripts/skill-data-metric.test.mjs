@@ -26,9 +26,10 @@ import { writeAndConfirm } from './test-fs.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SKILL = join(ROOT, '.claude/skills/anb-data-metric/SKILL.md');
-const run = (args) => promisify(execFile)(process.execPath, [join(ROOT, 'scripts/metric-card.mjs'), ...args])
-  .then((r) => ({ code: 0, out: r.stdout }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const run = (args) =>
+  promisify(execFile)(process.execPath, [join(ROOT, 'scripts/metric-card.mjs'), ...args])
+    .then((r) => ({ code: 0, out: r.stdout }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 const card = (over = {}) => {
   const f = {
@@ -42,7 +43,9 @@ const card = (over = {}) => {
     什么时候不可用: '两个源的时间窗不一致时，这个数不与上一期比较。',
     ...over,
   };
-  return Object.entries(f).map(([k, v]) => `## ${k}\n\n${v}\n`).join('\n');
+  return Object.entries(f)
+    .map(([k, v]) => `## ${k}\n\n${v}\n`)
+    .join('\n');
 };
 
 async function check(text) {
@@ -50,7 +53,9 @@ async function check(text) {
   try {
     await writeAndConfirm(join(dir, 'card.md'), text);
     return await run(['check', dir]);
-  } finally { await rm(dir, { recursive: true, force: true }); }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 }
 
 test('the skill exists and names the checker it describes', async () => {
@@ -71,7 +76,16 @@ test("the skill's central claim is still true: a cross-layer ratio passes the ch
 
 test('the skill says which eight fields exist, and the checker agrees', async () => {
   const text = await readFile(SKILL, 'utf8');
-  for (const field of ['指标名', '可执行定义', '粒度', '单位', '数据源', '口径版本', '已知偏差', '什么时候不可用']) {
+  for (const field of [
+    '指标名',
+    '可执行定义',
+    '粒度',
+    '单位',
+    '数据源',
+    '口径版本',
+    '已知偏差',
+    '什么时候不可用',
+  ]) {
     assert.ok(text.includes(field), `the skill does not mention 「${field}」`);
   }
   // Dropping any one of them must fail — otherwise the skill is describing a rule
@@ -80,11 +94,14 @@ test('the skill says which eight fields exist, and the checker agrees', async ()
   assert.equal(code, 1, 'a card missing 已知偏差 passed, so the skill overstates the check');
 });
 
-test('the skill\'s two extra sections do not break the checker', async () => {
+test("the skill's two extra sections do not break the checker", async () => {
   // The skill tells a person to add 「和谁一起看才有意义」 and 「版本记录」. If those
   // broke validation, following the skill would fail its own gate.
-  const { code, out } = await check(card() + '\n## 和谁一起看才有意义\n\n不适用：本指标不参与任何比值。\n'
-    + '\n## 版本记录\n\n| 版本 | 什么时候 | 改了什么 | 旧数据 |\n|---|---|---|---|\n| v1 | 2026-10-28 | 初版 | — |\n');
+  const { code, out } = await check(
+    card() +
+      '\n## 和谁一起看才有意义\n\n不适用：本指标不参与任何比值。\n' +
+      '\n## 版本记录\n\n| 版本 | 什么时候 | 改了什么 | 旧数据 |\n|---|---|---|---|\n| v1 | 2026-10-28 | 初版 | — |\n',
+  );
   assert.equal(code, 0, out);
 });
 

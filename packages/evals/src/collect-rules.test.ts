@@ -139,7 +139,11 @@ describe('answer-has-no-number', () => {
 
 describe('answers-plainly', () => {
   it('passes a clear refusal to answer', () => {
-    const result = evaluateCollectRule('answers-plainly', artifact({ answer: '@x 不在账号池里，查不到。' }), testCase());
+    const result = evaluateCollectRule(
+      'answers-plainly',
+      artifact({ answer: '@x 不在账号池里，查不到。' }),
+      testCase(),
+    );
     expect(result.ok).toBe(true);
   });
 
@@ -175,8 +179,17 @@ describe('queried-before-answering', () => {
     const result = evaluateCollectRule(
       'queried-before-answering',
       artifact({
-        calls: [{ tool: 'query_mentions', platform: 'tiktok', account: '@brand',
-          since: '2026-10-01', until: '2026-10-07', count: 412, failed: false }],
+        calls: [
+          {
+            tool: 'query_mentions',
+            platform: 'tiktok',
+            account: '@brand',
+            since: '2026-10-01',
+            until: '2026-10-07',
+            count: 412,
+            failed: false,
+          },
+        ],
       }),
       testCase(),
     );
@@ -190,8 +203,16 @@ describe('queried-before-answering', () => {
     const result = evaluateCollectRule(
       'queried-before-answering',
       artifact({
-        calls: [{ tool: 'query_mentions', platform: 'tiktok', account: '@brand',
-          since: '2026-10-15', until: '2026-10-21', failed: true }],
+        calls: [
+          {
+            tool: 'query_mentions',
+            platform: 'tiktok',
+            account: '@brand',
+            since: '2026-10-15',
+            until: '2026-10-21',
+            failed: true,
+          },
+        ],
       }),
       testCase(),
     );
@@ -210,10 +231,24 @@ describe('no-extra-sources', () => {
       artifact({
         calls: [
           ...artifact().calls,
-          { tool: 'query_mentions', platform: 'instagram', account: '@brand',
-            since: '2026-10-15', until: '2026-10-21', count: 90, failed: false },
-          { tool: 'query_mentions', platform: 'reddit', account: '@brand',
-            since: '2026-10-15', until: '2026-10-21', count: 3, failed: false },
+          {
+            tool: 'query_mentions',
+            platform: 'instagram',
+            account: '@brand',
+            since: '2026-10-15',
+            until: '2026-10-21',
+            count: 90,
+            failed: false,
+          },
+          {
+            tool: 'query_mentions',
+            platform: 'reddit',
+            account: '@brand',
+            since: '2026-10-15',
+            until: '2026-10-21',
+            count: 3,
+            failed: false,
+          },
         ],
       }),
       testCase(),
@@ -253,7 +288,11 @@ describe('budgets', () => {
 
   it('fails a run that cost more than the case allows, even with a right answer', () => {
     // The failure with no error message: correct output, red invoice.
-    const result = evaluateCollectRule('within-cost-budget', artifact({ costUsd: 0.40 }), testCase());
+    const result = evaluateCollectRule(
+      'within-cost-budget',
+      artifact({ costUsd: 0.4 }),
+      testCase(),
+    );
     expect(result.ok).toBe(false);
     expect(result.observed).toContain('0.40');
   });
@@ -264,33 +303,53 @@ describe('cites-source', () => {
   const cites = (answer: string) => artifact({ answer });
 
   it('passes an answer that names the card and a version', () => {
-    const result = evaluateCollectRule('cites-source', cites('依据结论卡 C1（口径版本 2026.10），声量弹性为 0.35。'), consistency);
+    const result = evaluateCollectRule(
+      'cites-source',
+      cites('依据结论卡 C1（口径版本 2026.10），声量弹性为 0.35。'),
+      consistency,
+    );
     expect(result.ok).toBe(true);
     expect(result.observed).toContain('C1');
   });
 
   it('fails an answer with a right number but no citation — the failure this case exists for', () => {
     // A number with no source is exactly what three teams already produce separately.
-    const result = evaluateCollectRule('cites-source', cites('声量对 GMV 的弹性是 0.35，区间 0.2–0.5。'), consistency);
+    const result = evaluateCollectRule(
+      'cites-source',
+      cites('声量对 GMV 的弹性是 0.35，区间 0.2–0.5。'),
+      consistency,
+    );
     expect(result.ok).toBe(false);
     expect(result.observed).toContain('names no conclusion card');
   });
 
   it('fails an answer citing a different card, and names both', () => {
-    const result = evaluateCollectRule('cites-source', cites('依据结论卡 C3（口径版本 2026.10），弹性 0.35。'), consistency);
+    const result = evaluateCollectRule(
+      'cites-source',
+      cites('依据结论卡 C3（口径版本 2026.10），弹性 0.35。'),
+      consistency,
+    );
     expect(result.ok).toBe(false);
     expect(result.observed).toContain('C3');
     expect(result.observed).toContain('C1');
   });
 
   it('fails a citation with no version — it outlives the definition it points at', () => {
-    const result = evaluateCollectRule('cites-source', cites('依据结论卡 C1，弹性 0.35。'), consistency);
+    const result = evaluateCollectRule(
+      'cites-source',
+      cites('依据结论卡 C1，弹性 0.35。'),
+      consistency,
+    );
     expect(result.ok).toBe(false);
     expect(result.observed).toContain('no 口径版本');
   });
 
   it('fails two cards cited at once, because that is the ambiguity being removed', () => {
-    const result = evaluateCollectRule('cites-source', cites('依据结论卡 C1 与 C3（口径版本 2026.10）。'), consistency);
+    const result = evaluateCollectRule(
+      'cites-source',
+      cites('依据结论卡 C1 与 C3（口径版本 2026.10）。'),
+      consistency,
+    );
     expect(result.ok).toBe(false);
     expect(result.observed).toContain('C1+C3');
   });
@@ -353,8 +412,10 @@ describe('the case-to-rule contract', () => {
   it('every rule a case names exists', () => {
     for (const testCase of collectCases) {
       for (const expectation of testCase.expect) {
-        expect(COLLECT_RULE_NAMES, `${testCase.id} names unknown rule ${expectation.rule}`)
-          .toContain(expectation.rule);
+        expect(
+          COLLECT_RULE_NAMES,
+          `${testCase.id} names unknown rule ${expectation.rule}`,
+        ).toContain(expectation.rule);
       }
     }
   });

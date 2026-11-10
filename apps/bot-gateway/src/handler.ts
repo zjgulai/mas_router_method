@@ -290,7 +290,7 @@ export class MainAgentHandler {
       }
 
       const sessionKey = sessionKeyFor(message);
-      const history = sessionKey === undefined ? [] : this.sessions.get(sessionKey);
+      const history = this.sessions.get(sessionKey);
       log.info('question received', {
         chars: message.text.length,
         chatType: message.chatType,
@@ -310,10 +310,8 @@ export class MainAgentHandler {
         await this.safeReply(message, payload, log);
       }
 
-      if (sessionKey !== undefined) {
-        this.sessions.append(sessionKey, { role: 'user', text: message.text });
-        this.sessions.append(sessionKey, { role: 'assistant', text: answer.text });
-      }
+      this.sessions.append(sessionKey, { role: 'user', text: message.text });
+      this.sessions.append(sessionKey, { role: 'assistant', text: answer.text });
 
       this.record({
         kind: 'answer',

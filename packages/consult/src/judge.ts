@@ -81,12 +81,9 @@ class ProviderJudge implements LlmJudge {
 
   async judge(input: JudgeInput): Promise<JudgeResult | null> {
     try {
-      const user = [
-        `问题：${input.question}`,
-        '',
-        '回答：',
-        input.answer.text.slice(0, 2400),
-      ].join('\n');
+      const user = [`问题：${input.question}`, '', '回答：', input.answer.text.slice(0, 2400)].join(
+        '\n',
+      );
 
       const text =
         this.config.provider === 'anthropic'

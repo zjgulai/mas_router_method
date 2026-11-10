@@ -17,8 +17,14 @@ function tcpCheck(host, port) {
   return new Promise((resolve) => {
     const socket = net.connect({ host, port });
     socket.setTimeout(1500);
-    socket.once('connect', () => { socket.destroy(); resolve({ ok: true }); });
-    socket.once('timeout', () => { socket.destroy(); resolve({ ok: false, error: 'timeout' }); });
+    socket.once('connect', () => {
+      socket.destroy();
+      resolve({ ok: true });
+    });
+    socket.once('timeout', () => {
+      socket.destroy();
+      resolve({ ok: false, error: 'timeout' });
+    });
     socket.once('error', (error) => resolve({ ok: false, error: error.code ?? error.message }));
   });
 }

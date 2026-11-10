@@ -19,7 +19,10 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ROOT } from './schema.mjs';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', DIM = '\x1b[2m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  DIM = '\x1b[2m',
+  RESET = '\x1b[0m';
 
 /**
  * The three shapes the drift has actually taken. A bare `stage` followed by a
@@ -102,7 +105,9 @@ if (process.argv[2] === 'check') {
   if (hits.length === 0) {
     console.log(`${GREEN}ok${RESET} — ${files.length} files, no hardcoded stage numbers`);
   } else {
-    console.log(`${RED}${hits.length} hardcoded stage number(s)${RESET} ${DIM}in ${files.length} files${RESET}\n`);
+    console.log(
+      `${RED}${hits.length} hardcoded stage number(s)${RESET} ${DIM}in ${files.length} files${RESET}\n`,
+    );
     for (const h of hits) console.log(`  ${RED}•${RESET} ${h.file}:${h.line}: ${h.snippet}`);
     console.log(`\n  ${DIM}阶段顺序的唯一来源是 work/schema.yml 的 stage_order。`);
     console.log(`  要指向某一阶段就写它的名字，不要写位置。${RESET}`);

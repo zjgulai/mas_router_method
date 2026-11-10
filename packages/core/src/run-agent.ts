@@ -113,9 +113,7 @@ export function messageToSteps(msg: SDKMessage, recorder: StepRecorder): void {
           typeof raw === 'string'
             ? raw
             : Array.isArray(raw)
-              ? raw
-                  .map((c) => ('text' in c && typeof c.text === 'string' ? c.text : ''))
-                  .join('\n')
+              ? raw.map((c) => ('text' in c && typeof c.text === 'string' ? c.text : '')).join('\n')
               : '';
         recorder.record({ kind: 'tool-result', summary: truncate(text) });
       }

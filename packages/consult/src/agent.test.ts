@@ -119,9 +119,7 @@ describe('MainConsultAgent', () => {
   });
 
   it('names the work items in a progress update instead of a generic lecture', async () => {
-    const answer = await agent.answer(
-      '10/28 工作总结：回归测试进度 100%，视频抽帧优化进度 50%。',
-    );
+    const answer = await agent.answer('10/28 工作总结：回归测试进度 100%，视频抽帧优化进度 50%。');
     expect(answer.text).toContain('回归测试');
     expect(answer.text).toContain('视频抽帧优化');
     expect(answer.text).toContain('G1–G5');

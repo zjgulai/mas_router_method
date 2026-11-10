@@ -29,8 +29,12 @@
 import { readFile } from 'node:fs/promises';
 import { REGION_NAMESPACE } from './collect-store.mjs';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
 // Thresholds. Fixed here rather than passed in, because a gate whose limit is a
 // command-line argument is a gate that gets tuned until it passes.
@@ -40,20 +44,25 @@ const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
 // calibration, they are the bounds of "something is structurally broken" — below
 // 10% no cross-source dedup is happening at all, above 90% the fingerprint is
 // merging distinct items and the volume is collapsing.
-const DEDUP_MIN = 0.10;
-const DEDUP_MAX = 0.90;
+const DEDUP_MIN = 0.1;
+const DEDUP_MAX = 0.9;
 /** Latency spread beyond this, across regions, contaminates a cross-region comparison. */
 const LATENCY_SPREAD_HOURS = 72;
 
 const hours = (ms) => ms / 3_600_000;
 
 function readLedger(text) {
-  const runs = [], observations = [];
+  const runs = [],
+    observations = [];
   text.split('\n').forEach((line, i) => {
     const t = line.trim();
     if (t === '') return;
     let rec;
-    try { rec = JSON.parse(t); } catch { throw new Error(`line ${i + 1} is not JSON`); }
+    try {
+      rec = JSON.parse(t);
+    } catch {
+      throw new Error(`line ${i + 1} is not JSON`);
+    }
     if (rec.kind === 'run') runs.push(rec);
     else if (rec.kind === 'observation') observations.push(rec);
   });
@@ -68,7 +77,8 @@ function readLedger(text) {
  * broken one, and the first thing anyone does with a red gate is run it again.
  */
 function demo() {
-  const runs = [], observations = [];
+  const runs = [],
+    observations = [];
   /*
    * Each region is fetched twice, with a *different* gap: 2 days for US, 6 for DE.
    * That 4-day spread is the contaminant — DE's items are older at the moment of
@@ -84,22 +94,35 @@ function demo() {
     { region: 'US', fetches: ['2026-10-01T00:00:00Z', '2026-10-03T00:00:00Z'], items: 12 },
     { region: 'DE', fetches: ['2026-10-01T00:00:00Z', '2026-10-07T00:00:00Z'], items: 12 },
   ];
-  const growthPerDay = 0.08;   // 8% interaction growth per day of post age
+  const growthPerDay = 0.08; // 8% interaction growth per day of post age
   for (const p of plan) {
     for (const [n, fetched] of p.fetches.entries()) {
       const runId = `${p.region.toLowerCase()}-${n}`;
       runs.push({
-        kind: 'run', ledger_version: 1, source: 'tiktok', run_id: runId,
-        source_task_id: `task-${runId}`, fetched_at: fetched, status: 'ok', items: p.items,
+        kind: 'run',
+        ledger_version: 1,
+        source: 'tiktok',
+        run_id: runId,
+        source_task_id: `task-${runId}`,
+        fetched_at: fetched,
+        status: 'ok',
+        items: p.items,
       });
       const daysIn = (Date.parse(fetched) - Date.parse(p.fetches[0])) / 86_400_000;
       for (let i = 0; i < p.items; i++) {
         observations.push({
-          kind: 'observation', ledger_version: 1,
-          source: 'tiktok', fingerprint: `${p.region}-fp-${i}`,
-          first_seen_at: p.fetches[0], fetched_at: fetched, source_task_id: `task-${runId}`,
-          schema_version: 1, taxonomy_version: 1, metric_version: 1,
-          region: p.region, region_basis: 'hashtag:v1',
+          kind: 'observation',
+          ledger_version: 1,
+          source: 'tiktok',
+          fingerprint: `${p.region}-fp-${i}`,
+          first_seen_at: p.fetches[0],
+          fetched_at: fetched,
+          source_task_id: `task-${runId}`,
+          schema_version: 1,
+          taxonomy_version: 1,
+          metric_version: 1,
+          region: p.region,
+          region_basis: 'hashtag:v1',
           raw: { likes: Math.round(10 * (1 + growthPerDay) ** daysIn) },
         });
       }
@@ -115,17 +138,29 @@ function demo() {
   // double-counted for that content, silently.
   const repostText = 'momcozy bottle warmer review after two months of night feeds';
   runs.push({
-    kind: 'run', ledger_version: 1, source: 'instagram', run_id: 'ig-0',
-    source_task_id: 'task-ig', fetched_at: '2026-10-07T00:00:00Z', status: 'ok', items: 3,
+    kind: 'run',
+    ledger_version: 1,
+    source: 'instagram',
+    run_id: 'ig-0',
+    source_task_id: 'task-ig',
+    fetched_at: '2026-10-07T00:00:00Z',
+    status: 'ok',
+    items: 3,
   });
   for (let i = 0; i < 3; i++) {
     observations.push({
-      kind: 'observation', ledger_version: 1,
-      source: 'instagram', fingerprint: `IG-${i}`,
-      first_seen_at: '2026-10-07T00:00:00Z', fetched_at: '2026-10-07T00:00:00Z',
+      kind: 'observation',
+      ledger_version: 1,
+      source: 'instagram',
+      fingerprint: `IG-${i}`,
+      first_seen_at: '2026-10-07T00:00:00Z',
+      fetched_at: '2026-10-07T00:00:00Z',
       source_task_id: 'task-ig',
-      schema_version: 1, taxonomy_version: 1, metric_version: 1,
-      region: 'US', region_basis: 'location:v1',
+      schema_version: 1,
+      taxonomy_version: 1,
+      metric_version: 1,
+      region: 'US',
+      region_basis: 'location:v1',
       raw: {
         likes: 5 + i,
         text: i === 2 ? 'unrelated caption about stroller storage' : repostText,
@@ -137,8 +172,14 @@ function demo() {
   }
   // A source that was due and produced nothing, with its run recorded — healthy.
   runs.push({
-    kind: 'run', ledger_version: 1, source: 'youtube', run_id: 'yt-0',
-    source_task_id: 'task-yt', fetched_at: '2026-10-07T00:00:00Z', status: 'ok', items: 0,
+    kind: 'run',
+    ledger_version: 1,
+    source: 'youtube',
+    run_id: 'yt-0',
+    source_task_id: 'task-yt',
+    fetched_at: '2026-10-07T00:00:00Z',
+    status: 'ok',
+    items: 0,
   });
   return { runs, observations };
 }
@@ -151,7 +192,8 @@ function histories(observations) {
     if (!by.has(k)) by.set(k, []);
     by.get(k).push(o);
   }
-  for (const list of by.values()) list.sort((a, b) => Date.parse(a.fetched_at) - Date.parse(b.fetched_at));
+  for (const list of by.values())
+    list.sort((a, b) => Date.parse(a.fetched_at) - Date.parse(b.fetched_at));
   return by;
 }
 
@@ -164,11 +206,13 @@ function histories(observations) {
  * corrected, because it mixes with the region effect.
  */
 function latencyAudit(by) {
-  const deltas = [];        // { fingerprint, region, days, growth }
+  const deltas = []; // { fingerprint, region, days, growth }
   for (const [k, list] of by) {
     if (list.length < 2) continue;
-    const first = list[0], last = list[list.length - 1];
-    const a = first.raw?.likes, b = last.raw?.likes;
+    const first = list[0],
+      last = list[list.length - 1];
+    const a = first.raw?.likes,
+      b = last.raw?.likes;
     if (!Number.isFinite(a) || !Number.isFinite(b) || a <= 0) continue;
     deltas.push({
       key: k.split('\u0000')[1],
@@ -244,7 +288,11 @@ function median(xs) {
 function coarseKey(o) {
   const raw = o.raw ?? {};
   if (typeof raw.text === 'string' && raw.text.trim() !== '') {
-    const norm = raw.text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim().slice(0, 60);
+    const norm = raw.text
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .trim()
+      .slice(0, 60);
     if (norm.length >= 12) return `text:${norm}`;
   }
   if (raw.author !== undefined && raw.posted_at !== undefined) {
@@ -289,8 +337,11 @@ function dedupAudit(runs, observations) {
     // The number that matters: recall of the fingerprint scheme against a coarse check.
     recall: suspected.length === 0 ? null : caught / suspected.length,
     // Still reported, because a very high value means the scheme is over-merging.
-    flagged_share: observations.length === 0 ? null
-      : observations.filter((o) => typeof o.dup_of === 'string' && o.dup_of !== '').length / observations.length,
+    flagged_share:
+      observations.length === 0
+        ? null
+        : observations.filter((o) => typeof o.dup_of === 'string' && o.dup_of !== '').length /
+          observations.length,
   };
 }
 
@@ -308,17 +359,24 @@ function missAudit(runs) {
     if (!bySource.has(r.source)) bySource.set(r.source, []);
     bySource.get(r.source).push(r);
   }
-  const rows = [...bySource.entries()].map(([source, rs]) => {
-    const ok = rs.filter((r) => r.status === 'ok').length;
-    const partial = rs.filter((r) => r.status === 'partial').length;
-    const error = rs.filter((r) => r.status === 'error').length;
-    const empty = rs.filter((r) => r.status === 'ok' && (r.items ?? 0) === 0).length;
-    return {
-      source, runs: rs.length, ok, partial, error, empty,
-      // Three states, kept apart. `empty` is the one that reads as "nothing to see".
-      success_rate: rs.length === 0 ? null : (ok - empty) / rs.length,
-    };
-  }).sort((a, b) => a.source.localeCompare(b.source));
+  const rows = [...bySource.entries()]
+    .map(([source, rs]) => {
+      const ok = rs.filter((r) => r.status === 'ok').length;
+      const partial = rs.filter((r) => r.status === 'partial').length;
+      const error = rs.filter((r) => r.status === 'error').length;
+      const empty = rs.filter((r) => r.status === 'ok' && (r.items ?? 0) === 0).length;
+      return {
+        source,
+        runs: rs.length,
+        ok,
+        partial,
+        error,
+        empty,
+        // Three states, kept apart. `empty` is the one that reads as "nothing to see".
+        success_rate: rs.length === 0 ? null : (ok - empty) / rs.length,
+      };
+    })
+    .sort((a, b) => a.source.localeCompare(b.source));
   return { sources: rows };
 }
 
@@ -331,9 +389,7 @@ if (arg === undefined && !process.argv.includes('--demo')) {
 } else {
   let led = null;
   try {
-    led = process.argv.includes('--demo')
-      ? demo()
-      : readLedger(await readFile(arg, 'utf8'));
+    led = process.argv.includes('--demo') ? demo() : readLedger(await readFile(arg, 'utf8'));
   } catch (cause) {
     console.error(`${RED}cannot read ledger${RESET} — ${cause.message}`);
     process.exitCode = 2;
@@ -350,46 +406,70 @@ if (arg === undefined && !process.argv.includes('--demo')) {
     const inconclusive = [];
 
     if (lat.spread_days === null) {
-      inconclusive.push(`时滞 spread cannot be measured: ${lat.regions.filter((r) => r.n >= 3 && /^[A-Z]{2}$/.test(r.region)).length} region(s) `
-        + `with ≥3 re-seen items (need 2 to compare). One sighting per item cannot show a latency difference.`);
+      inconclusive.push(
+        `时滞 spread cannot be measured: ${lat.regions.filter((r) => r.n >= 3 && /^[A-Z]{2}$/.test(r.region)).length} region(s) ` +
+          `with ≥3 re-seen items (need 2 to compare). One sighting per item cannot show a latency difference.`,
+      );
     } else if (lat.spread_days * 24 > LATENCY_SPREAD_HOURS) {
-      failures.push(`时滞 spread is ${lat.spread_days.toFixed(1)} days across regions (limit `
-        + `${LATENCY_SPREAD_HOURS / 24}). Different scrape times per region put scrape age into the `
-        + `independent variable, and region is the thing being compared.`);
+      failures.push(
+        `时滞 spread is ${lat.spread_days.toFixed(1)} days across regions (limit ` +
+          `${LATENCY_SPREAD_HOURS / 24}). Different scrape times per region put scrape age into the ` +
+          `independent variable, and region is the thing being compared.`,
+      );
     }
 
     if (ded.recall === null) {
       if (ded.keyable === 0) {
-        inconclusive.push(`去重率 cannot be measured: none of ${ded.considered} rows carries a field a `
-          + `coarse key can be built from (no raw.text, no raw.author + raw.posted_at). `
-          + `A rate of 0% here would mean "no duplicates" and "no way to look" at the same time.`);
+        inconclusive.push(
+          `去重率 cannot be measured: none of ${ded.considered} rows carries a field a ` +
+            `coarse key can be built from (no raw.text, no raw.author + raw.posted_at). ` +
+            `A rate of 0% here would mean "no duplicates" and "no way to look" at the same time.`,
+        );
       } else {
-        inconclusive.push(`去重率 has no denominator: ${ded.keyable} rows were keyable and none of them `
-          + `collide, so there are no suspected duplicates to test the fingerprint against. `
-          + `That is a reason to collect more, not evidence that the scheme works.`);
+        inconclusive.push(
+          `去重率 has no denominator: ${ded.keyable} rows were keyable and none of them ` +
+            `collide, so there are no suspected duplicates to test the fingerprint against. ` +
+            `That is a reason to collect more, not evidence that the scheme works.`,
+        );
       }
     } else if (ded.recall < DEDUP_MIN) {
-      failures.push(`去重率 (recall) is ${(ded.recall * 100).toFixed(1)}% (floor ${DEDUP_MIN * 100}%) — of `
-        + `${ded.suspected} suspected duplicate group(s) found by a coarse key, the fingerprint flagged only `
-        + `${ded.caught}. Volume is inflated by an unknown factor and this cannot be fixed downstream.`);
+      failures.push(
+        `去重率 (recall) is ${(ded.recall * 100).toFixed(1)}% (floor ${DEDUP_MIN * 100}%) — of ` +
+          `${ded.suspected} suspected duplicate group(s) found by a coarse key, the fingerprint flagged only ` +
+          `${ded.caught}. Volume is inflated by an unknown factor and this cannot be fixed downstream.`,
+      );
     } else if (ded.flagged_share !== null && ded.flagged_share > DEDUP_MAX) {
-      failures.push(`去重率 flagged share is ${(ded.flagged_share * 100).toFixed(1)}% (ceiling ${DEDUP_MAX * 100}%) — `
-        + `the fingerprint is merging distinct items and volume is collapsing.`);
+      failures.push(
+        `去重率 flagged share is ${(ded.flagged_share * 100).toFixed(1)}% (ceiling ${DEDUP_MAX * 100}%) — ` +
+          `the fingerprint is merging distinct items and volume is collapsing.`,
+      );
     }
 
     for (const s of mis.sources) {
       if (s.runs > 0 && s.ok === 0 && s.error > 0) {
-        failures.push(`source "${s.source}" has ${s.error} run(s) and 0 successful — an outage that `
-          + `the downstream count reads as "quiet".`);
+        failures.push(
+          `source "${s.source}" has ${s.error} run(s) and 0 successful — an outage that ` +
+            `the downstream count reads as "quiet".`,
+        );
       }
     }
 
     if (json) {
-      console.log(JSON.stringify({
-        latency: lat, dedup: ded, miss: mis,
-        verdict: failures.length > 0 ? 'failed' : inconclusive.length > 0 ? 'inconclusive' : 'passed',
-        failures, inconclusive,
-      }, null, 2));
+      console.log(
+        JSON.stringify(
+          {
+            latency: lat,
+            dedup: ded,
+            miss: mis,
+            verdict:
+              failures.length > 0 ? 'failed' : inconclusive.length > 0 ? 'inconclusive' : 'passed',
+            failures,
+            inconclusive,
+          },
+          null,
+          2,
+        ),
+      );
       /*
        * The exit code is the verdict. The first version printed the JSON and fell
        * through without setting it, so `collect-audit --json` always exited 0 —
@@ -399,49 +479,79 @@ if (arg === undefined && !process.argv.includes('--demo')) {
        */
       process.exitCode = failures.length > 0 ? 1 : inconclusive.length > 0 ? 2 : 0;
     } else {
-      console.log(`\n${BOLD}采集审计${RESET} ${DIM}three numbers that say whether collection is lying${RESET}\n`);
+      console.log(
+        `\n${BOLD}采集审计${RESET} ${DIM}three numbers that say whether collection is lying${RESET}\n`,
+      );
 
-      console.log(`${BOLD}时滞${RESET} ${DIM}same item, later fetch — growth is correctable, a varying interval is not${RESET}`);
+      console.log(
+        `${BOLD}时滞${RESET} ${DIM}same item, later fetch — growth is correctable, a varying interval is not${RESET}`,
+      );
       if (lat.items_seen_twice === 0) {
-        console.log(`  ${YELLOW}no item was seen twice${RESET} — one sighting per item cannot show latency bias`);
+        console.log(
+          `  ${YELLOW}no item was seen twice${RESET} — one sighting per item cannot show latency bias`,
+        );
       } else {
-        console.log(`  ${lat.items_seen_twice} items seen twice`
-          + (lat.median_growth === null ? '' : `, median interaction growth ${(lat.median_growth * 100).toFixed(1)}%`)
-          + (lat.growth_range === null ? '' : ` ${DIM}[${(lat.growth_range[0] * 100).toFixed(0)}%, ${(lat.growth_range[1] * 100).toFixed(0)}%]${RESET}`));
+        console.log(
+          `  ${lat.items_seen_twice} items seen twice` +
+            (lat.median_growth === null
+              ? ''
+              : `, median interaction growth ${(lat.median_growth * 100).toFixed(1)}%`) +
+            (lat.growth_range === null
+              ? ''
+              : ` ${DIM}[${(lat.growth_range[0] * 100).toFixed(0)}%, ${(lat.growth_range[1] * 100).toFixed(0)}%]${RESET}`),
+        );
         for (const r of lat.regions) {
-          console.log(`    ${r.region.padEnd(15)}${String(r.n).padStart(3)} items  ${DIM}median gap ${Number.isNaN(r.medianDays) ? '—' : r.medianDays.toFixed(1) + 'd'}${RESET}`);
+          console.log(
+            `    ${r.region.padEnd(15)}${String(r.n).padStart(3)} items  ${DIM}median gap ${Number.isNaN(r.medianDays) ? '—' : r.medianDays.toFixed(1) + 'd'}${RESET}`,
+          );
         }
         if (lat.spread_days !== null) {
           const colour = lat.spread_days * 24 > LATENCY_SPREAD_HOURS ? RED : GREEN;
-          console.log(`  ${colour}spread across regions: ${lat.spread_days.toFixed(1)} days${RESET}`);
+          console.log(
+            `  ${colour}spread across regions: ${lat.spread_days.toFixed(1)} days${RESET}`,
+          );
         }
       }
       console.log();
 
-      console.log(`${BOLD}去重率${RESET} ${DIM}within one batch, how much of the volume is content already seen${RESET}`);
+      console.log(
+        `${BOLD}去重率${RESET} ${DIM}within one batch, how much of the volume is content already seen${RESET}`,
+      );
       if (ded.recall === null) {
-        console.log(`  ${YELLOW}无法测量${RESET} ${DIM}— ${ded.keyable}/${ded.considered} rows keyable, `
-          + `${ded.suspected} suspected duplicate group(s). A rate of 0% here would mean both `
-          + `"no duplicates" and "no way to look".${RESET}`);
+        console.log(
+          `  ${YELLOW}无法测量${RESET} ${DIM}— ${ded.keyable}/${ded.considered} rows keyable, ` +
+            `${ded.suspected} suspected duplicate group(s). A rate of 0% here would mean both ` +
+            `"no duplicates" and "no way to look".${RESET}`,
+        );
       } else {
         const colour = ded.recall < DEDUP_MIN ? RED : GREEN;
-        console.log(`  ${colour}recall ${(ded.recall * 100).toFixed(1)}%${RESET} ${DIM}— of ${ded.suspected} group(s) a coarse key `
-          + `calls duplicates, the fingerprint flagged ${ded.caught}${RESET}`);
-        console.log(`  ${DIM}flagged share ${(ded.flagged_share * 100).toFixed(1)}% of ${ded.considered} rows `
-          + `(${ded.sources} sources) · floor ${DEDUP_MIN * 100}%, ceiling ${DEDUP_MAX * 100}%${RESET}`);
+        console.log(
+          `  ${colour}recall ${(ded.recall * 100).toFixed(1)}%${RESET} ${DIM}— of ${ded.suspected} group(s) a coarse key ` +
+            `calls duplicates, the fingerprint flagged ${ded.caught}${RESET}`,
+        );
+        console.log(
+          `  ${DIM}flagged share ${(ded.flagged_share * 100).toFixed(1)}% of ${ded.considered} rows ` +
+            `(${ded.sources} sources) · floor ${DEDUP_MIN * 100}%, ceiling ${DEDUP_MAX * 100}%${RESET}`,
+        );
       }
       console.log();
 
-      console.log(`${BOLD}缺抓率${RESET} ${DIM}ok / partial / error / empty, kept apart on purpose${RESET}`);
+      console.log(
+        `${BOLD}缺抓率${RESET} ${DIM}ok / partial / error / empty, kept apart on purpose${RESET}`,
+      );
       for (const s of mis.sources) {
         const colour = s.ok === 0 && s.error > 0 ? RED : GREEN;
-        console.log(`  ${colour}${s.source.padEnd(12)}${RESET}${s.runs} runs · ok ${s.ok} · partial ${s.partial}`
-          + ` · error ${s.error} · empty ${s.empty}`);
+        console.log(
+          `  ${colour}${s.source.padEnd(12)}${RESET}${s.runs} runs · ok ${s.ok} · partial ${s.partial}` +
+            ` · error ${s.error} · empty ${s.empty}`,
+        );
       }
       if (mis.sources.length === 0) console.log(`  ${YELLOW}no runs recorded${RESET}`);
-      console.log(`  ${DIM}"empty" is a result: the source was reached and had nothing. `
-        + `"no run at all" is the dangerous one, and it is not derivable from the ledger — `
-        + `it needs the expected schedule as a separate input.${RESET}`);
+      console.log(
+        `  ${DIM}"empty" is a result: the source was reached and had nothing. ` +
+          `"no run at all" is the dangerous one, and it is not derivable from the ledger — ` +
+          `it needs the expected schedule as a separate input.${RESET}`,
+      );
       console.log();
 
       if (failures.length > 0) {
@@ -450,13 +560,19 @@ if (arg === undefined && !process.argv.includes('--demo')) {
         console.log();
         process.exitCode = 1;
       } else if (inconclusive.length > 0) {
-        console.log(`${YELLOW}无法判断 — ${inconclusive.length} thing(s) these inputs cannot answer${RESET}\n`);
+        console.log(
+          `${YELLOW}无法判断 — ${inconclusive.length} thing(s) these inputs cannot answer${RESET}\n`,
+        );
         for (const c of inconclusive) console.log(`  ${YELLOW}•${RESET} ${c}`);
-        console.log(`\n  ${DIM}This is not a pass. A green audit over an input that cannot move is `
-          + `the failure this repo keeps finding.${RESET}\n`);
+        console.log(
+          `\n  ${DIM}This is not a pass. A green audit over an input that cannot move is ` +
+            `the failure this repo keeps finding.${RESET}\n`,
+        );
         process.exitCode = 2;
       } else {
-        console.log(`${GREEN}通过${RESET} — latency, dedup and miss rate are all inside their bands\n`);
+        console.log(
+          `${GREEN}通过${RESET} — latency, dedup and miss rate are all inside their bands\n`,
+        );
         process.exitCode = 0;
       }
     }

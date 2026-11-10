@@ -23,12 +23,16 @@ export { BRAND_IDS, allSeedBrands, seedBrand } from '@mas/core';
 /** Brand fixture for a case. Delegates so there is exactly one brand table. */
 export const makeBrand: (id: string) => BrandProfile = seedBrand;
 
-export function makeAnalysis(options: { silent?: boolean; restrictedAudio?: boolean } = {}): ReferenceAnalysis {
+export function makeAnalysis(
+  options: { silent?: boolean; restrictedAudio?: boolean } = {},
+): ReferenceAnalysis {
   const silent = options.silent === true;
   return {
     hook: {
       pattern: 'problem-agitation',
-      text: silent ? 'A close-up of a tired face, no speech' : 'Tired of routines that take an hour?',
+      text: silent
+        ? 'A close-up of a tired face, no speech'
+        : 'Tired of routines that take an hour?',
       durationSec: 2,
       whyItWorks: 'Names a pain the viewer already feels.',
     },
@@ -38,22 +42,44 @@ export function makeAnalysis(options: { silent?: boolean; restrictedAudio?: bool
       { name: 'proof', startSec: 16, endSec: 24, purpose: 'Show the result' },
     ],
     shots: [
-      { index: 0, kind: 'a-roll', startSec: 0, endSec: 8, action: 'Person at a mirror', reuse: 'reshoot-required' },
-      { index: 1, kind: 'product-closeup', startSec: 8, endSec: 16, action: 'Product on a counter', reuse: 'reshoot-required' },
+      {
+        index: 0,
+        kind: 'a-roll',
+        startSec: 0,
+        endSec: 8,
+        action: 'Person at a mirror',
+        reuse: 'reshoot-required',
+      },
+      {
+        index: 1,
+        kind: 'product-closeup',
+        startSec: 8,
+        endSec: 16,
+        action: 'Product on a counter',
+        reuse: 'reshoot-required',
+      },
     ],
     voiceover: silent
       ? []
       : // The line stays in its spoken language on purpose: a zh-market reference must
         // carry the language signal the agent needs to decide translations are due.
-        [{ startSec: 2, endSec: 8, line: '以前 routines 要一个小时。', translation: 'It used to take an hour.' }],
+        [
+          {
+            startSec: 2,
+            endSec: 8,
+            line: '以前 routines 要一个小时。',
+            translation: 'It used to take an hour.',
+          },
+        ],
     audio: {
       // A silent reference must not claim an original voiceover it does not have;
       // that string is what the model reads when deciding whether to write dialogue.
-      source: options.restrictedAudio === true
-        ? 'trending sound'
-        : silent
-          ? 'music and on-screen text only, no speech'
-          : 'original voiceover',
+      source:
+        options.restrictedAudio === true
+          ? 'trending sound'
+          : silent
+            ? 'music and on-screen text only, no speech'
+            : 'original voiceover',
       rights: options.restrictedAudio === true ? 'not-reusable' : 'clearable',
     },
     captionFormula: {
@@ -206,7 +232,10 @@ export function createFakeEnv(): FakeEnv {
       return savedRuns.find((run) => run.brandId === brandId && run.id === runId) ?? null;
     },
     async listRunsByBrand(brandId: string, limit = 20): Promise<Run[]> {
-      return savedRuns.filter((run) => run.brandId === brandId).slice(-limit).reverse();
+      return savedRuns
+        .filter((run) => run.brandId === brandId)
+        .slice(-limit)
+        .reverse();
     },
   };
 
@@ -266,7 +295,8 @@ export function makeValidRecipe(
 export function makeSelfTestArtifact(evalCase: EvalCase): CaseArtifact {
   const brand = makeBrand(evalCase.input.brandId);
   const needsRecipe = evalCase.expectations.some(
-    (expectation) => expectation.kind === 'deterministic' && expectation.rule === 'exclusions-non-empty',
+    (expectation) =>
+      expectation.kind === 'deterministic' && expectation.rule === 'exclusions-non-empty',
   );
 
   if (evalCase.shouldFail && !needsRecipe) {
@@ -275,7 +305,10 @@ export function makeSelfTestArtifact(evalCase: EvalCase): CaseArtifact {
     // that looks like an outage.
     return {
       status: 'succeeded',
-      outcome: { reason: 'Refused: the requested claim is prohibited for this brand.', retryable: false },
+      outcome: {
+        reason: 'Refused: the requested claim is prohibited for this brand.',
+        retryable: false,
+      },
       output: 'I cannot produce that: it breaks a guardrail on this brand.',
       steps: [
         { kind: 'tool-call', summary: 'get_brand_profile', tool: 'get_brand_profile' },

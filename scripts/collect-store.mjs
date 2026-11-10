@@ -30,8 +30,12 @@
 import { readFile, appendFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
 /**
  * The ledger's own line format. Distinct from `schema_version`, which describes the
@@ -49,7 +53,13 @@ export const LEDGER_VERSION = 1;
 export const REGION_NAMESPACE = ['unattributable', 'insufficient', 'not_applicable'];
 
 /** Fields every observation must carry. An adapter that omits one is rejected loudly. */
-const OBSERVATION_REQUIRED = ['source', 'fingerprint', 'first_seen_at', 'fetched_at', 'source_task_id'];
+const OBSERVATION_REQUIRED = [
+  'source',
+  'fingerprint',
+  'first_seen_at',
+  'fetched_at',
+  'source_task_id',
+];
 const VERSIONS = ['schema_version', 'taxonomy_version', 'metric_version'];
 
 const ms = (iso) => {
@@ -76,24 +86,32 @@ export function checkObservation(obs, where = 'observation') {
     // `'x' in obj` is true, so it passes a presence test, and it prints as blank —
     // which reads exactly like "version 0, the first one". Test the value.
     if (obs[v] === undefined || obs[v] === null || obs[v] === '') {
-      throw new Error(`${where}: missing "${v}" — version fields are how a reader tells `
-        + `which meaning a number carries; absent is not the same as "version 0"`);
+      throw new Error(
+        `${where}: missing "${v}" — version fields are how a reader tells ` +
+          `which meaning a number carries; absent is not the same as "version 0"`,
+      );
     }
   }
   if (obs.raw === undefined) {
-    throw new Error(`${where}: no "raw" payload — the design requires the original `
-      + `payload be kept, because in six months the field dropped today will be the one needed`);
+    throw new Error(
+      `${where}: no "raw" payload — the design requires the original ` +
+        `payload be kept, because in six months the field dropped today will be the one needed`,
+    );
   }
   if (ms(obs.first_seen_at) > ms(obs.fetched_at)) {
-    throw new Error(`${where}: first_seen_at (${obs.first_seen_at}) is after fetched_at `
-      + `(${obs.fetched_at}) — an item cannot be seen for the first time after it was fetched`);
+    throw new Error(
+      `${where}: first_seen_at (${obs.first_seen_at}) is after fetched_at ` +
+        `(${obs.fetched_at}) — an item cannot be seen for the first time after it was fetched`,
+    );
   }
   if (obs.region !== undefined && obs.region !== null) {
     const looksLikeRegion = /^[A-Z]{2}$/.test(obs.region);
     if (!looksLikeRegion && !REGION_NAMESPACE.includes(obs.region)) {
-      throw new Error(`${where}: region "${obs.region}" is neither an ISO alpha-2 code nor one of `
-        + `${REGION_NAMESPACE.join(' / ')} — a value outside the namespace would be silently `
-        + `counted as a region, which is the摊派 the design forbids`);
+      throw new Error(
+        `${where}: region "${obs.region}" is neither an ISO alpha-2 code nor one of ` +
+          `${REGION_NAMESPACE.join(' / ')} — a value outside the namespace would be silently ` +
+          `counted as a region, which is the摊派 the design forbids`,
+      );
     }
     /*
      * `region_basis` is required for every value that claims a judgement was made:
@@ -109,12 +127,20 @@ export function checkObservation(obs, where = 'observation') {
      */
     const needsBasis = obs.region !== 'insufficient';
     if (needsBasis && obs.region_basis === undefined) {
-      throw new Error(`${where}: region "${obs.region}" carries no region_basis — `
-        + `every attributed record needs the basis and its version, or it cannot be audited later`);
+      throw new Error(
+        `${where}: region "${obs.region}" carries no region_basis — ` +
+          `every attributed record needs the basis and its version, or it cannot be audited later`,
+      );
     }
-    if (obs.region === 'unattributable' && Array.isArray(obs.region_basis) && obs.region_basis.length < 2) {
-      throw new Error(`${where}: region is "unattributable" but only one basis is named — `
-        + `unattributable means the evidence conflicts, and one signal cannot conflict with itself`);
+    if (
+      obs.region === 'unattributable' &&
+      Array.isArray(obs.region_basis) &&
+      obs.region_basis.length < 2
+    ) {
+      throw new Error(
+        `${where}: region is "unattributable" but only one basis is named — ` +
+          `unattributable means the evidence conflicts, and one signal cannot conflict with itself`,
+      );
     }
   }
   return true;
@@ -138,8 +164,10 @@ export async function readLedger(path) {
     try {
       rec = JSON.parse(line);
     } catch {
-      throw new Error(`${path}:${i + 1} is not JSON — the ledger is append-only, so a corrupt `
-        + `line is not repaired in place; find the writer that produced it`);
+      throw new Error(
+        `${path}:${i + 1} is not JSON — the ledger is append-only, so a corrupt ` +
+          `line is not repaired in place; find the writer that produced it`,
+      );
     }
     if (rec.kind === 'run') out.runs.push(rec);
     else if (rec.kind === 'observation') out.observations.push(rec);
@@ -202,7 +230,8 @@ export function applyMigrations(observations, migrations) {
  */
 export async function ingest(path, batch) {
   const { run, observations } = batch;
-  if (run === undefined) throw new Error('batch has no "run" — a fetch with no run record is not auditable');
+  if (run === undefined)
+    throw new Error('batch has no "run" — a fetch with no run record is not auditable');
   for (const f of ['source', 'run_id', 'source_task_id', 'fetched_at', 'status']) {
     if (run[f] === undefined || run[f] === '') throw new Error(`run: missing "${f}"`);
   }
@@ -212,8 +241,10 @@ export async function ingest(path, batch) {
   const obs = observations ?? [];
   if (!Array.isArray(obs)) throw new Error('batch.observations must be an array (may be empty)');
   if (run.status === 'ok' && obs.length === 0 && (run.items ?? 0) > 0) {
-    throw new Error(`run says ${run.items} items but carries no observations — `
-      + `a count with no records behind it is a claim, not a measurement`);
+    throw new Error(
+      `run says ${run.items} items but carries no observations — ` +
+        `a count with no records behind it is a claim, not a measurement`,
+    );
   }
 
   obs.forEach((o, i) => checkObservation(o, `observations[${i}]`));
@@ -231,16 +262,26 @@ export async function ingest(path, batch) {
      * the message it prints ("already ingested with different content") is then a
      * lie about a true thing. Canonicalise by sorted keys.
      */
-    const canon = (o) => JSON.stringify(
-      Object.fromEntries(Object.entries(o).filter(([k]) => k !== 'kind' && k !== 'ledger_version')
-        .sort(([a], [b]) => a.localeCompare(b))),
-    );
+    const canon = (o) =>
+      JSON.stringify(
+        Object.fromEntries(
+          Object.entries(o)
+            .filter(([k]) => k !== 'kind' && k !== 'ledger_version')
+            .sort(([a], [b]) => a.localeCompare(b)),
+        ),
+      );
     if (canon(priorRun) === canon(run)) {
-      return { appended: 0, runs: 0, skipped: `run ${run.run_id} already recorded — nothing to do` };
+      return {
+        appended: 0,
+        runs: 0,
+        skipped: `run ${run.run_id} already recorded — nothing to do`,
+      };
     }
-    throw new Error(`run_id "${run.run_id}" was already ingested with different content. `
-      + `Re-running a fetch is idempotent; two different records claiming to be the same fetch is not. `
-      + `Use a new run_id.`);
+    throw new Error(
+      `run_id "${run.run_id}" was already ingested with different content. ` +
+        `Re-running a fetch is idempotent; two different records claiming to be the same fetch is not. ` +
+        `Use a new run_id.`,
+    );
   }
 
   // Duplicate observations *within* one batch are rejected rather than de-duplicated:
@@ -250,13 +291,16 @@ export async function ingest(path, batch) {
   const seen = new Set();
   for (const o of obs) {
     const key = `${o.source}\u0000${o.fingerprint}\u0000${o.fetched_at}`;
-    if (seen.has(key)) throw new Error(`duplicate observation in one batch: ${o.source}/${o.fingerprint}`);
+    if (seen.has(key))
+      throw new Error(`duplicate observation in one batch: ${o.source}/${o.fingerprint}`);
     seen.add(key);
   }
 
   const lines = [
     JSON.stringify({ kind: 'run', ledger_version: LEDGER_VERSION, ...run }),
-    ...obs.map((o) => JSON.stringify({ kind: 'observation', ledger_version: LEDGER_VERSION, ...o })),
+    ...obs.map((o) =>
+      JSON.stringify({ kind: 'observation', ledger_version: LEDGER_VERSION, ...o }),
+    ),
   ];
   if (existing.migrations.length > 0) {
     // A new record written after a migration must already speak the newest schema,
@@ -264,8 +308,10 @@ export async function ingest(path, batch) {
     const newest = existing.migrations.reduce((m, x) => (x.to > m.to ? x : m));
     for (const o of obs) {
       if (o.schema_version !== newest.to) {
-        throw new Error(`ledger has been migrated to schema_version ${newest.to}, but this observation `
-          + `declares ${o.schema_version}. Write new records in the current schema; old ones stay as they are.`);
+        throw new Error(
+          `ledger has been migrated to schema_version ${newest.to}, but this observation ` +
+            `declares ${o.schema_version}. Write new records in the current schema; old ones stay as they are.`,
+        );
       }
     }
   }
@@ -312,7 +358,11 @@ export function view(observations, migrations = []) {
     if (ms(o.fetched_at) >= ms(cur.last_fetched_at)) {
       cur.last_fetched_at = o.fetched_at;
       cur.raw = o.raw;
-      cur.versions = { schema: o.schema_version, taxonomy: o.taxonomy_version, metric: o.metric_version };
+      cur.versions = {
+        schema: o.schema_version,
+        taxonomy: o.taxonomy_version,
+        metric: o.metric_version,
+      };
       if (o.region !== undefined) cur.region = o.region;
     }
   }
@@ -330,18 +380,29 @@ export function verify({ runs, observations }) {
     } catch (cause) {
       problems.push(cause.message);
     }
-    if (o.source_task_id !== undefined && runs.length > 0 && !runIds.has(o.source_task_id) && !runIds.has(o.run_id)) {
+    if (
+      o.source_task_id !== undefined &&
+      runs.length > 0 &&
+      !runIds.has(o.source_task_id) &&
+      !runIds.has(o.run_id)
+    ) {
       // Observations whose run is missing cannot be audited for latency: there is no
       // fetch time, only the item's own claim about when it was fetched.
       const matched = runs.some((r) => r.source_task_id === o.source_task_id);
-      if (!matched) problems.push(`observation ${o.source}/${o.fingerprint} cites run "${o.source_task_id}", which is not in the ledger`);
+      if (!matched)
+        problems.push(
+          `observation ${o.source}/${o.fingerprint} cites run "${o.source_task_id}", which is not in the ledger`,
+        );
     }
   });
 
   const keys = new Set();
   for (const o of observations) {
     const k = `${o.source}\u0000${o.fingerprint}\u0000${o.fetched_at}`;
-    if (keys.has(k)) problems.push(`duplicate observation record: ${o.source}/${o.fingerprint} at ${o.fetched_at}`);
+    if (keys.has(k))
+      problems.push(
+        `duplicate observation record: ${o.source}/${o.fingerprint} at ${o.fetched_at}`,
+      );
     keys.add(k);
   }
 
@@ -349,7 +410,8 @@ export function verify({ runs, observations }) {
   // miss rate has no denominator and an outage reads as "this source is quiet".
   const observedSources = new Set(observations.map((o) => o.source));
   for (const s of observedSources) {
-    if (!runs.some((r) => r.source === s)) problems.push(`source "${s}" has observations but no run records`);
+    if (!runs.some((r) => r.source === s))
+      problems.push(`source "${s}" has observations but no run records`);
   }
 
   return problems;
@@ -364,8 +426,8 @@ export function verify({ runs, observations }) {
 // failure by the test runner, with no failing assertion to look at. It cost a
 // debugging round here; it would cost more in CI, where the exit code is the answer.
 
-const invokedDirectly = process.argv[1] !== undefined
-  && import.meta.url === pathToFileURL(process.argv[1]).href;
+const invokedDirectly =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 const argv = invokedDirectly ? process.argv.slice(2) : [];
 const cmd = argv[0];
@@ -375,7 +437,9 @@ const flag = (name, fallback = null) => {
 };
 const flagAll = (name) => {
   const out = [];
-  argv.forEach((a, i) => { if (a === `--${name}`) out.push(argv[i + 1]); });
+  argv.forEach((a, i) => {
+    if (a === `--${name}`) out.push(argv[i + 1]);
+  });
   return out;
 };
 
@@ -397,12 +461,16 @@ if (cmd === 'ingest') {
   const { observations, migrations } = await readLedger(ledger);
   let rows = view(observations, migrations);
   if (only !== null) rows = rows.filter((r) => r.source === only);
-  console.log(`\n${BOLD}items${RESET} ${DIM}${rows.length} distinct, ${observations.length} observations, `
-    + `${migrations.length} migration(s)${RESET}\n`);
+  console.log(
+    `\n${BOLD}items${RESET} ${DIM}${rows.length} distinct, ${observations.length} observations, ` +
+      `${migrations.length} migration(s)${RESET}\n`,
+  );
   for (const r of rows.slice(0, 40)) {
-    console.log(`  ${DIM}${r.first_seen_at.slice(0, 16)}${RESET}  ${r.source.padEnd(8)}`
-      + `${(r.fingerprint ?? '').slice(0, 12).padEnd(14)}${String(r.observations).padStart(2)}×  `
-      + `${r.region.padEnd(15)}${DIM}v${r.versions.schema}${RESET}`);
+    console.log(
+      `  ${DIM}${r.first_seen_at.slice(0, 16)}${RESET}  ${r.source.padEnd(8)}` +
+        `${(r.fingerprint ?? '').slice(0, 12).padEnd(14)}${String(r.observations).padStart(2)}×  ` +
+        `${r.region.padEnd(15)}${DIM}v${r.versions.schema}${RESET}`,
+    );
   }
   if (rows.length > 40) console.log(`  ${DIM}… ${rows.length - 40} more${RESET}`);
   console.log();
@@ -410,8 +478,10 @@ if (cmd === 'ingest') {
   const { runs, observations, migrations } = await readLedger(argv[1]);
   const problems = verify({ runs, observations });
   if (problems.length === 0) {
-    console.log(`${GREEN}ok${RESET} — ${runs.length} runs, ${observations.length} observations, `
-      + `${migrations.length} migrations, invariants hold`);
+    console.log(
+      `${GREEN}ok${RESET} — ${runs.length} runs, ${observations.length} observations, ` +
+        `${migrations.length} migrations, invariants hold`,
+    );
     process.exitCode = 0;
   } else {
     console.log(`${RED}${problems.length} problem(s)${RESET}\n`);
@@ -422,13 +492,21 @@ if (cmd === 'ingest') {
   const ledger = argv[1];
   const from = Number(flag('from'));
   const to = Number(flag('to'));
-  const rename = flagAll('rename').map((s) => s.split('=')).reduce((acc, [a, b]) => ({ ...acc, [a]: b }), {});
-  const defaults = flagAll('default').map((s) => s.split('=')).reduce((acc, [a, ...rest]) => {
-    const raw = rest.join('=');
-    let v = raw;
-    try { v = JSON.parse(raw); } catch { /* keep as string */ }
-    return { ...acc, [a]: v };
-  }, {});
+  const rename = flagAll('rename')
+    .map((s) => s.split('='))
+    .reduce((acc, [a, b]) => ({ ...acc, [a]: b }), {});
+  const defaults = flagAll('default')
+    .map((s) => s.split('='))
+    .reduce((acc, [a, ...rest]) => {
+      const raw = rest.join('=');
+      let v = raw;
+      try {
+        v = JSON.parse(raw);
+      } catch {
+        /* keep as string */
+      }
+      return { ...acc, [a]: v };
+    }, {});
 
   if (!Number.isInteger(from) || !Number.isInteger(to) || to <= from) {
     console.error(`${RED}migrate needs --from N --to M with M > N${RESET}`);
@@ -442,18 +520,29 @@ if (cmd === 'ingest') {
     const after = new Set(trial.map((o) => `${o.source}/${o.fingerprint}/${o.fetched_at}`));
     const lost = [...before].filter((k) => !after.has(k));
     if (lost.length > 0) {
-      console.error(`${RED}refusing to migrate${RESET} — the trial read lost ${lost.length} record(s), e.g. ${lost[0]}`);
+      console.error(
+        `${RED}refusing to migrate${RESET} — the trial read lost ${lost.length} record(s), e.g. ${lost[0]}`,
+      );
       process.exitCode = 1;
     } else {
       const rec = {
-        kind: 'migration', ledger_version: LEDGER_VERSION,
-        from, to, rename, defaults,
+        kind: 'migration',
+        ledger_version: LEDGER_VERSION,
+        from,
+        to,
+        rename,
+        defaults,
         applied_at: new Date().toISOString(),
-        note: 'read-side only: records written under schema_version <= ' + from + ' are interpreted through this lens, byte-identical on disk',
+        note:
+          'read-side only: records written under schema_version <= ' +
+          from +
+          ' are interpreted through this lens, byte-identical on disk',
       };
       await appendFile(ledger, JSON.stringify(rec) + '\n', 'utf8');
-      console.log(`${GREEN}migrated${RESET} ${from} → ${to}  ${DIM}${trial.length} records still readable, `
-        + `${Object.keys(rename).length} renamed, ${Object.keys(defaults).length} defaulted${RESET}`);
+      console.log(
+        `${GREEN}migrated${RESET} ${from} → ${to}  ${DIM}${trial.length} records still readable, ` +
+          `${Object.keys(rename).length} renamed, ${Object.keys(defaults).length} defaulted${RESET}`,
+      );
       process.exitCode = 0;
     }
   }

@@ -71,10 +71,7 @@ export class CardActionRegistry {
 }
 
 /** The action id is `value.action_id`; older cards fall back to the button name. */
-export function actionIdFor(
-  event: CardActionEvent,
-  value: Record<string, unknown>,
-): string {
+export function actionIdFor(event: CardActionEvent, value: Record<string, unknown>): string {
   const fromValue = value['action_id'];
   if (typeof fromValue === 'string' && fromValue.length > 0) return fromValue;
   if (typeof event.action.name === 'string' && event.action.name.length > 0) {

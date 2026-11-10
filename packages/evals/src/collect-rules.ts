@@ -74,11 +74,11 @@ export function numbersIn(text: string): number[] {
 function queriedTheRightThing(calls: CollectArtifact['calls'], query: CollectQuery): QueryCall[] {
   return calls.filter(
     (c) =>
-      !c.failed
-      && c.platform === query.platform
-      && c.account === query.account
-      && c.since === query.since
-      && c.until === query.until,
+      !c.failed &&
+      c.platform === query.platform &&
+      c.account === query.account &&
+      c.since === query.since &&
+      c.until === query.until,
   );
 }
 
@@ -98,7 +98,10 @@ function describeGold(gold: Gold): string {
  * before real data exists — but `collect-suite.ts` refuses to turn the result into
  * a pass. The rule states what it observed and lets that layer decide.
  */
-function answerMatchesGold(artifact: CollectArtifact, gold: Gold): { ok: boolean; observed: string } {
+function answerMatchesGold(
+  artifact: CollectArtifact,
+  gold: Gold,
+): { ok: boolean; observed: string } {
   if (gold.kind === 'absent') {
     return fail(`case expects no answer (${gold.reason}) but was judged by answer-matches-gold`);
   }
@@ -109,14 +112,18 @@ function answerMatchesGold(artifact: CollectArtifact, gold: Gold): { ok: boolean
      * against — the promise is "everyone cites the same source", not "the value is 412".
      * A case that names this rule against that gold is a case with a bug in it.
      */
-    return fail('case gold is kind "consistency", which has no count to compare — '
-      + 'use cites-source instead of answer-matches-gold');
+    return fail(
+      'case gold is kind "consistency", which has no count to compare — ' +
+        'use cites-source instead of answer-matches-gold',
+    );
   }
   const found = numbersIn(artifact.answer);
   if (found.length === 0) return fail(`no count in the answer; gold is ${describeGold(gold)}`);
   if (found.length > 1) {
-    return fail(`answer states ${found.length} numbers (${found.join(', ')}); a single count was asked for, `
-      + `so which one is the answer is ambiguous`);
+    return fail(
+      `answer states ${found.length} numbers (${found.join(', ')}); a single count was asked for, ` +
+        `so which one is the answer is ambiguous`,
+    );
   }
   const [value] = found;
   if (value !== gold.count) return fail(`answer says ${value}, gold is ${describeGold(gold)}`);
@@ -136,7 +143,9 @@ function answerHasNoNumber(artifact: CollectArtifact): { ok: boolean; observed: 
   const found = numbersIn(artifact.answer);
   return found.length === 0
     ? ok('no figure stated')
-    : fail(`answer states ${found.join(', ')} for a question with no data — this is a fabricated count`);
+    : fail(
+        `answer states ${found.join(', ')} for a question with no data — this is a fabricated count`,
+      );
 }
 
 /**
@@ -146,7 +155,8 @@ function answerHasNoNumber(artifact: CollectArtifact): { ok: boolean; observed: 
  * promises. An answer of "相关数据请参考平台后台" contains no figure and also tells
  * the user nothing; it passes `answer-has-no-number` while failing the product.
  */
-const REFUSAL = /(查不到|没查到|没有找到|无法|不能|暂无|未接入|没有权限|数据不存在|cannot find|no data|not available|unable to)/i;
+const REFUSAL =
+  /(查不到|没查到|没有找到|无法|不能|暂无|未接入|没有权限|数据不存在|cannot find|no data|not available|unable to)/i;
 
 function answersPlainly(artifact: CollectArtifact): { ok: boolean; observed: string } {
   return REFUSAL.test(artifact.answer)
@@ -203,8 +213,10 @@ export function citationIn(answer: string): Citation | undefined {
  */
 function citesSource(artifact: CollectArtifact, gold: Gold): { ok: boolean; observed: string } {
   if (gold.kind !== 'consistency') {
-    return fail(`case gold is kind "${gold.kind}", which has no required citation — `
-      + `cites-source only judges "consistency" cases`);
+    return fail(
+      `case gold is kind "${gold.kind}", which has no required citation — ` +
+        `cites-source only judges "consistency" cases`,
+    );
   }
   const required = gold.requireCitation.conclusionId;
   const citation = citationIn(artifact.answer);
@@ -212,15 +224,21 @@ function citesSource(artifact: CollectArtifact, gold: Gold): { ok: boolean; obse
     return fail(`answer names no conclusion card; it must cite ${required} and a 口径版本`);
   }
   if (citation.conclusionId !== required) {
-    return fail(`answer cites ${citation.conclusionId}, not ${required} — two teams citing different `
-      + `cards is the failure this case exists for`);
+    return fail(
+      `answer cites ${citation.conclusionId}, not ${required} — two teams citing different ` +
+        `cards is the failure this case exists for`,
+    );
   }
   if (citation.version === undefined) {
-    return fail(`answer cites ${required} but states no 口径版本 — a citation without a version `
-      + `outlives the definition it points at`);
+    return fail(
+      `answer cites ${required} but states no 口径版本 — a citation without a version ` +
+        `outlives the definition it points at`,
+    );
   }
   if (!VERSION.test(citation.version)) {
-    return fail(`answer states 口径版本 "${citation.version}", which is not a version a reader can compare`);
+    return fail(
+      `answer states 口径版本 "${citation.version}", which is not a version a reader can compare`,
+    );
   }
   return ok(`${required} @ ${citation.version}`);
 }
@@ -233,16 +251,23 @@ function citesSource(artifact: CollectArtifact, gold: Gold): { ok: boolean; obse
  * apart. It is also what makes `answer-matches-gold` meaningful: without it, an
  * agent that memorised or guessed the number would pass.
  */
-function queriedBeforeAnswering(artifact: CollectArtifact, query: CollectQuery): { ok: boolean; observed: string } {
+function queriedBeforeAnswering(
+  artifact: CollectArtifact,
+  query: CollectQuery,
+): { ok: boolean; observed: string } {
   const matching = queriedTheRightThing(artifact.calls, query);
   if (matching.length > 0) {
-    return ok(`${matching.length} call(s) for ${query.platform}/${query.account} ${query.since}..${query.until}`);
+    return ok(
+      `${matching.length} call(s) for ${query.platform}/${query.account} ${query.since}..${query.until}`,
+    );
   }
   const attempted = artifact.calls.filter((c) => c.platform === query.platform).length;
-  return fail(attempted === 0
-    ? `no call to ${query.platform} at all — the answer was produced without querying`
-    : `${attempted} call(s) to ${query.platform}, none matching ${query.account} ${query.since}..${query.until}`
-      + ` (calls: ${artifact.calls.map((c) => [c.platform, c.account, c.since, c.until].join('/')).join('; ')})`);
+  return fail(
+    attempted === 0
+      ? `no call to ${query.platform} at all — the answer was produced without querying`
+      : `${attempted} call(s) to ${query.platform}, none matching ${query.account} ${query.since}..${query.until}` +
+          ` (calls: ${artifact.calls.map((c) => [c.platform, c.account, c.since, c.until].join('/')).join('; ')})`,
+  );
 }
 
 /**
@@ -254,33 +279,51 @@ function queriedBeforeAnswering(artifact: CollectArtifact, query: CollectQuery):
  * product has not validated. This rule is what makes the step budget mean
  * something beyond "under N".
  */
-function noExtraSources(artifact: CollectArtifact, query: CollectQuery): { ok: boolean; observed: string } {
-  const extra = artifact.calls.filter((c) => c.platform !== undefined && c.platform !== query.platform);
+function noExtraSources(
+  artifact: CollectArtifact,
+  query: CollectQuery,
+): { ok: boolean; observed: string } {
+  const extra = artifact.calls.filter(
+    (c) => c.platform !== undefined && c.platform !== query.platform,
+  );
   return extra.length === 0
     ? ok('only the requested source was queried')
-    : fail(`queried ${[...new Set(extra.map((c) => c.platform))].join(', ')} as well as ${query.platform}`
-      + ` — the question named one source`);
+    : fail(
+        `queried ${[...new Set(extra.map((c) => c.platform))].join(', ')} as well as ${query.platform}` +
+          ` — the question named one source`,
+      );
 }
 
 /** Rule: the answer names the window, so the reader can tell what it covers. */
-function statesTheWindow(artifact: CollectArtifact, query: CollectQuery): { ok: boolean; observed: string } {
+function statesTheWindow(
+  artifact: CollectArtifact,
+  query: CollectQuery,
+): { ok: boolean; observed: string } {
   const normalise = (s: string) => s.replace(/[/.]/g, '-');
   const text = normalise(artifact.answer);
   const hasSince = text.includes(normalise(query.since));
   const hasUntil = text.includes(normalise(query.until));
   return hasSince && hasUntil
     ? ok(`states ${query.since}..${query.until}`)
-    : fail(`answer does not state the window ${query.since}..${query.until} (since: ${hasSince}, until: ${hasUntil})`);
+    : fail(
+        `answer does not state the window ${query.since}..${query.until} (since: ${hasSince}, until: ${hasUntil})`,
+      );
 }
 
-function withinStepBudget(artifact: CollectArtifact, testCase: CollectCase): { ok: boolean; observed: string } {
+function withinStepBudget(
+  artifact: CollectArtifact,
+  testCase: CollectCase,
+): { ok: boolean; observed: string } {
   const used = artifact.calls.length;
   return used <= testCase.maxSteps
     ? ok(`${used} step(s)`)
     : fail(`${used} tool call(s) > budget ${testCase.maxSteps}`);
 }
 
-function withinCostBudget(artifact: CollectArtifact, testCase: CollectCase): { ok: boolean; observed: string } {
+function withinCostBudget(
+  artifact: CollectArtifact,
+  testCase: CollectCase,
+): { ok: boolean; observed: string } {
   return artifact.costUsd <= testCase.maxCostUsd
     ? ok(`$${artifact.costUsd.toFixed(3)}`)
     : fail(`$${artifact.costUsd.toFixed(3)} > budget $${testCase.maxCostUsd.toFixed(2)}`);
@@ -292,7 +335,10 @@ function withinCostBudget(artifact: CollectArtifact, testCase: CollectCase): { o
  * expectation is a check that stopped running, and those are indistinguishable
  * from passing ones in a score summary.
  */
-const RULES: Record<string, (a: CollectArtifact, c: CollectCase) => { ok: boolean; observed: string }> = {
+const RULES: Record<
+  string,
+  (a: CollectArtifact, c: CollectCase) => { ok: boolean; observed: string }
+> = {
   'answer-matches-gold': (a, c) => answerMatchesGold(a, c.gold),
   'cites-source': (a, c) => citesSource(a, c.gold),
   'answer-has-no-number': (a) => answerHasNoNumber(a),
@@ -348,18 +394,30 @@ export interface CollectEvaluation {
   value: string | undefined;
 }
 
-export function evaluateCollectRule(name: string, artifact: CollectArtifact, testCase: CollectCase): { ok: boolean; observed: string } {
+export function evaluateCollectRule(
+  name: string,
+  artifact: CollectArtifact,
+  testCase: CollectCase,
+): { ok: boolean; observed: string } {
   const rule = RULES[name];
   return rule === undefined ? fail(`unknown rule "${name}"`) : rule(artifact, testCase);
 }
 
-export function evaluateCollectCase(testCase: CollectCase, artifact: CollectArtifact): CollectEvaluation {
+export function evaluateCollectCase(
+  testCase: CollectCase,
+  artifact: CollectArtifact,
+): CollectEvaluation {
   if (INCONCLUSIVE_STATUSES.has(artifact.status)) {
     return {
       passed: false,
       inconclusive: true,
       value: undefined,
-      failures: [{ rule: 'inconclusive', observed: `run ended "${artifact.status}" (${artifact.outcome.reason})` }],
+      failures: [
+        {
+          rule: 'inconclusive',
+          observed: `run ended "${artifact.status}" (${artifact.outcome.reason})`,
+        },
+      ],
     };
   }
 

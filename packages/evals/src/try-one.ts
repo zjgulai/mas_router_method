@@ -64,7 +64,9 @@ the run stops at the first analyze_reference_video call by design.`);
 function printSteps(result: AgentRunResult): void {
   for (const step of result.steps) {
     const tool = step.tool === undefined ? '' : ` ${step.tool}`;
-    console.log(`  [${step.index}] ${step.kind}${tool} — ${step.summary.replace(/\s+/g, ' ').slice(0, 160)}`);
+    console.log(
+      `  [${step.index}] ${step.kind}${tool} — ${step.summary.replace(/\s+/g, ' ').slice(0, 160)}`,
+    );
   }
 }
 
@@ -133,7 +135,8 @@ async function main(): Promise<void> {
   const brand: BrandProfile | null = await store.get(brandId);
   if (brand === null) throw new Error(`Seeded brand ${brandId} missing.`);
 
-  const prompt = evalCase?.input.request ?? options.request ?? `clone this ${options.url ?? ''}`.trim();
+  const prompt =
+    evalCase?.input.request ?? options.request ?? `clone this ${options.url ?? ''}`.trim();
   const runtime = createRuntime({
     brands: store,
     references: store,
@@ -144,7 +147,9 @@ async function main(): Promise<void> {
     cwd: REPO_ROOT,
   });
 
-  console.log(`Running one request — brand ${brand.name}, vision ${options.fakeVision ? 'FAKE (rehearsal)' : 'real'}`);
+  console.log(
+    `Running one request — brand ${brand.name}, vision ${options.fakeVision ? 'FAKE (rehearsal)' : 'real'}`,
+  );
   const started = Date.now();
   const result = await runtime.run({
     prompt,
@@ -195,7 +200,9 @@ async function main(): Promise<void> {
         continue;
       }
       const resultOfRule = evaluateRule(expectation.rule, artifact);
-      console.log(`  ${resultOfRule.ok ? 'PASS' : 'FAIL'}  ${expectation.rule} — ${resultOfRule.observed}`);
+      console.log(
+        `  ${resultOfRule.ok ? 'PASS' : 'FAIL'}  ${expectation.rule} — ${resultOfRule.observed}`,
+      );
     }
     for (const skip of evaluation.skipped) {
       console.log(`  SKIP  ${skip.expectation} — ${skip.reason}`);

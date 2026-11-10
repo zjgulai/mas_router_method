@@ -30,6 +30,12 @@
   *{box-sizing:border-box}
   ::selection{background:var(--accent2);color:var(--ink)}
   :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* 跳过导航：读屏/键盘用户第一个 Tab 停这里，回车直达正文，不必穿过 20+ 条链接。
+     平时移出视口，获得焦点时才现身——它只为需要它的人出现。 */
+  .skip{position:absolute;left:-9999px;top:0;z-index:100;
+        background:var(--accent);color:#fff;font-size:var(--fs-nav);font-weight:650;
+        padding:.6rem 1.1rem;border-radius:0 0 3px 0;text-decoration:none}
+  .skip:focus{left:0}
   body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
        font-size:var(--fs-body);line-height:1.8;font-weight:400;
        -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;accent-color:var(--accent)}
@@ -58,7 +64,11 @@
          border-radius:4px;line-height:1.4;border-left:3px solid transparent}
   .nav a:hover{background:#301820;color:#fff}
   .nav a.on{background:var(--accent2);color:var(--ink);font-weight:700;border-left-color:var(--accent)}
-  .subnav{border-top:1px solid var(--side-border);margin:.9rem 1.25rem 0;padding-top:1.1rem}
+  /* 「本页」目录移到左栏顶部（品牌之下、站点导航之上）。
+     当你已经在一页上时，「这一页有什么」是最该先看见的导航——原先它排在
+     23 条站点链接之后，在 900px 笔记本上永远落在折叠外，等于没有。
+     只在声明了小节的页面出现，用底边线与下方的站点导航分隔。 */
+  .subnav{margin:0 1.25rem 1.3rem;padding-bottom:1.2rem;border-bottom:1px solid var(--side-border)}
   .sub-h{display:block;font-size:var(--fs-label);font-weight:700;letter-spacing:.13em;color:#c9aab4;margin-bottom:.55rem}
   .subnav a{display:block;color:#d6bdc4;text-decoration:none;font-size:.87rem;
             padding:.44rem 0 .44rem .8rem;
@@ -201,6 +211,7 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#main">跳到正文</a>
 <div class="layout">
   <aside class="side">
     <div class="brand">
@@ -209,7 +220,8 @@
     </div>
     <details open>
       <summary class="nav-toggle">站点导航</summary>
-      <nav class="nav">
+      
+      <nav class="nav" aria-label="站点导航">
         <div class="nav-g"><span class="nav-h">流程</span>
       <a href="./">总览</a>
       <a href="need.html">需求</a>
@@ -238,11 +250,10 @@
       <a href="docs.html">原始文档</a>
       </div>
       </nav>
-      
     </details>
   </aside>
   <div class="content">
-    <main>
+    <main id="main" tabindex="-1">
       <div class="crumb"><a href="./">总览</a> / 提示词库</div>
       <style>.card pre{white-space:pre-wrap;word-break:break-word}.pm-meta{display:grid;grid-template-columns:7.5rem 1fr;gap:.5rem 1rem;margin:1.05rem 0 0;padding:1rem 0 0;border-top:1px solid var(--sunk);font-size:.9rem;line-height:1.65}.pm-meta dt{color:var(--faint);font-weight:600;font-size:.82rem}.pm-meta dd{margin:0;color:var(--muted)}</style>
 <h1>提示词库</h1>
@@ -459,6 +470,135 @@
 每个页面必须给出：页面目标、当前问题、重构方案、需要删除、需要合并、需要新增、组件调整、交互调整、文案调整、视觉调整、上线优先级、验收标准。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>网站看起来有模板感、需要品牌化、上线前要逐页重构时</dd><dt>为什么这样写</dt><dd>它把“好看点”改成可对峙的设计检查项，并强制做减法，防止页面靠装饰和堆叠假装完成。</dd></dl>
 </div>
+<div class="card">
+<h3>状态机驱动的 macOS 桌面端体验审计</h3>
+<pre class="prompt"># 任务：___ macOS 桌面端状态机驱动的体验审计与修复
+
+## 目标
+___ 只有 macOS 版本，通过 dmg 分发。本任务只测 macOS，不考虑手机、触屏、Windows 或 Linux。
+找出所有隐式状态机，用 agent-desktop 在安装好的真实应用中走通每个状态和每条跳转，
+以用户的认知负担和情绪体验为标准找出问题。P0、P1 修复并复验，其余整理成方案。
+标准是行业顶级，不是“能用就行”。
+
+## 硬规则
+1. 全量，不抽样：清单由命令从代码生成，每个对象在台账（`.scratch/desktop-audit/` 下的 CSV）中占一行。
+   台账行不能删除；不处理的行标为“排除”，并写明依据。不得写“其余类似”。
+2. 完成与否由脚本判定：先写 `audit-check`，检查每张台账是否全量、每行是否有证据；不满足时以非零状态退出。
+   先用一份故意缺行的台账确认它会报错。报告中的数字只能引用它的输出。
+3. 证据：实测结论必须附 snapshot_id 和截图；“无问题”也要写出可核对的依据；没复现的问题标为“待确认”。
+4. 中断时先保存台账，报告剩余行数，不得声称已完成。
+5. 测试对象必须是 dmg 安装后的应用，不能用开发模式代替。无法驱动真实应用就停下，不得改成只读代码后声称已完成测试。
+
+## 第 0 步：准备环境
+1. 未安装时执行 `npm install -g agent-desktop`。读取 `agent-desktop skills get desktop` 和
+   `agent-desktop skills get macos`，按其中的规则操作，包括 ref、重试和多窗口处理。
+2. 运行 `agent-desktop permissions`。启动 agent-desktop 的终端或宿主应用需要两项权限：
+   辅助功能（操作界面）和屏幕录制（截图）。缺少权限时，运行 `agent-desktop permissions --guide`，然后停下等我授权。
+3. 构建 dmg 并安装到 `/Applications`；已有 dmg 时直接安装。用 `list-apps` 确认应用的显示名称和 Bundle ID，
+   之后统一用 Bundle ID 执行 `launch`。
+4. 记录测试环境：macOS 版本、芯片类型和应用版本号。
+5. 自检：snapshot、点击、输入、截图各成功一次。
+
+## 第 1 步：从代码找出状态机
+- 枚举全部 UI 源文件，找出分散的状态变量，例如 `isLoading`、`error`、`data?`、store 字段和条件渲染。
+  每个变量只归入一个状态机。
+- 每个状态机逐项判断以下标准状态是存在、缺失还是不适用：
+  初始、加载、空、部分数据、成功、错误、重试、禁用、离线、权限不足、超时、取消。
+- 列出“状态 × 事件”矩阵，每格标为已定义、有意忽略或缺失。事件包括代码已处理的事件和以下 macOS 操作：
+  - 通用：重复触发、取消或返回、请求失败、超时、纯键盘操作
+  - 窗口：缩放到最小尺寸、全屏、最小化后恢复、切换窗口、红绿灯按钮
+  - 命令：菜单栏菜单项、⌘ 快捷键（⌘W、⌘Q、⌘,、⌘Z、Esc）、右键菜单、拖放
+  - 生命周期：关闭后重开、⌘Q 后重开、睡眠唤醒、断网恢复
+- 列出状态变量组合：6 个及以下列出全部组合，超过 6 个时列出全部两两组合；标出非法组合。
+- 每个状态机画一张 Mermaid 状态图。运行一次 audit-check，把总行数写进 report.md，然后继续。
+
+## 第 2 步：用 agent-desktop 实测
+对每个状态和每条跳转：snapshot 确认起点 → 操作 → 再次 snapshot 确认终点 → 截图，结果立即写入台账。
+尝试触发每个“缺失”格子和每个非法组合。
+
+macOS 操作要点：
+- 菜单项用 `--surface menubar` 读取并 click；`press` 只发送按键，不会执行菜单项。
+- ⌘Q 默认会被拒绝，需要加 `--force`；“关闭后重开”用 `close-app`。
+- 悬停、拖放和双击需要加 `--headed`。Sheet、弹出层和警告框用对应的 `--surface` 读取。
+
+到达每个状态后，按六个维度各写一条结论：信息架构、用户流程、操作效率、反馈机制、视觉层级、组件一致性。
+另外检查是否符合 macOS 习惯：菜单栏完整、快捷键符合惯例、⌘, 打开设置、Esc 关闭弹出层、⌘W 只关闭窗口。
+没有名称或角色的控件记为可访问性问题，它对 VoiceOver 用户同样不可见。
+
+## 第 3 步：卡片专项
+卡片包括应用内带操作的卡片组件，也包括在第三方客户端（如飞书 Mac 版）中渲染的消息卡片。
+agent-desktop 读取的是无障碍树，看不到外观，所以卡片要单独覆盖以下内容：
+1. 双向对账：从代码枚举全部卡片类型（组件、模板或卡片 JSON），每类一行。实测中遇到的每张卡片都要对上其中一行；
+   对不上就新增一行，标为“实测发现”，再回代码找来源。
+2. 交互状态：每类卡片逐项判断默认、悬停、聚焦、按下、处理中、成功、失败、禁用、已处理、已过期。
+   操作后检查卡片是否原地更新、能否重复提交、关闭重开后是否仍是“已处理”。悬停和按下需要加 `--headed`。
+3. 内容变体：每类卡片按“字段 × 变体”逐格构造：缺失、超长、超多条目、图片加载失败、多语言和 emoji、极端数字。
+   用测试数据或 mock 构造；构造不出的格子标为“阻塞”，并写明原因。
+4. 环境：每个变体都分别在亮色和暗色外观、最小和常用窗口尺寸、Retina 和外接非 Retina 显示器下截图。
+   没有外接屏时标为“阻塞”。另外抽查系统设置中的强调色、“增强对比度”和“减弱动态效果”。
+5. 看图判定：每张卡片截图都按下列清单逐项判定，写入 `visual.csv`。一张截图一行，一个判定项一列；
+   取值为通过、不通过或不适用。不通过时附裁剪图：
+   - 截断的文字有省略号，并且能看到全文
+   - 没有重叠，内容不超出卡片边界
+   - 元素对齐，间距与同类卡片一致
+   - 只有一个主操作，按钮顺序与全局一致
+   - 图片不变形，加载失败时有占位
+   - 空字段不留下孤立的标签
+   - 文字对比度至少 4.5:1（用脚本对截图取色计算），暗色下没有看不见的文字
+   - 控件尺寸和间距符合 Apple HIG
+   - 数字、日期、单位格式统一
+6. 一致性：用脚本分别把同类卡片的各个变体、各类卡片的默认状态拼成对照图，并排检查。
+7. 读不到内部时：如果卡片在 WebView、canvas 或第三方客户端中渲染，snapshot 看不到内部，
+   改用截图加 `--headed` 坐标操作。自家应用记为可访问性问题；第三方渲染记为测试限制，并写进报告。不得跳过。
+
+audit-check 同时检查：
+- 每张卡片截图在 `visual.csv` 都有一行，且各列已填。
+- 每类卡片的状态和内容变体都没有空格。
+- 每张“实测发现”的卡片都写明了代码来源；如果找不到代码来源，写明“外部渲染”。
+
+## 严重度
+- P0：崩溃、丢失数据、卡死、进入无法退出的状态，或可以触发非法组合。
+- P1：主流程受阻；反馈缺失或误导；关键信息被截断或不可见；核心控件无法通过无障碍方式访问。
+- P2：效率低、行为不一致、层级混乱、违反 macOS 习惯，或卡片视觉清单不通过。
+- P3：细节打磨。
+每个问题对应一个根因（`文件:行`）。同一根因引起的多个现象合并为一行，并附复现命令和截图。
+
+## 第 4 步：修复 P0 和 P1
+- 每个问题交给一个子 Agent；修改同一文件的子 Agent 不得并发运行。
+- 修根因：缺状态就补状态，非法组合就改成单一状态字段。
+- 以现有组件为准，在原组件上修，不引入新组件库，也不批量替换。
+- 需要判断某类组件应有哪些状态和交互时，可以参考 Arc 的行为描述
+  （https://uiarc.dev/components/&lt;id&gt;/markdown）。例如：删除操作有原位确认和撤销，
+  数字输入到达上限时给出提示，空状态提供下一步。只借鉴行为，不拷贝代码，不安装依赖。
+- 现有组件库中确实没有、自行实现成本又高的组件，先写方案问我。
+- 修完后重新打包 dmg，覆盖安装，按原复现命令复验并附修复前后截图，再运行项目测试和 audit-check。
+  复验未通过时，不算修好。
+
+## 第 5 步：独立复核
+另派一个子 Agent，只给它代码、台账和工具，不给你的推理过程：
+- 重新列出状态机和卡片类型，找出遗漏。
+- 抽取 10% 的实测行（至少 10 行）重跑。
+- 抽取 10% 的卡片截图，按视觉清单重新判定。
+发现遗漏或判定不一致时，补充台账，并重跑相关步骤。
+
+## 第 6 步：处理 P2 和 P3
+写入 plan.md，按收益和成本排序，每项写明范围和验收标准。
+
+## 必须先问我
+系统权限、新增排除规则、新增依赖或引入外部组件、删除真实数据、操作真实账号或支付、修改构建发布配置或签名公证配置、
+提交或推送。snapshot 和截图只能保存在 `.scratch/desktop-audit/`，不得上传，也不得提交。
+
+## 完成条件
+- audit-check 退出码为 0；或者剩余行全部标为“阻塞”，并写明原因。
+- 独立复核没有发现新的遗漏。
+- P0 和 P1 已修复，并已用重新打包的 dmg 复验。
+- report.md 写明以下内容，所有数字都引用 audit-check 的输出：
+  - 测试环境
+  - 覆盖率，包括卡片类型数、内容变体数和截图数
+  - 问题数
+  - 未覆盖的部分</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>只有 macOS 版本（dmg 分发）的桌面端产品上线前，要从代码和真实界面两侧做一次完整、可计数的体验审计并修复时，含交互卡片的视觉审核。需先安装 agent-desktop（github.com/vercel-labs/agent-desktop）</dd><dt>为什么这样写</dt><dd>大多数体验问题是状态机问题：缺空状态或错误态是缺状态，转圈不停或能重复提交是非法跳转。防偷懒靠结构，不靠口号：清单由命令生成，每个对象在台账占一行，audit-check 决定能否结束，再由没看过推理的子 Agent 独立复核。agent-desktop 读的是无障碍树、看不到外观，所以卡片另走截图逐项判定；平台锁定 macOS，测 dmg 安装后的真包，判定按 Apple HIG。修复以现有组件为准，Arc（github.com/kuratlielia/arc-library）只作行为参照。<b>工具驱动不了真实应用就停，不许降级成只读代码。</b></dd></dl>
+</div>
 </div>
 <h2>需求</h2>
 <div class="grid two">
@@ -664,6 +804,21 @@
 <h3>分诊积压</h3>
 <pre class="prompt">用 triage 过一遍待处理 issue，先给我需要我注意的三类，其余先不动。</pre>
 <dl class="pm-meta"><dt>什么时候用</dt><dd>issue 堆积时</dd><dt>为什么这样写</dt><dd>全量分诊会让真正重要的三条被埋掉。</dd></dl>
+</div>
+<div class="card">
+<h3>新模型体检老项目</h3>
+<pre class="prompt">新模型体检：通读整个项目，找出所有坏掉的、不一致的、低效的、已经不需要的东西。
+
+开工前：确认当前在新分支上、工作区干净，不是就先停下告诉我。再跑一遍现有测试，把结果记下来作为基线。项目较大时，先告诉我文件数和分批计划，按目录分批，每批做完停下。
+
+第一轮只列清单，不改任何代码。每条写：类别（坏掉 / 不一致 / 低效 / 不再需要，只选一个）、位置（文件:行）、现象、依据（命令输出或引用的代码）、改了会影响什么、建议怎么改。同一根因的问题合并成一条。
+
+每条再标一个结论，按能不能验证来判断，不按感觉：
+- 可直接修：有测试或可运行的检查能证明改前改后行为一致，并且只改一处。
+- 需要我审：没有测试兜底、会改变行为、跨多个模块，或者要删除代码。删除一律归这一类，你眼里不再需要的代码，可能是我当初留的保险。
+
+我确认清单后进入第二轮：只修「可直接修」的条目，一条一个提交。每条修完跑测试并和基线对比，变差就撤回这一条，改标为需要我审。最后交给我：已修条目和测试结果，以及需要我审的清单。</pre>
+<dl class="pm-meta"><dt>什么时候用</dt><dd>新模型发布后，或者接手、长期没动的老项目，想做一次全面体检时。通读整个项目很耗用量，先确认额度</dd><dt>为什么这样写</dt><dd>Anthropic 的 Alex Albert 每次出新模型都用同一句话体检全部项目：找出坏掉的、不一致的、低效的、不再需要的，有把握的修掉，其余列给我审。精髓是把动手和拍板分开。这里补了三处：<b>「有把握」改成能被测试验证</b>，不靠模型自评；删除一律交人审；第一轮只列不改，先开分支、先跑测试基线。</dd></dl>
 </div>
 </div>
 <h2>数据产品</h2>

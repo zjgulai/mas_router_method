@@ -45,7 +45,8 @@ describe('RecipeRunner', () => {
 
   it('delivers the failure reason when the run fails, never silently', async () => {
     const runtime: RecipeRuntime = {
-      run: () => Promise.resolve({ status: 'failed', reason: 'budget exhausted', retryable: false }),
+      run: () =>
+        Promise.resolve({ status: 'failed', reason: 'budget exhausted', retryable: false }),
     };
     const runner = new RecipeRunner({ runtime, maxQueueDepth: 3 });
 

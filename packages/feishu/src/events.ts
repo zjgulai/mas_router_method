@@ -64,9 +64,7 @@ export const FeishuMessageEvent = z.object({
              * every group message, which is exactly the bug this product exists
              * to make visible.
              */
-            id: z
-              .union([z.string(), z.object({ open_id: z.string().nullish() })])
-              .optional(),
+            id: z.union([z.string(), z.object({ open_id: z.string().nullish() })]).optional(),
           }),
         )
         .optional(),
@@ -133,9 +131,7 @@ export function normaliseMessageEvent(payload: unknown): NormalisedMessage | nul
   if (text.length === 0) return null;
 
   const mentionedOpenIds = mentions
-    .map((mention) =>
-      typeof mention.id === 'string' ? mention.id : mention.id?.open_id,
-    )
+    .map((mention) => (typeof mention.id === 'string' ? mention.id : mention.id?.open_id))
     .filter((id): id is string => typeof id === 'string' && id.length > 0);
   const mentionedNames = mentions
     .map((mention) => mention.name)

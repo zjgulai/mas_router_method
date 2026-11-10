@@ -12,10 +12,7 @@ import { z } from 'zod';
 const id = (prefix: string) =>
   z
     .string()
-    .regex(
-      new RegExp(`^${prefix}_[0-9a-zA-Z]{12,}$`),
-      `expected an id starting with "${prefix}_"`,
-    );
+    .regex(new RegExp(`^${prefix}_[0-9a-zA-Z]{12,}$`), `expected an id starting with "${prefix}_"`);
 
 export const RecipeId = id('rec');
 export const BrandId = id('brd');

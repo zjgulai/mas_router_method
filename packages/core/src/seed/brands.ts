@@ -56,8 +56,16 @@ const SEED_BRANDS: Record<string, BrandProfile> = {
       },
     },
     successCriteria: [
-      { name: 'voice-match', rubric: 'Sounds like a knowledgeable friend, never a clinic.', weight: 0.4 },
-      { name: 'shootability', rubric: 'Every visual can be shot in a bathroom with one light.', weight: 0.3 },
+      {
+        name: 'voice-match',
+        rubric: 'Sounds like a knowledgeable friend, never a clinic.',
+        weight: 0.4,
+      },
+      {
+        name: 'shootability',
+        rubric: 'Every visual can be shot in a bathroom with one light.',
+        weight: 0.3,
+      },
     ],
   },
 
@@ -83,7 +91,11 @@ const SEED_BRANDS: Record<string, BrandProfile> = {
     },
     successCriteria: [
       { name: 'voice-match', rubric: 'Understated. Would never shout about coffee.', weight: 0.4 },
-      { name: 'shootability', rubric: 'Shot on a kitchen counter, morning light, no studio.', weight: 0.3 },
+      {
+        name: 'shootability',
+        rubric: 'Shot on a kitchen counter, morning light, no studio.',
+        weight: 0.3,
+      },
     ],
   },
 
@@ -113,8 +125,16 @@ const SEED_BRANDS: Record<string, BrandProfile> = {
       },
     },
     successCriteria: [
-      { name: 'voice-match', rubric: 'Makes a smaller claim than it could, and names the study.', weight: 0.5 },
-      { name: 'transferability', rubric: 'Mechanism survives even when the claim is weakened.', weight: 0.2 },
+      {
+        name: 'voice-match',
+        rubric: 'Makes a smaller claim than it could, and names the study.',
+        weight: 0.5,
+      },
+      {
+        name: 'transferability',
+        rubric: 'Mechanism survives even when the claim is weakened.',
+        weight: 0.2,
+      },
     ],
   },
 
@@ -139,8 +159,16 @@ const SEED_BRANDS: Record<string, BrandProfile> = {
       requiredDisclaimers: { 'prevents hearing loss': 'Not a hearing-protection device.' },
     },
     successCriteria: [
-      { name: 'voice-match', rubric: 'Gives a number where a competitor would give an adjective.', weight: 0.4 },
-      { name: 'shootability', rubric: 'Product-in-context shots, not a spec sheet on screen.', weight: 0.3 },
+      {
+        name: 'voice-match',
+        rubric: 'Gives a number where a competitor would give an adjective.',
+        weight: 0.4,
+      },
+      {
+        name: 'shootability',
+        rubric: 'Product-in-context shots, not a spec sheet on screen.',
+        weight: 0.3,
+      },
     ],
   },
 };

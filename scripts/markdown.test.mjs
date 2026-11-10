@@ -34,15 +34,17 @@ test('parseTable returns null when there is no table', () => {
 });
 
 test('parseTable ignores prose before and after the table', () => {
-  const t = parseTable([
-    '这一块是一张表，下面是它。',
-    '',
-    '| 输入 | 答 |',
-    '|---|---|',
-    '| x | y |',
-    '',
-    '表后面还有一句话。',
-  ].join('\n'));
+  const t = parseTable(
+    [
+      '这一块是一张表，下面是它。',
+      '',
+      '| 输入 | 答 |',
+      '|---|---|',
+      '| x | y |',
+      '',
+      '表后面还有一句话。',
+    ].join('\n'),
+  );
   assert.equal(t.rows.length, 1);
 });
 
@@ -66,11 +68,15 @@ test('tablesIn finds a table nested inside a container block', () => {
 
 test('tablesIn returns every table in a block', () => {
   const body = [
-    '| a | b |', '|---|---|', '| 1 | 2 |',
+    '| a | b |',
+    '|---|---|',
+    '| 1 | 2 |',
     '',
     '中间一段话。',
     '',
-    '| c | d |', '|---|---|', '| 3 | 4 |',
+    '| c | d |',
+    '|---|---|',
+    '| 3 | 4 |',
   ].join('\n');
   assert.equal(tablesIn(body).length, 2);
 });

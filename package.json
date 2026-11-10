@@ -14,6 +14,8 @@
     "test": "turbo run test",
     "check:padded": "node scripts/check-padded.mjs",
     "check:padded:all": "node scripts/check-padded.mjs --all",
+    "check:flow": "node scripts/flow-check.mjs",
+    "check:anb": "node scripts/anb-check.mjs",
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

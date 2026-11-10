@@ -47,7 +47,8 @@ async function main(): Promise<void> {
   const baseUrl = process.env['VOD_BASE_URL'];
 
   const clips = JSON.parse(await readFile(clipsPath, 'utf8')) as Clip[];
-  if (!Array.isArray(clips) || clips.length === 0) throw new Error('clips file must be a non-empty array');
+  if (!Array.isArray(clips) || clips.length === 0)
+    throw new Error('clips file must be a non-empty array');
 
   const analyzer = createVodVisionAnalyzer({
     apiKey,
@@ -73,7 +74,15 @@ async function main(): Promise<void> {
     } catch (cause) {
       const latencyMs = Date.now() - started;
       const error = cause instanceof Error ? cause.message : String(cause);
-      records.push({ clipId: clip.id, model, latencyMs, usage: null, gates: [], passed: false, error });
+      records.push({
+        clipId: clip.id,
+        model,
+        latencyMs,
+        usage: null,
+        gates: [],
+        passed: false,
+        error,
+      });
       console.log(`FAIL  ${clip.id}  ${latencyMs}ms — ${error}`);
     }
   }
@@ -82,7 +91,11 @@ async function main(): Promise<void> {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const safeModel = model.replace(/[^a-zA-Z0-9._-]/g, '_');
   const path = join(outDir, `${stamp}-${safeModel}.json`);
-  await writeFile(path, `${JSON.stringify({ model, ranAt: new Date().toISOString(), records }, null, 2)}\n`, 'utf8');
+  await writeFile(
+    path,
+    `${JSON.stringify({ model, ranAt: new Date().toISOString(), records }, null, 2)}\n`,
+    'utf8',
+  );
   console.log(`\nWrote ${path}`);
 
   if (records.some((record) => !record.passed)) process.exitCode = 1;

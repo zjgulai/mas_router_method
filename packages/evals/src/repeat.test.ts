@@ -61,8 +61,17 @@ function artifact(overrides: Partial<CollectArtifact> = {}): CollectArtifact {
     outcome: { reason: 'done', retryable: false },
     question: 'q',
     answer: '2026-10-15 到 2026-10-21，@brand 在 TikTok 上共 412 条提及。',
-    calls: [{ tool: 'query_mentions', platform: 'tiktok', account: '@brand',
-      since: '2026-10-15', until: '2026-10-21', count: 412, failed: false }],
+    calls: [
+      {
+        tool: 'query_mentions',
+        platform: 'tiktok',
+        account: '@brand',
+        since: '2026-10-15',
+        until: '2026-10-21',
+        count: 412,
+        failed: false,
+      },
+    ],
     costUsd: 0.01,
     ...overrides,
   };
@@ -88,11 +97,14 @@ describe('judgeSuite: illustrative gold can never pass', () => {
   it('a wrong answer against an illustrative gold is still failed — the rule survives', () => {
     // Illustrative does not mean toothless: a wrong number is wrong regardless of
     // where the right one came from, and that is actionable today.
-    const suite = judgeSuite([target], map(target.id, [
-      artifact({ answer: '2026-10-15 到 2026-10-21 共 308 条提及。' }),
-      artifact({ answer: '2026-10-15 到 2026-10-21 共 308 条提及。' }),
-      artifact({ answer: '2026-10-15 到 2026-10-21 共 308 条提及。' }),
-    ]));
+    const suite = judgeSuite(
+      [target],
+      map(target.id, [
+        artifact({ answer: '2026-10-15 到 2026-10-21 共 308 条提及。' }),
+        artifact({ answer: '2026-10-15 到 2026-10-21 共 308 条提及。' }),
+        artifact({ answer: '2026-10-15 到 2026-10-21 共 308 条提及。' }),
+      ]),
+    );
     expect(suite.cases[0]?.verdict).toBe('failed');
     expect(suite.blockers).toEqual([target.id]);
   });
@@ -111,11 +123,14 @@ describe('judgeSuite: inconclusive runs', () => {
   it('all runs inconclusive is unverified, never a rule failure', () => {
     // A provider outage must not be reported as a broken guardrail: they need
     // different people to fix them.
-    const suite = judgeSuite([target], map(target.id, [
-      artifact({ status: 'failed', calls: [] }),
-      artifact({ status: 'budget-exceeded', calls: [] }),
-      artifact({ status: 'cancelled', calls: [] }),
-    ]));
+    const suite = judgeSuite(
+      [target],
+      map(target.id, [
+        artifact({ status: 'failed', calls: [] }),
+        artifact({ status: 'budget-exceeded', calls: [] }),
+        artifact({ status: 'cancelled', calls: [] }),
+      ]),
+    );
     expect(suite.cases[0]?.verdict).toBe('unverified');
     expect(suite.cases[0]?.inconclusiveRuns).toBe(3);
     expect(suite.cases[0]?.runs).toBe(0);
@@ -123,9 +138,10 @@ describe('judgeSuite: inconclusive runs', () => {
   });
 
   it('some runs inconclusive still fails the repeat policy rather than crediting them', () => {
-    const suite = judgeSuite([target], map(target.id, [
-      artifact(), artifact(), artifact({ status: 'failed', calls: [] }),
-    ]));
+    const suite = judgeSuite(
+      [target],
+      map(target.id, [artifact(), artifact(), artifact({ status: 'failed', calls: [] })]),
+    );
     expect(suite.cases[0]?.verdict).toBe('failed');
     expect(suite.cases[0]?.inconclusiveRuns).toBe(1);
   });
@@ -150,7 +166,11 @@ describe('judgeSuite: inconclusive runs', () => {
 describe('releaseDecision', () => {
   it('blocks on a failure', () => {
     const decision = releaseDecision({
-      ranAt: '', cases: [], unverified: [], blockers: ['count-us-account'], totalCostUsd: 0,
+      ranAt: '',
+      cases: [],
+      unverified: [],
+      blockers: ['count-us-account'],
+      totalCostUsd: 0,
     });
     expect(decision.release).toBe(false);
     expect(decision.reason).toContain('failing');
@@ -158,14 +178,24 @@ describe('releaseDecision', () => {
 
   it('allows the code to ship with unverified cases, but forbids the quality claim', () => {
     const decision = releaseDecision({
-      ranAt: '', cases: [], unverified: ['count-us-account'], blockers: [], totalCostUsd: 0,
+      ranAt: '',
+      cases: [],
+      unverified: ['count-us-account'],
+      blockers: [],
+      totalCostUsd: 0,
     });
     expect(decision.release).toBe(true);
     expect(decision.reason).toContain('no quality claim');
   });
 
   it('says plainly that everything passed', () => {
-    const decision = releaseDecision({ ranAt: '', cases: [], unverified: [], blockers: [], totalCostUsd: 0 });
+    const decision = releaseDecision({
+      ranAt: '',
+      cases: [],
+      unverified: [],
+      blockers: [],
+      totalCostUsd: 0,
+    });
     expect(decision.release).toBe(true);
     expect(decision.reason).toContain('every case passed');
   });
@@ -173,30 +203,46 @@ describe('releaseDecision', () => {
 
 describe('acc-04: three teams, one source', () => {
   const target = collectCases.find((c) => c.id === 'three-teams-one-source')!;
-  const cited = (answer: string) => artifact({ answer, calls: [
-    { tool: 'query_conclusion', platform: 'tiktok', account: '@brand',
-      since: '2026-10-15', until: '2026-10-21', failed: false },
-  ] });
+  const cited = (answer: string) =>
+    artifact({
+      answer,
+      calls: [
+        {
+          tool: 'query_conclusion',
+          platform: 'tiktok',
+          account: '@brand',
+          since: '2026-10-15',
+          until: '2026-10-21',
+          failed: false,
+        },
+      ],
+    });
 
   it('passes three differently-worded answers that cite the same card and version', () => {
     // The variants exist so this is the real assertion: consistency has to survive a
     // change of wording, because the three teams do not phrase it the same way.
     const measured = { ...target, gold: { ...target.gold, provenance: 'measured' as const } };
-    const suite = judgeSuite([measured], map(target.id, [
-      cited('依据结论卡 C1（口径版本 2026.10），弹性 0.35，区间 0.2–0.5。'),
-      cited('结论卡 C1 口径版本 2026.10：对 GMV 有正向影响，值得继续投。'),
-      cited('C1（口径版本 2026.10）：弹性 0.35 [0.2, 0.5]。'),
-    ]));
+    const suite = judgeSuite(
+      [measured],
+      map(target.id, [
+        cited('依据结论卡 C1（口径版本 2026.10），弹性 0.35，区间 0.2–0.5。'),
+        cited('结论卡 C1 口径版本 2026.10：对 GMV 有正向影响，值得继续投。'),
+        cited('C1（口径版本 2026.10）：弹性 0.35 [0.2, 0.5]。'),
+      ]),
+    );
     expect(suite.cases[0]?.verdict).toBe('passed');
     expect(suite.cases[0]?.repeat?.agreements).toBe(3);
   });
 
   it('fails when one team is sent to a different card — the failure dem-02 exists to fix', () => {
-    const suite = judgeSuite([target], map(target.id, [
-      cited('依据结论卡 C1（口径版本 2026.10），弹性 0.35。'),
-      cited('依据结论卡 C1（口径版本 2026.10），值得加投。'),
-      cited('依据结论卡 C3（口径版本 2026.10），弹性 0.35。'),
-    ]));
+    const suite = judgeSuite(
+      [target],
+      map(target.id, [
+        cited('依据结论卡 C1（口径版本 2026.10），弹性 0.35。'),
+        cited('依据结论卡 C1（口径版本 2026.10），值得加投。'),
+        cited('依据结论卡 C3（口径版本 2026.10），弹性 0.35。'),
+      ]),
+    );
     expect(suite.cases[0]?.verdict).toBe('failed');
     expect(suite.cases[0]?.repeat?.dissent).toHaveLength(1);
     expect(suite.cases[0]?.repeat?.dissent[0]?.value).toBe('C3@2026.10');
@@ -205,31 +251,40 @@ describe('acc-04: three teams, one source', () => {
   it('fails when the same card is cited at two versions', () => {
     // A stale version is not "close enough": the definition moved and the answer did
     // not, so two teams are quoting numbers that are not comparable.
-    const suite = judgeSuite([target], map(target.id, [
-      cited('依据结论卡 C1（口径版本 2026.10）。'),
-      cited('依据结论卡 C1（口径版本 2026.10）。'),
-      cited('依据结论卡 C1（口径版本 2026.09）。'),
-    ]));
+    const suite = judgeSuite(
+      [target],
+      map(target.id, [
+        cited('依据结论卡 C1（口径版本 2026.10）。'),
+        cited('依据结论卡 C1（口径版本 2026.10）。'),
+        cited('依据结论卡 C1（口径版本 2026.09）。'),
+      ]),
+    );
     expect(suite.cases[0]?.verdict).toBe('failed');
   });
 
   it('fails when one answer is uncited, even if its number is right', () => {
-    const suite = judgeSuite([target], map(target.id, [
-      cited('依据结论卡 C1（口径版本 2026.10）。'),
-      cited('依据结论卡 C1（口径版本 2026.10）。'),
-      cited('弹性 0.35，区间 0.2–0.5。'),
-    ]));
+    const suite = judgeSuite(
+      [target],
+      map(target.id, [
+        cited('依据结论卡 C1（口径版本 2026.10）。'),
+        cited('依据结论卡 C1（口径版本 2026.10）。'),
+        cited('弹性 0.35，区间 0.2–0.5。'),
+      ]),
+    );
     expect(suite.cases[0]?.verdict).toBe('failed');
     expect(suite.cases[0]?.repeat?.dissent[0]?.value).toBe('uncited');
   });
 
   it('a perfect set of three identical citations is still unverified while the card is invented', () => {
     // Same rule as everywhere else in this suite: the card C1 does not exist.
-    const suite = judgeSuite([target], map(target.id, [
-      cited('依据结论卡 C1（口径版本 2026.10）。'),
-      cited('依据结论卡 C1（口径版本 2026.10）。'),
-      cited('依据结论卡 C1（口径版本 2026.10）。'),
-    ]));
+    const suite = judgeSuite(
+      [target],
+      map(target.id, [
+        cited('依据结论卡 C1（口径版本 2026.10）。'),
+        cited('依据结论卡 C1（口径版本 2026.10）。'),
+        cited('依据结论卡 C1（口径版本 2026.10）。'),
+      ]),
+    );
     expect(suite.cases[0]?.verdict).toBe('unverified');
     expect(suite.cases[0]?.observed).toContain('illustrative');
     // The message must name what is actually missing: a card, not a count.

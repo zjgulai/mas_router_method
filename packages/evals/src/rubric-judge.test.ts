@@ -17,21 +17,27 @@ describe('parseScore', () => {
   });
 
   it('rejects a score above 1', () => {
-    expect(() => parseScore('{"score": 1.4, "justification": "x"}', 'voice-match', 'anthropic')).toThrow(
-      /unusable output/,
-    );
+    expect(() =>
+      parseScore('{"score": 1.4, "justification": "x"}', 'voice-match', 'anthropic'),
+    ).toThrow(/unusable output/);
   });
 
   it('rejects a negative score', () => {
-    expect(() => parseScore('{"score": -0.2, "justification": "x"}', 'voice-match', 'anthropic')).toThrow();
+    expect(() =>
+      parseScore('{"score": -0.2, "justification": "x"}', 'voice-match', 'anthropic'),
+    ).toThrow();
   });
 
   it('rejects an empty justification', () => {
-    expect(() => parseScore('{"score": 0.9, "justification": ""}', 'voice-match', 'anthropic')).toThrow();
+    expect(() =>
+      parseScore('{"score": 0.9, "justification": ""}', 'voice-match', 'anthropic'),
+    ).toThrow();
   });
 
   it('rejects a non-numeric score', () => {
-    expect(() => parseScore('{"score": "high", "justification": "x"}', 'voice-match', 'anthropic')).toThrow();
+    expect(() =>
+      parseScore('{"score": "high", "justification": "x"}', 'voice-match', 'anthropic'),
+    ).toThrow();
   });
 
   it('rejects garbage output', () => {

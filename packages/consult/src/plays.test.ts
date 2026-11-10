@@ -33,11 +33,9 @@ describe('direct plays', () => {
       { role: 'assistant' as const, text: '0.5–0.8 是边界，0.85 已超过。' },
     ];
     expect(findPlay('那预算数据没有呢？', history)?.id).toBe('budget-missing');
-    expect(
-      findPlay('那历史数据还能补吗？', [
-        { role: 'user', text: '采集时滞 2 周' },
-      ])?.id,
-    ).toBe('backfill-history');
+    expect(findPlay('那历史数据还能补吗？', [{ role: 'user', text: '采集时滞 2 周' }])?.id).toBe(
+      'backfill-history',
+    );
   });
 
   it('does not invent a play for a normal method question', () => {

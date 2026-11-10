@@ -4,3 +4,26 @@ dist
 .turbo
 pnpm-lock.yaml
 coverage
+
+# --- vendored skills: rsync --delete overwrites these on upgrade; formatting them is churn ---
+.claude/skills
+skills
+
+# --- all other Claude agent-runtime state (worktrees, sessions, settings) ---
+.claude
+
+# --- generated site HTML (rebuilt by scripts/site/build_*.py) ---
+docs/site
+
+# --- local scratch / tool output / agent runs ---
+.playwright-mcp
+.audit
+.scratch
+.agent-runs
+.lody
+
+# --- authored deliverables & generated artifacts, not code to reflow ---
+work
+reports
+architecture
+*.min.*

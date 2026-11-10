@@ -21,7 +21,9 @@ import { readdir, readFile, access } from 'node:fs/promises';
 import { join, dirname, resolve, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  RESET = '\x1b[0m';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
@@ -54,7 +56,11 @@ const all = await pages();
 const broken = [];
 
 const anchorOf = (raw) => {
-  try { return decodeURIComponent(raw); } catch { return raw; }
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
 };
 
 for (const [page, html] of all) {
@@ -76,7 +82,9 @@ for (const [page, html] of all) {
     if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href)) continue;
 
     if (href.startsWith(LEGACY)) {
-      broken.push(`${where} -> ${href} (legacy absolute prefix; the site must work at the domain root)`);
+      broken.push(
+        `${where} -> ${href} (legacy absolute prefix; the site must work at the domain root)`,
+      );
       continue;
     }
 

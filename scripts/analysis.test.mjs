@@ -23,9 +23,10 @@ import { pearson, ci95, ols, tQuantile, tCdf } from './stats.mjs';
 import { writeAndConfirm } from './test-fs.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const run = (script, args) => promisify(execFile)(process.execPath, [join(ROOT, `scripts/${script}`), ...args])
-  .then((r) => ({ code: 0, out: r.stdout }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const run = (script, args) =>
+  promisify(execFile)(process.execPath, [join(ROOT, `scripts/${script}`), ...args])
+    .then((r) => ({ code: 0, out: r.stdout }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 async function withCsv(rows, fn) {
   const dir = await mkdtemp(join(tmpdir(), 'panel-'));
@@ -33,7 +34,9 @@ async function withCsv(rows, fn) {
   try {
     await writeAndConfirm(path, rows.join('\n') + '\n');
     return await fn(path);
-  } finally { await rm(dir, { recursive: true, force: true }); }
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 }
 
 // ── stats ────────────────────────────────────────────────────────────────────
@@ -62,12 +65,29 @@ test('ci95 contains the estimate and widens as df falls', () => {
 });
 
 test('ols recovers a known slope and refuses a singular design', () => {
-  const X = [[1, 1], [1, 2], [1, 3], [1, 4], [1, 5]];
+  const X = [
+    [1, 1],
+    [1, 2],
+    [1, 3],
+    [1, 4],
+    [1, 5],
+  ];
   const y = [2, 4, 6, 8, 10];
   const fit = ols(X, y);
   assert.ok(Math.abs(fit.beta[1] - 2) < 1e-9);
   assert.ok(Math.abs(fit.r2 - 1) < 1e-9);
-  assert.throws(() => ols([[1, 2], [1, 2], [1, 2]], [1, 2, 3]), /singular/);
+  assert.throws(
+    () =>
+      ols(
+        [
+          [1, 2],
+          [1, 2],
+          [1, 2],
+        ],
+        [1, 2, 3],
+      ),
+    /singular/,
+  );
 });
 
 // ── §七 ──────────────────────────────────────────────────────────────────────
@@ -114,7 +134,9 @@ test('§七 in the boundary band passes but carries the limitation forward', asy
   for (let w = 0; w < 12; w++) {
     const common = 100 + w * 5;
     rows.push(`2025-W${String(w + 1).padStart(2, '0')},US,${common}`);
-    rows.push(`2025-W${String(w + 1).padStart(2, '0')},DE,${Math.round(common * 0.7 + (w % 3) * 30)}`);
+    rows.push(
+      `2025-W${String(w + 1).padStart(2, '0')},DE,${Math.round(common * 0.7 + (w % 3) * 30)}`,
+    );
   }
   const { code, out } = await withCsv(rows, (p) => run('region-corr.mjs', [p]));
   assert.equal(code, 0, out);
@@ -156,7 +178,7 @@ test('§七 is inconclusive on a flat region, and says why that matters', async 
 
 // ── panel fit ────────────────────────────────────────────────────────────────
 
-test('panel fit recovers the demo\'s planted β with an interval that excludes 0', async () => {
+test("panel fit recovers the demo's planted β with an interval that excludes 0", async () => {
   const { code, out } = await run('panel-fit.mjs', ['--demo']);
   assert.equal(code, 0, out);
   assert.match(out, /β = 0\.3\d/);
@@ -175,7 +197,10 @@ test('a crossing interval is 无结论 with exit 3, never 效应弱', async () =
   // Volume carries no information about GMV: the slope is 0 up to noise.
   const rows = ['week,region,volume,gmv'];
   let seed = 11;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  const rnd = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
   for (let w = 0; w < 12; w++) {
     for (const r of ['US', 'DE']) {
       const volume = Math.round(100 * (1 + rnd()));

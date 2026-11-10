@@ -8,9 +8,7 @@ describe('LLM judge factory', () => {
 
   it('does not create a judge without a key', () => {
     expect(createLlmJudgeFromEnv({ MAIN_AGENT_JUDGE: 'llm' })).toBeNull();
-    expect(
-      createLlmJudgeFromEnv({ MAIN_AGENT_JUDGE: 'llm', ANTHROPIC_API_KEY: '   ' }),
-    ).toBeNull();
+    expect(createLlmJudgeFromEnv({ MAIN_AGENT_JUDGE: 'llm', ANTHROPIC_API_KEY: '   ' })).toBeNull();
   });
 
   it('creates an Anthropic judge when a key is present', () => {

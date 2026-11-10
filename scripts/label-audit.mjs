@@ -39,8 +39,12 @@
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
 const ACCURACY_MIN = 0.7;
 const KAPPA_MIN = 0.6;
@@ -57,7 +61,10 @@ const BANDS = [
 ];
 
 function parseCsv(text) {
-  const lines = text.split('\n').map((l) => l.trim()).filter((l) => l !== '' && !l.startsWith('#'));
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l !== '' && !l.startsWith('#'));
   if (lines.length < 2) throw new Error('need a header row and at least one data row');
   const header = lines[0].split(',').map((h) => h.trim().toLowerCase());
   const at = (name) => {
@@ -65,7 +72,9 @@ function parseCsv(text) {
     if (i < 0) throw new Error(`no "${name}" column — header is: ${header.join(', ')}`);
     return i;
   };
-  const ig = at('gold'), ip = at('predicted'), ic = at('confidence');
+  const ig = at('gold'),
+    ip = at('predicted'),
+    ic = at('confidence');
   const ii = header.indexOf('id');
 
   const rows = [];
@@ -83,7 +92,9 @@ function parseCsv(text) {
     }
     rows.push({
       id: ii < 0 ? String(n + 1) : c[ii],
-      gold: c[ig], predicted: c[ip], confidence: conf,
+      gold: c[ig],
+      predicted: c[ip],
+      confidence: conf,
     });
   }
   return { rows, problems };
@@ -146,11 +157,27 @@ function audit(rows) {
 
   // The baseline: answering the majority class for every row. Accuracy must beat this
   // by something, or it is describing the distribution rather than the labeller.
-  const majorityBaseline = rows.length === 0 ? null : correct === 0 ? null
-    : Math.max(...[...dist.entries()].map(([label]) =>
-      rows.filter((r) => r.predicted === label).length / rows.length));
+  const majorityBaseline =
+    rows.length === 0
+      ? null
+      : correct === 0
+        ? null
+        : Math.max(
+            ...[...dist.entries()].map(
+              ([label]) => rows.filter((r) => r.predicted === label).length / rows.length,
+            ),
+          );
 
-  return { accuracy, kappa, byBand, distribution: sorted, majorityShare, baseline: majorityBaseline, n: rows.length, correct };
+  return {
+    accuracy,
+    kappa,
+    byBand,
+    distribution: sorted,
+    majorityShare,
+    baseline: majorityBaseline,
+    n: rows.length,
+    correct,
+  };
 }
 
 /** A deterministic demo: one defect per region of the report, all visible at once. */
@@ -160,7 +187,10 @@ function demo() {
   // *most* sure about, it flips the answer. That is the failure the stratified view
   // exists for, and it is invisible in the headline accuracy.
   let seed = 20261028;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  const rnd = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
   const rows = [];
   for (let i = 0; i < 240; i++) {
     const gold = rnd() < 0.55 ? 'positive' : 'negative';
@@ -192,8 +222,8 @@ function demo() {
  * This is the second time in this repo. `collect-store.mjs` had the same defect and the
  * same symptom. The guard belongs in the pattern, not in a memory of it.
  */
-const invokedDirectly = process.argv[1] !== undefined
-  && import.meta.url === pathToFileURL(process.argv[1]).href;
+const invokedDirectly =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 const argv = invokedDirectly ? process.argv.slice(2) : [];
 const asJson = argv.includes('--json');
@@ -220,7 +250,9 @@ if (!invokedDirectly) {
     // ── Can this input answer the question at all? ──────────────────────────
     const blockers = [];
     if (rows.length < MIN_ROWS) {
-      blockers.push(`only ${rows.length} usable rows — below ${MIN_ROWS}, accuracy and Kappa are noise wearing two decimals`);
+      blockers.push(
+        `only ${rows.length} usable rows — below ${MIN_ROWS}, accuracy and Kappa are noise wearing two decimals`,
+      );
     }
     /*
      * A single-class gold set makes the WHOLE report unanswerable, not just Kappa.
@@ -238,12 +270,16 @@ if (!invokedDirectly) {
     const oneClassGold = goldClasses.size < 2;
 
     if (oneClassGold) {
-      blockers.push('the gold set contains a single class — both Kappa and accuracy are '
-        + 'undefined here: Kappa has no chance baseline, and accuracy measures the class '
-        + 'balance rather than the labeller. Collect a real gold set before judging this dimension.');
+      blockers.push(
+        'the gold set contains a single class — both Kappa and accuracy are ' +
+          'undefined here: Kappa has no chance baseline, and accuracy measures the class ' +
+          'balance rather than the labeller. Collect a real gold set before judging this dimension.',
+      );
     } else if (Number.isNaN(result.kappa)) {
       if (new Set(rows.map((r) => r.predicted)).size < 2) {
-        blockers.push('the labeller predicted one class for every row — Kappa is undefined; accuracy is the majority share');
+        blockers.push(
+          'the labeller predicted one class for every row — Kappa is undefined; accuracy is the majority share',
+        );
       } else {
         blockers.push('Kappa is undefined on this input (both sides degenerate to one class)');
       }
@@ -251,58 +287,97 @@ if (!invokedDirectly) {
 
     const failures = [];
     if (!oneClassGold && !Number.isNaN(result.accuracy) && result.accuracy < ACCURACY_MIN) {
-      failures.push(`accuracy ${(result.accuracy * 100).toFixed(1)}% < ${ACCURACY_MIN * 100}% — `
-        + '该维度不可用，A2+/A2− 退化为 A1');
+      failures.push(
+        `accuracy ${(result.accuracy * 100).toFixed(1)}% < ${ACCURACY_MIN * 100}% — ` +
+          '该维度不可用，A2+/A2− 退化为 A1',
+      );
     }
     if (!oneClassGold && !Number.isNaN(result.kappa) && result.kappa < KAPPA_MIN) {
-      failures.push(`Kappa ${result.kappa.toFixed(3)} < ${KAPPA_MIN} — 标签定义有歧义，`
-        + '这是定义的问题，不是标注员的问题');
+      failures.push(
+        `Kappa ${result.kappa.toFixed(3)} < ${KAPPA_MIN} — 标签定义有歧义，` +
+          '这是定义的问题，不是标注员的问题',
+      );
     }
 
     // Confidence inversion: the high band must not be worse than the low band.
-    const low = result.byBand[0], high = result.byBand[2];
+    const low = result.byBand[0],
+      high = result.byBand[2];
     let inverted = false;
-    if (!oneClassGold && low.accuracy !== null && high.accuracy !== null && low.n >= 10 && high.n >= 10) {
+    if (
+      !oneClassGold &&
+      low.accuracy !== null &&
+      high.accuracy !== null &&
+      low.n >= 10 &&
+      high.n >= 10
+    ) {
       if (high.accuracy < low.accuracy) {
         inverted = true;
-        failures.push(`confidence is inverted — 高置信度 band is ${(high.accuracy * 100).toFixed(1)}% accurate, `
-          + `低置信度 band is ${(low.accuracy * 100).toFixed(1)}%. Everything downstream that trusts high confidence `
-          + 'is then backwards, and nothing looks wrong.');
+        failures.push(
+          `confidence is inverted — 高置信度 band is ${(high.accuracy * 100).toFixed(1)}% accurate, ` +
+            `低置信度 band is ${(low.accuracy * 100).toFixed(1)}%. Everything downstream that trusts high confidence ` +
+            'is then backwards, and nothing looks wrong.',
+        );
       }
     }
 
-    const verdict = blockers.length > 0 ? 'inconclusive'
-      : failures.length > 0 ? 'failed' : 'passed';
+    const verdict =
+      blockers.length > 0 ? 'inconclusive' : failures.length > 0 ? 'failed' : 'passed';
 
     if (asJson) {
-      console.log(JSON.stringify({
-        verdict,
-        accuracy: result.accuracy, kappa: result.kappa,
-        byBand: result.byBand, distribution: result.distribution,
-        majorityShare: result.majorityShare, baseline: result.baseline,
-        n: result.n, correct: result.correct,
-        recommendedRows: RECOMMENDED_ROWS,
-        confidenceInverted: inverted,
-        failures, blockers, problems,
-      }, null, 2));
+      console.log(
+        JSON.stringify(
+          {
+            verdict,
+            accuracy: result.accuracy,
+            kappa: result.kappa,
+            byBand: result.byBand,
+            distribution: result.distribution,
+            majorityShare: result.majorityShare,
+            baseline: result.baseline,
+            n: result.n,
+            correct: result.correct,
+            recommendedRows: RECOMMENDED_ROWS,
+            confidenceInverted: inverted,
+            failures,
+            blockers,
+            problems,
+          },
+          null,
+          2,
+        ),
+      );
       process.exitCode = verdict === 'failed' ? 1 : verdict === 'inconclusive' ? 2 : 0;
     } else {
-      console.log(`\n${BOLD}打标审计${RESET} ${DIM}accuracy 与 Kappa，以及置信度是不是反的${RESET}\n`);
+      console.log(
+        `\n${BOLD}打标审计${RESET} ${DIM}accuracy 与 Kappa，以及置信度是不是反的${RESET}\n`,
+      );
       console.log(`  ${result.n} rows, ${result.correct} correct`);
       if (problems.length > 0) {
-        console.log(`  ${YELLOW}${problems.length} row(s) skipped${RESET} ${DIM}(malformed; see --json)${RESET}`);
+        console.log(
+          `  ${YELLOW}${problems.length} row(s) skipped${RESET} ${DIM}(malformed; see --json)${RESET}`,
+        );
       }
       if (result.n < RECOMMENDED_ROWS) {
-        console.log(`  ${YELLOW}gold set is ${result.n} rows${RESET} ${DIM}— the design asks for ${RECOMMENDED_ROWS}–300 per label; `
-          + `below that Kappa has a wide interval and this is a first look, not a verdict you should cite${RESET}`);
+        console.log(
+          `  ${YELLOW}gold set is ${result.n} rows${RESET} ${DIM}— the design asks for ${RECOMMENDED_ROWS}–300 per label; ` +
+            `below that Kappa has a wide interval and this is a first look, not a verdict you should cite${RESET}`,
+        );
       }
       console.log();
 
       const fmt = (x) => (Number.isNaN(x) ? '—' : (x * 100).toFixed(1) + '%');
-      const accColour = Number.isNaN(result.accuracy) ? DIM : result.accuracy < ACCURACY_MIN ? RED : GREEN;
+      const accColour = Number.isNaN(result.accuracy)
+        ? DIM
+        : result.accuracy < ACCURACY_MIN
+          ? RED
+          : GREEN;
       const kapColour = Number.isNaN(result.kappa) ? DIM : result.kappa < KAPPA_MIN ? RED : GREEN;
-      console.log(`  accuracy  ${accColour}${fmt(result.accuracy)}${RESET} ${DIM}(floor ${ACCURACY_MIN * 100}%)${RESET}`);
-      console.log(`  Kappa     ${kapColour}${Number.isNaN(result.kappa) ? '—' : result.kappa.toFixed(3)}${RESET} ${DIM}(floor ${KAPPA_MIN})${RESET}`);
+      console.log(
+        `  accuracy  ${accColour}${fmt(result.accuracy)}${RESET} ${DIM}(floor ${ACCURACY_MIN * 100}%)${RESET}`,
+      );
+      console.log(
+        `  Kappa     ${kapColour}${Number.isNaN(result.kappa) ? '—' : result.kappa.toFixed(3)}${RESET} ${DIM}(floor ${KAPPA_MIN})${RESET}`,
+      );
       console.log();
 
       // Distribution first: a reader who does not see the class balance will read
@@ -311,26 +386,41 @@ if (!invokedDirectly) {
       for (const [label, count] of result.distribution) {
         const share = (count / result.n) * 100;
         const bar = '█'.repeat(Math.max(0, Math.round(share / 4)));
-        console.log(`    ${label.padEnd(14)}${String(count).padStart(4)}  ${share.toFixed(1).padStart(5)}%  ${DIM}${bar}${RESET}`);
+        console.log(
+          `    ${label.padEnd(14)}${String(count).padStart(4)}  ${share.toFixed(1).padStart(5)}%  ${DIM}${bar}${RESET}`,
+        );
       }
       if (result.majorityShare !== null) {
-        console.log(`    ${DIM}majority share ${(result.majorityShare * 100).toFixed(1)}% — `
-          + `always answering the top class scores that much, which is why Kappa is the number that matters${RESET}`);
+        console.log(
+          `    ${DIM}majority share ${(result.majorityShare * 100).toFixed(1)}% — ` +
+            `always answering the top class scores that much, which is why Kappa is the number that matters${RESET}`,
+        );
       }
       console.log();
 
-      console.log(`  ${BOLD}按置信度分层${RESET} ${DIM}高的应该比低的准；反过来说明 confidence 是反向信号${RESET}`);
+      console.log(
+        `  ${BOLD}按置信度分层${RESET} ${DIM}高的应该比低的准；反过来说明 confidence 是反向信号${RESET}`,
+      );
       for (const b of result.byBand) {
-        if (b.n === 0) { console.log(`    ${b.name.padEnd(12)}${DIM}— no rows${RESET}`); continue; }
+        if (b.n === 0) {
+          console.log(`    ${b.name.padEnd(12)}${DIM}— no rows${RESET}`);
+          continue;
+        }
         const colour = b.accuracy === null ? DIM : b.accuracy < ACCURACY_MIN ? RED : GREEN;
-        console.log(`    ${b.name.padEnd(12)}${String(b.n).padStart(4)} rows  ${colour}${(b.accuracy * 100).toFixed(1)}%${RESET}`);
+        console.log(
+          `    ${b.name.padEnd(12)}${String(b.n).padStart(4)} rows  ${colour}${(b.accuracy * 100).toFixed(1)}%${RESET}`,
+        );
       }
       console.log();
 
       if (verdict === 'inconclusive') {
-        console.log(`${YELLOW}无法判断 — ${blockers.length} thing(s) this input cannot answer${RESET}\n`);
+        console.log(
+          `${YELLOW}无法判断 — ${blockers.length} thing(s) this input cannot answer${RESET}\n`,
+        );
         for (const b of blockers) console.log(`  ${YELLOW}•${RESET} ${b}`);
-        console.log(`\n  ${DIM}This is not a pass. A dimension nobody could measure is not a dimension that works.${RESET}\n`);
+        console.log(
+          `\n  ${DIM}This is not a pass. A dimension nobody could measure is not a dimension that works.${RESET}\n`,
+        );
         process.exitCode = 2;
       } else if (verdict === 'failed') {
         console.log(`${RED}不通过 — ${failures.length} failure(s)${RESET}\n`);
@@ -338,7 +428,9 @@ if (!invokedDirectly) {
         console.log();
         process.exitCode = 1;
       } else {
-        console.log(`${GREEN}通过${RESET} — accuracy and agreement are above their floors, and confidence points the right way\n`);
+        console.log(
+          `${GREEN}通过${RESET} — accuracy and agreement are above their floors, and confidence points the right way\n`,
+        );
         process.exitCode = 0;
       }
     }

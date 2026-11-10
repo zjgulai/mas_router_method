@@ -163,7 +163,11 @@ const currentRun: HistoryEntry = {
   rubricAverage,
 };
 const history = appendHistory(historyPath, currentRun);
-writeFileSync(resultsPath, `${results.map((result) => JSON.stringify(result)).join('\n')}\n`, 'utf8');
+writeFileSync(
+  resultsPath,
+  `${results.map((result) => JSON.stringify(result)).join('\n')}\n`,
+  'utf8',
+);
 writeFileSync(
   summaryPath,
   `${JSON.stringify(
@@ -188,7 +192,17 @@ writeFileSync(
 
 writeFileSync(
   reportPath,
-  buildReport(parsed, results, passed, total, byExpected, manual, rubricAverage, history, llmAverage),
+  buildReport(
+    parsed,
+    results,
+    passed,
+    total,
+    byExpected,
+    manual,
+    rubricAverage,
+    history,
+    llmAverage,
+  ),
   'utf8',
 );
 
@@ -199,8 +213,11 @@ for (const group of byExpected) {
 console.log(
   `  manual: usable=${manual.usable}, needs_improvement=${manual.needsImprovement}, unreviewed=${manual.unreviewed}`,
 );
-console.log(`  rubric: average=${rubricAverage.toFixed(2)} over ${rubricResults.length} in-scope cases`);
-if (llmResults.length > 0) console.log(`  llm judge: average=${llmAverage.toFixed(2)} over ${llmResults.length} cases`);
+console.log(
+  `  rubric: average=${rubricAverage.toFixed(2)} over ${rubricResults.length} in-scope cases`,
+);
+if (llmResults.length > 0)
+  console.log(`  llm judge: average=${llmAverage.toFixed(2)} over ${llmResults.length} cases`);
 for (const failure of results.filter((result) => !result.passed)) {
   console.log(`\nFAIL ${failure.id} [${failure.expected}] ${failure.text.slice(0, 80)}`);
   for (const check of failure.checks.filter((item) => !item.pass)) {
@@ -217,9 +234,7 @@ if (passed / total < threshold) {
 function evaluateRubric(testCase: EvalCase, answer: ConsultAnswer): Rubric {
   const questionTerms = [
     ...new Set(
-      tokenize(
-        [testCase.text, ...(testCase.history ?? []).map((turn) => turn.text)].join(' '),
-      ),
+      tokenize([testCase.text, ...(testCase.history ?? []).map((turn) => turn.text)].join(' ')),
     ),
   ].filter((term) => term.length >= 2);
   const head = answer.text.slice(0, 700);
@@ -244,7 +259,8 @@ function evaluateRubric(testCase: EvalCase, answer: ConsultAnswer): Rubric {
       : 0;
 
   const notes: string[] = [];
-  if (directAnswer === 0) notes.push(`结论未覆盖问题关键词（命中 ${hits}/${questionTerms.length}）`);
+  if (directAnswer === 0)
+    notes.push(`结论未覆盖问题关键词（命中 ${hits}/${questionTerms.length}）`);
   if (actionable === 0) notes.push(`可执行动作不足（${concrete}/${actionLines.length}）`);
   if (evidence === 0) notes.push('缺少可解析证据路径');
 
@@ -284,7 +300,12 @@ function evaluate(testCase: EvalCase, answer: ConsultAnswer): Check[] {
     checks.push({
       name: 'citations_exist',
       pass: answer.sources.length > 0 && sourcesExist,
-      detail: answer.sources.length === 0 ? 'no sources' : sourcesExist ? 'ok' : 'one or more paths missing',
+      detail:
+        answer.sources.length === 0
+          ? 'no sources'
+          : sourcesExist
+            ? 'ok'
+            : 'one or more paths missing',
     });
     checks.push({ name: 'length', pass: lengthOk, detail: `${answer.text.length} chars` });
   }
@@ -370,10 +391,12 @@ function buildReport(
     '',
     '| 时间 | 用例 | 自动通过 | 人工可用 | 需改进 | Rubric |',
     '|---|---|---|---|---|---|',
-    ...history.slice(-10).map(
-      (item) =>
-        `| ${item.generatedAt.slice(0, 19)} | ${item.total} | ${item.passed} | ${item.manual.usable} | ${item.manual.needsImprovement} | ${item.rubricAverage.toFixed(2)} |`,
-    ),
+    ...history
+      .slice(-10)
+      .map(
+        (item) =>
+          `| ${item.generatedAt.slice(0, 19)} | ${item.total} | ${item.passed} | ${item.manual.usable} | ${item.manual.needsImprovement} | ${item.rubricAverage.toFixed(2)} |`,
+      ),
     '',
     '## 逐条结果',
     '',
@@ -390,7 +413,14 @@ function buildReport(
   if (needsImprovement.length > 0) {
     lines.push('## 人工判定：需要改进', '');
     for (const item of needsImprovement) {
-      lines.push(`### ${item.id}`, '', `**问题**：${item.text}`, '', `**判定**：${item.reviewNote}`, '');
+      lines.push(
+        `### ${item.id}`,
+        '',
+        `**问题**：${item.text}`,
+        '',
+        `**判定**：${item.reviewNote}`,
+        '',
+      );
     }
   }
 
@@ -398,7 +428,14 @@ function buildReport(
   if (failures.length > 0) {
     lines.push('## 未通过项', '');
     for (const failure of failures) {
-      lines.push(`### ${failure.id}`, '', `**问题**：${failure.text}`, '', `**为什么重要**：${failure.why}`, '');
+      lines.push(
+        `### ${failure.id}`,
+        '',
+        `**问题**：${failure.text}`,
+        '',
+        `**为什么重要**：${failure.why}`,
+        '',
+      );
       for (const check of failure.checks.filter((item) => !item.pass)) {
         lines.push(`- ❌ \`${check.name}\`：${check.detail}`);
       }

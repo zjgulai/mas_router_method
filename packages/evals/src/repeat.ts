@@ -53,10 +53,7 @@ export interface RepeatOutcome<T> {
  * two dissenters are still reported: a passing case that hides its dissent is how
  * a flaky product ships with a clean eval history.
  */
-export function summarise<T>(
-  policy: RepeatPolicy,
-  values: T[],
-): RepeatOutcome<T> {
+export function summarise<T>(policy: RepeatPolicy, values: T[]): RepeatOutcome<T> {
   const counts = new Map<T, number>();
   for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
 
@@ -82,10 +79,10 @@ export function summarise<T>(
 
   const passed = reachedThreshold && values.length === policy.attempts;
   const observed = passed
-    ? `${agreements}/${values.length} runs agree (needed ${policy.agree})`
-      + (dissent.length > 0 ? `; dissent: run ${dissent.map((d) => d.run).join(', ')}` : '')
-    : `${agreements}/${values.length} runs agree, needed ${policy.agree} of ${policy.attempts}`
-      + (values.length === policy.attempts ? '' : ' (fewer runs than the policy asks for)');
+    ? `${agreements}/${values.length} runs agree (needed ${policy.agree})` +
+      (dissent.length > 0 ? `; dissent: run ${dissent.map((d) => d.run).join(', ')}` : '')
+    : `${agreements}/${values.length} runs agree, needed ${policy.agree} of ${policy.attempts}` +
+      (values.length === policy.attempts ? '' : ' (fewer runs than the policy asks for)');
 
   return { values, agreed, agreements, dissent, passed, observed };
 }

@@ -76,9 +76,11 @@ describe('createRecipeRuntime', () => {
       listRecipes: async () => [recipe],
     });
 
-    expect(
-      await runtime.run({ brandId: 'b', prompt: 'p', actorId: 'a' }),
-    ).toEqual({ status: 'failed', reason: 'budget exhausted', retryable: false });
+    expect(await runtime.run({ brandId: 'b', prompt: 'p', actorId: 'a' })).toEqual({
+      status: 'failed',
+      reason: 'budget exhausted',
+      retryable: false,
+    });
   });
 
   it('fails honestly when a successful run saved no recipe', async () => {
@@ -87,9 +89,7 @@ describe('createRecipeRuntime', () => {
       listRecipes: async () => [],
     });
 
-    expect(
-      await runtime.run({ brandId: 'b', prompt: 'p', actorId: 'a' }),
-    ).toEqual({
+    expect(await runtime.run({ brandId: 'b', prompt: 'p', actorId: 'a' })).toEqual({
       status: 'failed',
       reason: 'run finished without saving a recipe',
       retryable: true,

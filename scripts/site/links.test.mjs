@@ -19,12 +19,16 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const LINKS = join(ROOT, 'scripts', 'site', 'links.mjs');
 const PROBE = join(ROOT, 'docs', 'site', 'zzz-links-probe.html');
 
-const check = () => promisify(execFile)(process.execPath, [LINKS])
-  .then((r) => ({ code: 0, out: r.stdout + r.stderr }))
-  .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
+const check = () =>
+  promisify(execFile)(process.execPath, [LINKS])
+    .then((r) => ({ code: 0, out: r.stdout + r.stderr }))
+    .catch((e) => ({ code: e.code ?? 1, out: (e.stdout ?? '') + (e.stderr ?? '') }));
 
 async function withProbe(href, body = '') {
-  await writeAndConfirm(PROBE, `<!doctype html><title>probe</title><div id="here">x</div><a href="${href}">y</a>${body}`);
+  await writeAndConfirm(
+    PROBE,
+    `<!doctype html><title>probe</title><div id="here">x</div><a href="${href}">y</a>${body}`,
+  );
   try {
     return await check();
   } finally {

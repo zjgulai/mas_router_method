@@ -48,7 +48,10 @@ function contentToText(content: unknown): string {
 }
 
 function extractJson(text: string): unknown {
-  const trimmed = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  const trimmed = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '');
   const start = trimmed.indexOf('{');
   const end = trimmed.lastIndexOf('}');
   if (start < 0 || end <= start) throw new Error('provider returned no JSON object');
@@ -79,60 +82,63 @@ export function createVodVisionAnalyzer(options: VodVisionOptions): VodVisionAna
     url: string;
     brandContext: string;
   }): Promise<{ analysis: ReferenceAnalysis; usage: unknown }> => {
-      if (options.apiKey.trim().length === 0) {
-        throw new Error('VOD_API_KEY is not set; the vod adapter cannot call the gateway.');
-      }
+    if (options.apiKey.trim().length === 0) {
+      throw new Error('VOD_API_KEY is not set; the vod adapter cannot call the gateway.');
+    }
 
-      const body = {
-        model,
-        temperature: 0,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: `Brand context: ${input.brandContext}\nAnalyse this reference: ${input.url}` },
-              { type: videoPart, [videoPart]: { url: input.url } },
-            ],
-          },
-        ],
-      };
+    const body = {
+      model,
+      temperature: 0,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Brand context: ${input.brandContext}\nAnalyse this reference: ${input.url}`,
+            },
+            { type: videoPart, [videoPart]: { url: input.url } },
+          ],
+        },
+      ],
+    };
 
-      let response: Response;
-      try {
-        response = await doFetch(`${baseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            authorization: `Bearer ${options.apiKey}`,
-          },
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(timeoutMs),
-        });
-      } catch (cause) {
-        const message = cause instanceof Error ? cause.message : String(cause);
-        throw new Error(`vod request failed: ${message}`);
-      }
+    let response: Response;
+    try {
+      response = await doFetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${options.apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : String(cause);
+      throw new Error(`vod request failed: ${message}`);
+    }
 
-      if (!response.ok) {
-        const detail = (await response.text()).slice(0, 200).replace(/\s+/g, ' ');
-        throw new Error(`vod returned ${response.status}: ${detail}`);
-      }
+    if (!response.ok) {
+      const detail = (await response.text()).slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`vod returned ${response.status}: ${detail}`);
+    }
 
-      const payload = (await response.json()) as unknown;
-      const choices = (payload as { choices?: { message?: { content?: unknown } }[] }).choices;
-      const text = contentToText(choices?.[0]?.message?.content);
-      if (text.trim().length === 0) throw new Error('vod returned an empty message');
+    const payload = (await response.json()) as unknown;
+    const choices = (payload as { choices?: { message?: { content?: unknown } }[] }).choices;
+    const text = contentToText(choices?.[0]?.message?.content);
+    if (text.trim().length === 0) throw new Error('vod returned an empty message');
 
-      const parsed = ReferenceAnalysis.safeParse(extractJson(text));
-      if (!parsed.success) {
-        const issue = parsed.error.issues[0];
-        throw new Error(
-          `vod response did not match ReferenceAnalysis: ${issue?.path.map(String).join('.') ?? 'root'} ${issue?.message ?? ''}`,
-        );
-      }
-      return { analysis: parsed.data, usage: (payload as { usage?: unknown }).usage };
+    const parsed = ReferenceAnalysis.safeParse(extractJson(text));
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      throw new Error(
+        `vod response did not match ReferenceAnalysis: ${issue?.path.map(String).join('.') ?? 'root'} ${issue?.message ?? ''}`,
+      );
+    }
+    return { analysis: parsed.data, usage: (payload as { usage?: unknown }).usage };
   };
 
   return {

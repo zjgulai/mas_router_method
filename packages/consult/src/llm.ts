@@ -28,9 +28,7 @@ export function createLlmFromEnv(env: NodeJS.ProcessEnv = process.env): LlmSynth
   const mode = (env['MAIN_AGENT_LLM'] ?? 'auto') as LlmMode;
   if (mode === 'off') return null;
 
-  const anthropicKey = emptyToUndefined(
-    env['ANTHROPIC_API_KEY'] ?? env['MAIN_AGENT_LLM_API_KEY'],
-  );
+  const anthropicKey = emptyToUndefined(env['ANTHROPIC_API_KEY'] ?? env['MAIN_AGENT_LLM_API_KEY']);
   const openaiKey = emptyToUndefined(env['OPENAI_API_KEY'] ?? env['MAIN_AGENT_LLM_API_KEY']);
 
   if (mode === 'anthropic' || (mode === 'auto' && anthropicKey !== undefined)) {
@@ -84,9 +82,7 @@ function buildUserPrompt(input: LlmInput): string {
     ...(input.history !== undefined && input.history.length > 0
       ? [
           '【对话历史】',
-          ...input.history.map(
-            (turn) => `${turn.role}: ${turn.text.slice(0, 600)}`,
-          ),
+          ...input.history.map((turn) => `${turn.role}: ${turn.text.slice(0, 600)}`),
           '',
         ]
       : []),

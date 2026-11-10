@@ -42,14 +42,18 @@ describe('docs/evals/data-collect.md stays true to the code', () => {
       expect(COLLECT_RULE_NAMES, `documented rule "${name}" does not exist`).toContain(name);
     }
     for (const name of COLLECT_RULE_NAMES) {
-      expect(documented, `rule "${name}" is implemented but not in the doc's table`).toContain(name);
+      expect(documented, `rule "${name}" is implemented but not in the doc's table`).toContain(
+        name,
+      );
     }
   });
 
   it('every case has a row in the case table', () => {
     for (const testCase of collectCases) {
       expect(DOC, `case ${testCase.id} is not in the doc`).toContain(`\`${testCase.id}\``);
-      expect(DOC, `acceptance ${testCase.acceptance} is not in the doc`).toContain(testCase.acceptance);
+      expect(DOC, `acceptance ${testCase.acceptance} is not in the doc`).toContain(
+        testCase.acceptance,
+      );
     }
   });
 });

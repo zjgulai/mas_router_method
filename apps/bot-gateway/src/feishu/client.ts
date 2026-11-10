@@ -111,7 +111,7 @@ export class LarkGatewayClient implements FeishuGatewayClient {
     await this.request('POST', `/open-apis/im/v1/messages/${encodeURIComponent(messageId)}/reply`, {
       content: payload.content,
       msg_type: payload.msgType,
-      reply_in_thread: true,
+      reply_in_thread: false,
     });
   }
 

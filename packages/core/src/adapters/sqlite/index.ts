@@ -1,11 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import {
-  Run as RunSchema,
-  type BrandProfile,
-  type Recipe,
-  type Run,
-} from '@mas/shared';
+import { Run as RunSchema, type BrandProfile, type Recipe, type Run } from '@mas/shared';
 import type { BrandStore, RecipeStore, ReferenceStore } from '../../tools/brand.js';
 import type { RunStore } from '../../run-store.js';
 import { recipeFromDraft } from '../../recipe-draft.js';
@@ -209,12 +204,15 @@ export class SqliteStore implements BrandStore, ReferenceStore, RecipeStore, Run
    */
   private nextRecipeSeq(): number {
     const row = this.db.prepare('SELECT COALESCE(MAX(seq), 0) AS m FROM recipes').get() as
-      | { m: number }
-      | undefined;
+      { m: number } | undefined;
     return Number(row?.m ?? 0) + 1;
   }
 
-  async saveDraft(input: { brandId: string; referenceId: string; recipe: unknown }): Promise<{ recipeId: string }> {
+  async saveDraft(input: {
+    brandId: string;
+    referenceId: string;
+    recipe: unknown;
+  }): Promise<{ recipeId: string }> {
     const now = new Date().toISOString();
     const recipeId = mint('rec');
     const parsed = recipeFromDraft(input.brandId, input.recipe, recipeId, now);

@@ -41,7 +41,8 @@ describe('real-question eval dataset', () => {
   it('records why, source message, and a manual verdict for every case', () => {
     for (const item of data.cases) {
       expect(item.why.length, `${item.id} why`).toBeGreaterThan(10);
-      if (item.source !== undefined) expect(item.source.startsWith('om_'), `${item.id} source`).toBe(true);
+      if (item.source !== undefined)
+        expect(item.source.startsWith('om_'), `${item.id} source`).toBe(true);
       expect(['usable', 'needs_improvement', 'unreviewed']).toContain(item.verdict ?? 'unreviewed');
     }
   });

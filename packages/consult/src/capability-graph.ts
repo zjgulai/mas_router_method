@@ -732,7 +732,18 @@ export const capabilityGraph: CapabilityGraph = {
       family: 'data-product',
       summary:
         '报告与呈现的分界不是形式，是谁发起：呈现是人问它答，报告是它主动给。报告层唯一的实质验收是“造一次证伪触发，看它报不报”；只统计发送量的报告不算报告。',
-      keywords: ['报告', '证伪检查', '跑一次证伪', '推送', '主动', '周报', '告警', '发送量', 'INC', '触发'],
+      keywords: [
+        '报告',
+        '证伪检查',
+        '跑一次证伪',
+        '推送',
+        '主动',
+        '周报',
+        '告警',
+        '发送量',
+        'INC',
+        '触发',
+      ],
       aliases: ['汇报', '通知', '飞书推送', '邮件', '没人回应', '行动', '复盘'],
       questions: [
         '怎么让报告不只是又一个 dashboard？',
@@ -1165,17 +1176,8 @@ export const capabilityGraph: CapabilityGraph = {
         '我是老板',
       ],
       aliases: ['进度条', '完成度', '上线时间', '验收了么', '可以验收了吗', '可以验收了么'],
-      questions: [
-        '本周进度 80% 可信吗？',
-        '上线前要过哪些 gate？',
-        '怎么向老板报进度？',
-      ],
-      symptoms: [
-        '用百分比报进度',
-        '军令状上线',
-        '验收凭感觉',
-        '没有 gate 证据',
-      ],
+      questions: ['本周进度 80% 可信吗？', '上线前要过哪些 gate？', '怎么向老板报进度？'],
+      symptoms: ['用百分比报进度', '军令状上线', '验收凭感觉', '没有 gate 证据'],
       actions: [
         '把百分比改写成 gate 证据：哪些过了 G3/G4/G5，哪些没有证据；没有证据就是 0%。',
         '每个 milestone 报 G1–G5 哪几项过了、证据在哪。',
@@ -1187,7 +1189,11 @@ export const capabilityGraph: CapabilityGraph = {
       checkers: [{ cmd: 'pnpm typecheck && pnpm test', exit: '0 通过' }],
       sources: [
         { path: 'docs/skills/skill-chain.md', heading: 'The five hard gates', why: 'G1–G5' },
-        { path: 'docs/roadmap.md', heading: 'Milestone 0 — the loop runs (current)', why: '里程碑 gate' },
+        {
+          path: 'docs/roadmap.md',
+          heading: 'Milestone 0 — the loop runs (current)',
+          why: '里程碑 gate',
+        },
         {
           path: 'docs/product/agent-delivery-sop.md',
           heading: '8. 示例：Milestone 1 走一遍',
@@ -1413,17 +1419,8 @@ export const capabilityGraph: CapabilityGraph = {
         '内容 agent',
       ],
       aliases: ['roadmap', '优先级排序', '先做什么', '不做什么', '里程碑', '功能列表', '内容策略'],
-      questions: [
-        '这些功能先做哪个？',
-        '路线图怎么排优先级？',
-        '范围太大怎么砍？',
-      ],
-      symptoms: [
-        '功能清单当路线图',
-        '每个都想做',
-        '没有非目标',
-        '按依赖排期而不是按风险',
-      ],
+      questions: ['这些功能先做哪个？', '路线图怎么排优先级？', '范围太大怎么砍？'],
+      symptoms: ['功能清单当路线图', '每个都想做', '没有非目标', '按依赖排期而不是按风险'],
       actions: [
         '每个条目写一句话：让谁把哪个动作从 A 改成 B；写不出来的先不做。',
         '选一条最小纵向切片（一个输入、一个工具、一个 surface、一个 eval case），先跑通。',
@@ -1434,7 +1431,11 @@ export const capabilityGraph: CapabilityGraph = {
       artifacts: ['路线图表（决策 / tracer / 风险 / 非目标）', '第一条 tracer', '非目标清单'],
       checkers: [],
       sources: [
-        { path: 'docs/roadmap.md', heading: 'Milestone 0 — the loop runs (current)', why: '按风险排序' },
+        {
+          path: 'docs/roadmap.md',
+          heading: 'Milestone 0 — the loop runs (current)',
+          why: '按风险排序',
+        },
         {
           path: 'docs/product/data-product-design.md',
           heading: '八、8.4 实施顺序：自底向上建，但每一步都可交付',
@@ -1488,7 +1489,12 @@ export const capabilityGraph: CapabilityGraph = {
         '用人工金标准集测覆盖率/漏检率，不只看抽了多少帧。',
         '切镜算法未优化时，先标为已知缺口，不把均匀抽帧当全覆盖。',
       ],
-      artifacts: ['覆盖目标 + 抽样单元', '抽帧/抽样规则 + 版本', '覆盖率/漏检率报告', '已知盲区清单'],
+      artifacts: [
+        '覆盖目标 + 抽样单元',
+        '抽帧/抽样规则 + 版本',
+        '覆盖率/漏检率报告',
+        '已知盲区清单',
+      ],
       checkers: [],
       sources: [
         {
@@ -1496,9 +1502,21 @@ export const capabilityGraph: CapabilityGraph = {
           heading: '三·四、打标层（三轮讨论，已定）',
           why: '金标准集与置信度',
         },
-        { path: 'docs/evals/vision-spike.md', heading: 'Vision provider spike', why: '视觉采样与实测' },
-        { path: 'docs/evals/data-collect.md', heading: 'Eval design: the data-collect agent', why: '采集覆盖与验收' },
-        { path: 'docs/product/data-product-layers.md', heading: '二、三层的契约（链 A：采集 → 存储）', why: '四态与缺失记录' },
+        {
+          path: 'docs/evals/vision-spike.md',
+          heading: 'Vision provider spike',
+          why: '视觉采样与实测',
+        },
+        {
+          path: 'docs/evals/data-collect.md',
+          heading: 'Eval design: the data-collect agent',
+          why: '采集覆盖与验收',
+        },
+        {
+          path: 'docs/product/data-product-layers.md',
+          heading: '二、三层的契约（链 A：采集 → 存储）',
+          why: '四态与缺失记录',
+        },
       ],
       boundaries: [
         '不能保证未抽到的帧里的信息。',

@@ -59,7 +59,9 @@ const ANALYSIS = {
     { name: 'problem', startSec: 2, endSec: 8, purpose: 'p' },
     { name: 'proof', startSec: 8, endSec: 16, purpose: 'q' },
   ],
-  shots: [{ index: 0, kind: 'a-roll', startSec: 0, endSec: 8, action: 'a', reuse: 'reshoot-required' }],
+  shots: [
+    { index: 0, kind: 'a-roll', startSec: 0, endSec: 8, action: 'a', reuse: 'reshoot-required' },
+  ],
   voiceover: [],
   audio: { source: 'original', rights: 'unknown' },
   captionFormula: { template: 't', example: 'e', hashtagStrategy: 'h' },
@@ -158,7 +160,9 @@ export function describeStoreContract(fixture: StoreFixture): void {
         const store = await open();
         try {
           const { referenceId } = await store.references.save(BRAND_A, { url: URL });
-          await expect(store.references.saveAnalysis(BRAND_B, referenceId, ANALYSIS)).rejects.toThrow();
+          await expect(
+            store.references.saveAnalysis(BRAND_B, referenceId, ANALYSIS),
+          ).rejects.toThrow();
         } finally {
           await store.close();
         }
@@ -190,7 +194,11 @@ export function describeStoreContract(fixture: StoreFixture): void {
           expect(await store.recipes.getRecipe(BRAND_B, recipeId)).toBeNull();
 
           await expect(
-            store.recipes.saveDraft({ brandId: BRAND_A, referenceId, recipe: { ...DRAFT, beats: [] } }),
+            store.recipes.saveDraft({
+              brandId: BRAND_A,
+              referenceId,
+              recipe: { ...DRAFT, beats: [] },
+            }),
           ).rejects.toThrow();
         } finally {
           await store.close();

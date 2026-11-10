@@ -385,11 +385,7 @@ function clarifyFor(question: string): Clarification {
     return {
       conclusion: '这是一次文档/多点评审，需要先拿到最终版和要复核的点。',
       ask: '把最终版文档链接（或正文）贴出来，并列出要复核的 2–3 项；我按 Playbook / 结论卡 / 指标卡对应检查表逐项过。',
-      steps: [
-        '贴出最终版文档链接或正文。',
-        '列出 2–3 个要复核的点。',
-        '我按对应检查表逐项过。',
-      ],
+      steps: ['贴出最终版文档链接或正文。', '列出 2–3 个要复核的点。', '我按对应检查表逐项过。'],
       framework: true,
     };
   }
@@ -634,9 +630,7 @@ export function composeAnswer(
   const boundaries =
     clarify?.framework === false ? [] : (direct?.boundaries ?? node.boundaries.slice(0, 3));
   if (boundaries.length > 0) {
-    sections.push(
-      `【边界】\n${boundaries.map((boundary) => `- ${boundary}`).join('\n')}`,
-    );
+    sections.push(`【边界】\n${boundaries.map((boundary) => `- ${boundary}`).join('\n')}`);
   }
 
   if (sourceRefs.length > 0) {
@@ -740,7 +734,11 @@ function refusalFor(question: string): string | undefined {
   if (/(密钥|api\s*key|token|密码|凭据|\.env)/i.test(question)) {
     return '不会读取、转述或发送密钥/凭据，也不会用管理员 token 执行删除或权限变更。';
   }
-  if (/(删掉|删除|删库|清空).{0,12}(生产|数据库|群|库)|(生产|数据库).{0,8}(删掉|删除|清空)/.test(question)) {
+  if (
+    /(删掉|删除|删库|清空).{0,12}(生产|数据库|群|库)|(生产|数据库).{0,8}(删掉|删除|清空)/.test(
+      question,
+    )
+  ) {
     return '不会执行或指导删除生产数据/群组；需要走审批、备份和回滚。';
   }
   if (/(手机号|身份证|个人信息|聊天记录|隐私|用户数据)/.test(question)) {
@@ -848,9 +846,7 @@ function extractSnippets(
   // one is available, quote only those: a loosely related document must not
   // crowd out the exact contract.
   const hasPreferred = candidates.some((candidate) => candidate.preferred);
-  const pool = hasPreferred
-    ? candidates.filter((candidate) => candidate.preferred)
-    : candidates;
+  const pool = hasPreferred ? candidates.filter((candidate) => candidate.preferred) : candidates;
   pool.sort((a, b) => b.score - a.score);
 
   const out: Snippet[] = [];
@@ -951,11 +947,7 @@ function cleanMarkdown(text: string): string {
  * the sources whose path/heading/why overlaps the question, with the curated
  * order as the fallback when nothing matches.
  */
-function filterNodeSources(
-  nodeSources: SourceRef[],
-  question: string,
-  limit: number,
-): SourceRef[] {
+function filterNodeSources(nodeSources: SourceRef[], question: string, limit: number): SourceRef[] {
   const terms = new Set(tokenize(question));
   const scored = nodeSources.map((source, index) => {
     const text = `${source.path} ${source.heading ?? ''} ${source.why ?? ''}`;
@@ -963,10 +955,7 @@ function filterNodeSources(
     return { source, index, hits };
   });
   const positive = scored.filter((item) => item.hits > 0);
-  const pool =
-    positive.length >= 2
-      ? positive
-      : scored.slice(0, Math.max(2, positive.length));
+  const pool = positive.length >= 2 ? positive : scored.slice(0, Math.max(2, positive.length));
   return pool
     .sort((a, b) => b.hits - a.hits || a.index - b.index)
     .slice(0, limit)

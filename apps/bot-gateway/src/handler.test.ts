@@ -367,6 +367,39 @@ describe('MainAgentHandler', () => {
     ]);
   });
 
+  it('shares history across top-level group messages in the same chat', async () => {
+    const { agent, handler } = setup();
+    const base = {
+      chatId: 'oc_2',
+      chatType: 'group' as const,
+      senderOpenId: 'ou_sender',
+      addressedToBot: true,
+      mentionedOpenIds: ['ou_main'],
+      mentionedNames: ['Main'],
+    };
+
+    handler.handleMessage({
+      ...base,
+      eventId: 'ev_c1',
+      messageId: 'om_c1',
+      text: '区域相关性 0.9 还能做归因吗',
+    });
+    await handler.drain();
+    handler.handleMessage({
+      ...base,
+      eventId: 'ev_c2',
+      messageId: 'om_c2',
+      text: '那 0.6 呢？',
+    });
+    await handler.drain();
+
+    expect(agent.histories[0]).toEqual([]);
+    expect(agent.histories[1]).toEqual([
+      { role: 'user', text: '区域相关性 0.9 还能做归因吗' },
+      { role: 'assistant', text: '测试答案' },
+    ]);
+  });
+
   it('routes a tiktok url to the recipe stub and never calls the consult agent', async () => {
     const agent = new FakeAgent(() => answer());
     const client = new FakeClient();

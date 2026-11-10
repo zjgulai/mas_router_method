@@ -8,7 +8,16 @@ const analysis: ReferenceAnalysis = {
     { name: 'problem', startSec: 2, endSec: 8, purpose: 'Agitate' },
     { name: 'mechanism', startSec: 8, endSec: 16, purpose: 'Show' },
   ],
-  shots: [{ index: 0, kind: 'a-roll', startSec: 0, endSec: 8, action: 'Mirror', reuse: 'reshoot-required' }],
+  shots: [
+    {
+      index: 0,
+      kind: 'a-roll',
+      startSec: 0,
+      endSec: 8,
+      action: 'Mirror',
+      reuse: 'reshoot-required',
+    },
+  ],
   voiceover: [{ startSec: 2, endSec: 8, line: 'It used to take an hour.' }],
   audio: { source: 'voiceover', rights: 'clearable' },
   captionFormula: { template: 'a', example: 'b', hashtagStrategy: 'c' },
@@ -18,7 +27,11 @@ const analysis: ReferenceAnalysis = {
 
 describe('spike gates', () => {
   it('passes when timings, speech, and rights match', () => {
-    const result = evaluateSpike(analysis, { hookEndSec: 2, beatStartSecs: [2, 8], hasVoiceover: true, audioRights: 'clearable' }, 5_000);
+    const result = evaluateSpike(
+      analysis,
+      { hookEndSec: 2, beatStartSecs: [2, 8], hasVoiceover: true, audioRights: 'clearable' },
+      5_000,
+    );
     expect(result.passed).toBe(true);
   });
 
@@ -37,7 +50,9 @@ describe('spike gates', () => {
   it('fails when a silent reference gets invented voiceover', () => {
     const result = evaluateSpike(analysis, { hasVoiceover: false }, 5_000);
     expect(result.passed).toBe(false);
-    expect(result.gates.find((g) => g.name === 'voiceover-presence')?.observed).toContain('1 segment');
+    expect(result.gates.find((g) => g.name === 'voiceover-presence')?.observed).toContain(
+      '1 segment',
+    );
   });
 
   it('fails when rights disagree with ground truth', () => {

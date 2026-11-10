@@ -48,7 +48,10 @@ describe('formatRecipeResult', () => {
   it('emits an interactive card first with hook and recipeId, then the full text', () => {
     const [card, full] = formatRecipeResult(recipe(), { costUsd: 0.42 });
     expect(card?.msgType).toBe('interactive');
-    const cardContent = JSON.parse(card!.content) as { header: { title: { content: string } }; elements: unknown[] };
+    const cardContent = JSON.parse(card!.content) as {
+      header: { title: { content: string } };
+      elements: unknown[];
+    };
     expect(cardContent.header.title.content).toContain('Sunday Press');
     expect(JSON.stringify(cardContent)).toContain('Mornings shouldn’t take an hour');
     expect(JSON.stringify(cardContent)).toContain('rec_42');

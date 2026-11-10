@@ -24,8 +24,12 @@
  */
 import { readFile } from 'node:fs/promises';
 
-const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m',
-      DIM = '\x1b[2m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
+const RED = '\x1b[31m',
+  GREEN = '\x1b[32m',
+  YELLOW = '\x1b[33m',
+  DIM = '\x1b[2m',
+  BOLD = '\x1b[1m',
+  RESET = '\x1b[0m';
 
 /** Which field is each table's own id. A new table needs a row here or it is invisible. */
 export const ID_FIELD = {
@@ -71,7 +75,9 @@ export function check(tables) {
   for (const [name, rows] of Object.entries(tables)) {
     const idField = ID_FIELD[name];
     if (idField === undefined) {
-      problems.push(`table "${name}" is not in ID_FIELD — its ids are unchecked and every reference to it will read as dangling`);
+      problems.push(
+        `table "${name}" is not in ID_FIELD — its ids are unchecked and every reference to it will read as dangling`,
+      );
       continue;
     }
     for (const row of rows) {
@@ -89,7 +95,9 @@ export function check(tables) {
         if (field === idField) continue;
         for (const match of text(value).matchAll(REF)) {
           if (!allIds.has(match[0])) {
-            problems.push(`${name} / ${own} / ${field}: refers to ${match[0]}, which no table defines`);
+            problems.push(
+              `${name} / ${own} / ${field}: refers to ${match[0]}, which no table defines`,
+            );
           }
         }
       }
@@ -103,7 +111,9 @@ export function check(tables) {
     for (const row of tables[name] ?? []) {
       const value = text(row[field]);
       if (!value.startsWith(prefix)) {
-        problems.push(`${name} / ${row[ID_FIELD[name]] ?? '?'}: 「${field}」 is "${value || '(empty)'}", not a ${prefix} reference`);
+        problems.push(
+          `${name} / ${row[ID_FIELD[name]] ?? '?'}: 「${field}」 is "${value || '(empty)'}", not a ${prefix} reference`,
+        );
       }
     }
   }
@@ -134,8 +144,8 @@ export function check(tables) {
   return { problems, allIds, unbuilt, unverified };
 }
 
-const invokedDirectly = process.argv[1] !== undefined
-  && import.meta.url === new URL(`file://${process.argv[1]}`).href;
+const invokedDirectly =
+  process.argv[1] !== undefined && import.meta.url === new URL(`file://${process.argv[1]}`).href;
 
 if (invokedDirectly) {
   const file = process.argv[2];
@@ -150,7 +160,9 @@ if (invokedDirectly) {
       console.log(JSON.stringify({ problems, unbuilt, unverified, idCount: allIds.size }, null, 2));
       process.exitCode = problems.length > 0 ? 1 : 0;
     } else {
-      console.log(`\n${BOLD}交叉引用${RESET} ${DIM}${Object.keys(tables).length} 张表，${allIds.size} 个编号${RESET}\n`);
+      console.log(
+        `\n${BOLD}交叉引用${RESET} ${DIM}${Object.keys(tables).length} 张表，${allIds.size} 个编号${RESET}\n`,
+      );
       if (problems.length === 0) {
         console.log(`${GREEN}ok${RESET} — every reference resolves, every row points up`);
       } else {
@@ -158,10 +170,14 @@ if (invokedDirectly) {
         for (const p of problems) console.log(`  ${RED}•${RESET} ${p}`);
       }
       console.log();
-      console.log(`${YELLOW}${unbuilt.length}${RESET} 份设计还没有开发承接${DIM}`
-        + `${unbuilt.length > 0 ? `: ${unbuilt.join(', ')}` : ''}${RESET}`);
-      console.log(`${YELLOW}${unverified.length}${RESET} 个开发还没有验收${DIM}`
-        + `${unverified.length > 0 ? `: ${unverified.join(', ')}` : ''}${RESET}`);
+      console.log(
+        `${YELLOW}${unbuilt.length}${RESET} 份设计还没有开发承接${DIM}` +
+          `${unbuilt.length > 0 ? `: ${unbuilt.join(', ')}` : ''}${RESET}`,
+      );
+      console.log(
+        `${YELLOW}${unverified.length}${RESET} 个开发还没有验收${DIM}` +
+          `${unverified.length > 0 ? `: ${unverified.join(', ')}` : ''}${RESET}`,
+      );
       console.log();
       process.exitCode = problems.length > 0 ? 1 : 0;
     }

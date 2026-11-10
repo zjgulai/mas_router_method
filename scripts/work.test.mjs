@@ -48,9 +48,15 @@ test('live schema: every state named in transitions is a declared state', async 
   const schema = await loadSchema();
   for (const [kind, def] of Object.entries(schema.entities)) {
     for (const [from, targets] of Object.entries(def.transitions ?? {})) {
-      assert.ok(def.states.includes(from), `${kind}: transition source "${from}" is not a declared state`);
+      assert.ok(
+        def.states.includes(from),
+        `${kind}: transition source "${from}" is not a declared state`,
+      );
       for (const to of targets) {
-        assert.ok(def.states.includes(to), `${kind}: "${from}" -> "${to}" targets an undeclared state`);
+        assert.ok(
+          def.states.includes(to),
+          `${kind}: "${from}" -> "${to}" targets an undeclared state`,
+        );
       }
     }
   }
@@ -101,8 +107,12 @@ test('check counts append-only records — the bug that hid three evidence files
   const { resolve, dirname } = await import('node:path');
   const { fileURLToPath } = await import('node:url');
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-  const out = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check'])
-    .then((r) => r.stdout).catch((e) => e.stdout);
+  const out = await promisify(execFile)(process.execPath, [
+    resolve(root, 'scripts/work.mjs'),
+    'check',
+  ])
+    .then((r) => r.stdout)
+    .catch((e) => e.stdout);
 
   const m = /ok.*?(\d+) records?/.exec(out);
   assert.ok(m !== null, `check did not report a record count:\n${out}`);
@@ -115,19 +125,34 @@ test('check counts append-only records — the bug that hid three evidence files
   for (const def of Object.values(schema.entities)) {
     const states = Object.keys(def.transitions ?? {});
     if (states.length === 0) {
-      try { onDisk += (await readdir(join(WORK, def.dir))).filter((f) => f.endsWith('.md') && f.includes('-')).length; } catch {}
+      try {
+        onDisk += (await readdir(join(WORK, def.dir))).filter(
+          (f) => f.endsWith('.md') && f.includes('-'),
+        ).length;
+      } catch {}
     } else {
       for (const s of def.states) {
-        try { onDisk += (await readdir(join(WORK, def.dir, s))).filter((f) => f.endsWith('.md') && f.includes('-')).length; } catch {}
+        try {
+          onDisk += (await readdir(join(WORK, def.dir, s))).filter(
+            (f) => f.endsWith('.md') && f.includes('-'),
+          ).length;
+        } catch {}
       }
     }
   }
   for (const name of schema.appendOnly) {
-    try { onDisk += (await readdir(join(WORK, name))).filter((f) => f.endsWith('.md') && f.includes('-')).length; } catch {}
+    try {
+      onDisk += (await readdir(join(WORK, name))).filter(
+        (f) => f.endsWith('.md') && f.includes('-'),
+      ).length;
+    } catch {}
   }
 
-  assert.equal(counted, onDisk,
-    `check counted ${counted} records but ${onDisk} exist on disk — a wrong count is worse than none`);
+  assert.equal(
+    counted,
+    onDisk,
+    `check counted ${counted} records but ${onDisk} exist on disk — a wrong count is worse than none`,
+  );
 });
 
 test('facts: every quoted number matches disk', async () => {
@@ -136,7 +161,10 @@ test('facts: every quoted number matches disk', async () => {
   const { resolve, dirname } = await import('node:path');
   const { fileURLToPath } = await import('node:url');
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-  const out = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/facts.mjs'), '--check'])
+  const out = await promisify(execFile)(process.execPath, [
+    resolve(root, 'scripts/facts.mjs'),
+    '--check',
+  ])
     .then((r) => r.stdout)
     .catch((e) => e.stdout);
   assert.match(out, /ok/, `stale numbers:\n${out}`);
@@ -157,7 +185,10 @@ test('facts: --check fails when a document quotes a wrong number', async () => {
     let code = 0;
     let stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/facts.mjs'), '--check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/facts.mjs'),
+        '--check',
+      ]);
       stdout = r.stdout;
     } catch (e) {
       code = e.code ?? 1;
@@ -211,9 +242,17 @@ test('design check: a record whose block is filled parses as filled', async () =
   const secs = sections(text);
   const flow = secs.find((s) => s.head.includes('流程形状'));
   assert.ok(flow !== undefined);
-  assert.match(flow.body, /固定两步/, 'a filled block must not be truncated at its first blank line');
+  assert.match(
+    flow.body,
+    /固定两步/,
+    'a filled block must not be truncated at its first blank line',
+  );
   const perms = secs.find((s) => s.head.includes('动作权限'));
-  assert.match(perms.body, /跳过[：:]\s*\S/, 'an explicit skip carries a reason and is not "empty"');
+  assert.match(
+    perms.body,
+    /跳过[：:]\s*\S/,
+    'an explicit skip carries a reason and is not "empty"',
+  );
 });
 
 test('design check: a confirmed record with no re-open condition fails', async () => {
@@ -226,20 +265,43 @@ test('design check: a confirmed record with no re-open condition fails', async (
   const probe = join(WORK, 'designs/confirmed/D-998-no-reopen.md');
 
   const body = [
-    '---', 'id: D-998', 'title: probe', 'status: confirmed', '---',
-    '## 一、流程形状', '', '固定。', '',
-    '## 二、拒绝清单', '', '- 输入 X → 返回 Y', '',
-    '## 三、动作权限', '', '（跳过：只读）', '',
-    '## 四、交接契约', '', '（跳过：单一调用）', '',
+    '---',
+    'id: D-998',
+    'title: probe',
+    'status: confirmed',
+    '---',
+    '## 一、流程形状',
+    '',
+    '固定。',
+    '',
+    '## 二、拒绝清单',
+    '',
+    '- 输入 X → 返回 Y',
+    '',
+    '## 三、动作权限',
+    '',
+    '（跳过：只读）',
+    '',
+    '## 四、交接契约',
+    '',
+    '（跳过：单一调用）',
+    '',
   ].join('\n');
 
   try {
     await writeAndConfirm(probe, body);
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/work.mjs'),
+        'check',
+      ]);
       stdout = r.stdout;
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
     assert.equal(code, 1, 'a confirmed design with no re-open condition must fail');
     assert.match(stdout, /no condition that would make this design wrong/);
   } finally {
@@ -254,9 +316,14 @@ test('--only design: scope is real, and 0 designs is a pass not a skip', async (
   const { fileURLToPath } = await import('node:url');
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-  const out = await promisify(execFile)(process.execPath,
-    [resolve(root, 'scripts/work.mjs'), 'check', '--only', 'design'])
-    .then((r) => r.stdout).catch((e) => e.stdout);
+  const out = await promisify(execFile)(process.execPath, [
+    resolve(root, 'scripts/work.mjs'),
+    'check',
+    '--only',
+    'design',
+  ])
+    .then((r) => r.stdout)
+    .catch((e) => e.stdout);
 
   // It must actually have run, and said what it covered. A scoped check that
   // silently reports "ok" for scope it never applied is the failure mode CI
@@ -277,19 +344,45 @@ test('--only design: a value masquerading as a refusal fails in scope too', asyn
   const probe = join(WORK, 'designs/drafting/D-996-probe.md');
 
   const body = [
-    '---', 'id: D-996', 'title: probe', 'status: drafting', '---',
-    '## 一、流程形状', '', '固定两步。', '',
-    '## 二、拒绝清单', '', '- 要诚实', '- 不要有害', '',
-    '## 三、动作权限', '', '（跳过：只读，没有动作）', '',
-    '## 四、交接契约', '', '（跳过：单一调用）', '',
+    '---',
+    'id: D-996',
+    'title: probe',
+    'status: drafting',
+    '---',
+    '## 一、流程形状',
+    '',
+    '固定两步。',
+    '',
+    '## 二、拒绝清单',
+    '',
+    '- 要诚实',
+    '- 不要有害',
+    '',
+    '## 三、动作权限',
+    '',
+    '（跳过：只读，没有动作）',
+    '',
+    '## 四、交接契约',
+    '',
+    '（跳过：单一调用）',
+    '',
   ].join('\n');
 
   try {
     await writeAndConfirm(probe, body);
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check', '--only', 'design']);
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+      await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/work.mjs'),
+        'check',
+        '--only',
+        'design',
+      ]);
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
     assert.equal(code, 1, 'a refusal list with no concrete input must fail the scoped check');
     assert.match(stdout, /no concrete input/);
   } finally {
@@ -311,13 +404,23 @@ test('check: an artifact with no delete_when fails — the rule that had gone de
   // entities have. The rule silently stopped running. Nothing noticed because no
   // artifact had ever been filed. This test is what makes that stay fixed.
   await mkdir(join(WORK, 'artifacts/active'), { recursive: true });
-  await writeAndConfirm(probe, ['---', 'id: ART-099', 'title: probe', 'owner: probe', '---', 'probe'].join('\n'));
+  await writeAndConfirm(
+    probe,
+    ['---', 'id: ART-099', 'title: probe', 'owner: probe', '---', 'probe'].join('\n'),
+  );
   try {
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/work.mjs'),
+        'check',
+      ]);
       stdout = r.stdout;
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
     assert.equal(code, 1, 'an artifact with no delete_when must fail; it lives forever otherwise');
     assert.match(stdout, /ART-099 artifact has no delete_when/);
   } finally {
@@ -333,14 +436,33 @@ test('live schema: the stage order is one list and every view of it agrees', asy
   assert.ok(order.length >= 7, `expected the seven stages, got ${order.length}`);
   // Four structures keyed by stage. If one gains a stage and another does not,
   // that stage silently has no label, no skill, or no register.
-  assert.deepEqual(sorted(Object.keys(s.stageLabels)), sorted(order), 'stage_labels disagrees with stage_order');
-  assert.deepEqual(sorted(Object.keys(s.stageSkills)), sorted(order), 'stage_skills disagrees with stage_order');
-  assert.deepEqual(sorted(Object.keys(s.stageOneline)), sorted(order), 'stage_oneline disagrees with stage_order');
-  assert.deepEqual(sorted(Object.keys(s.stageEntities)), sorted(order), 'stage_entities disagrees with stage_order');
+  assert.deepEqual(
+    sorted(Object.keys(s.stageLabels)),
+    sorted(order),
+    'stage_labels disagrees with stage_order',
+  );
+  assert.deepEqual(
+    sorted(Object.keys(s.stageSkills)),
+    sorted(order),
+    'stage_skills disagrees with stage_order',
+  );
+  assert.deepEqual(
+    sorted(Object.keys(s.stageOneline)),
+    sorted(order),
+    'stage_oneline disagrees with stage_order',
+  );
+  assert.deepEqual(
+    sorted(Object.keys(s.stageEntities)),
+    sorted(order),
+    'stage_entities disagrees with stage_order',
+  );
 
   // Index is derived from position and nowhere else. That is the whole point:
   // a written-down number is what went stale.
-  assert.deepEqual(s.stages.map((x) => x.index), order.map((_, i) => i + 1));
+  assert.deepEqual(
+    s.stages.map((x) => x.index),
+    order.map((_, i) => i + 1),
+  );
 });
 
 test('live schema: every stage names a skill that exists on disk', async () => {
@@ -348,7 +470,10 @@ test('live schema: every stage names a skill that exists on disk', async () => {
   const { readdir } = await import('node:fs/promises');
   const dirs = await readdir(join(WORK, '..', '.claude/skills'));
   for (const st of s.stages) {
-    assert.ok(dirs.includes(st.skill), `stage "${st.id}" names ${st.skill}, which is not a skill directory`);
+    assert.ok(
+      dirs.includes(st.skill),
+      `stage "${st.id}" names ${st.skill}, which is not a skill directory`,
+    );
     assert.notEqual(st.label, '', `stage "${st.id}" has no label`);
     assert.notEqual(st.oneline, '', `stage "${st.id}" has no one-line description`);
   }
@@ -368,11 +493,18 @@ test('facts: --check fails when a claim points at a file that is not there', asy
 
   await rename(target, hidden);
   try {
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/facts.mjs'), '--check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/facts.mjs'),
+        '--check',
+      ]);
       stdout = r.stdout;
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
     assert.equal(code, 1, 'a claim whose file vanished must fail, not be skipped');
     assert.match(stdout, /cannot be read/);
   } finally {
@@ -397,16 +529,22 @@ test('design rules follow the schema: a record in a newly added state is still c
   const original = await readFile(schemaPath, 'utf8');
   const NEW_STATE = 'rejected';
   const patched = original
-    .replace('    states: [drafting, confirmed, superseded]',
-             `    states: [drafting, confirmed, superseded, ${NEW_STATE}]`)
-    .replace('      drafting: [confirmed, superseded]',
-             `      drafting: [confirmed, superseded, ${NEW_STATE}]`)
-    .replace('      confirmed: [superseded]',
-             `      confirmed: [superseded, ${NEW_STATE}]`)
-    .replace('      superseded: []',
-             `      superseded: []\n      ${NEW_STATE}: []`);
+    .replace(
+      '    states: [drafting, confirmed, superseded]',
+      `    states: [drafting, confirmed, superseded, ${NEW_STATE}]`,
+    )
+    .replace(
+      '      drafting: [confirmed, superseded]',
+      `      drafting: [confirmed, superseded, ${NEW_STATE}]`,
+    )
+    .replace('      confirmed: [superseded]', `      confirmed: [superseded, ${NEW_STATE}]`)
+    .replace('      superseded: []', `      superseded: []\n      ${NEW_STATE}: []`);
 
-  assert.notEqual(patched, original, 'the schema no longer looks the way this probe expects — update the probe');
+  assert.notEqual(
+    patched,
+    original,
+    'the schema no longer looks the way this probe expects — update the probe',
+  );
 
   const probeDir = join(WORK, 'designs', NEW_STATE);
   const probe = join(probeDir, 'D-997-probe.md');
@@ -414,17 +552,30 @@ test('design rules follow the schema: a record in a newly added state is still c
   try {
     await writeAndConfirm(schemaPath, patched);
     // 四块全缺：任何一条设计规则跑到了，这份记录都不可能通过。
-    await writeAndConfirm(probe, ['---', 'id: D-997', 'title: no blocks at all', '---', 'nothing here'].join('\n'));
+    await writeAndConfirm(
+      probe,
+      ['---', 'id: D-997', 'title: no blocks at all', '---', 'nothing here'].join('\n'),
+    );
 
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/work.mjs'),
+        'check',
+      ]);
       stdout = r.stdout;
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
 
-    assert.equal(code, 1,
-      `a design record with no blocks passed the check because its state was not in a `
-      + `hardcoded list — the design rules must read work/schema.yml.\n${stdout}`);
+    assert.equal(
+      code,
+      1,
+      `a design record with no blocks passed the check because its state was not in a ` +
+        `hardcoded list — the design rules must read work/schema.yml.\n${stdout}`,
+    );
   } finally {
     await unlink(probe).catch(() => {});
     await rmdir(probeDir).catch(() => {});
@@ -446,27 +597,63 @@ test('design: a drafting record may be missing blocks, but not have an empty one
   const emptyOne = join(dir, 'D-994-empty-block.md');
 
   const run = async () => {
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/work.mjs'),
+        'check',
+      ]);
       stdout = r.stdout;
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
     return { code, stdout };
   };
 
   await mkdir(dir, { recursive: true });
   try {
     // 只写了一块 —— 应当通过
-    await writeAndConfirm(partial, ['---', 'id: D-995', 'title: half written', '---',
-      '## 一、流程形状', '', '固定两步。', ''].join('\n'));
+    await writeAndConfirm(
+      partial,
+      [
+        '---',
+        'id: D-995',
+        'title: half written',
+        '---',
+        '## 一、流程形状',
+        '',
+        '固定两步。',
+        '',
+      ].join('\n'),
+    );
     const a = await run();
     assert.equal(a.code, 0, `a half-written drafting record must pass:\n${a.stdout}`);
 
     // 写出了一个空块 —— 应当失败
-    await writeAndConfirm(emptyOne, ['---', 'id: D-994', 'title: empty block', '---',
-      '## 一、流程形状', '', '固定两步。', '', '## 二、拒绝清单', '', ''].join('\n'));
+    await writeAndConfirm(
+      emptyOne,
+      [
+        '---',
+        'id: D-994',
+        'title: empty block',
+        '---',
+        '## 一、流程形状',
+        '',
+        '固定两步。',
+        '',
+        '## 二、拒绝清单',
+        '',
+        '',
+      ].join('\n'),
+    );
     const b = await run();
-    assert.equal(b.code, 1, 'a block that was started and left empty is not the same as one not yet asked');
+    assert.equal(
+      b.code,
+      1,
+      'a block that was started and left empty is not the same as one not yet asked',
+    );
     assert.match(b.stdout, /D-994.*拒绝清单.*empty/);
   } finally {
     await unlink(partial).catch(() => {});
@@ -483,20 +670,30 @@ test('live schema: a requirement can say "settled, verification not run"', async
   const schema = await loadSchema();
   const r = schema.entities.requirement;
 
-  assert.ok(r.states.includes('awaiting-verification'),
-    'the need stage has an exit test; the register must be able to say it has not been run');
+  assert.ok(
+    r.states.includes('awaiting-verification'),
+    'the need stage has an exit test; the register must be able to say it has not been run',
+  );
 
   // 与票据的形状一致：能进去、能确认、也能打回重写。
-  assert.ok(r.transitions.drafting.includes('awaiting-verification'),
-    'a drafted requirement goes to awaiting-verification');
-  assert.ok(r.transitions['awaiting-verification'].includes('confirmed'),
-    'a requirement whose exit test passed becomes confirmed');
-  assert.ok(r.transitions['awaiting-verification'].includes('drafting'),
-    'a requirement whose exit test failed goes back to drafting, as a ticket does to in-progress');
+  assert.ok(
+    r.transitions.drafting.includes('awaiting-verification'),
+    'a drafted requirement goes to awaiting-verification',
+  );
+  assert.ok(
+    r.transitions['awaiting-verification'].includes('confirmed'),
+    'a requirement whose exit test passed becomes confirmed',
+  );
+  assert.ok(
+    r.transitions['awaiting-verification'].includes('drafting'),
+    'a requirement whose exit test failed goes back to drafting, as a ticket does to in-progress',
+  );
 
   // 用词与票据一致，不是另发明一个词。
-  assert.ok(schema.entities.ticket.states.includes('awaiting-verification'),
-    'the two registers should use the same word for the same situation');
+  assert.ok(
+    schema.entities.ticket.states.includes('awaiting-verification'),
+    'the two registers should use the same word for the same situation',
+  );
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -518,15 +715,32 @@ async function withDesignProbe(name, blocks, fn) {
   const { unlink } = await import('node:fs/promises');
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const probe = join(WORK, 'designs/confirmed', name);
-  const body = ['---', `id: ${name.slice(0, 5)}`, 'title: probe', 'status: confirmed', '---', ...blocks,
-    '## 七、什么情况说明这个设计错了', '', '拿不到真实输入时。', ''].join('\n');
+  const body = [
+    '---',
+    `id: ${name.slice(0, 5)}`,
+    'title: probe',
+    'status: confirmed',
+    '---',
+    ...blocks,
+    '## 七、什么情况说明这个设计错了',
+    '',
+    '拿不到真实输入时。',
+    '',
+  ].join('\n');
   await writeAndConfirm(probe, body);
   try {
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/work.mjs'),
+        'check',
+      ]);
       stdout = r.stdout;
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
     await fn({ code, stdout });
   } finally {
     await unlink(probe).catch(() => {});
@@ -534,92 +748,206 @@ async function withDesignProbe(name, blocks, fn) {
 }
 
 const SIX_BLOCKS_OK = [
-  '## 一、流程形状', '', '固定。', '',
-  '## 二、拒绝清单', '', '- 某个具体输入 → 必须改做什么', '',
+  '## 一、流程形状',
+  '',
+  '固定。',
+  '',
+  '## 二、拒绝清单',
+  '',
+  '- 某个具体输入 → 必须改做什么',
+  '',
 ];
 
 test('rules: a well-formed answer table passes', async () => {
-  await withDesignProbe('D-980-ok.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家问关税 | 答买家承担 | 不升级 | 政策 8 |' + '\n' +
-      '| 买家问能不能治湿疹 | 不答，转人 | 硬升级 | 政策 2 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
-    '## 五、交接契约', '', '（跳过：本轮不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 0, `a good record must pass:\n${stdout}`);
-  });
+  await withDesignProbe(
+    'D-980-ok.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER +
+        '| 买家问关税 | 答买家承担 | 不升级 | 政策 8 |' +
+        '\n' +
+        '| 买家问能不能治湿疹 | 不答，转人 | 硬升级 | 政策 2 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读政策 | 可撤销 | 只读 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：本轮不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 0, `a good record must pass:\n${stdout}`);
+    },
+  );
 });
 
 test('rules: a row with no concrete input fails', async () => {
-  await withDesignProbe('D-979-noinput.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '|  | 按情况处理 | 不升级 | 无 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 1, 'a row naming no input cannot become a check');
-    assert.match(stdout, /应答规则 row \d+ has no concrete input/);
-  });
+  await withDesignProbe(
+    'D-979-noinput.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '|  | 按情况处理 | 不升级 | 无 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读政策 | 可撤销 | 只读 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 1, 'a row naming no input cannot become a check');
+      assert.match(stdout, /应答规则 row \d+ has no concrete input/);
+    },
+  );
 });
 
 test('rules: an invalid escalation tier fails', async () => {
   // 档次只有三个值。第四种写法（「看情况」）会让实现者自己发明语义。
-  await withDesignProbe('D-978-badtier.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家问关税 | 看情况答 | 视情况而定 | 政策 8 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 1, 'the escalation tier has exactly three legal values');
-    assert.match(stdout, /升级档次/);
-  });
+  await withDesignProbe(
+    'D-978-badtier.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '| 买家问关税 | 看情况答 | 视情况而定 | 政策 8 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读政策 | 可撤销 | 只读 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 1, 'the escalation tier has exactly three legal values');
+      assert.match(stdout, /升级档次/);
+    },
+  );
 });
 
 test('rules: an answer of "handle it appropriately" fails', async () => {
   // 这就是「价值观画上了表格」——看起来是一行，测不了。
-  await withDesignProbe('D-977-vague.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家问关税 | 妥善处理 | 不升级 | 政策 8 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 1);
-    assert.match(stdout, /该怎么答/);
-  });
+  await withDesignProbe(
+    'D-977-vague.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '| 买家问关税 | 妥善处理 | 不升级 | 政策 8 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读政策 | 可撤销 | 只读 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 1);
+      assert.match(stdout, /该怎么答/);
+    },
+  );
 });
 
 test('rules: the table must carry all four columns', async () => {
-  await withDesignProbe('D-976-cols.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', '| 具体输入 | 该怎么答 |', '|---|---|', '| 买家问关税 | 答买家承担 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 1, '升级档次 and 依据 are not optional');
-    assert.match(stdout, /应答规则.*missing column/);
-  });
+  await withDesignProbe(
+    'D-976-cols.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      '| 具体输入 | 该怎么答 |',
+      '|---|---|',
+      '| 买家问关税 | 答买家承担 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读政策 | 可撤销 | 只读 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 1, '升级档次 and 依据 are not optional');
+      assert.match(stdout, /应答规则.*missing column/);
+    },
+  );
 });
 
 test('rules: a skipped answer table with a reason passes', async () => {
   // 只有一条路径的产品可以没有决策表，但必须写清为什么。
-  await withDesignProbe('D-975-skip.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', '（跳过：整个产品只有一条路径，见流程形状）', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|', '| 读政策 | 可撤销 | 只读 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 0, `an explicit skip is not an omission:\n${stdout}`);
-  });
+  await withDesignProbe(
+    'D-975-skip.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      '（跳过：整个产品只有一条路径，见流程形状）',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读政策 | 可撤销 | 只读 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 0, `an explicit skip is not an omission:\n${stdout}`);
+    },
+  );
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -633,65 +961,141 @@ test('rules: a skipped answer table with a reason passes', async () => {
 test('cross-block: a read the answer table requires must exist in the permission table', async () => {
   // 「陈述适用月龄」需要一个读商品事实的动作。权限表里没有它，就是硬矛盾——
   // 实测里正是这一处，靠人工发现的。
-  await withDesignProbe('D-974-noread.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家问宝宝多大能用 | 查商品适用月龄后陈述 | 不升级 | 政策 3 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
-    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 1, 'a row that reads something the permission table does not grant is a cross-block contradiction');
-    assert.match(stdout, /应答规则 row 1/);
-    assert.match(stdout, /商品适用月龄|适用月龄/);
-  });
+  await withDesignProbe(
+    'D-974-noread.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '| 买家问宝宝多大能用 | 查商品适用月龄后陈述 | 不升级 | 政策 3 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读买家消息 | 可撤销 | 只读 |',
+      '| 起草回复 | 可撤销 | 草稿不出门 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(
+        code,
+        1,
+        'a row that reads something the permission table does not grant is a cross-block contradiction',
+      );
+      assert.match(stdout, /应答规则 row 1/);
+      assert.match(stdout, /商品适用月龄|适用月龄/);
+    },
+  );
 });
 
 test('cross-block: the same row passes once the permission exists', async () => {
-  await withDesignProbe('D-973-withread.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家问宝宝多大能用 | 查商品适用月龄后陈述 | 不升级 | 政策 3 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
-    '| 读买家消息 | 可撤销 | 只读 |', '| 读商品信息（成分、适用月龄） | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 0, `the permission is there, so there is no contradiction:\n${stdout}`);
-  });
+  await withDesignProbe(
+    'D-973-withread.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '| 买家问宝宝多大能用 | 查商品适用月龄后陈述 | 不升级 | 政策 3 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读买家消息 | 可撤销 | 只读 |',
+      '| 读商品信息（成分、适用月龄） | 可撤销 | 只读 |',
+      '| 起草回复 | 可撤销 | 草稿不出门 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 0, `the permission is there, so there is no contradiction:\n${stdout}`);
+    },
+  );
 });
 
 test('cross-block: an action the answer claims to perform must be permitted or absent', async () => {
   // 「按政策给补偿」是一个动作。权限表里没有它 → 矛盾。
   // 正确写法是「说明符合哪条政策、由人执行」——草稿不冒充自己做了一个动作。
-  await withDesignProbe('D-972-act.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家要求补偿 | 直接发放优惠券 | 不升级 | 政策 6 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
-    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '| 发送给买家 | 不在范围 | 由人做 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 1, 'the answer performs an action nobody granted');
-    assert.match(stdout, /应答规则 row 1/);
-  });
+  await withDesignProbe(
+    'D-972-act.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '| 买家要求补偿 | 直接发放优惠券 | 不升级 | 政策 6 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读买家消息 | 可撤销 | 只读 |',
+      '| 起草回复 | 可撤销 | 草稿不出门 |',
+      '| 发送给买家 | 不在范围 | 由人做 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 1, 'the answer performs an action nobody granted');
+      assert.match(stdout, /应答规则 row 1/);
+    },
+  );
 });
 
 test('cross-block: a page with no permission table fails rather than passing vacuously', async () => {
   // 空表是最容易骗过跨块检查的形状：没有任何动作，于是没有任何矛盾。
-  await withDesignProbe('D-971-noperm.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家问关税 | 查订单后陈述 | 不升级 | 政策 8 |', '',
-    '## 四、动作权限', '', '（跳过：只读，没有动作）', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 1, 'an answer that reads something needs a permission for it; a skipped table is not a free pass');
-    assert.match(stdout, /动作权限/);
-  });
+  await withDesignProbe(
+    'D-971-noperm.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '| 买家问关税 | 查订单后陈述 | 不升级 | 政策 8 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '（跳过：只读，没有动作）',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(
+        code,
+        1,
+        'an answer that reads something needs a permission for it; a skipped table is not a free pass',
+      );
+      assert.match(stdout, /动作权限/);
+    },
+  );
 });
 
 test('cross-block: its deliberate blind spot, written down rather than discovered later', async () => {
@@ -700,39 +1104,79 @@ test('cross-block: its deliberate blind spot, written down rather than discovere
   //
   // 漏报：答案描述的是一个**过程**而不是一个动作（「按月龄告知家长」）时，
   // 认不出动词，于是不报。这个方向是有意选的——宁可漏，也不乱叫。
-  await withDesignProbe('D-969-blind.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', RULE_HEADER +
-      '| 买家问宝宝多大能用 | 按月龄告知家长 | 不升级 | 政策 3 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
-    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    // 它没有「读/查/取」这类动词，所以这条**不报**。这就是它覆盖不到的地方。
-    assert.equal(code, 0, `this is the known blind spot: a described process is not an action.\n${stdout}`);
-  });
+  await withDesignProbe(
+    'D-969-blind.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      RULE_HEADER + '| 买家问宝宝多大能用 | 按月龄告知家长 | 不升级 | 政策 3 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读买家消息 | 可撤销 | 只读 |',
+      '| 起草回复 | 可撤销 | 草稿不出门 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      // 它没有「读/查/取」这类动词，所以这条**不报**。这就是它覆盖不到的地方。
+      assert.equal(
+        code,
+        0,
+        `this is the known blind spot: a described process is not an action.\n${stdout}`,
+      );
+    },
+  );
 });
 
 test('cross-block: the check is scoped — prose outside the table is not scanned', async () => {
   // 只查表格的「该怎么答」列。块里的说明文字不参与，否则一段解释会被当成要求。
-  await withDesignProbe('D-968-prose.md', [
-    ...SIX_BLOCKS_OK,
-    '## 三、应答规则', '', '这一段说明里提到了「查订单」这件事，但它在表格外面。', '',
-    RULE_HEADER + '| 买家问关税 | 答买家承担 | 不升级 | 政策 8 |', '',
-    '## 四、动作权限', '', '| 动作 | 档 | 理由 |', '|---|---|---|',
-    '| 读买家消息 | 可撤销 | 只读 |', '| 起草回复 | 可撤销 | 草稿不出门 |', '',
-    '## 五、交接契约', '', '（跳过：不涉及工具）', '',
-    '## 六、产出形态', '', '1. 走通 → 一张草稿。', '',
-  ], async ({ code, stdout }) => {
-    assert.equal(code, 0, `prose is not a rule:\n${stdout}`);
-  });
+  await withDesignProbe(
+    'D-968-prose.md',
+    [
+      ...SIX_BLOCKS_OK,
+      '## 三、应答规则',
+      '',
+      '这一段说明里提到了「查订单」这件事，但它在表格外面。',
+      '',
+      RULE_HEADER + '| 买家问关税 | 答买家承担 | 不升级 | 政策 8 |',
+      '',
+      '## 四、动作权限',
+      '',
+      '| 动作 | 档 | 理由 |',
+      '|---|---|---|',
+      '| 读买家消息 | 可撤销 | 只读 |',
+      '| 起草回复 | 可撤销 | 草稿不出门 |',
+      '',
+      '## 五、交接契约',
+      '',
+      '（跳过：不涉及工具）',
+      '',
+      '## 六、产出形态',
+      '',
+      '1. 走通 → 一张草稿。',
+      '',
+    ],
+    async ({ code, stdout }) => {
+      assert.equal(code, 0, `prose is not a rule:\n${stdout}`);
+    },
+  );
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The mount quirk (INC-001 family): some .md files reach Node as binary garbage
 // while Python reads the real UTF-8. Before scripts/read-text.mjs existed, the
- // garbage decoded into "no frontmatter" and a done ticket with real evidence
+// garbage decoded into "no frontmatter" and a done ticket with real evidence
 // failed as "records no evidence" — 7 tests red, all reporting the wrong thing.
 // These two tests are what keep the fix honest in both directions.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -754,7 +1198,8 @@ test('mount quirk: a done ticket readable only via Python still passes check', a
   // A real done ticket with a real evidence reference (verified against
   // work/evidence/ by rule 5 below).
   const tickets = join(WORK, 'tickets/done');
-  const real = (await import('node:fs/promises')).readdir(tickets)
+  const real = (await import('node:fs/promises'))
+    .readdir(tickets)
     .then((fs2) => fs2.find((f) => f.startsWith('T-') && f.endsWith('.md')));
   assert.ok(await real, 'this test needs one real done ticket to stage the quirk against');
   const target = join(tickets, await real);
@@ -763,31 +1208,45 @@ test('mount quirk: a done ticket readable only via Python still passes check', a
   try {
     const marker = join(dir, 'marker');
     const probe = join(dir, 'probe.cjs');
-    await writeFile(probe, [
-      'const fsp = require("node:fs/promises");',
-      'const orig = fsp.readFile;',
-      'fsp.readFile = function (p, ...rest) {',
-      '  if (String(p) === process.env.PROBE_TARGET && (rest.length === 0 || rest[0] === null)) {',
-      '    require("node:fs").appendFileSync(process.env.PROBE_MARKER, "x");',
-      '    return Promise.resolve(Buffer.from([0xff, 0x00, 0x81, 0x9d, 0x00, 0x42]));',
-      '  }',
-      '  return orig.apply(this, arguments);',
-      '};',
-      '',
-    ].join('\n'));
+    await writeFile(
+      probe,
+      [
+        'const fsp = require("node:fs/promises");',
+        'const orig = fsp.readFile;',
+        'fsp.readFile = function (p, ...rest) {',
+        '  if (String(p) === process.env.PROBE_TARGET && (rest.length === 0 || rest[0] === null)) {',
+        '    require("node:fs").appendFileSync(process.env.PROBE_MARKER, "x");',
+        '    return Promise.resolve(Buffer.from([0xff, 0x00, 0x81, 0x9d, 0x00, 0x42]));',
+        '  }',
+        '  return orig.apply(this, arguments);',
+        '};',
+        '',
+      ].join('\n'),
+    );
 
-    const out = await promisify(execFile)(process.execPath,
+    const out = await promisify(execFile)(
+      process.execPath,
       ['--require', probe, resolve(root, 'scripts/work.mjs'), 'check'],
-      { env: { ...process.env, PROBE_TARGET: target, PROBE_MARKER: marker } })
-      .then((r) => r.stdout).catch((e) => e.stdout);
+      { env: { ...process.env, PROBE_TARGET: target, PROBE_MARKER: marker } },
+    )
+      .then((r) => r.stdout)
+      .catch((e) => e.stdout);
 
     // The probe must have fired — otherwise this test proves nothing.
-    assert.ok((await readFile(marker, 'utf8').catch(() => '')).length > 0,
-      'the binary-read probe never fired; the staging is broken');
-    assert.match(out, /no problems/,
-      `a ticket whose bytes arrive binary must still be checked on real content:\n${out}`);
-    assert.doesNotMatch(out, /records no evidence/,
-      `binary bytes must never masquerade as missing evidence:\n${out}`);
+    assert.ok(
+      (await readFile(marker, 'utf8').catch(() => '')).length > 0,
+      'the binary-read probe never fired; the staging is broken',
+    );
+    assert.match(
+      out,
+      /no problems/,
+      `a ticket whose bytes arrive binary must still be checked on real content:\n${out}`,
+    );
+    assert.doesNotMatch(
+      out,
+      /records no evidence/,
+      `binary bytes must never masquerade as missing evidence:\n${out}`,
+    );
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -805,15 +1264,28 @@ test('mount quirk: a done ticket that truly records no evidence still fails', as
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const probe = join(WORK, 'tickets/done/T-998-no-evidence-probe.md');
 
-  const body = ['---', 'id: T-998', 'title: no evidence probe', 'evidence: []', '---',
-    'a done ticket with no evidence must not pass'].join('\n');
+  const body = [
+    '---',
+    'id: T-998',
+    'title: no evidence probe',
+    'evidence: []',
+    '---',
+    'a done ticket with no evidence must not pass',
+  ].join('\n');
   await writeAndConfirm(probe, body);
   try {
-    let code = 0, stdout = '';
+    let code = 0,
+      stdout = '';
     try {
-      const r = await promisify(execFile)(process.execPath, [resolve(root, 'scripts/work.mjs'), 'check']);
+      const r = await promisify(execFile)(process.execPath, [
+        resolve(root, 'scripts/work.mjs'),
+        'check',
+      ]);
       stdout = r.stdout;
-    } catch (e) { code = e.code ?? 1; stdout = e.stdout ?? ''; }
+    } catch (e) {
+      code = e.code ?? 1;
+      stdout = e.stdout ?? '';
+    }
     assert.equal(code, 1, 'a done ticket with genuinely no evidence must still fail');
     assert.match(stdout, /T-998 is done but records no evidence/);
   } finally {
